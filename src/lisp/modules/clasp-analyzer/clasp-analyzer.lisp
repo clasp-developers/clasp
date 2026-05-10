@@ -669,15 +669,12 @@ to expose."
                  (make-instance 'tags:variable-bit-array0
                                 :integral-value (gc-template-argument-integral-value (find 0 (class-template-specialization-ctype-arguments gcbitunit-ctype)
                                                                                            :test #'eql :key #'gc-template-argument-index))
-                                :offset-base-ctype (offset-base-ctype array)
                                 :field-names (layout-offset-field-names array))
                  (make-instance 'tags:variable-array0
-                                :offset-base-ctype (offset-base-ctype array)
                                 :field-names (layout-offset-field-names array)))
            (make-instance 'tags:variable-capacity
                           :ctype (maybe-fixup-type (ctype-key (element-type array))
                                                    (offset-base-ctype array))
-                          :offset-base-ctype (offset-base-ctype array)
                           :end-field-names (layout-offset-field-names end)
                           :length-field-names (layout-offset-field-names length))
            (loop for one in (elements array)
@@ -719,7 +716,6 @@ to expose."
                  collect (make-instance 'tags:fixed-field
                                         :offset-type-cxx-identifier (offset-type-c++-identifier one)
                                         :offset-ctype (or (offset-ctype one) "UnknownType")
-                                        :offset-base-ctype (offset-base-ctype one)
                                         :layout-offset-field-names (layout-offset-field-names one :drop-last is-std-atomic)))
          (let ((variable-part (variable-part layout)))
            (when variable-part
@@ -730,50 +726,50 @@ to expose."
   (format nil "~:[0~;~:*~{~a~^ | ~}~]" (mapcar #'c++identifier definition-data)))
 
 (defun tags-for-lisp-layout (stamp key layout definition-data analysis)
-  (list* (make-instance 'tags:class-kind
-                        :stamp-name (get-stamp-name stamp)
-                        :stamp-key key
-                        :parent-class (first (cclass-bases (stamp-cclass stamp)))
-                        :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
-                        :root-class (stamp-root-cclass stamp)
-                        :stamp-wtag (stamp-wtag stamp)
-                        :definition-data (definition-data-as-string definition-data))
-         (tags-for-full layout analysis)))
+  (list (make-instance 'tags:class-kind
+                       :stamp-name (get-stamp-name stamp)
+                       :stamp-key key
+                       :parent-class (first (cclass-bases (stamp-cclass stamp)))
+                       :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
+                       :root-class (stamp-root-cclass stamp)
+                       :stamp-wtag (stamp-wtag stamp)
+                       :definition-data (definition-data-as-string definition-data)
+                       :contains (tags-for-full layout analysis))))
 
 (defun tags-for-container-layout (stamp key layout definition-data analysis)
-  (list* (make-instance 'tags:container-kind
-                        :stamp-name (get-stamp-name stamp)
-                        :stamp-key key
-                        :parent-class (first (cclass-bases (stamp-cclass stamp)))
-                        :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
-                        :root-class (stamp-root-cclass stamp)
-                        :stamp-wtag (stamp-wtag stamp)
-                        :definition-data (definition-data-as-string definition-data))
-         (tags-for-variable-part (fixed-part layout) analysis)))
+  (list (make-instance 'tags:container-kind
+                       :stamp-name (get-stamp-name stamp)
+                       :stamp-key key
+                       :parent-class (first (cclass-bases (stamp-cclass stamp)))
+                       :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
+                       :root-class (stamp-root-cclass stamp)
+                       :stamp-wtag (stamp-wtag stamp)
+                       :definition-data (definition-data-as-string definition-data)
+                       :contains (tags-for-variable-part (fixed-part layout) analysis))))
 
 (defun tags-for-bitunit-container-layout (stamp key layout definition-data analysis)
-  (list* (make-instance 'tags:bitunit-container-kind
-                        :stamp-name (get-stamp-name stamp)
-                        :stamp-key key
-                        :parent-class (first (cclass-bases (stamp-cclass stamp)))
-                        :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
-                        :root-class (stamp-root-cclass stamp)
-                        :stamp-wtag (stamp-wtag stamp)
-                        :bitwidth (species-bitwidth (stamp-species stamp))
-                        :definition-data (definition-data-as-string definition-data))
-         ;; There is no fixed part for bitunits
-         (tags-for-variable-part (fixed-part layout) analysis)))
+  (list (make-instance 'tags:bitunit-container-kind
+                       :stamp-name (get-stamp-name stamp)
+                       :stamp-key key
+                       :parent-class (first (cclass-bases (stamp-cclass stamp)))
+                       :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
+                       :root-class (stamp-root-cclass stamp)
+                       :stamp-wtag (stamp-wtag stamp)
+                       :bitwidth (species-bitwidth (stamp-species stamp))
+                       :definition-data (definition-data-as-string definition-data)
+                       ;; There is no fixed part for bitunits
+                       :contains (tags-for-variable-part (fixed-part layout) analysis))))
 
 (defun tags-for-templated-layout (stamp key layout definition-data analysis)
-  (list* (make-instance 'tags:templated-kind
-                        :stamp-name (get-stamp-name stamp)
-                        :stamp-key key
-                        :parent-class (first (cclass-bases (stamp-cclass stamp)))
-                        :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
-                        :root-class (stamp-root-cclass stamp)
-                        :stamp-wtag (stamp-wtag stamp)
-                        :definition-data (definition-data-as-string definition-data))
-         (tags-for-full layout analysis)))
+  (list (make-instance 'tags:templated-kind
+                       :stamp-name (get-stamp-name stamp)
+                       :stamp-key key
+                       :parent-class (first (cclass-bases (stamp-cclass stamp)))
+                       :lisp-class-base (cclass-lisp-base (stamp-cclass stamp))
+                       :root-class (stamp-root-cclass stamp)
+                       :stamp-wtag (stamp-wtag stamp)
+                       :definition-data (definition-data-as-string definition-data)
+                       :contains (tags-for-full layout analysis))))
 
 (defgeneric linearize-class-layout-impl (x base analysis)
   (:documentation "* Arguments
@@ -2060,7 +2056,7 @@ so that they don't have to be constantly recalculated"
             (make-stamp :key class-key
                         :species (manager-abstract-species (analysis-manager analysis))
                         :cclass class)))))
-  
+
 (defun ensure-stamp-for-alloc-and-parent-classes (alloc analysis)
   (let* ((manager (analysis-manager analysis))
          (species (identify-species manager alloc))
@@ -2070,7 +2066,7 @@ so that they don't have to be constantly recalculated"
          (base-classes (cclass-bases alloc-stamp))
          (base-class-key (car base-classes)))
     (unless #+(or)base-class-key (string= base-class-key "RootClass")
-      (ensure-stamp-for-ancestors base-class-key analysis))
+            (ensure-stamp-for-ancestors base-class-key analysis))
     (cond
       ((and (not (containeralloc-p alloc))
             (alloc-template-specializer-p alloc analysis))
@@ -2083,32 +2079,52 @@ so that they don't have to be constantly recalculated"
               (single-base (gethash single-base-key (project-classes (analysis-project analysis)))))
          (let* ((key (cclass-key single-base))
                 (tstamp (multiple-value-bind (te present-p)
-                           ;; get the templated-stamp
-                           (gethash key (analysis-stamps analysis))
-                         (if (and present-p (templated-stamp-p te))
-                             ;; If its present and a templated-stamp then return it
-                             te
-                             ;; If there wasn't a templated-stamp in the hash-table - create one
-                             (progn
-                               (when (simple-stamp-p te)
-                                 (warn "Since ~a is templated it must be a templated-stamp - but there is already a simple-stamp defined with this key - this error happened probably because you tried to allocate the TemplateBase of templated classes - don't do that!!" key))
-                               (setf (gethash key (analysis-stamps analysis))
-                                     (make-templated-stamp :key key
-                                                          :value% :unassigned
-                                                          :cclass single-base
-                                                          :species species)))))))
+                            ;; get the templated-stamp
+                            (gethash key (analysis-stamps analysis))
+                          (if (and present-p (templated-stamp-p te))
+                              ;; If its present and a templated-stamp then return it
+                              te
+                              ;; If there wasn't a templated-stamp in the hash-table - create one
+                              (progn
+                                (when (simple-stamp-p te)
+                                  (warn "Since ~a is templated it must be a templated-stamp - but there is already a simple-stamp defined with this key - this error happened probably because you tried to allocate the TemplateBase of templated classes - don't do that!!" key))
+                                (format *error-output* "~&[clasp-analyzer] CREATE templated-stamp key=~S~%             triggered-by alloc-class=~S~%"
+                                        key (alloc-key alloc))
+                                (setf (gethash key (analysis-stamps analysis))
+                                      (make-templated-stamp :key key
+                                                            :value% :unassigned
+                                                            :cclass single-base
+                                                            :species species)))))))
            ;; save every alloc associated with this templated-stamp
+           (format *error-output* "~&[clasp-analyzer] PUSH alloc=~S to templated-stamp ~S~%"
+                   (alloc-key alloc) key)
            (push alloc (templated-stamp-all-allocs tstamp)))))
+
       (t ;; It's a simple-stamp
        (let* ((class (gethash class-key (project-classes (analysis-project analysis)))))
          (unless class ;; system allocs don't have classes - make a bogus one
            (setq class (make-cclass :key class-key)))
-         (setf (gethash class-key (analysis-stamps analysis))
-               (make-simple-stamp :key class-key
-                                 :value% :unassigned
-                                 :cclass class
-                                 :alloc alloc
-                                 :species species)))))))
+         (let ((existing (gethash class-key (analysis-stamps analysis))))
+           (cond
+             ((templated-stamp-p existing)
+              ;; A templated-stamp was already created for this key by an
+              ;; earlier templated alloc whose single-base is this class.
+              ;; Keep the templated-stamp; skip this simple alloc to make
+              ;; stamp creation order-independent. (Mirror of the warn at
+              ;; line 2094 in the templated branch.)
+              (warn "Discarding simple-stamp for ~a because a templated-stamp ~
+                       already exists with this key. Triggered by alloc-class ~a. ~
+                       This usually means the TemplateBase of templated classes ~
+                       is being allocated directly - don't do that!"
+                    class-key (alloc-key alloc)))
+             (t
+              (setf (gethash class-key (analysis-stamps analysis))
+                    (make-simple-stamp :key class-key
+                                       :value% :unassigned
+                                       :cclass class
+                                       :alloc alloc
+                                       :species species)))))))
+      )))
 
 (defun organize-allocs-into-species-and-create-stamps (analysis)
   "Every GCObject and GCContainer is assigned to a species and given a GCStamp stamp value."
@@ -2631,8 +2647,10 @@ Recursively analyze x and return T if x contains fixable pointers."
         (namespace-add-name subnamespace (cdr name)))))
 
 (defun tag-for-namespace-names (forwards)
-  (make-instance 'tags:forwards-tag :forwards% (loop for key being the hash-keys of forwards
-                                                     collect key)))
+  (make-instance 'tags:forwards-tag
+                 :forwards% (sort (loop for key being the hash-keys of forwards
+                                        collect key)
+                                  #'string<)))
 
 (defun merge-forward-names-by-namespace (analysis)
   (let ((forwards (analysis-forwards analysis))
@@ -2693,15 +2711,44 @@ Pointers to these objects are fixed in the scanner or they must be roots."
       (gethash (ctype-key ctype) (project-lispallocs project))
       (gethash (ctype-key ctype) (project-containerallocs project))))
 
+(defun stamp-depth (stamp analysis)
+  "Number of class-hierarchy steps from STAMP back to a root class."
+  (let ((depth 0)
+        (cclass (stamp-cclass stamp))
+        (project (analysis-project analysis)))
+    (loop
+      (let ((bases (and cclass (cclass-bases cclass))))
+        (unless bases (return depth))
+        (let ((parent-key (car bases)))
+          (unless (and parent-key
+                       (gethash parent-key (project-classes project)))
+            (return depth))
+          (incf depth)
+          (setf cclass (gethash parent-key (project-classes project))))))))
+
+
 (defun generate-code (analysis &key output-file)
   (format t "About to generate code~%")
   (or output-file (error "You must provide an output-file"))
-  (cscrape:write-sif-file (list* (tag-for-namespace-names (analysis-forwards analysis))
-                                 (mapcan (lambda (stamp)
-                                           (funcall (species-tags (stamp-species stamp)) stamp analysis))
-                                         (analysis-sorted-stamps analysis)))
-                          output-file)
-  (format t "Done generate-code~%"))
+  (let ((stamps-ordered (sort (copy-list (analysis-sorted-stamps analysis))
+                              (lambda (a b)
+                                (let ((da (stamp-depth a analysis))
+                                      (db (stamp-depth b analysis)))
+                                  (cond ((< da db) t)
+                                        ((> da db) nil)
+                                        (t (string< (stamp-key a) (stamp-key b)))))))))
+    (cscrape:write-sif-file (list* (tag-for-namespace-names (analysis-forwards analysis))
+                                   ;; Each species-tags emitter now returns either a one-element
+                                   ;; list (a kind-tag with its inner records nested under :contains)
+                                   ;; or nil (for abstract-species stamps, whose default tags fn is
+                                   ;; #'noop).  Skip the nil case so abstract stamps contribute no
+                                   ;; top-level record.
+                                   (loop for stamp in stamps-ordered
+                                         for tags = (funcall (species-tags (stamp-species stamp))
+                                                             stamp analysis)
+                                         when tags collect (first tags)))
+                            output-file)
+    (format t "Done generate-code~%")))
 
 (defun build-arguments-adjuster ()
   "Build a function that fixes up compile command arguments to run the static analyzer."

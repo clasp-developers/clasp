@@ -203,18 +203,20 @@
 
 ;;; static analyzer tags
 
+;; Inner records used to carry :offset-base-ctype, which is always the
+;; same as their parent kind-tag's :stamp-key.  Now nested under
+;; :contains, the parent is implicit; consumers fetch the base ctype
+;; from (tags:stamp-key (tag% kind)) instead.
+
 (defclass tags:variable-bit-array0 (tag)
   ((integral-value :initarg :integral-value :reader integral-value)
-   (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
    (field-names :initarg :field-names :reader field-names)))
 
 (defclass tags:variable-array0 (tag)
-  ((offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
-   (field-names :initarg :field-names :reader field-names)))
+  ((field-names :initarg :field-names :reader field-names)))
 
 (defclass tags:variable-capacity (tag)
   ((ctype :initarg :ctype :reader ctype)
-   (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
    (length-field-names :initarg :length-field-names :reader length-field-names)
    (end-field-names :initarg :end-field-names :reader end-field-names)))
 
@@ -237,7 +239,6 @@
   ((offset-type-cxx-identifier :initarg :offset-type-cxx-identifier
                                :reader offset-type-cxx-identifier)
    (offset-ctype :initarg :offset-ctype :reader offset-ctype)
-   (offset-base-ctype :initarg :offset-base-ctype :reader offset-base-ctype)
    (layout-offset-field-names :initarg :layout-offset-field-names
                               :reader layout-offset-field-names)))
 
@@ -256,7 +257,13 @@
    (stamp-wtag :initarg :stamp-wtag
                :reader stamp-wtag)
    (definition-data :initarg :definition-data
-                    :reader definition-data)))
+                    :reader definition-data)
+   ;; Inner records (fixed-field, variable-*) used to be sibling
+   ;; top-level tags whose ownership was implicit via the most-recent
+   ;; kind-tag in the stream.  They are now nested explicitly.
+   (contains :initarg :contains
+             :initform '()
+             :accessor tags:contains)))
 
 (defclass tags:class-kind (kind-tag) ())
 

@@ -35,9 +35,20 @@ namespace core {
 SMART(WrappedPointer);
 class WrappedPointer_O : public core::General_O {
   FRIEND_GC_SCANNER(core::WrappedPointer_O);
-  LISP_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer", core::General_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, WrappedPointer_O, "WrappedPointer", core::General_O);
 
 public:
+  // Untagged C++ subclasses (e.g. clbind::Wrapper<OT, HolderType>) don't
+  // have their own LISP_CLASS-generated __class() override.  Without this,
+  // virtual dispatch walks past us to General_O::__class() and instances
+  // report General_O as their class — breaking single-dispatch on methods
+  // that specialize on WrappedPointer.  _instanceClass() below returns
+  // Class_ for tagged subclasses; this provides the fallback for untagged
+  // templated subclasses that haven't set Class_.
+  virtual core::Instance_sp __class() const override {
+    return core::lisp_getStaticClass(WrappedPointer_O::static_ValueStampWtagMtag);
+  }
+
   gctools::ShiftedStamp ShiftedStamp_;
   core::Instance_sp Class_;
 

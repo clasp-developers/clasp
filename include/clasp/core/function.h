@@ -198,7 +198,7 @@ namespace core {
 // check out bytecode simple funs).
 FORWARD(SimpleFun);
 class SimpleFun_O : public Function_O {
-  LISP_CLASS(core, CorePkg, SimpleFun_O, "SimpleFun", Function_O);
+  LISP_ABSTRACT_CLASS(core, CorePkg, SimpleFun_O, "SimpleFun", Function_O);
 
 public:
   FunctionDescription_sp _FunctionDescription;
@@ -242,6 +242,19 @@ protected:
     fixupOneCodePointer(fixup, ptr, this->_Code);
   }
 };
+
+// add to function.h, near the other SimpleFun_O subclasses
+class XepSimpleFun_O : public SimpleFun_O {
+  LISP_CLASS(core, CorePkg, XepSimpleFun_O, "XepSimpleFun", SimpleFun_O);
+
+public:
+  XepSimpleFun_O(FunctionDescription_sp fdesc, T_sp code, const ClaspXepTemplate& xep)
+      : SimpleFun_O(fdesc, code, xep) {}
+
+  virtual size_t templatedSizeof() const override { return sizeof(*this); }
+};
+
+
 
 // Now that SimpleFun exists we can define these.
 template <typename... Ts>
