@@ -1,5 +1,12 @@
 (
 
+ (:name :flexi-streams
+  :extension :cando
+  :directory "src/lisp/kernel/contrib/flexi-streams/"
+  :repository "https://github.com/edicl/flexi-streams.git"
+  :branch "master"
+  :pin 1)
+
  (:name :cl-unicode
   :extension :cando
   :directory "src/lisp/kernel/contrib/cl-unicode/"
