@@ -74,6 +74,10 @@ void clear_finalizer_list(core::T_sp object) {
 
 void invoke_finalizers() {}
 
+bool heap_ptr_p(const void* p) {
+  return mmtk_clasp_is_in_mmtk_spaces(p);
+}
+
 size_t heap_size() { return mmtk_clasp_total_bytes(); }
 
 size_t free_bytes() { return mmtk_clasp_free_bytes(); }
