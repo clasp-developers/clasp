@@ -113,7 +113,7 @@ struct KVPair {
 // To see the difference, imagine having two inverse ephemerons {V1, V2} and
 // {V2, V1}, where V1 and V2 are some otherwise inaccessible objects. With real
 // ephemerons, the ephemeron values (V2 and V1) will not be scanned unless the
-// keys (V1 and V2) are otherwise inaccessible, which they are not, and so both
+// keys (V1 and V2) are otherwise accessible, which they are not, and so both
 // ephemerons can be wiped by the GC. With these boehm "ephemerons" V1 and V2
 // will be kept alive by the strong pointers and so both will be alive forever.
 // Another issue comes up when an ephemeron's value contains the only strong
