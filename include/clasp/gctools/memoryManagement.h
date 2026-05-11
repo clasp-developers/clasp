@@ -20,6 +20,7 @@
 //
 #include <atomic>
 #include <set>
+#include <unordered_map>
 #include <utility> // pair
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
@@ -1168,6 +1169,8 @@ void mapAllObjects(void (*)(Tagged, void*), void*);
 std::set<Tagged> setOfAllObjects();
 std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>&);
 size_t objectSize(BaseHeader_s* header);
+
+void traceablep(std::unordered_map<Tagged, bool>&);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);
 
