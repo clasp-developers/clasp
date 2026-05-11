@@ -260,6 +260,10 @@ void shutdownBoehm() {
   delete my_thread_low_level;
 }
 
+bool heap_ptr_p(const void* p) {
+  return GC_is_heap_ptr(p);
+}
+
 size_t heap_size() { return GC_get_heap_size(); }
 size_t free_bytes() { return GC_get_free_bytes(); }
 size_t bytes_since_gc() { return GC_get_bytes_since_gc(); }
