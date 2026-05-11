@@ -585,7 +585,7 @@ void FinishAssingingBuiltinStamps() {
 
 namespace gctools {
 
-/* Walk all of the roots, passing the address of each root and what it represents */
+/* Walk all of the roots, passing the address of each root */
 template <typename RootWalkCallback>
 void walkRoots(RootWalkCallback&& callback) {
   callback((Tagged*)&_lisp);
@@ -747,6 +747,91 @@ size_t objectSize(BaseHeader_s* header) {
     // It's a general object - walk it
     return general_skip(HeaderPtrToGeneralPtr<core::General_O>(header));
   }
+}
+
+void traceablep(std::unordered_map<Tagged, bool>& testing) {
+  std::set<Tagged> markSet;
+  std::stack<Tagged> markStack;
+  std::set<Ephemeron*> ephemera;
+
+  auto fail = testing.end();
+
+  auto fix_field
+    = [&](core::T_O** field) {
+      Tagged o = (Tagged)*field;
+      markStack.push(o);
+      // Is it one of the values we're searching for?
+      auto it = testing.find(o);
+      if (it != fail)
+        it->second = true; // yes, it's reachable
+    };
+
+  auto fix_eph
+    = [&](Ephemeron* eph) {
+      // Insert ephemeron during normal tracing, otherwise do nothing
+      // and get an iterator reference so we can erase if needed.
+      auto it = ephemera.insert(eph).first;
+      auto p = eph->get_no_lock();
+      // If the ephemeron key is dead, we're done with this
+      if (p.key.deletedp()) {
+        ephemera.erase(it);
+        return;
+      }
+      // OK, not deleted. Have we traced the key? If so,
+      // trace the value and remove us from processing.
+      Tagged key = p.key.tagged_();
+      switch(ptag(key)) {
+      case general_tag: case cons_tag:
+          if (!markSet.contains(key)) break;
+          [[fallthrough]];
+      default: {
+          // or we're something always alive, like a fixnum
+          // or no_key
+          ephemera.erase(it);
+          Tagged value = p.value.tagged_();
+          markStack.push(value);
+          auto fit = testing.find(value);
+          if (fit != fail) fit->second = true;
+      } break;
+      }
+      // We have not traced the key, but might do so later,
+      // so leave us in the set.
+    };
+
+  walkRoots([&](Tagged* rootf) { markStack.push(*rootf); });
+
+ trace:
+  while (!markStack.empty()) {
+    Tagged tagged = markStack.top(); markStack.pop();
+
+    switch(ptag(tagged)) {
+    case general_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
+        scan::general((core::General_O*)client,
+                      fix_field, [](WeakPointer*){}, fix_eph);
+      }
+    } break;
+    case cons_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
+        scan::cons((core::Cons_O*)client, fix_field);
+      }
+    } break;
+    default: break;
+    }
+  }
+  // Normal tracing completed, but check for remaining ephemera.
+  // for (auto eit : ephemera) fix_eph(eit);
+  // does not work, because we erase iterators as we go.
+  for (auto eit = ephemera.begin(); eit != ephemera.end();) {
+    fix_eph(*(eit++));
+  }
+  // If any ephemera were live, go back and scan those references.
+  if (!markStack.empty()) goto trace;
+  // Otherwise we are done.
 }
 
 }; // namespace gctools

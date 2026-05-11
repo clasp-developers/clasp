@@ -33,6 +33,8 @@
 #include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/weakPointer.h>
+#include <clasp/core/ql.h>
 
 namespace gctools {
 std::atomic<double> global_DiscriminatingFunctionCompilationSeconds(0.0);
@@ -964,6 +966,44 @@ CL_DEFUN core::T_mv gctools__stw_stack_bounds() {
   return Values(core::Integer_O::create((uintptr_t)top),
                 core::Integer_O::create((uintptr_t)sp),
                 core::Integer_O::create((uintptr_t)bottom));
+}
+
+void* traceablep_aux(void* testing) {
+  traceablep(*(std::unordered_map<Tagged, bool>*)testing);
+  return nullptr;
+}
+
+CL_DOCSTRING(R"dx(Test if some objects are traceable for garbage collection. The argument is a list of weak pointers. The result is a list of the same length of booleans, each boolean being true iff the weak pointer was valid and its object was traceable.
+Multiple objects are tested simultaneously because this requires stopping the world and doing a full memory scan, both of which are slow.
+An object being untraceable to this function does not necessarily mean that it will be collected by the garbage collector. This function works independently of the GC backend, and GCs may not collect objects due to their own implementation strategies and/or flaws. In particular, Boehm does not have true ephemerons, so Boehm may never collect certain objects pointed to by ephemerons even if this function indicates they are untraceable.)dx");
+CL_DEFUN core::List_sp gctools__traceablep(core::List_sp weaks) {
+  std::unordered_map<Tagged, bool> testing;
+  for (auto e : weaks) {
+    core::WeakPointer_sp w = core::oCar(e).as<core::WeakPointer_O>();
+    WeakPointer link = w->_Link;
+    auto v = link.value();
+    if (v) // valid
+      testing.emplace(v->tagged_(), false);
+  }
+  call_with_stopped_world(traceablep_aux, &testing);
+  // Now we know which pointers are traceable, so construct
+  // a new list of booleans.
+  ql::list result;
+  auto fail = testing.end();
+  for (auto e : weaks) {
+    core::WeakPointer_sp w = core::oCar(e).as_unsafe<core::WeakPointer_O>();
+    WeakPointer link = w->_Link;
+    auto v = link.value();
+    if (v) {
+      auto it = testing.find(v->tagged_());
+      if (it == fail)
+        result << nil<core::T_O>();
+      else if (it->second)
+        result << cl::_sym_T_O;
+      else result << nil<core::T_O>();
+    } else result << nil<core::T_O>();
+  }
+  return result.cons();
 }
 
 }; // namespace gctools
