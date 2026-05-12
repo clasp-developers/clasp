@@ -1176,10 +1176,8 @@ struct ReachableClass {
 
 typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 
-// These nine are GC-defined.
+// These eight are GC-defined.
 void collect_garbage();
-
-void* call_with_stopped_world(void* (*)(void*), void*);
 
 void set_finalizer_list(core::T_sp, core::List_sp);
 void clear_finalizer_list(core::T_sp);

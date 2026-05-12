@@ -41,6 +41,7 @@
 #include <clasp/gctools/memoryManagement.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
+#include <clasp/gctools/stw.h> // call_with_stopped_world
 
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
@@ -1953,7 +1954,7 @@ void snapshot_save(SaveLispAndDie& data) {
 
   core::lisp_write(fmt::format("Finished invoking cmp:invoke-save-hooks\n"));
 
-  gctools::call_with_stopped_world(snapshot_save_impl, &data);
+  gctools::call_with_stopped_world([&](){snapshot_save_impl(&data);});
 }
 
 struct temporary_root_holder_t {
