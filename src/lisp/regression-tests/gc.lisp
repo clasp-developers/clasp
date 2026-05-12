@@ -104,3 +104,92 @@
         count)
       (0)
       :description "Check if list of general finalizers were discarded")
+
+;;; ----------------------------------------------------------------------
+;;; gctools:traceablep tests
+;;;
+;;; gctools:traceablep stops the world and checks which of a set of objects
+;;; are reachable via the tracer. It takes a list of weak pointers and
+;;; returns a list of booleans indicating traceability.
+;;;
+;;; These tests are inherently a little dodgy since the tracer is free to
+;;; overestimate what is alive, so tests may succeed when they should fail.
+;;; In particular the global accessibility tests try to remove stack
+;;; references by the time the test is done.
+;;; And more perversely, the compiler could optimize out stack referenced
+;;; objects before they are tested, resulting in false negatives.
+
+;;; Object held in a special variable is reachable via global roots.
+(defvar *traceablep-anchor* nil)
+
+(test traceablep-special-variable
+      (flet ((setup ()
+               (let ((obj (list 'in-special)))
+                 (setf *traceablep-anchor* obj)
+                 (core:make-weak-pointer obj))))
+        (prog1 (first (gctools:traceablep (list (setup))))
+          (setf *traceablep-anchor* nil)))
+      (t)
+      :description "Object in a special variable is traceable via global roots")
+
+;;; Object reachable from a special variable through a heap chain.
+(test traceablep-heap-reachable
+      (flet ((setup ()
+               (let* ((inner (list 'inner))
+                      (outer (list inner)))
+                 (setf *traceablep-anchor* outer)
+                 (core:make-weak-pointer outer))))
+        (prog1 (first (gctools:traceablep (list (setup))))
+          (setf *traceablep-anchor* nil)))
+      (t)
+      :description "Object reachable from a special variable through the heap is traceable")
+
+;;; Object stored in a closure that is itself in a special variable.
+(test traceablep-closure-captured
+      (flet ((setup ()
+               (let* ((obj (list 'in-closure))
+                      (closure (lambda () obj)))
+                 (setf *traceablep-anchor* closure)
+                 (core:make-weak-pointer obj))))
+        (prog1 (first (gctools:traceablep (list (setup))))
+          (setf *traceablep-anchor* nil)))
+      (t)
+      :description "Object captured in a closure held in a special variable is traceable")
+
+;;; Various global objects.
+(test traceablep-globals
+      (values-list
+       (gctools:traceablep
+        (mapcar #'core:make-weak-pointer
+                (list (find-package "COMMON-LISP")
+                      (pprint-dispatch '(let ((x 7)) x))
+                      (find-class 'standard-class)
+                      #'cons
+                      (get-dispatch-macro-character #\# #\()
+                      *random-state*
+                      *standard-output*
+                      *debugger-hook*))))
+      (t t t t t t t t))
+
+;;; FAILS WITHOUT STACK SCANNING.
+;;; Object referenced only by a local variable; not reachable from any
+;;; global root. Requires scanning the calling thread's stack.
+;;; NOTE above comment about false negatives.
+(test traceablep-stack-local
+      (let ((obj (list 'stack-only)))
+        (first (gctools:traceablep (list (core:make-weak-pointer obj)))))
+      (t)
+      :description "Object referenced only from a local variable is traceable (requires stack scanning)")
+
+;;; Object with no live strong references should not be traceable.
+;;; We allocate it in a notinline function so the reference is gone on return.
+(defun make-unreachable-weak-pointer ()
+  (ext:make-weak-pointer (list 'unreachable)))
+(declaim (notinline make-unreachable-weak-pointer))
+
+(test traceablep-unreachable
+      (let ((wp (make-unreachable-weak-pointer)))
+        (gctools:garbage-collect)
+        (first (gctools:traceablep (list wp))))
+      (nil)
+      :description "Object with no live strong references is not traceable")
