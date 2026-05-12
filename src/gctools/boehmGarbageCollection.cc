@@ -227,13 +227,10 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   //  GC_enable_incremental();
   GC_init();
 
-  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level = new gctools::ThreadLocalStateLowLevel();
-  my_thread_low_level = thread_local_state_low_level;
-
-  // ctor sets up my_thread
   my_thread =
     (core::ThreadLocalState*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::ThreadLocalState));
   new (my_thread) core::ThreadLocalState(false);
+  my_thread_low_level = &my_thread->_LowLevel;
 
 #if 1
   // I'm not sure if this needs to be done for the main thread

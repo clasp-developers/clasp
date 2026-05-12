@@ -183,10 +183,9 @@ void Process_O::runInner(core::List_sp bindings) {
 
 __attribute__((noinline))
 void Process_O::run() {
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level;
   core::ThreadLocalState thread_local_state;
-  my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
+  my_thread_low_level = &thread_local_state._LowLevel;
   my_thread->startUpVM();
   my_thread->initialize_thread(this->asSmartPtr());
   //  my_thread->create_sigaltstack();
