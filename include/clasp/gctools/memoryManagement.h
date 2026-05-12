@@ -1098,12 +1098,6 @@ template <typename OT> inline gctools::smart_ptr<OT> ensure_valid_object(gctools
 }
 }; // namespace gctools
 
-extern "C" {
-// Invoke mps_park/mps_release or boehm_park/boehm_release
-void gc_park();
-void gc_release();
-};
-
 #ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define ENSURE_VALID_HEADER(x) (gctools::ensure_valid_header(x))
@@ -1111,13 +1105,6 @@ void gc_release();
 #define ENSURE_VALID_OBJECT(x) x
 #define ENSURE_VALID_HEADER(x) x
 #endif
-
-namespace gctools {
-struct SafeGCPark {
-  SafeGCPark() { gc_park(); };
-  ~SafeGCPark() { gc_release(); }
-};
-}; // namespace gctools
 
 ////////////////////////////////////////////////////////////
 /*!

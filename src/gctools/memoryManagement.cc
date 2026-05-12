@@ -62,25 +62,6 @@ THE SOFTWARE.
 #include <signal.h>
 #endif
 
-extern "C" {
-void gc_park() {
-#if defined(USE_BOEHM)
-  boehm_park();
-#elif defined(USE_MMTK)
-
-#endif
-};
-
-void gc_release() {
-#if defined(USE_BOEHM)
-  boehm_release();
-#elif defined(USE_MMTK)
-  MISSING_GC_SUPPORT();
-#endif
-};
-
-}
-
 #include <clasp/core/scrape.h>
 
 ////////////////////////////////////////////////////////////

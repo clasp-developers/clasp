@@ -83,17 +83,12 @@ const char* obj_kind_name(core::T_O* tagged_ptr) {
 }
 
 bool valid_stamp(gctools::stamp_t stamp) {
-#if defined(USE_BOEHM)
   if (stamp <= STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max)) {
     return true;
   }
   return false;
-#else
-  MISSING_GC_SUPPORT();
-#endif
 }
 const char* obj_name(gctools::stamp_t stamp) {
-#if defined(USE_BOEHM)
   if (stamp <= global_unshifted_nowhere_stamp_names.size()) {
     //    printf("%s:%d obj_name stamp= %lu\n", __FILE__, __LINE__, stamp);
     return global_unshifted_nowhere_stamp_names[stamp].c_str();
@@ -101,9 +96,6 @@ const char* obj_name(gctools::stamp_t stamp) {
   printf("%s:%d obj_name stamp = %lu is out of bounds - max is %lu\n", __FILE__, __LINE__, (uintptr_t)stamp,
          global_unshifted_nowhere_stamp_names.size());
   return "BoehmNoClass";
-#else
-  MISSING_GC_SUPPORT();
-#endif
 }
 
 /*! I'm using a format_header so MPS gives me the object-pointer */
