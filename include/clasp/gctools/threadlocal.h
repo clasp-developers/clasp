@@ -258,6 +258,7 @@ struct ThreadLocalState {
   uint64_t _Tid;
   uintptr_t _BacktraceBasePointer;
   uint64_t _DtreeInterpreterCallCount;
+  gctools::ThreadLocalStateLowLevel _LowLevel;
   VirtualMachine _VM;
 
 #ifdef DEBUG_MONITOR_SUPPORT

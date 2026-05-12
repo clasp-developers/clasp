@@ -46,12 +46,9 @@ __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
   mmtk_clasp_init(builder);
 
   // Set up thread-local state for the main thread.
-  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level =
-      new gctools::ThreadLocalStateLowLevel();
-  my_thread_low_level = thread_local_state_low_level;
-
   my_thread = (core::ThreadLocalState*)malloc(sizeof(core::ThreadLocalState));
   new (my_thread) core::ThreadLocalState(false);
+  my_thread_low_level = &my_thread->_LowLevel;
 
   // The mutator for this thread was bound by ThreadLocalStateLowLevel's ctor.
   mmtk_clasp_initialize_collection(my_thread_low_level);
