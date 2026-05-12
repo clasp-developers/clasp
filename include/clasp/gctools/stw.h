@@ -1,5 +1,8 @@
 #pragma once
 
+#include <concepts>
+#include <type_traits>
+
 // GC-independent stop-the-world mechanism.
 //
 // A thread can be two levels of "stopped". First, it may be in a GC-safe state.
@@ -47,7 +50,7 @@ void begin_gcless();
 // Enter GC-safe state without altering thread's GCState. Called by begin_park().
 void begin_gcless_shared();
 
-// For use by call_with_stopped_world() in GC-specific code: remove/re-add the
+// For use by call_with_stopped_world(): remove/re-add the
 // calling registered mutator from the running count around a stop/resume pair.
 // Unlike begin_gcless_shared(), stw_mutator_resume() does NOT wait for
 // world_stopped to clear (the caller is the one who cleared it).
@@ -92,3 +95,27 @@ void clasp_resume_the_world();
 void clasp_pause_thread_for_gc();
 
 } // extern "C"
+
+namespace gctools {
+// Do some stuff with the world stopped, from a mutator.
+template <std::invocable<> F>
+requires (!std::same_as<void, std::invoke_result_t<F>>)
+decltype(auto) call_with_stopped_world(F f) {
+  stw_mutator_stop();
+  clasp_stop_the_world();
+  decltype(auto) result = f();
+  clasp_resume_the_world();
+  stw_mutator_resume();
+  return result;
+}
+// special version for F returning void since "void result;" doesn't work.
+template <std::invocable<> F>
+requires std::same_as<void, std::invoke_result_t<F>>
+void call_with_stopped_world(F f) {
+  stw_mutator_stop();
+  clasp_stop_the_world();
+  f();
+  clasp_resume_the_world();
+  stw_mutator_resume();
+}
+}; // namespace gctools

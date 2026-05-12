@@ -335,14 +335,8 @@ void roomMapper(Tagged tagged, void* data) {
   (*rcmap)[stamp].update(sz);
 }
 
-void* map_gc_objects_w_alloc_lock(void* data) {
-  mapAllObjects(roomMapper, data);
-  return nullptr;
-}
-
 void fill_reachable_class_map(ReachableClassMap* rcmap) {
-  call_with_stopped_world(map_gc_objects_w_alloc_lock,
-                          (void*)rcmap);
+  call_with_stopped_world([&](){mapAllObjects(roomMapper, rcmap);});
 }
 
 CL_LAMBDA(&optional (x :default));
@@ -968,11 +962,6 @@ CL_DEFUN core::T_mv gctools__stw_stack_bounds() {
                 core::Integer_O::create((uintptr_t)bottom));
 }
 
-void* traceablep_aux(void* testing) {
-  traceablep(*(std::unordered_map<Tagged, bool>*)testing);
-  return nullptr;
-}
-
 CL_DOCSTRING(R"dx(Test if some objects are traceable for garbage collection. The argument is a list of weak pointers. The result is a list of the same length of booleans, each boolean being true iff the weak pointer was valid and its object was traceable.
 Multiple objects are tested simultaneously because this requires stopping the world and doing a full memory scan, both of which are slow.
 An object being untraceable to this function does not necessarily mean that it will be collected by the garbage collector. This function works independently of the GC backend, and GCs may not collect objects due to their own implementation strategies and/or flaws. In particular, Boehm does not have true ephemerons, so Boehm may never collect certain objects pointed to by ephemerons even if this function indicates they are untraceable.)dx");
@@ -985,7 +974,7 @@ CL_DEFUN core::List_sp gctools__traceablep(core::List_sp weaks) {
     if (v) // valid
       testing.emplace(v->tagged_(), false);
   }
-  call_with_stopped_world(traceablep_aux, &testing);
+  call_with_stopped_world([&](){traceablep(testing);});
   // Now we know which pointers are traceable, so construct
   // a new list of booleans.
   ql::list result;

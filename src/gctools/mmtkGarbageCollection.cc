@@ -81,15 +81,6 @@ size_t free_bytes() { return mmtk_clasp_free_bytes(); }
 
 size_t bytes_since_gc() { return 0; }
 
-void* call_with_stopped_world(void* (*f)(void*), void* data) {
-  gctools::stw_mutator_stop();
-  clasp_stop_the_world();
-  void* result = f(data);
-  clasp_resume_the_world();
-  gctools::stw_mutator_resume();
-  return result;
-}
-
 CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 
 }; // namespace gctools
