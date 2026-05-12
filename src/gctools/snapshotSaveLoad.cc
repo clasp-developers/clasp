@@ -38,6 +38,7 @@
 #include <clasp/gctools/scan.h>
 #include <clasp/llvmo/jit.h>
 #include <clasp/gctools/interrupt.h> // wait_for_user_signal
+#include <clasp/gctools/memoryManagement.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 
@@ -99,21 +100,8 @@ struct MaybeTimeStartup {
   };
 };
 
-/* Return "GC" if the pointer is in GC memory or "SL" if it's in the safe/load buffer */
-bool pointer_in_gc_memory(void* pointer) {
-#ifdef USE_BOEHM
-  if (GC_base(pointer))
-    return true;
-#elif defined(USE_MMTK)
-  if (mmtk_clasp_is_in_mmtk_spaces(pointer))
-    return true;
-#endif
-  return false;
-}
-
-
 const char* pointer_pool(void* pointer) {
-  if (pointer_in_gc_memory(pointer))
+  if (gctools::heap_ptr_p(pointer))
     return "GC";
   return "SL";
 }
@@ -695,10 +683,10 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     } else {
       printf(" - *header should be fwd ptr but got %p\n", *(void**)header);
     }
-    bool clientAddressPool = pointer_in_gc_memory(clientAddress);
+    bool clientAddressPool = gctools::heap_ptr_p(clientAddress);
     printf("%s:%d:%s       The clientAddress %p is in %s memory\n", __FILE__, __LINE__, __FUNCTION__, clientAddress,
            pointer_pool(clientAddress));
-    bool clientPool = pointer_in_gc_memory(client);
+    bool clientPool = gctools::heap_ptr_p(client);
     printf("%s:%d:%s       The client        %p is in %s memory\n", __FILE__, __LINE__, __FUNCTION__, client, pointer_pool(client));
     printf("%s:%d:%s       ---- They should be in different pools and that is %s\n", __FILE__, __LINE__, __FUNCTION__,
            (clientAddressPool != clientPool) ? "TRUE" : "FALSE");
