@@ -50,7 +50,7 @@ extern size_t mmtk_clasp_total_bytes(void);
 // Object queries
 extern bool mmtk_clasp_is_live_object(void* object_ref);
 extern bool mmtk_clasp_will_never_move(void* object_ref);
-extern bool mmtk_clasp_is_in_mmtk_spaces(void* object_ref);
+extern bool mmtk_clasp_is_in_mmtk_spaces(const void* object_ref);
 extern bool mmtk_clasp_is_mapped_address(void* addr);
 
 // GC control
