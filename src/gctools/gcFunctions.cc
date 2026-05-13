@@ -1033,4 +1033,40 @@ CL_DEFUN core::T_mv gctools__bytecode_stack_stats(mp::Process_sp proc) {
                 core::Integer_O::create(invalid));
 }
 
+CL_DOCSTRING(R"dx(Test function for scanning control stacks. Looks through a thread's stack and counts and returns:
+1) non-objects (e.g. fixnums)
+2) valid objects
+3) invalid objects)dx");
+CL_DEFUN core::T_mv gctools__control_stack_stats(mp::Process_sp proc) {
+  const ThreadLocalStateLowLevel& tlsll = proc->_ThreadInfo->_LowLevel;
+  size_t valid = 0, invalid = 0, nonobject = 0;
+
+  auto thunk
+    = [&]() {
+      for (const void** ptr = (const void**)tlsll._ControlStackTop;
+           ptr < (const void**)tlsll._ControlStackPointer; ++ptr) {
+        Tagged o = (Tagged)*ptr;
+        switch(ptag(o)) {
+        case general_tag: {
+          uintptr_t client = untag_object(o);
+          Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+          if (header->isValidGeneralObject()) ++valid;
+          else ++invalid;
+        } break;
+        case cons_tag: {
+          uintptr_t client = untag_object(o);
+          ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+          if (header->isValidConsObject()) ++valid;
+          else ++invalid;
+        } break;
+        default: ++nonobject;
+        }
+      }
+    };
+  call_with_stopped_world(thunk);
+  return Values(core::Integer_O::create(nonobject),
+                core::Integer_O::create(valid),
+                core::Integer_O::create(invalid));
+}
+
 }; // namespace gctools
