@@ -26,6 +26,22 @@
         (mapcar (lambda (p) (multiple-value-list (mp:process-join p))) procs))
       (((nil nil nil) (nil nil nil) (nil nil nil) (nil nil nil))))
 
+;;; Check that the bytecode stack has all valid objects.
+(test bytecode-stack-scan
+      (let ((f (cmp:bytecompile
+                ;; random code to put various things on the stack
+                '(lambda ()
+                  ((lambda ()
+                     (multiple-value-call
+                         (lambda (&rest r)
+                           (gctools:bytecode-stack-stats
+                            mp:*current-process*))
+                       1 2 3)))))))
+        (multiple-value-bind (non valid invalid) (funcall f)
+          (declare (ignore non valid))
+          invalid))
+      (0))
+
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;; This is a separate function in a perhaps-futile effort to prevent

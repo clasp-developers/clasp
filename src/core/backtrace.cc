@@ -535,8 +535,9 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
   // next iteration sees fp == NULL and stops.
   void* bpc = pc;
   T_O** bfp = fp;
-  if (fp) {
-    pc = (unsigned char*)(*(fp - BYTECODE_FRAME_PC_OFFSET));
+  if (fp) { // null fp means we've hit the end.
+    T_sp tpc((gctools::Tagged)*(fp - BYTECODE_FRAME_PC_OFFSET));
+    pc = (unsigned char*)clasp_to_integral<uintptr_t>(tpc);
     fp = (T_O**)(*(fp - BYTECODE_FRAME_FP_OFFSET));
   }
   // Find the bytecode module containing the current pc.

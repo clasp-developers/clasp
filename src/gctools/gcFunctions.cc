@@ -35,6 +35,7 @@
 #include <clasp/core/wrappers.h>
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/ql.h>
+#include <clasp/core/mpPackage.h>
 
 namespace gctools {
 std::atomic<double> global_DiscriminatingFunctionCompilationSeconds(0.0);
@@ -993,6 +994,43 @@ CL_DEFUN core::List_sp gctools__traceablep(core::List_sp weaks) {
     } else result << nil<core::T_O>();
   }
   return result.cons();
+}
+
+CL_DOCSTRING(R"dx(Test function for scanning bytecode stacks. Looks through a thread's bytecode VM stack and counts and returns:
+1) non-objects (e.g. fixnums)
+2) valid objects
+3) invalid objects (should be zero!))dx");
+CL_DEFUN core::T_mv gctools__bytecode_stack_stats(mp::Process_sp proc) {
+  core::ThreadLocalState* tls = proc->_ThreadInfo;
+  const core::VirtualMachine& VM = tls->_VM;
+  size_t valid = 0, invalid = 0, nonobject = 0;
+
+  auto thunk
+    = [&]() {
+      for (core::T_O** ptr = VM._stackBottom;
+           ptr < VM._stackPointer; ++ptr) {
+        Tagged o = (Tagged)*ptr;
+        switch(ptag(o)) {
+        case general_tag: {
+          uintptr_t client = untag_object(o);
+          Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+          if (header->isValidGeneralObject()) ++valid;
+          else ++invalid;
+        } break;
+        case cons_tag: {
+          uintptr_t client = untag_object(o);
+          ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+          if (header->isValidConsObject()) ++valid;
+          else ++invalid;
+        } break;
+        default: ++nonobject;
+        }
+      }
+    };
+  call_with_stopped_world(thunk);
+  return Values(core::Integer_O::create(nonobject),
+                core::Integer_O::create(valid),
+                core::Integer_O::create(invalid));
 }
 
 }; // namespace gctools
