@@ -302,7 +302,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       // non-bytecode function, that in turn calls a bunch of different bytecode
       // functions, which may trash vm._pc making it unsuitable.
       // We have to do this for all call instructions, not just this one.
-      vm.push(sp, (T_O*)pc);
+      // The PC is pushed as an actual fixnum so that the GC can scan the
+      // bytecode stack without worrying about invalid pointers - since the PC
+      // is only aligned to bytes, it can look like a tagged pointer.
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -327,7 +330,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         VM_RECORD_PLAYBACK(args[ii], name_args.str().c_str());
       }
 #endif
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = func->apply_raw(nargs, args);
@@ -345,7 +348,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -699,7 +702,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -717,7 +720,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = func->apply_raw(nargs, args);
@@ -736,7 +739,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -1093,7 +1096,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
@@ -1119,7 +1122,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       VM_RECORD_PLAYBACK(args[ii], name_args.str().c_str());
     }
 #endif
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_sp res = func->apply_raw(nargs, args);
@@ -1139,7 +1142,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
@@ -1358,7 +1361,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
@@ -1534,6 +1537,8 @@ extern "C" {
 #define BYTECODE_COMPILE_THRESHOLD 65535
 
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
+  // NOTE: the GC scans up to vm._stackPointer, so it needs to be correct
+  // when gc_yield is called - as it should be here.
   gctools::gc_yield();
   gctools::handle_all_queued_interrupts();
   core::Closure_O* closure = gctools::untag_general<core::Closure_O*>((core::Closure_O*)lcc_closure);
