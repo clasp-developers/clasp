@@ -251,23 +251,8 @@ void Lisp::setupSpecialSymbols() {
   gctools::RAIIDisableInterrupts disable_interrupts;
   SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
   Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
-  SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");
-  Symbol_sp symbol_unbound = gctools::GC<Symbol_O>::allocate(name_unbound);
-  SimpleBaseString_sp name_no_thread_local_binding = SimpleBaseString_O::make("NO-THREAD-LOCAL-BINDING");
-  Symbol_sp symbol_no_thread_local_binding = gctools::GC<Symbol_O>::allocate(name_no_thread_local_binding);
-  SimpleBaseString_sp name_no_key = SimpleBaseString_O::make("NO_KEY");
-  Symbol_sp symbol_no_key = gctools::GC<Symbol_O>::allocate(name_no_key);
-  SimpleBaseString_sp name_deleted = SimpleBaseString_O::make("DELETED");
-  Symbol_sp symbol_deleted = gctools::GC<Symbol_O>::allocate(name_deleted);
-  SimpleBaseString_sp name_same_as_key = SimpleBaseString_O::make("SAME-AS-KEY");
-  Symbol_sp symbol_same_as_key = gctools::GC<Symbol_O>::allocate(name_same_as_key);
-  // TODO: Ensure that these globals are updated by the garbage collector
+  // TODO: Ensure that this global is updated by the garbage collector
   gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O*>(symbol_nil.raw_());
-  symbol_unbound->_HomePackage = symbol_nil;
-  symbol_no_thread_local_binding->_HomePackage = symbol_nil;
-  symbol_no_key->_HomePackage = symbol_nil;
-  symbol_deleted->_HomePackage = symbol_nil;
-  symbol_same_as_key->_HomePackage = symbol_nil;
 }
 
 void Lisp::finalizeSpecialSymbols() {
@@ -276,9 +261,6 @@ void Lisp::finalizeSpecialSymbols() {
   symbol_nil->setf_name(SimpleBaseString_O::make("NIL"));
   symbol_nil->setPackage(_lisp->findPackage("COMMON-LISP"));
   symbol_nil->setf_plist(nil<T_O>());
-  //    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
-  //    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
-  //    	Symbol_sp symbol_same_as_key = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_same_as_key);
 }
 
 LispPtr Lisp::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
