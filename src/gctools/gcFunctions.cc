@@ -1039,34 +1039,125 @@ CL_DOCSTRING(R"dx(Test function for scanning control stacks. Looks through a thr
 3) invalid objects)dx");
 CL_DEFUN core::T_mv gctools__control_stack_stats(mp::Process_sp proc) {
   const ThreadLocalStateLowLevel& tlsll = proc->_ThreadInfo->_LowLevel;
-  size_t valid = 0, invalid = 0, nonobject = 0;
+  size_t valid = 0, invalid = 0, nonobject = 0, interior = 0;
 
+  // NOTE/FIXME: We're assuming the stack grows down.
+  // This is difficult to test for and may not be true in practice on
+  // weird hardened systems.
   auto thunk
     = [&]() {
-      for (const void** ptr = (const void**)tlsll._ControlStackTop;
-           ptr < (const void**)tlsll._ControlStackPointer; ++ptr) {
+      for (const void** ptr = (const void**)tlsll._ControlStackPointer;
+           ptr < (const void**)tlsll._ControlStackBottom; ++ptr) {
         Tagged o = (Tagged)*ptr;
+#ifdef USE_BOEHM
+        void* base = GC_base((void*)o);
+#else
+        void* base = nullptr;
+#endif
+        Header_s* gheader = (Header_s*)base;
+        ConsHeader_s* cheader = (ConsHeader_s*)base;
+
         switch(ptag(o)) {
         case general_tag: {
-          uintptr_t client = untag_object(o);
-          Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
-          if (header->isValidGeneralObject()) ++valid;
+          void* client = (void*)untag_object(o);
+          Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
+          if ((!base || (header == gheader))
+              && header->isValidGeneralObject())
+            ++valid;
+          else if (base
+                   && (gheader->isValidGeneralObject()
+                       || cheader->isValidConsObject()))
+            ++interior;
           else ++invalid;
         } break;
         case cons_tag: {
-          uintptr_t client = untag_object(o);
-          ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
-          if (header->isValidConsObject()) ++valid;
+          void* client = (void*)untag_object(o);
+          ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr(client);
+          if ((!base || header == cheader)
+              && header->isValidConsObject())
+            ++valid;
+          else if (base
+                   && (gheader->isValidGeneralObject()
+                       || cheader->isValidConsObject()))
+            ++interior;
           else ++invalid;
         } break;
-        default: ++nonobject;
+        default: {
+#ifdef USE_BOEHM
+          if (base && (gheader->isValidGeneralObject()
+                       || cheader->isValidConsObject()))
+            ++interior;
+          else
+#endif
+            ++nonobject;
+        } break;
         }
       }
     };
   call_with_stopped_world(thunk);
   return Values(core::Integer_O::create(nonobject),
                 core::Integer_O::create(valid),
-                core::Integer_O::create(invalid));
+                core::Integer_O::create(invalid),
+                core::Integer_O::create(interior));
 }
 
+CL_DOCSTRING(R"dx(Test function for finding interior pointers in control stacks. Looks through a thread's stack and returns a list of objects identified from interior pointers.
+This function is pretty error-prone - don't be surprised if a returned object is some junk that causes segfaults when examined.)dx");
+CL_DEFUN core::List_sp gctools__interior_pointers(mp::Process_sp proc) {
+  const ThreadLocalStateLowLevel& tlsll = proc->_ThreadInfo->_LowLevel;
+  std::set<Tagged> interiors;
+
+  auto threadscan
+    = [&]() {
+      for (const void** ptr = (const void**)tlsll._ControlStackPointer;
+           ptr < (const void**)tlsll._ControlStackBottom; ++ptr) {
+        Tagged o = (Tagged)*ptr;
+#ifdef USE_BOEHM
+        void* base = GC_base((void*)o);
+#else
+        void* base = nullptr;
+#endif
+
+        if (!base) continue;
+
+        Header_s* gheader = (Header_s*)base;
+        ConsHeader_s* cheader = (ConsHeader_s*)base;
+
+        switch(ptag(o)) {
+        case general_tag: {
+          void* client = (void*)untag_object(o);
+          Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
+          if (header == gheader) continue;
+        } break;
+        case cons_tag: {
+          void* client = (void*)untag_object(o);
+          ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr(client);
+          if (header == cheader) continue;
+        }
+        }
+
+        // base is non-null and not equal to any properly tagged header,
+        // so we may have an interior pointer.
+        // find any actual object.
+        if (gheader->isValidGeneralObject()) {
+          core::General_O* gen = HeaderPtrToGeneralPtr<core::General_O>(base);
+          interiors.insert((Tagged)tag_general(gen));
+        } else if (cheader->isValidConsObject()) {
+          core::Cons_O* cons = (core::Cons_O*)HeaderPtrToConsPtr(base);
+          interiors.insert((Tagged)tag_cons(cons));
+        }
+      }
+    }; // thunk
+
+  call_with_stopped_world(threadscan);
+
+  // Now we have a set of tagged objects. Turn them into actual objects
+  // and return.
+  ql::list result;
+  for (auto t : interiors) {
+    core::T_sp obj(t);
+    result << obj;
+  }
+  return result.cons();
+}
 }; // namespace gctools
