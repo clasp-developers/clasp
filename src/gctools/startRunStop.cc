@@ -144,8 +144,6 @@ CL_DEFUN void gctools__register_loaded_objects() {
 extern "C" {
 
 int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCode) {
-  gctools::_global_stack_max_size = claspInfo->_stackMax;
-  gctools::global_sizeof_fwd = gctools::AlignUp(sizeof(gctools::Header_s));
 
   const char* trigger = getenv("CLASP_DISCRIMINATING_FUNCTION_TRIGGER");
   if (trigger) {

@@ -90,7 +90,6 @@ typedef unsigned char* clasp_ptr_t;
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT> struct GCStamp;
-extern size_t _global_stack_max_size;
 }; // namespace gctools
 
 // #define FWD_MTAG            0b010
@@ -933,20 +932,6 @@ template <class T> inline size_t sizeof_bitunit_container_with_header(size_t num
 #endif
   return sum;
 };
-
-/* Align size upwards and ensure that it's big enough to store a
- * forwarding pointer.
- * This is used by the scanner and skip (sizer).
- */
-/*   Replaces this macro...
-     #define ALIGN(size)                                                \
-    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
-     ? AlignUp<Header_s>(size)                              \
-     : gctools::sizeof_with_header<gctools::Fwd_s>() )
-*/
-
-extern size_t global_sizeof_fwd;
-inline size_t Align(size_t size) { return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd); };
 
 // Manually define these for the sake of As<Fixnum_sp> etc.
 template <> struct GCStamp<core::Fixnum_I> {
