@@ -275,10 +275,7 @@ const handleType UniqueIdHandle = 1;
 
 }; // namespace core
 
-/*! Associate a namespace name with a Package.
-  This is scraped out of the code by "registerClasses.py"
-*/
-
+// Used extensively in Cando but probably needs cleaning up.
 #define UndefinedUnsignedInt UINT_MAX
 #define UNDEF_UINT UndefinedUnsignedInt
 
