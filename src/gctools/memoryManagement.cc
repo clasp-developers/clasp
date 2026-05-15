@@ -566,13 +566,12 @@ void FinishAssingingBuiltinStamps() {
 
 namespace gctools {
 
-/* Walk all of the roots, passing the address of each root */
+/* Walk all of the global (not per-thread) roots,
+ * passing the address of each root */
 template <typename RootWalkCallback>
-void walkRoots(RootWalkCallback&& callback) {
+void walkGlobalRoots(RootWalkCallback&& callback) {
+  // luckily, just the one god object references everything else
   callback((Tagged*)&_lisp);
-  for (size_t jj = 0; jj < global_symbol_count; ++jj) {
-    callback((Tagged*)&global_symbols[jj]);
-  }
 };
 
 static void mw_obj_scan(core::General_O* client,
@@ -597,7 +596,7 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
   std::stack<std::pair<Tagged, Tagged>> markStack;
 
   // process all roots
-  walkRoots([&](Tagged* rootf) { markStack.emplace(0, *rootf); });
+  walkGlobalRoots([&](Tagged* rootf) { markStack.emplace(0, *rootf); });
 
   while (!markStack.empty()) {
     // pop an object. we don't need the containing object.
@@ -655,7 +654,7 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dla
 
   std::set<void*> uniqueEntryPoints;
 
-  walkRoots([&](Tagged* rootAddr) { markStack.emplace(0, *rootAddr); });
+  walkGlobalRoots([&](Tagged* rootAddr) { markStack.emplace(0, *rootAddr); });
 
   while (!markStack.empty()) {
     auto p = markStack.top(); markStack.pop();
@@ -779,7 +778,7 @@ void traceablep(std::unordered_map<Tagged, bool>& testing) {
       // so leave us in the set.
     };
 
-  walkRoots([&](Tagged* rootf) { markStack.push(*rootf); });
+  walkGlobalRoots([&](Tagged* rootf) { markStack.push(*rootf); });
 
  trace:
   while (!markStack.empty()) {
