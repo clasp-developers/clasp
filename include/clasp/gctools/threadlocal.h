@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <functional>
 #include <algorithm> // copy
+#include <concepts> // invocable
 #include <clasp/gctools/threadlocal.fwd.h>
 
 namespace core {
@@ -326,6 +327,43 @@ public:
   inline void unblock() { _GCState.store(GCState::Running, std::memory_order_release); }
   inline bool gclessp() const { return _GCState.load(std::memory_order_acquire) != GCState::Running; }
   inline bool blockingp() const { return _GCState.load(std::memory_order_acquire) == GCState::Parked; }
+
+  // Call a function on the addresses of objects directly accessible from the
+  // thread's fields.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkRoots(Walker&& walk) {
+    walk((gctools::Tagged*)&_Process);
+    // dynamic binding stack
+    walk((gctools::Tagged*)&_PendingInterruptsHead); // includes tail
+    walk((gctools::Tagged*)&_BufferStr8NsPool);
+    walk((gctools::Tagged*)&_BufferStrWNsPool);
+    walk((gctools::Tagged*)&_BFormatStringOutputStream);
+    walk((gctools::Tagged*)&_WriteToStringOutputStream);
+    // multiple values
+    walk((gctools::Tagged*)&_DynEnvStackBottom);
+    walk((gctools::Tagged*)&_UnwindDest);
+  }
+  // Call a function on the addresses of objects in the bytecode stack.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkVMStack(Walker&& walk) {
+    for (core::T_O** ptr = _VM._stackBottom;
+         ptr < _VM._stackPointer; ++ptr)
+      walk((gctools::Tagged*)ptr);
+  }
+  // Call a function on the addresses of objects in the control stack.
+  // NOTE: It is NOT guaranteed that something that looks like a tagged pointer
+  // actually is one, since we don't control this stack as well as we control
+  // the VM stack and heap references. Scan conservatively.
+  // Also, we assume that the stack grows down.
+  // This is difficult to test for and may not be true in practice on weird
+  // hardened systems.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkControlStack(Walker&& walk) {
+    for (const void** ptr = (const void**)_LowLevel._ControlStackPointer;
+         ptr < (const void**)_LowLevel._ControlStackBottom; ++ptr) {
+      walk((gctools::Tagged*)ptr);
+    }
+  }
 
   ~ThreadLocalState();
 };
