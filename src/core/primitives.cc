@@ -2065,16 +2065,6 @@ void crc32(const void* data, size_t n_bytes, uint32_t* crc) {
 
 namespace core {
 
-#if 0
-DOCGROUP(clasp);
-CL_DEFUN core::Test_sp core__makeTest() {
-  auto tt = new Test();
-  auto t = gctools::GC<Test_O>::allocate();
-  t->set_wrapped(tt);
-  return t;
-}
-#endif
-
 void Test::setMultiplier(int m) { this->multiplier = m; }
 
 void Test::set2(int n0, int n1) {

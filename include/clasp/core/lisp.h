@@ -303,7 +303,6 @@ public:
     Complex_sp _ImaginaryUnit;
     Complex_sp _ImaginaryUnitNegative;
     Ratio_sp _PlusHalf;
-    //    DynamicBindingStack _Bindings;
     HashTable_sp _SourceFileIndices;   // map<string,int>
     HashTable_sp _PackageNameIndexMap; // map<string,int>
     bool _PrintSymbolsProperly;
@@ -324,12 +323,6 @@ public:
   friend void core__clear_gfun_hash(T_sp what);
 
 public:
-  static void initializeGlobals(LispPtr lisp);
-
-public:
-  static void lisp_initSymbols(LispPtr lisp);
-
-public:
   static const int MaxFunctionArguments; //<! See ecl/src/c/main.d:163 ecl_make_cache(64,4096)
 public:
   void initialize();
@@ -343,15 +336,12 @@ public:
   bool _CoreBuiltInClassesInitialized;
   bool _BuiltInClassesInitialized;
   bool _PackagesInitialized;
-  bool _EnvironmentInitialized;
   bool _NilsCreated;
   bool _Booted;
   bool _MpiEnabled;
   int _MpiRank;
   int _MpiSize;
   int _TrapFpeBits; // Current FPE traps needed for restoration in SIGFPE for amd64.
-  /*! Keep track of every new environment that is created */
-  std::atomic<uint> _EnvironmentId;
 
 public:
 #ifdef CLASP_THREADS
@@ -411,78 +401,16 @@ public:
   int getTrapFpeBits() { return _TrapFpeBits; };
   void setTrapFpeBits(int bits) { _TrapFpeBits = bits; }
 
-public:
-#if 0
-	void printvWrite(const char* buffer);
-	void printvWriteChar(char c);
-	void printvFlush();
-	void printvSetLinePrefix(const string& prompt) { this->_PrintvLinePrefix = prompt;};
-#endif
 public: // numerical constants
   Complex_sp imaginaryUnit() const { return this->_Roots._ImaginaryUnit; };
   Complex_sp imaginaryUnitNegative() const { return this->_Roots._ImaginaryUnitNegative; };
   Ratio_sp plusHalf() const { return this->_Roots._PlusHalf; };
 
 public:
-  /*! Setup makePackage and exportSymbol callbacks */
-
-public:
   List_sp allPackagesAsCons() const;
 
 public:
-  /*! Add a function to trace */
-  void add_trace(Function_sp func);
-  /*! Remove a function to trace */
-  void remove_trace(Function_sp func);
-
-  /*! Return a list of functions being traced */
-  List_sp trace_functions() const;
-
-public:
-  //  inline DynamicBindingStack &bindings() { return this->_Roots._Bindings; };
-
-public:
-  /*! Add a pair of symbolIDs that provide an accessor get/setf pair */
-  void add_accessor_pair(Symbol_sp getter, Symbol_sp setter);
-  /*! Add a SetfExpander associated with the symbol */
-  //	void addSetfExpander(Symbol_sp symbol, SetfExpander_sp expander);
-  /*! Lookup the SetfExpander by symbol - if not found return nil */
-  //	SetfExpander_sp lookupSetfExpander(Symbol_sp symbol) const;
-protected:
-  List_sp getConditionHandlers();
-  void setConditionHandlers(List_sp handlers);
-  List_sp getRestartHandlers();
-  void setRestartHandlers(List_sp handlers);
-
-public:
-  bool isEnvironmentInitialized() { return this->_EnvironmentInitialized; };
-  uint nextEnvironmentId();
-
-public:
-  /*! Create a setfDefinition */
-  //	void set_setfDefinition(Symbol_sp fnName, Function_sp fnDef);
-  /*! Return the function or nil if not found */
-  //	Function_sp get_setfDefinition(Symbol_sp fnName) const;
-  /*! Return true if the definition was found */
-  //	bool remove_setfDefinition(Symbol_sp fnName);
-
-public:
-  /*! This function is called whenever a symbol is exported
-          it will be used to callback to Python to install python callable functions
-        */
-  void exportingSymbol(Symbol_sp sym);
-
-  void dump_apropos(const char* part) const;
-
-public:
   T_sp nullStream() const { return this->_Roots._NullStream; };
-
-public:
-  //	void load(T_sp filespec, bool verbose=false, bool print=false, bool ifDoesNotExist=true );
-public:
-  /*! Constantly updated line number as programs execute
-   */
-  uint _LineNumber;
 
 public:
   gctools::Vec0<Package_sp>& packages() { return this->_Roots._Packages; };
@@ -578,10 +506,6 @@ public:
 
   //	string getRenderFileName() { return this->_RenderFileName; };
 
-public: // Hierarchy stuff
-        //	Hierarchy_sp defaultHierarchy() { return this->_DefaultHierarchy;};
-        //	void derive(T_sp tag, T_sp parent);
-        //	bool isA(T_sp tag, T_sp ancestor);
 public:
   //
   // Initialize the packages for this environment
@@ -589,12 +513,6 @@ public:
   void initializePackages();
 
 public:
-  bool recognizesModule(const string& fileName);
-  void addModule(const string& fileName);
-
-  int getRequireLevel() { return this->_RequireLevel; };
-  void pushRequireLevel() { this->_RequireLevel++; };
-  void popRequireLevel() { this->_RequireLevel--; };
 
   /*! Install a package */
   void installPackage(const Exposer_O* package);
