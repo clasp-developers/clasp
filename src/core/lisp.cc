@@ -218,8 +218,6 @@ void Lisp::shutdownLispEnvironment() {
   //  my_thread->destroy_sigaltstack();
 }
 
-void Lisp::lisp_initSymbols(LispPtr lisp) {}
-
 /*! Allocations go here
  */
 void Lisp::initialize() {
@@ -425,8 +423,6 @@ void Lisp::startupLispEnvironment() {
   this->_PackagesInitialized = false;
   this->_BuiltInClassesInitialized = false;
   this->_NilsCreated = false;
-  this->_EnvironmentInitialized = false;
-  this->_EnvironmentId = 0;
   //
   // Setup the core package aka the sys package
   //
@@ -468,7 +464,6 @@ void Lisp::startupLispEnvironment() {
     coreExposer->define_essential_globals(_lisp);
     this->_PackagesInitialized = true;
   }
-  this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
   //	LOG("ALL CLASSES: %s"% this->dumpClasses() );
   //    this->createNils();
@@ -1106,11 +1101,6 @@ Path_sp Lisp::translateLogicalPathnameUsingPaths(T_sp obj) {
   } else {
     SIMPLE_ERROR("Finish implementing Lisp::translateLogicalPathname");
   }
-}
-
-uint Lisp::nextEnvironmentId() {
-  this->_EnvironmentId++;
-  return this->_EnvironmentId;
 }
 
 unsigned char global_python_vm_codes_literal[] =
@@ -2190,12 +2180,6 @@ Symbol_sp Lisp::internKeyword(const string& name) {
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
 }
 
-void Lisp::dump_apropos(const char* part) const {
-  SimpleBaseString_sp substring = SimpleBaseString_O::make(std::string(part));
-  List_sp packages = _lisp->allPackagesAsCons();
-  searchForApropos(packages, substring, true);
-}
-
 bool Lisp::load(int& exitCode) {
   MultipleValues& mvn = core::lisp_multipleValues();
   switch (global_options->_StartupType) {
@@ -2301,8 +2285,6 @@ string Lisp::__repr__() const {
 };
 
 SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
-
-void Lisp::initializeGlobals(LispPtr lisp) {}
 
 LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->lisp_ = Lisp::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);
