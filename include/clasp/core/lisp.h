@@ -203,30 +203,20 @@ struct globals_t {
 #endif
   mutable mp::SharedMutex _JITLogMutex;                  // Protect _jit logging
   mutable mp::SharedMutex _CodeBlocksMutex;
-  /*! Map source file path strings to FileScope_sp */
-  uint _ReplCounter;
   /*! Store paths to important directories */
   Bundle* _Bundle;
   DebugStream* _DebugStream;
-  uint _SingleStepLevel;
-  int _TraceLevel;
   std::atomic<int> _DebuggerLevel;
   /*! Global environment initialization hooks can be added until
           the environment is started up.
         */
-  bool _LockGlobalInitialization;
   vector<InitializationCallback> _GlobalInitializationCallbacks;
-  string _FunctionName;
   /*! Define the name of a source file that is evaluated
    * before everything else to extend the environment
    */
   string _InitFileName;
 
 public:
-  /*! Callbacks for making packages and exporting symbols */
-  MakePackageCallback _MakePackageCallback;
-  ExportSymbolCallback _ExportSymbolCallback;
-  string _LastCompileErrorMessage;
   /*! Store the maximum path length for the system */
   int _PathMax;
   // ------------------------------------------------------------
@@ -241,11 +231,9 @@ public:
 #endif
         _JITLogMutex(JITLOG___NAMEWORD),
         _CodeBlocksMutex(CODEBLOK_NAMEWORD),
-        _ReplCounter(1), _Bundle(NULL), _DebugStream(NULL),
-        _SingleStepLevel(UndefinedUnsignedInt), _MakePackageCallback(NULL), _ExportSymbolCallback(NULL),
+        _Bundle(NULL), _DebugStream(NULL),
         _PathMax(CLASP_MAXPATHLEN) {
     this->_GlobalInitializationCallbacks.clear();
-    this->_TraceLevel = 0;
     this->_DebuggerLevel = 0;
   };
 };
@@ -375,9 +363,6 @@ public:
 #endif
 public:
   DebugStream& debugLog() { return *(globals_->_DebugStream); };
-
-public:
-  uint nextReplCounter() { return ++globals_->_ReplCounter; };
 
 public:
   void setupMpi(bool mpiEnabled, int mpiRank, int mpiSize);

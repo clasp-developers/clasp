@@ -624,15 +624,6 @@ void Lisp::put_StrWNs_buffer_string(StrWNs_sp str) {
 
 T_sp Lisp::getCurrentReadTable() { return cl::_sym_STARreadtableSTAR->symbolValue(); }
 
-#if 0
-void Lisp::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc) {
-  
-  LOG("Setting MakePackageCallback and ExportSymbolCallback");
-  this->_MakePackageCallback = mpc;
-  this->_ExportSymbolCallback = esc;
-}
-#endif
-
 #ifdef CLASP_THREADS
 void Lisp::add_process(mp::Process_sp process) {
   WITH_READ_WRITE_LOCK(globals_->_ActiveThreadsMutex);
@@ -894,12 +885,6 @@ start:
         nonexistentUsedPackage = SimpleBaseString_O::make(*jit);
         goto nonexistent_used_package;
       }
-    }
-    if (globals_->_MakePackageCallback != NULL) {
-      LOG("Calling _MakePackageCallback with package[{}]", name);
-      globals_->_MakePackageCallback(name, _lisp);
-    } else {
-      LOG("_MakePackageCallback is NULL - not calling callback");
     }
     return newPackage;
   }

@@ -85,7 +85,7 @@ public:
 
 public: // ctor/dtor for classes with shared virtual base
   explicit SourcePosInfo_O()
-      : _FileId(UNDEF_UINT), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(nil<T_O>()),
+      : _FileId(UINT_MAX), _Filepos(0), _Lineno(0), _Column(0), _FunctionScope(nil<T_O>()),
         _InlinedAt(nil<T_O>()){}; //, _Filepos(0) {};
 public:                           // instance variables here
   SourcePosInfo_O(uint spf, size_t filepos, uint spln, uint spc, T_sp function_scope, T_sp inlined_at)
