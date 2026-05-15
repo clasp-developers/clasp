@@ -203,10 +203,6 @@ struct globals_t {
 #endif
   mutable mp::SharedMutex _JITLogMutex;                  // Protect _jit logging
   mutable mp::SharedMutex _CodeBlocksMutex;
-  uint _StackWarnSize;
-  uint _StackSampleCount;
-  uint _StackSampleSize;
-  uint _StackSampleMax;
   /*! Map source file path strings to FileScope_sp */
   uint _ReplCounter;
   /*! Store paths to important directories */
@@ -245,8 +241,7 @@ public:
 #endif
         _JITLogMutex(JITLOG___NAMEWORD),
         _CodeBlocksMutex(CODEBLOK_NAMEWORD),
-        _StackWarnSize(gctools::_global_stack_max_size * 0.9), // 6MB default stack size before warnings
-        _StackSampleCount(0), _StackSampleSize(0), _StackSampleMax(0), _ReplCounter(1), _Bundle(NULL), _DebugStream(NULL),
+        _ReplCounter(1), _Bundle(NULL), _DebugStream(NULL),
         _SingleStepLevel(UndefinedUnsignedInt), _MakePackageCallback(NULL), _ExportSymbolCallback(NULL),
         _PathMax(CLASP_MAXPATHLEN) {
     this->_GlobalInitializationCallbacks.clear();

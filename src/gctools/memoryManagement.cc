@@ -50,13 +50,6 @@ THE SOFTWARE.
 #include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
-#if 0
-#include <clasp/core/bundle.h>
-#include <clasp/core/posixTime.h>
-#include <clasp/core/compiler.h>
-#include <clasp/gctools/gc_interface.fwd.h>
-#endif
-// #include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
@@ -118,38 +111,11 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_
 
 namespace gctools {
 
-size_t global_sizeof_fwd;
-
-// GCStack _ThreadLocalStack;
-size_t _global_stack_max_size;
-
-#if 0
-    HeapRoot* 	rooted_HeapRoots = NULL;
-    StackRoot* 	rooted_StackRoots = NULL;
-#endif
-
 DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__nextStampValue() { return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp); }
 DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() { return global_NextUnshiftedStamp; }
 
-}; // namespace gctools
-
-namespace gctools {
-#if 0
-AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size, AllocationRecord* prev) {
-// Play with Unix backtrace(3)
-#define BACKTRACE_SIZE 1024
-  void *buffer[BACKTRACE_SIZE];
-  char *funcname = (char *)malloc(1024);
-  size_t funcnamesize = 1024;
-  int nptrs;
-  nptrs = backtrace(buffer, BACKTRACE_SIZE);
-  char **strings = backtrace_symbols(buffer, nptrs);
-  AllocationRecord* record = new BacktraceRecord(strings,nptrs,kind,stamp,size,prev);
-  return record;
-};
-#endif
 }; // namespace gctools
 
 namespace gctools {

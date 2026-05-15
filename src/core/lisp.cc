@@ -1382,12 +1382,6 @@ void Lisp::readEvalPrintInteractive() {
   stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
 
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Return the stack warn size)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__stack_limit() { return clasp_make_fixnum(globals_->_StackWarnSize); };
-
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(exit)dx");
