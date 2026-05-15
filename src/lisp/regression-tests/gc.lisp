@@ -197,6 +197,13 @@
       (t)
       :description "Object referenced only from a local variable is traceable (requires stack scanning)")
 
+;;; FAILS WITHOUT STACK SCANNING
+(test traceablep-special-binding
+      (let ((*traceablep-anchor* (list 'stack-only)))
+        (first (gctools:traceablep (list (core:make-weak-pointer *traceablep-anchor*)))))
+      (t)
+      :description "Object referenced only from a local special binding is traceable (requires stack scanning)")
+
 ;;; Object with no live strong references should not be traceable.
 ;;; We allocate it in a notinline function so the reference is gone on return.
 (defun make-unreachable-weak-pointer ()
