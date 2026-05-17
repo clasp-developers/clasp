@@ -30,7 +30,7 @@ class scan {
 public:
   template <std::invocable<core::T_O**> Fixer>
   static void cons(core::Cons_O* client, Fixer&& fix) {
-    gctools::Header_s& header = *(gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
+    gctools::ConsHeader_s& header = *(gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
     if (header._badge_stamp_wtag_mtag.consObjectP()) {
       fix((core::T_O**)&client->_Car);
       fix((core::T_O**)&client->_Cdr);
