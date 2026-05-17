@@ -22,6 +22,7 @@
 #include <set>
 #include <unordered_map>
 #include <utility> // pair
+#include <type_traits> // conditional, is_same
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
@@ -434,8 +435,8 @@ public:
     static UnshiftedStamp unshift_shifted_stamp(ShiftedStamp us) { return ((us >> BaseHeader_s::general_mtag_shift)); }
 
     template <typename T> static StampWtagMtag make() {
-      StampWtagMtag mak((GCStamp<T>::StampWtag << general_mtag_shift));
-      return mak;
+      return StampWtagMtag((GCStamp<T>::StampWtag << mtag_shift)
+                           | general_mtag);//(std::is_same_v<T, core::Cons_O> ? cons_mtag : general_mtag));
     }
     static StampWtagMtag make_unknown(UnshiftedStamp the_stamp) { return the_stamp << general_mtag_shift; }
     static StampWtagMtag make_StampWtagMtag(StampWtagMtag vvv) {
@@ -720,44 +721,6 @@ public:
 #endif
 };
 
-template <class LispClass> struct StackAllocate {
-  Header_s _Header;
-  LispClass _Object;
-
-  template <class... ARGS>
-  StackAllocate(ARGS&&... args) : _Header(Header_s::StampWtagMtag::make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
-
-  smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass*)&this->_Object); }
-};
-
-// We use a sham struct because C++ doesn't let us partially specify templates.
-template <class LispClass> struct InitializeObject {
-
-  static size_t size() { return sizeof_with_header<LispClass>(); }
-
-  template <typename... ARGS> static LispClass* go(void* where, ARGS&&... args) {
-    LispClass* object = (LispClass*)((Header_s*)where + 1);
-    new (where) Header_s(Header_s::StampWtagMtag::make<LispClass>());
-    return new (object) LispClass(std::forward<ARGS>(args)...);
-  }
-};
-
-template <> struct InitializeObject<core::Cons_O> {
-
-  // KLUDGE: We can't specialize InitializeObject directly because Cons_O
-  // is not defined enough yet that we can write code to initialize one.
-  // But if we put in another layer of template, it's apparently okay.
-  template <class ConsType, typename... ARGS> static ConsType* initialize_cons(void* where, ARGS&&... args) {
-    ConsType* object = (ConsType*)((ConsHeader_s*)where + 1);
-    new (where) ConsHeader_s(ConsHeader_s::StampWtagMtag::make<ConsType>());
-    return new (object) ConsType(std::forward<ARGS>(args)...);
-  }
-
-  template <typename... ARGS> static core::Cons_O* go(void* where, ARGS&&... args) {
-    return initialize_cons<core::Cons_O>(where, std::forward<ARGS>(args)...);
-  }
-};
-
 }; // namespace gctools
 
 // ------------------------------------------------------------
@@ -868,6 +831,60 @@ inline void* ConsPtrToHeaderPtr(void* client) {
 
 inline void* HeaderPtrToConsPtr(void* header) {
   return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(header) + sizeof(ConsHeader_s));
+}
+
+}; // namespace gctools
+
+namespace gctools {
+
+// Allocate a Lisp object on the stack. This can be used in C++ to create a Lisp
+// object in both the C++ and Lisp senses.
+template <class LispClass> struct StackAllocate {
+private:
+  // template skullduggery because Cons needs special casing but hasn't been
+  // fully defined yet.
+  typedef std::conditional_t<std::is_same_v<LispClass, core::Cons_O>,ConsHeader_s,Header_s> GHeader_s;
+public:
+  GHeader_s _Header;
+  LispClass _Object;
+
+  // yeah it's inelegant :(
+  template <class... ARGS>
+  requires (!std::same_as<LispClass, core::Cons_O>)
+  StackAllocate(ARGS&&... args) : _Header(GHeader_s::StampWtagMtag::template make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
+
+  template <class... ARGS>
+  requires std::same_as<LispClass, core::Cons_O>
+  StackAllocate(ARGS&&... args) : _Header(STAMPWTAG_CONS), _Object(std::forward<ARGS>(args)...) {};
+
+  smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass*)&this->_Object); }
+};
+
+// Initialize raw memory as a Lisp object.
+// This is used in generated code (llvmo/link_intrinsics..) to initialize
+// stack allocated Lisp objects.
+template <class Ty_O, class... ARGS>
+smart_ptr<Ty_O> InitObject(void* space, ARGS&&... args) {
+  if constexpr(std::is_same_v<Ty_O, core::Cons_O>) {
+    ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(space);
+    const ConsHeader_s::BadgeStampWtagMtag stamp(ConsHeader_s::cons_mtag);
+    new (header) ConsHeader_s(stamp);
+    Ty_O* obj = (Ty_O*)HeaderPtrToConsPtr(space);
+    new (obj) Ty_O(std::forward<ARGS>(args)...);
+    return smart_ptr<Ty_O>(obj);
+  } else {
+    Header_s* header = reinterpret_cast<Header_s*>(space);
+    const Header_s::BadgeStampWtagMtag stamp = Header_s::BadgeStampWtagMtag::make<Ty_O>();
+#ifdef DEBUG_GUARD
+    size_t size = sizeof_with_header<Ty_O>();
+    new (header) Header_s(stamp, size, 0, size);
+#else
+    new (header) Header_s(stamp);
+#endif
+    Ty_O* obj = HeaderPtrToGeneralPtr<Ty_O>(space);
+    new (obj) Ty_O(std::forward<ARGS>(args)...);
+    return smart_ptr<Ty_O>(obj);
+  }
 }
 
 }; // namespace gctools
