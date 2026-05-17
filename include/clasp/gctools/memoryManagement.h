@@ -108,16 +108,6 @@ template <class OT> struct GCStamp;
 // TYPEQ_ADJUST_STAMP will be passed to make_fixnum - so it will be shifted
 #define TYPEQ_ADJUST_STAMP(unshifted_stamp) (unshifted_stamp)
 
-namespace gctools {
-
-class Header_s;
-
-template <typename T> struct GCHeader {
-  typedef Header_s HeaderType;
-};
-
-}; // namespace gctools
-
 /*!
   Template struct:   DynamicCast
 
@@ -131,10 +121,6 @@ word of every object in memory managed by the GC */
 typedef uint32_t stamp_t;
 typedef uint32_t tagged_stamp_t;
 
-}; // namespace gctools
-
-namespace gctools {
-class GCObject {};
 }; // namespace gctools
 
 #include <clasp/gctools/threadlocal.fwd.h>
@@ -158,7 +144,6 @@ void clasp_dealloc(char* buffer);
 
 namespace gctools {
 
-#define STAMPWTAG_DUMMY_FOR_CPOINTER 0
 typedef enum {
 #if !defined(SCRAPING)
 #if !defined(USE_PRECISE_GC)
@@ -175,7 +160,6 @@ typedef enum {
   STAMPWTAG_CONS = STAMPWTAG_core__Cons_O,
   STAMPWTAG_CHARACTER = STAMPWTAG_core__Character_dummy_O,
   STAMPWTAG_UNUSED = STAMPWTAG_core__Unused_dummy_O,
-  STAMPWTAG_CPOINTER = STAMPWTAG_DUMMY_FOR_CPOINTER,
   STAMPWTAG_SINGLE_FLOAT = STAMPWTAG_core__SingleFloat_dummy_O,
   STAMPWTAG_FIXNUM = STAMPWTAG_core__Fixnum_dummy_O,
   STAMPWTAG_INSTANCE = STAMPWTAG_core__Instance_O,
@@ -315,13 +299,13 @@ public:
 #endif
   static const size_t general_mtag_shift = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
   static const tagged_stamp_t general_mtag = 0b000;
-  static const tagged_stamp_t invalid0_mtag = 0b001;
-  static const tagged_stamp_t invalid1_mtag = 0b010;
+  //static const tagged_stamp_t invalid_mtag = 0b001;
+  //static const tagged_stamp_t invalid_mtag = 0b010;
   static const tagged_stamp_t cons_mtag = 0b011;
-  static const tagged_stamp_t invalid2_mtag = 0b100;
+  //static const tagged_stamp_t invalid_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
-  static const tagged_stamp_t invalid3_mtag = 0b110;
-  static const tagged_stamp_t invalid4_mtag = 0b111;
+  //static const tagged_stamp_t invalid_mtag = 0b110;
+  //static const tagged_stamp_t invalid_mtag = 0b111;
   static const tagged_stamp_t stamp_mtag = general_mtag;
   static const tagged_stamp_t stamp_mask = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
   static const tagged_stamp_t where_mask = 0b11 << general_mtag_shift;
@@ -358,7 +342,6 @@ public:
 
   //
   //
-  struct Dummy_s {};
   struct StampWtagMtag {
     typedef tagged_stamp_t Value;
     uintptr_t _header_data[0]; // The 0th element overlaps StampWtagMtag values
@@ -447,16 +430,13 @@ public:
   public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
     bool invalidP() const {
-      if (!(this->_value & general_mtag_mask))
-        return false;
       tagged_stamp_t val = (this->_value & general_mtag_mask);
-      return (val == invalid0_mtag) || (val == invalid1_mtag) || (val == invalid2_mtag);
+      return !(val == general_mtag || val == cons_mtag || val == fwd_mtag);
     };
     bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
     bool generalObjectP() const { return this->stampP(); };
     bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
-    bool fwdV() const { return (this->_value & mtag_mask); };
     /*! No sanity checking done - this function assumes kindP == true */
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
     GCStampEnum stamp_() const { return (GCStampEnum)(this->_value >> (wtag_width + general_mtag_shift)); };
@@ -1005,8 +985,6 @@ class Instance_O;
 class FuncallableInstance_O;
 } // namespace core
 
-namespace gctools {};
-
 #include <clasp/gctools/smart_pointers.h>
 
 #include <clasp/core/coretypes.h>
@@ -1038,12 +1016,6 @@ template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
 }; // namespace gctools
 
 #include <clasp/gctools/gcStack.h>
-// #include <clasp/gctools/gcalloc.h>
-
-namespace gctools {
-
-void rawHeaderDescribe(const uintptr_t* headerP);
-}; // namespace gctools
 
 extern "C" {
 // These must be provided the the garbage collector specific code
@@ -1056,18 +1028,7 @@ void client_validate_tagged(gctools::Tagged taggedClient);
 void client_validate_General_O_ptr(const core::General_O* client_ptr);
 //! Validate a client smart_ptr - only general objects
 void client_validate(core::T_sp client);
-//! Describe the header
-void header_describe(gctools::Header_s* headerP);
 };
-
-// #include <clasp/gctools/containers.h>
-
-namespace gctools {
-#define LITERAL_TAG_CHAR 0
-#define TRANSIENT_TAG_CHAR 1
-
-void untag_literal_index(size_t findex, size_t& index, size_t& tag);
-}; // namespace gctools
 
 namespace gctools {
 

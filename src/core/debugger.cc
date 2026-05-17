@@ -402,10 +402,6 @@ void dbg_lowLevelDescribe(T_sp obj) {
   fflush(stdout);
 }
 
-void dbg_describe_tagged_T_Optr(T_O* p) { client_describe(p); }
-
-void dbg_describe_tagged_T_Optr_header(T_O* p) { client_describe(p); }
-
 extern void dbg_describe(T_sp obj);
 void dbg_describe(T_sp obj) {
   DynamicScopeManager scope(_sym_STARenablePrintPrettySTAR, nil<T_O>());

@@ -87,7 +87,6 @@
           +rack-where-tag+
           +wrapped-where-tag+
           +header-where-tag+
-          +literal-tag-char-code+
           +cons-size+
           +vaslist-size+ +vaslist-alignment+
           +unwind-protect-dynenv-size+
