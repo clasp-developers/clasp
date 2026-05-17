@@ -235,7 +235,6 @@ public:
           and you are sure that it will not be interpreted as a Fixnum!!!
 
           List actual uses here:
-          intrinsics.cc>>cc_loadTimeValueReference
         */
   Type*& rawRef_() { return this->theObject; };
 
