@@ -178,75 +178,7 @@ bool is_memory_readable(const void* address, size_t bytes) {
   }
 }
 
-void rawHeaderDescribe(const uintptr_t* headerP) {
-  uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
-  switch (headerTag) {
-  case Header_s::invalid0_mtag:
-  case Header_s::invalid1_mtag:
-  case Header_s::invalid2_mtag: {
-    printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
-    printf(" Not an object header!\n");
-    break;
-  }
-  case Header_s::stamp_mtag: {
-    if (is_memory_readable((void*)headerP, 8)) {
-      printf("   %p : %18p <- header\n", headerP, (void*)*headerP);
-    } else {
-      printf("   %p : <<<<< The address is NOT readable\n", headerP);
-      return;
-    }
-#ifndef DEBUG_GUARD
-    printf("   %p : %18p <- vtable\n", (headerP + 1), (void*)*(headerP + 1));
-    fflush(stdout);
-#else
-    printf("   %p : %18p\n", (headerP + 1), (void*)*(headerP + 1));
-    printf("   %p : %18p\n", (headerP + 2), (void*)*(headerP + 2));
-    printf("   %p : %18p\n", (headerP + 3), (void*)*(headerP + 3));
-    printf("   %p : %18p\n", (headerP + 4), (void*)*(headerP + 4));
-    printf("   %p : %18p\n", (headerP + 5), (void*)*(headerP + 5));
-#endif
-    size_t stamp_wtag = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp_wtag());
-    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp());
-    printf(" ACTUAL stamp_wtag   = %4zu", stamp_wtag);
-    fflush(stdout);
-    printf(" name: %s\n", obj_name(kind));
-  } break;
-  case Header_s::fwd_mtag: {
-    Header_s* hdr = (Header_s*)headerP;
-    printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
-  } break;
-  }
-#ifdef DEBUG_GUARD
-  Header_s* header = (Header_s*)headerP;
-  header->validate();
-  printf("This object passed the validate() test\n");
-#endif
-};
 }; // namespace gctools
-
-extern "C" {
-void client_describe(void* taggedClient) {
-  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
-    // Currently this assumes that Conses and General objects share the same header
-    // this may not be true in the future
-    // conses may be moved into a separate pool and dealt with in a different way
-    const uintptr_t* headerP;
-    if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(gctools::untag_general(taggedClient)));
-    } else {
-      headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(gctools::untag_cons(taggedClient)));
-    }
-    gctools::rawHeaderDescribe(headerP);
-  } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
-    printf("    Trying to interpret as client pointer\n");
-    const uintptr_t* headerP;
-    headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(taggedClient));
-    gctools::rawHeaderDescribe(headerP);
-  }
-};
-};
 
 extern "C" {
 
@@ -279,8 +211,6 @@ void client_validate_tagged(gctools::Tagged taggedClient) {
     // Nothing can be done to validate CONSes, they are too compact.
   }
 };
-
-void header_describe(gctools::Header_s* headerP) { gctools::rawHeaderDescribe((uintptr_t*)headerP); };
 };
 
 namespace gctools {
