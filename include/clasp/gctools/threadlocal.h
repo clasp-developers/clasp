@@ -5,6 +5,7 @@
 #include <algorithm> // copy
 #include <concepts> // invocable
 #include <clasp/gctools/threadlocal.fwd.h>
+#include <clasp/gctools/threadLocalStacks.h>
 
 namespace core {
 
@@ -289,8 +290,6 @@ public:
 
   uint32_t random();
 
-  inline DynamicBindingStack& bindings() { return this->_Bindings; };
-
   void startUpVM();
 
   inline void enqueue_signal(int signo) {
@@ -333,7 +332,9 @@ public:
   template <std::invocable<gctools::Tagged*> Walker>
   void walkRoots(Walker&& walk) {
     walk((gctools::Tagged*)&_Process);
-    // dynamic binding stack
+    for (auto& e : _Bindings._ThreadLocalBindings) {
+      walk((gctools::Tagged*)&e);
+    }
     walk((gctools::Tagged*)&_PendingInterruptsHead); // includes tail
     walk((gctools::Tagged*)&_BufferStr8NsPool);
     walk((gctools::Tagged*)&_BufferStrWNsPool);

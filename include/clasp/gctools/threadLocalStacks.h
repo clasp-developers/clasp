@@ -1,5 +1,8 @@
 #pragma once
 
+#include <clasp/gctools/smart_pointers.h>
+#include <clasp/gctools/containers.h>
+
 namespace core {
 
 #pragma GCC visibility push(default)
