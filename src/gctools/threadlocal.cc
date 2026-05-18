@@ -117,9 +117,6 @@ ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
 #endif // LINUX || FREEBSD || DARWIN
   _ControlStackTop = stackaddr;
   _ControlStackBottom = (void*)((char*)stackaddr + stacksize);
-#ifdef USE_MMTK
-  _mmtk_mutator = mmtk_clasp_bind_mutator(this);
-#endif
 };
 
 ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel() {
@@ -210,6 +207,9 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+#ifdef USE_MMTK
+  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+#endif
   gctools::stw_register_thread();
 }
 
@@ -276,6 +276,9 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+#ifdef USE_MMTK
+  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+#endif
   gctools::stw_register_thread();
 }
 

@@ -50,14 +50,14 @@ __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
   new (my_thread) core::ThreadLocalState(false);
   my_thread_low_level = &my_thread->_LowLevel;
 
-  // The mutator for this thread was bound by ThreadLocalStateLowLevel's ctor.
-  mmtk_clasp_initialize_collection(my_thread_low_level);
+  // The mutator for this thread was bound by ThreadLocalState's ctor.
+  mmtk_clasp_initialize_collection(my_thread);
 }
 
 // --- GC interface stubs ---
 
 void collect_garbage() {
-  mmtk_clasp_handle_user_collection_request(my_thread_low_level);
+  mmtk_clasp_handle_user_collection_request(my_thread);
 }
 
 void set_finalizer_list(core::T_sp object, core::List_sp finalizers) {
