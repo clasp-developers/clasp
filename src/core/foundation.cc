@@ -1553,18 +1553,6 @@ namespace core {
 DOCGROUP(clasp);
 CL_DEFUN size_t core__get_badge(T_sp object) { return gctools::lisp_badge(object); }
 
-DOCGROUP(clasp);
-CL_DEFUN void core__debug_only_set_badge(T_sp object, size_t badge) {
-  if (object.consp()) {
-    gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(gctools::ConsPtrToHeaderPtr(object.unsafe_cons()));
-    header->_badge_stamp_wtag_mtag._header_badge = badge;
-    return;
-  } else if (object.generalp()) {
-    gctools::Header_s* header = const_cast<gctools::Header_s*>(gctools::header_pointer(object.unsafe_general()));
-    header->_badge_stamp_wtag_mtag._header_badge = badge;
-  }
-}
-
 }; // namespace core
 
 size_t global_pointerCount = 0;
