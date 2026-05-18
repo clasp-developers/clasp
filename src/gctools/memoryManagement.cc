@@ -660,14 +660,7 @@ void traceablep(std::unordered_map<Tagged, bool>& testing) {
   auto fail = testing.end();
 
   auto fix_field
-    = [&](core::T_O** field) {
-      Tagged o = (Tagged)*field;
-      markStack.push(o);
-      // Is it one of the values we're searching for?
-      auto it = testing.find(o);
-      if (it != fail)
-        it->second = true; // yes, it's reachable
-    };
+    = [&](core::T_O** field) { markStack.push((Tagged)*field); };
 
   auto fix_eph
     = [&](Ephemeron* eph) {
@@ -693,8 +686,6 @@ void traceablep(std::unordered_map<Tagged, bool>& testing) {
           ephemera.erase(it);
           Tagged value = p.value.tagged_();
           markStack.push(value);
-          auto fit = testing.find(value);
-          if (fit != fail) fit->second = true;
       } break;
       }
       // We have not traced the key, but might do so later,
@@ -707,6 +698,12 @@ void traceablep(std::unordered_map<Tagged, bool>& testing) {
   while (!markStack.empty()) {
     Tagged tagged = markStack.top(); markStack.pop();
 
+    // Is this a value we're trying to trace?
+    auto it = testing.find(tagged);
+    if (it != fail)
+      it->second = true; // yes, and it's reachable
+
+    // Scan fields.
     switch(ptag(tagged)) {
     case general_tag: {
       if (!markSet.contains(tagged)) {
