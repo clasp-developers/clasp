@@ -42,6 +42,14 @@ fi
 for ext in "${EXTS[@]}"; do
   ./koga --build-mode=bytecode --build-path=build-analysis --clean --extensions="$ext" "${KOGA_ARGS[@]}"
   ninja -C build-analysis $NINJA_OPTIONS analyze
+  scratch="build-analysis/boehm/clasp_gc_${ext}_new.dif"
+  dest="extensions/${ext}/src/analysis/clasp_gc.dif"
+  if [[ -f "$scratch" ]]; then
+    cp "$scratch" "$dest"
+    echo "Installed $dest"
+  else
+    echo "warning: expected $scratch but it was not produced" >&2
+  fi
 done
 
 rm -rf build-analysis

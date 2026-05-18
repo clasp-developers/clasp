@@ -118,7 +118,8 @@
   (ninja:write-rule output-stream :merge-sif
                     :command (lisp-command "merge-sif.lisp" "$base $out $in")
                     :description "Merging extension diffs onto $base"
-                    :restat 1)
+                    :restat 1
+                    :pool "console")
   (ninja:write-rule output-stream :ar
                     :command "$ar rcsu $out $in"
                     :description "Creating archive $out")
@@ -898,9 +899,15 @@
            (analyzer-sif (if ext
                              (make-source (format nil "clasp_gc_~A_target.sif" ext-name) :variant)
                              base-sif))
-           (dif (and ext
-                     (make-source (format nil "extensions/~A/src/analysis/clasp_gc.dif" ext-name)
-                                  :code))))
+           ;; Scratch .dif lives in the build tree; the ./analyze script
+           ;; copies it to extensions/<ext>/src/analysis/clasp_gc.dif after
+           ;; `ninja analyze` finishes. Keeping the source-tree .dif out of
+           ;; ninja's "generated outputs" set prevents regular builds — which
+           ;; consume the source-tree .dif as a merge-sif input — from being
+           ;; pulled back through the analyzer pipeline.
+           (dif-scratch (and ext
+                             (make-source (format nil "clasp_gc_~A_new.dif" ext-name)
+                                          :variant))))
       (ninja:write-build output-stream :analyze-generate
                          :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
                          :inputs outputs
@@ -915,9 +922,9 @@
                            :inputs (list analyzer-sif)
                            :implicit-inputs (list base-sif (build-name "analyze"))
                            :base base-sif
-                           :outputs (list dif)))
+                           :outputs (list dif-scratch)))
       (ninja:write-build output-stream :phony
-                         :inputs (list (if ext dif (build-name "analyze")))
+                         :inputs (list (if ext dif-scratch (build-name "analyze")))
                          :outputs (list "analyze")))))
 
 (defmethod print-variant-target-source

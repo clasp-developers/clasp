@@ -294,7 +294,17 @@
 
 (defmethod print-prologue (configuration (name (eql :merge-sif)) output-stream)
   (declare (ignore configuration))
-  (format output-stream "#-asdf (require :asdf)~%(load ~S)~%(destructuring-bind (base out &rest difs) (uiop:command-line-arguments)~%  (sif-tools:merge-sif-files (pathname base) (mapcar #'pathname difs) (pathname out)))~%"
+  (format output-stream "#-asdf (require :asdf)~%~
+(load ~S)~%~
+(destructuring-bind (base out &rest difs) (uiop:command-line-arguments)~%~
+  (format t \"  base:   ~~A~~%\" base)~%~
+  (dolist (d difs)~%~
+    (format t \"  diff:   ~~A~~%\" d))~%~
+  (format t \"  output: ~~A~~%\" out)~%~
+  (force-output)~%~
+  (sif-tools:merge-sif-files (pathname base) (mapcar #'pathname difs) (pathname out))~%~
+  (format t \"  wrote:  ~~A~~%\" out)~%~
+  (force-output))~%"
           (namestring (truename "src/analysis/sif-tools.lisp"))))
 
 (defmethod print-prologue (configuration (name (eql :snapshot)) output-stream)
