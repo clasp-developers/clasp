@@ -31,7 +31,7 @@ template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation
 #else
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(size));
 #endif
-  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
+  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
   my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
   return header;

@@ -30,7 +30,7 @@ inline ConsHeader_s* do_cons_allocation(size_t size) {
   alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
   mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
-  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::cons_mtag);
+  const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
   my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
   return header;

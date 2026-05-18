@@ -93,7 +93,6 @@ void dump_data_types(std::ostream& fout, const std::string& indent) {
   Init_global_ints("MTAG_SHIFT", (int)Header_s::mtag_shift);
   Init_global_ints("MTAG_MASK", (int)Header_s::mtag_mask);
   Init_global_ints("GENERAL_MTAG", (int)Header_s::general_mtag);
-  Init_global_ints("CONS_MTAG", (int)Header_s::cons_mtag);
   Init_global_ints("REF_CLASS_CLASS_NAME", (int)core::Instance_O::REF_CLASS_CLASS_NAME);
 
   Init_global_size_t("VASLIST-ARGS-OFFSET", core::Vaslist::args_offset());

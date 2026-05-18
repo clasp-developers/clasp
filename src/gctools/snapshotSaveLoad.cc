@@ -995,13 +995,8 @@ struct ensure_forward_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (!get_forwarding_pointer(header, this->_info)) {
-      if (header->_badge_stamp_wtag_mtag.stampP()) {
-        printf("%s:%d:%s The ISL general %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
-               header->description().c_str());
-      } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-        printf("%s:%d:%s The ISL cons %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
-               header->description().c_str());
-      }
+      printf("%s:%d:%s The ISL object %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
+             header->description().c_str());
     }
   }
   ensure_forward_t(ISLInfo* info) : walker_callback_t(info){};
@@ -1011,7 +1006,7 @@ void gather_info_for_snapshot_save(gctools::BaseHeader_s* header, Fixup* fixup) 
   // Run fixupInternalsForSnapshotSaveLoad with fixup._operation = InfoOp;
   // (set shortly before mapping with this function)
   // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-  if (header->_badge_stamp_wtag_mtag.stampP()) {
+  if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
     if (header->preciseIsPolymorphic()) {
       core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
       if (cast::Cast<core::General_O*, core::T_O*>::isA(client)) {
@@ -1026,7 +1021,7 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       //
       // Fixup general objects that need it
       //
@@ -1047,8 +1042,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-      // Nothing
     }
   }
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
@@ -1063,7 +1056,7 @@ struct calculate_size_t {
   void operator()(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       this->_general_count++;
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
@@ -1149,7 +1142,7 @@ struct copy_objects_t {
   void operator()(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t generalSize = gctools::general_skip((core::General_O*)clientStart);
       if (generalSize == 0)
@@ -1263,7 +1256,7 @@ struct fixup_objects_t : public walker_callback_t {
       : walker_callback_t(info), _operation(op), _buffer(buffer){};
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       //
       // This is where we would fixup pointers and entry-points
@@ -1284,7 +1277,7 @@ struct fixup_internals_t : public walker_callback_t {
   fixup_internals_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       if (header->_badge_stamp_wtag_mtag._value ==
           DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
         gctools::GCVector_moveable<clbind::detail::edge>* edges =
@@ -1303,7 +1296,6 @@ struct fixup_internals_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
     }
   }
 };
@@ -1332,15 +1324,13 @@ struct fixup_vtables_t : public walker_callback_t {
   }
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       if (header->preciseIsPolymorphic()) {
         uintptr_t client = (uintptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
         uintptr_t vtable;
         uintptr_t new_vtable;
         this->do_vtable((gctools::Header_s*)header, (core::T_O*)client, vtable, new_vtable);
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-      // Do nothing
     }
   }
 };
@@ -2075,7 +2065,7 @@ gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t* clientAddress, gctoo
 struct relocate_objects_t : public walker_callback_t {
   relocate_objects_t(ISLInfo* info) : walker_callback_t(info){};
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       isl_obj_scan((core::General_O*)client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
@@ -2245,7 +2235,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     struct fixup_CodeBase_t : public walker_callback_t {
       fixup_CodeBase_t(ISLInfo* info) : walker_callback_t(info){};
       void callback(gctools::BaseHeader_s* header) {
-        if (header->_badge_stamp_wtag_mtag.stampP() &&
+        if (header->_badge_stamp_wtag_mtag.generalObjectP() &&
             header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
           llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
           core::SimpleBaseString_sp name = lib->_Name;
