@@ -6,6 +6,7 @@
 #include <concepts> // invocable
 #include <clasp/gctools/threadlocal.fwd.h>
 #include <clasp/gctools/threadLocalStacks.h>
+#include <clasp/core/multipleValues.h>
 
 namespace core {
 
@@ -340,7 +341,7 @@ public:
     walk((gctools::Tagged*)&_BufferStrWNsPool);
     walk((gctools::Tagged*)&_BFormatStringOutputStream);
     walk((gctools::Tagged*)&_WriteToStringOutputStream);
-    // multiple values
+    // multiple values shouldn't be needed since we only GC at safe points
     walk((gctools::Tagged*)&_DynEnvStackBottom);
     walk((gctools::Tagged*)&_UnwindDest);
   }

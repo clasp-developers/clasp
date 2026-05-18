@@ -71,7 +71,6 @@ public: // Functions here
 
   T_O** returnValues(size_t start = 0) { return &this->_Values[start]; }
 
-  //        void setMaxSize() { this->_Size = MultipleValuesLimit;};
   void setSize(size_t sz) { this->_Size = sz; };
   size_t getSize() const { return this->_Size; };
   void emplace_back(T_sp a) {
