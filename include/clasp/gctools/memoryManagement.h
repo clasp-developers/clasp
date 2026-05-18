@@ -238,7 +238,7 @@ template <class T> inline size_t sizeof_with_header();
               it indictates that this is not a valid header.
               This pattern is used to indicate a CONS header
       #B010 == invalid1_mtag
-      #B011 == cons_mtag  This indicates that what follows is a cons cell.
+      #B011 == invalid_mtag
       #B100 == invalid2_mtag
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
@@ -301,7 +301,7 @@ public:
   static const tagged_stamp_t general_mtag = 0b000;
   //static const tagged_stamp_t invalid_mtag = 0b001;
   //static const tagged_stamp_t invalid_mtag = 0b010;
-  static const tagged_stamp_t cons_mtag = 0b011;
+  //static const tagged_stamp_t invalid_mtag = 0b011;
   //static const tagged_stamp_t invalid_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
   //static const tagged_stamp_t invalid_mtag = 0b110;
@@ -348,9 +348,6 @@ public:
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
     StampWtagMtag(Value all) : _value(all){};
-
-    // WHAT IS GOING ON
-    //      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
 
     // This is so we can find where we shift/unshift/don'tshift
     static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
@@ -419,7 +416,7 @@ public:
 
     template <typename T> static StampWtagMtag make() {
       return StampWtagMtag((GCStamp<T>::StampWtag << mtag_shift)
-                           | general_mtag);//(std::is_same_v<T, core::Cons_O> ? cons_mtag : general_mtag));
+                           | general_mtag);
     }
     static StampWtagMtag make_unknown(UnshiftedStamp the_stamp) { return the_stamp << general_mtag_shift; }
     static StampWtagMtag make_StampWtagMtag(StampWtagMtag vvv) {
@@ -431,11 +428,11 @@ public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
     bool invalidP() const {
       tagged_stamp_t val = (this->_value & general_mtag_mask);
-      return !(val == general_mtag || val == cons_mtag || val == fwd_mtag);
+      return !(val == general_mtag || val == fwd_mtag);
     };
     bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
-    bool generalObjectP() const { return this->stampP(); };
-    bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
+    bool generalObjectP() const { return stampP() && !consObjectP(); };
+    bool consObjectP() const { return stamp_wtag() == STAMPWTAG_CONS; }
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     /*! No sanity checking done - this function assumes kindP == true */
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
@@ -483,7 +480,6 @@ public:
                                                 /* will treat it like a unused object residing on a free list          */
 
     BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(NoBadge){};
-    BadgeStampWtagMtag(core::Cons_O* cons) : StampWtagMtag(cons_mtag), _header_badge((badge_t)((uintptr_t)cons & 0xFFFFFFFF)){};
     BadgeStampWtagMtag(const BadgeStampWtagMtag& other);
     BadgeStampWtagMtag(StampWtagMtag all) : StampWtagMtag(all), _header_badge(NoBadge){};
     BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge) {
@@ -847,7 +843,7 @@ template <class Ty_O, class... ARGS>
 smart_ptr<Ty_O> InitObject(void* space, ARGS&&... args) {
   if constexpr(std::is_same_v<Ty_O, core::Cons_O>) {
     ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(space);
-    const ConsHeader_s::BadgeStampWtagMtag stamp(ConsHeader_s::cons_mtag);
+    const ConsHeader_s::BadgeStampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Ty_O>());
     new (header) ConsHeader_s(stamp);
     Ty_O* obj = (Ty_O*)HeaderPtrToConsPtr(space);
     new (obj) Ty_O(std::forward<ARGS>(args)...);

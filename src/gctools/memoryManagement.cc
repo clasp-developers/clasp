@@ -270,11 +270,7 @@ bool ConsHeader_s::isValidConsObject() const {
   if (gcBase != (void*)this)
     goto bad;
 #endif
-  if (this->_badge_stamp_wtag_mtag._value == 0)
-    goto bad;
-  if (this->_badge_stamp_wtag_mtag.invalidP())
-    goto bad;
-  if (!this->_badge_stamp_wtag_mtag.consObjectP())
+  if (!this->_badge_stamp_wtag_mtag.stampP())
     goto bad;
   return true;
 bad:
@@ -387,8 +383,6 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
   if (this->_badge_stamp_wtag_mtag.stampP()) {
     uintptr_t stamp = this->_badge_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
-  } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
-    return false;
   }
   return false;
 }
