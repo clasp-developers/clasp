@@ -9,8 +9,9 @@ pub mod collection;
 pub mod object_model;
 pub mod reference_glue;
 pub mod scanning;
+pub mod slot;
 
-pub type ClaspVMSlot = mmtk::vm::slot::SimpleSlot;
+pub use slot::ClaspVMSlot;
 
 #[derive(Default)]
 pub struct ClaspVM;
