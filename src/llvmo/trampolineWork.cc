@@ -719,13 +719,17 @@ static bool ensure_trampoline_arena_initialized(ClaspJIT_sp jit, TrampolineKind 
   return true;
 }
 
+bool enable_trampolines() {
+  return getenv("CLASP_ENABLE_TRAMPOLINES");
+}
+
 // Compile a GF trampoline (per-generic-function), called from
 // GFBytecodeSimpleFun_O::make and from the post-snapshot-load regen pass.
 // Returns the address of the per-GF arena slot, or the static
 // entry_point_n forwarder pointer if the JIT/arena isn't ready.
 core::Pointer_sp cmp__compile_gf_trampoline(core::T_sp tname) {
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  if (!getenv("CLASP_ENABLE_TRAMPOLINE") || (jit.nilp() || !ensure_trampoline_arena_initialized(jit, TrampolineKind::GF))) {
+  if (!enable_trampolines() || (jit.nilp() || !ensure_trampoline_arena_initialized(jit, TrampolineKind::GF))) {
     return Pointer_O::create((void*)g_gf_dispatch_entry_point_n);
   }
   std::string aname;
@@ -761,7 +765,7 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   // trampoline pointer. It's a plain passthrough to bytecode_call and gets
   // replaced later when the function is named (loadltv calls set_trampoline).
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  if (!getenv("CLASP_ENABLE_TRAMPOLINE") || jit.nilp()) {
+  if (!enable_trampolines() || jit.nilp()) {
     return Values(Pointer_O::create((void*)default_bytecode_trampoline),
                   SimpleBaseString_O::make("default_bytecode_trampoline"));
   }
