@@ -32,6 +32,7 @@ THE SOFTWARE.
 #ifdef USE_MMTK
 #include <clasp/gctools/mmtkGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
+#include <clasp/gctools/roots.h>
 
 namespace gctools {
 
@@ -84,4 +85,43 @@ size_t bytes_since_gc() { return 0; }
 CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 
 }; // namespace gctools
+
+// Root-scanning callbacks for MMTk's Rust scanning implementation.
+// These are called with the world stopped.
+
+extern "C" void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void* data) {
+  gctools::walkGlobalRoots([&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); });
+}
+
+extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallback callback, void* data) {
+  core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
+  ts->walkRoots([&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); });
+  ts->walkVMStack([&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); });
+}
+
+extern "C" void clasp_walk_thread_conservative_roots(void* tls, ClaspConservativeRootCallback callback, void* data) {
+  core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
+  ts->walkControlStack([&](gctools::Tagged* tp) {
+    // Strip the tag without using untag_object (which asserts) since stack
+    // values may have coincidental tag bits and not be valid pointers.
+    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
+    if (!client || !mmtk_clasp_is_in_mmtk_spaces(client))
+      return;
+    switch (gctools::ptag(*tp)) {
+    case gctools::general_tag: {
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
+      if (header->isValidGeneralObject())
+        callback(client, data);
+    } break;
+    case gctools::cons_tag: {
+      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
+      if (header->isValidConsObject())
+        callback(client, data);
+    } break;
+    default:
+      break;
+    }
+  });
+}
+
 #endif // USE_MMTK

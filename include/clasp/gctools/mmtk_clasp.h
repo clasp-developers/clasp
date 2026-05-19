@@ -60,6 +60,22 @@ extern void mmtk_clasp_handle_user_collection_request(void* tls);
 extern void* mmtk_clasp_starting_heap_address(void);
 extern void* mmtk_clasp_last_heap_address(void);
 
+// Root scanning callbacks for the Rust scanning implementation.
+// These are called with the world stopped.
+typedef void (*ClaspPreciseRootCallback)(void* slot, void* data);
+typedef void (*ClaspConservativeRootCallback)(void* client_ptr, void* data);
+
+// Walk global (non-thread-local) precise roots.
+extern void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void* data);
+
+// Walk one thread's precise roots (TLS fields and VM stack).
+// tls is the ThreadLocalState* passed to mmtk_clasp_bind_mutator at thread start.
+extern void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallback callback, void* data);
+
+// Walk one thread's conservative (control stack) roots.
+// tls is the ThreadLocalState* passed to mmtk_clasp_bind_mutator at thread start.
+extern void clasp_walk_thread_conservative_roots(void* tls, ClaspConservativeRootCallback callback, void* data);
+
 #ifdef __cplusplus
 }
 #endif
