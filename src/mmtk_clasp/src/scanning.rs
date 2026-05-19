@@ -62,6 +62,8 @@ impl Scanning<ClaspVM> for VMScanning {
         mutator: &'static mut Mutator<ClaspVM>,
         mut factory: impl RootsWorkFactory<ClaspVMSlot>,
     ) {
+        // Get the ThreadLocalState* as a void* from the mutator object.
+        // This is apparently the correct way to do it, ugly as it is.
         let thread_state = mutator.get_tls().0.0.to_address().to_mut_ptr::<c_void>();
 
         let mut precise_slots: Vec<ClaspVMSlot> = Vec::new();
