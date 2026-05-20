@@ -23,8 +23,10 @@
 #include <clasp/core/unwind.h>                    // DynEnv stuff
 #include <clasp/external/thread-pool/thread_pool.h>
 
-THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
-THREAD_LOCAL core::ThreadLocalState* my_thread;
+// Signal handlers and a few other things treat my_thread(_low_level) being
+// non-null as indicating we are in a Lisp thread.
+THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level = nullptr;
+THREAD_LOCAL core::ThreadLocalState* my_thread = nullptr;
 
 namespace core {
 

@@ -12,6 +12,7 @@ extern "C" {
     fn clasp_stop_the_world();
     fn clasp_resume_the_world();
     fn clasp_pause_thread_for_gc();
+    fn clasp_mask_signals_for_alien();
 }
 
 pub struct VMCollection;
@@ -55,6 +56,12 @@ impl Collection<ClaspVM> for VMCollection {
         let _ = std::thread::Builder::new()
             .name("MMTk GC Worker".to_string())
             .spawn(move || {
+                // mask most signals for this thread so Lisp threads can deal
+                // with them. We do keep hardware signals like SEGV to make bugs
+                // more immediate; the process-wide signal handlers will
+                // recognize that we are not a Lisp thread and SIG_DFL.
+                unsafe { clasp_mask_signals_for_alien() };
+                // do whatever mmtk wants us doing
                 let worker_tls =
                     VMWorkerThread(VMThread(OpaquePointer::UNINITIALIZED));
                 match ctx {

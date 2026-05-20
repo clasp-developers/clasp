@@ -41,6 +41,20 @@
  * memory problem. It is nontrivial to differentiate whether a signal
  * is used in this way and we're probably not doing it correctly
  * in all cases.
+ *
+ * Another wart: we may have threads that aren't running Lisp code,
+ * like GC worker threads, or (and I dread this) FFI/C++ code making
+ * new threads to do whatever. Signal dispositions are process-wide,
+ * so these threads will have our handlers that generally try to call
+ * into Lisp, and that will not work without Lisp thread setup,
+ * causing further problems that mask the initial signal.
+ * So in the handlers below, we ALWAYS have to check if my_thread is
+ * null. If it is, we take it that we are not in a Lisp thread, and
+ * perform some more primitive action, like terminating the process.
+ * Generally we try to act in line with the default signal dispositions.
+ * These alien threads can and probably ought to mask most
+ * process-wide signals so that they can be received by Lisp threads,
+ * while remaining receptive of e.g. SEGV which is the thread's fault.
  */
 
 SYMBOL_EXPORT_SC_(CorePkg, terminal_interrupt);
@@ -150,17 +164,33 @@ static void handle_one_signal(sigset_t* pending, int signum) {
   }
 }
 
+// Reraise a signal with the default handler. This is done in alien threads
+// that can't call a Lisp handler.
+void default_raise(int signum) {
+  struct sigaction old;
+  struct sigaction dfl;
+  dfl.sa_handler = SIG_DFL;
+  dfl.sa_flags = SA_NODEFER | SA_RESTART;
+  sigemptyset(&dfl.sa_mask);
+  sigaction(signum, &dfl, &old);
+  raise(signum);
+  // If we returned (default did nothing) continue on our merry way
+  sigaction(signum, &old, NULL);
+}
+
 // Enqueue a signal unless we're in a blocking call - in that case handle it now.
 // If we are in a blocking call, do end_park() begin_park() to make sure things
 // are OK with GC - in particular do not resume running Lisp code while the
 // collector has the world stopped.
 static void enqueue_or_handle_signal(int signo) {
-  if (my_thread->blockingp()) {
-    end_park();
-    handle_signal_now(signo);
-    begin_park();
-  } else
-    my_thread->enqueue_signal(signo);
+  if (my_thread) {
+    if (my_thread->blockingp()) {
+      end_park();
+      handle_signal_now(signo);
+      begin_park();
+    } else
+      my_thread->enqueue_signal(signo);
+  } else default_raise(signo);
 }
 
 static void handle_pending_signals() {
@@ -202,27 +232,39 @@ CL_DEFUN void core__check_pending_interrupts() { handle_all_queued_interrupts();
 // This is both a signal handler and called by signal handlers.
 void handle_signal_now(int sig) {
   // calls mp:posix-interrupt.
-  mp::posix_signal_interrupt(sig);
+  if (my_thread)
+    mp::posix_signal_interrupt(sig);
+  else default_raise(sig);
 }
 
 // This is both a signal handler and called by signal handlers.
+// We do this in alien threads as well since it's harmless, unlike most.
 void handle_SIGUSR1(int sig) { global_user_signal = true; }
 
 // This handler is a bit special because we use SIGCONT to interrupt threads
 // that are blocked on a syscall or whatever.
 void handle_SIGCONT(int sig) {
-  if (my_thread->blockingp() && !interrupts_disabled_p()) {
-    // Disable (most) async interrupts and wait for the world to be unstopped
-    // before we call user code.
-    end_park();
-    handle_queued_interrupts();
-    handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
-    // Nothing jumped out of here, so we're back to blocking.
-    begin_park();
-  } else my_thread->enqueue_signal(sig);
+  if (my_thread) {
+    if (my_thread->blockingp() && !interrupts_disabled_p()) {
+      // Disable (most) async interrupts and wait for the world to be unstopped
+      // before we call user code.
+      end_park();
+      handle_queued_interrupts();
+      handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
+      // Nothing jumped out of here, so we're back to blocking.
+      begin_park();
+    } else my_thread->enqueue_signal(sig);
+  } // default handler will do nothing, so skip default_raise
 }
 
-void setup_user_signal() { signal(SIGUSR1, handle_SIGUSR1); }
+// Called really early sometimes in snapshot load
+void setup_user_signal() {
+  struct sigaction sa;
+  sa.sa_handler = handle_SIGUSR1;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = SA_NODEFER | SA_RESTART;
+  sigaction(SIGUSR1, &sa, NULL);
+}
 
 void wait_for_user_signal(const char* message) {
   if (std::getenv("CLASP_WAIT_FOR_USER_SIGNAL")) {
@@ -279,6 +321,10 @@ CL_DEFUN int core__fe_restore_except(int ex) {
 
 void handle_fpe(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
+
+  // in alien threads just do the default
+  if (!my_thread) { default_raise(signo); return; }
+
   if (_lisp) {
     // If _lisp has started then restore the traps that existed before the SIGFPE. This is needed on at least amd64 because the
     // masked traps are reset before SIGFPE is raised.
@@ -317,6 +363,7 @@ void handle_fpe(int signo, siginfo_t* info, void* context) {
 
 #ifdef CLASP_APPLE_SILICON
 void handle_ill(int signo, siginfo_t* info, void* context) {
+  if (!my_thread) { default_raise(signo); return; }
   int esr;
   if (info->si_code == ILL_ILLTRP && ((esr = static_cast<ucontext_t*>(context)->uc_mcontext->__es.__esr) >> 26 & 0x3f) == 0x2C) {
     if (esr & FE_INEXACT) {
@@ -337,12 +384,16 @@ void handle_ill(int signo, siginfo_t* info, void* context) {
 
 void handle_segv(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
-  core::eval::funcall(ext::_sym_segmentation_violation, core::Integer_O::create((uintptr_t)(info->si_addr)));
+  if (my_thread)
+    core::eval::funcall(ext::_sym_segmentation_violation, core::Integer_O::create((uintptr_t)(info->si_addr)));
+  else default_raise(signo);
 }
 
 void handle_bus(int signo, siginfo_t* info, void* context) {
   (void)context;
-  core::eval::funcall(ext::_sym_bus_error, core::Integer_O::create((uintptr_t)(info->si_addr)));
+  if (my_thread)
+    core::eval::funcall(ext::_sym_bus_error, core::Integer_O::create((uintptr_t)(info->si_addr)));
+  else default_raise(signo);
 }
 
 void fatal_error_handler(void* user_data, const char* reason, bool gen_crash_diag) {
@@ -464,3 +515,17 @@ CL_DEFUN core::List_sp core__signal_code_alist() {
 #undef DO_ALL_SIGNALS
 
 }; // namespace gctools
+
+// Used by GC workers in MMTk to mask most signals.
+// We leave some signals unmasked to crash earlier. That is a little
+// sketchy since e.g. anything can kill(2) us with a segv synthetically,
+// but that's weird anyway.
+// We could call pthread_sigmask from Rust (Nix library?) but that's more work
+extern "C" void clasp_mask_signals_for_alien() {
+  sigset_t mask;
+  sigfillset(&mask);
+  sigdelset(&mask, SIGBUS);
+  sigdelset(&mask, SIGFPE);
+  sigdelset(&mask, SIGSEGV);
+  pthread_sigmask(SIG_SETMASK, &mask, NULL);
+}
