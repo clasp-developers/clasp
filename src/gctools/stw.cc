@@ -20,6 +20,17 @@ static std::mutex stw_mutex;
 static std::condition_variable all_parked_cv;
 // Signaled when the world resumes after a stop.
 static std::condition_variable world_resumed_cv;
+// Signaled when world_stopped transitions to true (GC is beginning a stop).
+// Lets clasp_pause_thread_for_gc wait until the GC is actually stopping before
+// it parks, ensuring that pause_thread_for_gc does genuinely pause before
+// returning. If it doesn't that violates the definition of MMTK's block_for_gc.
+// Without world_stopping_cv I also observed a deadlock where the (single) Lisp
+// thread was waiting on world_resumed_cv while the GC worker was waiting on
+// all_parked_cv, but I'm not entirely sure I understand what happened there.
+// An alternate design would be to wait on a counter that stop_the_world
+// increments. OpenJDK does this, but it (technically) falls victim to ABA
+// and I'd prefer a CV to a semaphore regardless.
+static std::condition_variable world_stopping_cv;
 std::atomic<bool> world_stopped{false};
 
 void stw_register_thread() {
@@ -81,6 +92,8 @@ void end_gcless() {
 
 // see gc_yield
 void gc_yield_slow() {
+  // Don't need to wait on world_stopping_cv, since in gc_yield we already
+  // checked that world_stopped is true.
   begin_gcless();
   end_gcless();
 }
@@ -98,6 +111,9 @@ void clasp_stop_the_world() {
   // must remove themselves from running_count before calling this,
   // using stw_mutator_stop.
   gctools::world_stopped.store(true, std::memory_order_acq_rel);
+  // Notify before taking stw_mutex so threads waiting in clasp_pause_thread_for_gc
+  // can wake, see world_stopped=true, and call begin_gcless() to decrement running_count.
+  gctools::world_stopping_cv.notify_all();
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
   gctools::all_parked_cv.wait(lock, [] {
     return gctools::running_count.load(std::memory_order_acq_rel) == 0;
@@ -111,6 +127,16 @@ void clasp_resume_the_world() {
 
 // Park this mutator for GC (used by MMTk's block_for_gc).
 void clasp_pause_thread_for_gc() {
+  // Wait until the GC has actually set world_stopped=true before parking.
+  // Without this, if block_for_gc is called before stop_all_mutators sets
+  // world_stopped, end_gcless_shared returns immediately (world_stopped=false),
+  // running_count goes back up, and clasp_stop_the_world waits forever.
+  {
+    std::unique_lock<std::mutex> lock(gctools::stw_mutex);
+    gctools::world_stopping_cv.wait(lock, [] {
+      return gctools::world_stopped.load(std::memory_order_acq_rel);
+    });
+  }
   gctools::begin_gcless();
   // end_gcless blocks until world_stopped becomes false.
   gctools::end_gcless();
