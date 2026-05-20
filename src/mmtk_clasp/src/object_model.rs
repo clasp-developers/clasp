@@ -1,6 +1,7 @@
 use std::ffi::c_void;
 
 use crate::ClaspVM;
+use mmtk::util::alloc::fill_alignment_gap;
 use mmtk::util::copy::{CopySemantics, GCWorkerCopyContext};
 use mmtk::util::{Address, ObjectReference};
 use mmtk::vm::*;
@@ -39,15 +40,41 @@ impl ObjectModel<ClaspVM> for VMObjectModel {
     const OBJECT_REF_OFFSET_LOWER_BOUND: isize = OBJECT_REF_OFFSET as isize;
 
     fn copy(
-        _from: ObjectReference,
-        _semantics: CopySemantics,
-        _copy_context: &mut GCWorkerCopyContext<ClaspVM>,
+        from: ObjectReference,
+        semantics: CopySemantics,
+        copy_context: &mut GCWorkerCopyContext<ClaspVM>,
     ) -> ObjectReference {
-        unimplemented!()
+        let bytes = Self::get_current_size(from);
+        let dst = copy_context.alloc_copy(from, bytes, CLASP_ALIGNMENT, 0, semantics);
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                Self::ref_to_object_start(from).to_ptr::<u8>(),
+                dst.to_mut_ptr::<u8>(),
+                bytes,
+            );
+        }
+        let to = unsafe { ObjectReference::from_raw_address_unchecked(dst + OBJECT_REF_OFFSET) };
+        copy_context.post_copy(to, bytes, semantics);
+        to
     }
 
-    fn copy_to(_from: ObjectReference, _to: ObjectReference, _region: Address) -> Address {
-        unimplemented!()
+    fn copy_to(from: ObjectReference, to: ObjectReference, region: Address) -> Address {
+        let bytes = Self::get_current_size(from);
+        // MMTk's mark-compact space can apparently copy objects to themselves
+        // as it sets forwarding pointers for all objects.
+        // In this case we obviously don't need to do actual copying.
+        if from != to {
+            let src = Self::ref_to_object_start(from);
+            let dst = Self::ref_to_object_start(to);
+            unsafe {
+                std::ptr::copy_nonoverlapping(src.to_ptr::<u8>(), dst.to_mut_ptr::<u8>(), bytes);
+            }
+        }
+        let start = Self::ref_to_object_start(to);
+        if !region.is_zero() {
+            fill_alignment_gap::<ClaspVM>(region, start);
+        }
+        start + bytes
     }
 
     fn get_current_size(object: ObjectReference) -> usize {
