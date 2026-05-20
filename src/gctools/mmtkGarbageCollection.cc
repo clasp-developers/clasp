@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/gctools/mmtkGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/roots.h>
+#include <clasp/gctools/scan.h>
 #include <clasp/gctools/skip.h>
 
 namespace gctools {
@@ -86,6 +87,20 @@ size_t bytes_since_gc() { return 0; }
 CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 
 }; // namespace gctools
+
+// Scan the pointer fields of an object, calling callback for each field address.
+// Uses scan::cons / scan::general_pointers; weak pointers are treated as strong
+// for now (they are traced but not cleared if the referent dies).
+extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data) {
+  const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
+  if (near->_badge_stamp_wtag_mtag.consObjectP()) {
+    gctools::scan::cons(static_cast<core::Cons_O*>(client),
+                        [&](core::T_O** field) { callback(static_cast<void*>(field), data); });
+  } else {
+    gctools::scan::general_pointers(static_cast<core::General_O*>(client),
+                                    [&](core::T_O** field) { callback(static_cast<void*>(field), data); });
+  }
+}
 
 // Total allocation size (header + body) for an object given its client pointer.
 //
