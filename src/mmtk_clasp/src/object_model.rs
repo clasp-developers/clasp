@@ -1,7 +1,13 @@
+use std::ffi::c_void;
+
 use crate::ClaspVM;
 use mmtk::util::copy::{CopySemantics, GCWorkerCopyContext};
 use mmtk::util::{Address, ObjectReference};
 use mmtk::vm::*;
+
+extern "C" {
+    fn clasp_object_size(client: *mut c_void) -> usize;
+}
 
 /// The Clasp Header_s is 8 bytes and is placed immediately before the client
 /// pointer.  MMTk ObjectReference == client pointer == alloc_start + 8.
@@ -44,8 +50,8 @@ impl ObjectModel<ClaspVM> for VMObjectModel {
         unimplemented!()
     }
 
-    fn get_current_size(_object: ObjectReference) -> usize {
-        unimplemented!()
+    fn get_current_size(object: ObjectReference) -> usize {
+        unsafe { clasp_object_size(object.to_raw_address().to_mut_ptr::<c_void>()) }
     }
 
     fn get_size_when_copied(object: ObjectReference) -> usize {

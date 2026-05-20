@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <clasp/gctools/mmtkGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/roots.h>
+#include <clasp/gctools/skip.h>
 
 namespace gctools {
 
@@ -85,6 +86,23 @@ size_t bytes_since_gc() { return 0; }
 CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 
 }; // namespace gctools
+
+// Total allocation size (header + body) for an object given its client pointer.
+//
+// The stamp is always readable from client-sizeof(BaseHeader_s) (= client-8):
+// for conses it's ConsHeader_s; for general objects without DEBUG_GUARD it's
+// Header_s; for general objects with DEBUG_GUARD
+// it's the _dup_badge_stamp_wtag_mtag guard copy at the end of Header_s.
+// That lets us distinguish cons from general before dispatching to the right
+// skip function and header size.
+extern "C" size_t clasp_object_size(void* client) {
+  const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
+  if (near->_badge_stamp_wtag_mtag.consObjectP()) {
+    return sizeof(gctools::ConsHeader_s) + gctools::cons_skip(static_cast<core::Cons_O*>(client));
+  } else {
+    return sizeof(gctools::Header_s) + gctools::general_skip(static_cast<core::General_O*>(client));
+  }
+}
 
 // callback for MMTk's mutator(tls)
 extern "C" MMTkClaspMutator clasp_get_mutator(void* tls) {

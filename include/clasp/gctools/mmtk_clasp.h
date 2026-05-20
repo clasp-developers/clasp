@@ -65,6 +65,9 @@ extern void* mmtk_clasp_last_heap_address(void);
 typedef void (*ClaspPreciseRootCallback)(void* slot, void* data);
 typedef void (*ClaspConservativeRootCallback)(void* client_ptr, void* data);
 
+// Total allocation size (header + body) for a client pointer.
+extern size_t clasp_object_size(void* client);
+
 // Return the MMTk mutator for the thread whose ThreadLocalState* is tls.
 extern MMTkClaspMutator clasp_get_mutator(void* tls);
 

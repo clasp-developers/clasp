@@ -786,6 +786,15 @@ inline const Header_s* header_pointer(const void* client_pointer) {
   return reinterpret_cast<const Header_s*>(reinterpret_cast<uintptr_t>(client_pointer) - sizeof(Header_s));
 }
 
+// Get a "base header" for an arbitrary object (general or cons).
+// With DEBUG_GUARD on this will _not_ be the start of the general header,
+// but it is still a valid BaseHeader with _badge_stamp_wtag_mtag-
+// the _dup_badge_stamp_wtag_mtag. So you can't use it as the start of the
+// allocation, but you can work with the stamp and mtag.
+inline BaseHeader_s* base_header_ptr(void* client) {
+  return reinterpret_cast<BaseHeader_s*>(reinterpret_cast<char*>(client) - sizeof(BaseHeader_s));
+}
+
 template <typename T> inline T* HeaderPtrToGeneralPtr(void* base) {
   return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(base) + sizeof(Header_s));
 }
