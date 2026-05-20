@@ -333,9 +333,9 @@ public:
   template <std::invocable<gctools::Tagged*> Walker>
   void walkRoots(Walker&& walk) {
     walk((gctools::Tagged*)&_Process);
-    for (auto& e : _Bindings._ThreadLocalBindings) {
-      walk((gctools::Tagged*)&e);
-    }
+    // Get at the actual tagged_pointer since that's also managed.
+    // KLUDGE: better access. why do we even have Vec0 vs GCVector
+    walk((gctools::Tagged*)&_Bindings._ThreadLocalBindings._Vector._Contents);
     walk((gctools::Tagged*)&_PendingInterruptsHead); // includes tail
     walk((gctools::Tagged*)&_BufferStr8NsPool);
     walk((gctools::Tagged*)&_BufferStrWNsPool);
