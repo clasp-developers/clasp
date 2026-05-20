@@ -7,6 +7,9 @@ use mmtk::vm::*;
 /// pointer.  MMTk ObjectReference == client pointer == alloc_start + 8.
 pub const OBJECT_REF_OFFSET: usize = 8;
 
+/// Object alignment in bytes.  TAG_BITS=3 → CLASP_ALIGNMENT=8.
+pub const CLASP_ALIGNMENT: usize = 8;
+
 pub struct VMObjectModel;
 
 impl ObjectModel<ClaspVM> for VMObjectModel {
@@ -45,11 +48,11 @@ impl ObjectModel<ClaspVM> for VMObjectModel {
     }
 
     fn get_align_when_copied(_object: ObjectReference) -> usize {
-        unimplemented!()
+        CLASP_ALIGNMENT
     }
 
     fn get_align_offset_when_copied(_object: ObjectReference) -> usize {
-        unimplemented!()
+        0
     }
 
     fn get_reference_when_copied_to(_from: ObjectReference, to: Address) -> ObjectReference {
