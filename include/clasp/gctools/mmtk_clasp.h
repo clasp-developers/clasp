@@ -65,6 +65,9 @@ extern void* mmtk_clasp_last_heap_address(void);
 typedef void (*ClaspPreciseRootCallback)(void* slot, void* data);
 typedef void (*ClaspConservativeRootCallback)(void* client_ptr, void* data);
 
+// Return the MMTk mutator for the thread whose ThreadLocalState* is tls.
+extern MMTkClaspMutator clasp_get_mutator(void* tls);
+
 // Walk global (non-thread-local) precise roots.
 extern void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void* data);
 
