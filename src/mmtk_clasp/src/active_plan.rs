@@ -4,6 +4,7 @@ use crate::ClaspVM;
 use mmtk::util::opaque_pointer::*;
 use mmtk::vm::ActivePlan;
 use mmtk::Mutator;
+use mmtk::{plan::ObjectQueue, scheduler::GCWorker, util::ObjectReference};
 
 extern "C" {
     fn clasp_get_mutator(tls: *mut c_void) -> *mut c_void;
@@ -86,5 +87,21 @@ impl ActivePlan<ClaspVM> for VMActivePlan {
 
     fn mutators<'a>() -> Box<dyn Iterator<Item = &'a mut Mutator<ClaspVM>> + 'a> {
         Box::new(MutatorIterator::new())
+    }
+
+    // This is the fallback MMTk uses when we pass it an object outside of its
+    // spaces, e.g. because it's stack allocated.
+    // MMTk's default method panics, but we do need to trace these objects.
+    // So we just enqueue without moving (since moving on the stack is no good).
+    // Technically we're supposed to mark the object so it's not traced again,
+    // but not doing so is probably harmless (maybe inefficient)
+    // and the Julia bindings don't bother.
+    fn vm_trace_object<Q: ObjectQueue>(
+        queue: &mut Q,
+        object: ObjectReference,
+        _worker: &mut GCWorker<ClaspVM>,
+    ) -> ObjectReference {
+        queue.enqueue(object);
+        object
     }
 }
