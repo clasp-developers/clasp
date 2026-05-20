@@ -86,6 +86,11 @@ CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 
 }; // namespace gctools
 
+// callback for MMTk's mutator(tls)
+extern "C" MMTkClaspMutator clasp_get_mutator(void* tls) {
+  return static_cast<core::ThreadLocalState*>(tls)->_LowLevel._mmtk_mutator;
+}
+
 // Root-scanning callbacks for MMTk's Rust scanning implementation.
 // These are called with the world stopped.
 

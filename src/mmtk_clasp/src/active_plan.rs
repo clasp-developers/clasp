@@ -1,7 +1,13 @@
+use std::ffi::c_void;
+
 use crate::ClaspVM;
 use mmtk::util::opaque_pointer::*;
 use mmtk::vm::ActivePlan;
 use mmtk::Mutator;
+
+extern "C" {
+    fn clasp_get_mutator(tls: *mut c_void) -> *mut c_void;
+}
 
 use std::collections::HashSet;
 use std::sync::{LazyLock, RwLock};
@@ -73,8 +79,9 @@ impl ActivePlan<ClaspVM> for VMActivePlan {
         true
     }
 
-    fn mutator(_tls: VMMutatorThread) -> &'static mut Mutator<ClaspVM> {
-        unimplemented!()
+    fn mutator(tls: VMMutatorThread) -> &'static mut Mutator<ClaspVM> {
+        let thread_state = tls.0.0.to_address().to_mut_ptr::<c_void>();
+        unsafe { &mut *(clasp_get_mutator(thread_state) as *mut Mutator<ClaspVM>) }
     }
 
     fn mutators<'a>() -> Box<dyn Iterator<Item = &'a mut Mutator<ClaspVM>> + 'a> {
