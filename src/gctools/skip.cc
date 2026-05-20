@@ -12,8 +12,8 @@ size_t cons_skip(core::Cons_O* client) {
 }
 
 size_t general_skip(core::General_O* client) {
-  const Header_s& header = *reinterpret_cast<const Header_s*>(GeneralPtrToHeaderPtr(client));
-  const Header_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
+  const BaseHeader_s& header = *base_header_ptr(client);
+  const BaseHeader_s::BadgeStampWtagMtag& header_value = header._badge_stamp_wtag_mtag;
   switch (header_value.mtag()) {
     [[likely]]
   case Header_s::general_mtag: {
