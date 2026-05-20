@@ -243,6 +243,11 @@ template <class T> inline size_t sizeof_with_header();
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
+              Note that the MMTk build uses forwarding pointers and uses the
+              low bits as a tag similarly, but does not know about fwd_mtag -
+              it does what it wants with the low two bits. It does need
+              general_mtag (i.e. valid objects) to have low zero bits, though,
+              as far as I can tell.
       #B110 == invalid3_mtag
       #B111 == invalid4_mtag
 

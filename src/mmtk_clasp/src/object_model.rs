@@ -15,13 +15,18 @@ pub struct VMObjectModel;
 impl ObjectModel<ClaspVM> for VMObjectModel {
     const GLOBAL_LOG_BIT_SPEC: VMGlobalLogBitSpec = VMGlobalLogBitSpec::side_first();
 
-    // Forwarding pointer overwrites the first word of the header (Header_s._value).
+    // Forwarding pointer and forwarding bits both live in the first header word
+    // (Header_s._value). Clasp's general_mtag is zero, and objects are 8-byte
+    // aligned, so it's okay for MMTk to use the low bits as a forwarding tag.
+    // Note that we don't control what values MMTk puts in these bits, so they
+    // may NOT match Clasp's fwd_mtag (indeed they won't, since fwd_mtag is
+    // actually three bits).
     const LOCAL_FORWARDING_POINTER_SPEC: VMLocalForwardingPointerSpec =
         VMLocalForwardingPointerSpec::in_header(0);
     const LOCAL_FORWARDING_BITS_SPEC: VMLocalForwardingBitsSpec =
-        VMLocalForwardingBitsSpec::side_first();
+        VMLocalForwardingBitsSpec::in_header(0);
     const LOCAL_MARK_BIT_SPEC: VMLocalMarkBitSpec =
-        VMLocalMarkBitSpec::side_after(Self::LOCAL_FORWARDING_BITS_SPEC.as_spec());
+        VMLocalMarkBitSpec::side_first();
     const LOCAL_LOS_MARK_NURSERY_SPEC: VMLocalLOSMarkNurserySpec =
         VMLocalLOSMarkNurserySpec::side_after(Self::LOCAL_MARK_BIT_SPEC.as_spec());
 
