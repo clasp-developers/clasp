@@ -26,6 +26,11 @@ extern "C" {
         callback: unsafe extern "C" fn(*mut c_void, *mut c_void),
         data: *mut c_void,
     );
+    fn clasp_scan_object(
+        client: *mut c_void,
+        callback: unsafe extern "C" fn(*mut c_void, *mut c_void),
+        data: *mut c_void,
+    );
 }
 
 unsafe extern "C" fn precise_root_cb(slot: *mut c_void, data: *mut c_void) {
@@ -103,10 +108,27 @@ impl Scanning<ClaspVM> for VMScanning {
 
     fn scan_object<SV: SlotVisitor<ClaspVMSlot>>(
         _tls: VMWorkerThread,
-        _object: ObjectReference,
-        _slot_visitor: &mut SV,
+        object: ObjectReference,
+        slot_visitor: &mut SV,
     ) {
-        unimplemented!()
+        // Monomorphised trampoline: each instantiation of scan_object gets its
+        // own field_cb that calls visit_slot on the concrete SV type directly.
+        unsafe extern "C" fn field_cb<SV: SlotVisitor<ClaspVMSlot>>(
+            slot_addr: *mut c_void,
+            data: *mut c_void,
+        ) {
+            let visitor = &mut *(data as *mut SV);
+            visitor.visit_slot(ClaspVMSlot::from_address(Address::from_usize(
+                slot_addr as usize,
+            )));
+        }
+        unsafe {
+            clasp_scan_object(
+                object.to_raw_address().to_mut_ptr::<c_void>(),
+                field_cb::<SV>,
+                slot_visitor as *mut SV as *mut c_void,
+            );
+        }
     }
 
     fn notify_initial_thread_scan_complete(_partial_scan: bool, _tls: VMWorkerThread) {}
