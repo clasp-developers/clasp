@@ -273,6 +273,9 @@ bool ConsHeader_s::isValidConsObject() const {
 #endif
   if (!this->_badge_stamp_wtag_mtag.stampP())
     goto bad;
+  // test that stamp is STAMPWTAG_CONS
+  if (!this->_badge_stamp_wtag_mtag.consObjectP())
+    goto bad;
   return true;
 bad:
   return false;
