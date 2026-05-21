@@ -13,6 +13,7 @@ lto = true
 [dependencies]
 mmtk = { path = "../mmtk-core" }
 libc = "0.2"
+thread-id = "*"
 
 [features]
 default = []

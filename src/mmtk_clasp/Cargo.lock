@@ -622,6 +622,7 @@ version = "0.1.0"
 dependencies = [
  "libc",
  "mmtk",
+ "thread-id",
 ]
 
 [[package]]
@@ -947,6 +948,16 @@ dependencies = [
  "objc2-core-foundation",
  "objc2-io-kit",
  "windows",
+]
+
+[[package]]
+name = "thread-id"
+version = "5.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2010d27add3f3240c1fef7959f46c814487b216baee662af53be645ba7831c07"
+dependencies = [
+ "libc",
+ "windows-sys",
 ]
 
 [[package]]
