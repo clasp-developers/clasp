@@ -156,8 +156,9 @@
   :directory "src/lisp/kernel/contrib/documentation-utils/"
   :repository "https://codeberg.org/shinmera/documentation-utils"
   :branch "master"
-  :commit "cd5b506c7aa555dea0cc0785f36256348c9e839d"
-  :pin 1)
+;;;  :commit "cd4b506c7aa555dea0cc0785f36256348c9e839d"
+;;  :pin 1
+)
  (:name :ecclesia
   :directory "src/lisp/kernel/contrib/Ecclesia/"
   :repository "https://github.com/s-expressionists/Ecclesia.git"
@@ -384,8 +385,9 @@
   :directory "src/lisp/kernel/contrib/trivial-indent/"
   :repository "https://codeberg.org/shinmera/trivial-indent"
   :branch "master"
-  :commit "df07d50bbc71c32a6ca62ce062f66e11011945e9"
-  :pin 1)
+;;;  :commit "df07d50bbc71c32a6ca62ce062f66e11011945e9"
+;;;  :pin 0
+)
  (:name :trivial-package-local-nicknames
   :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames"
   :repository "https://github.com/phoe/trivial-package-local-nicknames.git"
