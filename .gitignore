@@ -60,3 +60,6 @@ src/analysis/*.cc
 bench/
 repos-*.sexp
 *__pycache__*
+*.sif
+makefile
+systems.tar
