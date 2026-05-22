@@ -125,6 +125,23 @@ namespace mp {
 SYMBOL_EXPORT_SC_(MpPkg, STARcurrent_processSTAR);
 SYMBOL_EXPORT_SC_(MpPkg, signal_interrupt);
 
+// RAII helper that records what the current thread is parking on, so that
+// other threads (e.g. Swank) can introspect a richer status than just
+// "Running". The slot is cleared in the destructor regardless of how the
+// wait returns (normal wake, spurious wake, exception).
+struct WaitGuard {
+  WaitGuard(core::T_sp obj) {
+    if (my_thread && my_thread->_Process.notnilp()) {
+      my_thread->_Process->_WaitingOn = obj;
+    }
+  }
+  ~WaitGuard() {
+    if (my_thread && my_thread->_Process.notnilp()) {
+      my_thread->_Process->_WaitingOn = nil<core::T_O>();
+    }
+  }
+};
+
 CL_DEFUN
 Process_sp mp__current_process() {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
@@ -219,7 +236,10 @@ CL_LAMBDA(mutex &optional (upgrade nil));
 CL_DOCSTRING(
     R"dx(Obtain the write lock for this mutex. upgradep should be true if and only if this thread currently holds the shared lock for the same mutex.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) { m->lock(upgrade); }
+CL_DEFUN void mp__write_lock(SharedMutex_sp m, bool upgrade) {
+  WaitGuard g(m);
+  m->lock(upgrade);
+}
 
 CL_LAMBDA(mutex &optional (upgrade nil));
 CL_DOCSTRING(
@@ -236,7 +256,10 @@ CL_DEFUN void mp__write_unlock(SharedMutex_sp m, bool release_read_lock) { m->un
 CL_LAMBDA(mutex);
 CL_DOCSTRING(R"dx(Obtain the shared lock for this mutex.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__shared_lock(SharedMutex_sp m) { m->lock_shared(); }
+CL_DEFUN void mp__shared_lock(SharedMutex_sp m) {
+  WaitGuard g(m);
+  m->lock_shared();
+}
 
 CL_LAMBDA(mutex);
 CL_DOCSTRING(R"dx(Release the shared lock for this mutex.)dx");
@@ -328,6 +351,8 @@ string Process_O::phase_as_string() const {
   case Booting:
       return "(Booting)";
   case Running:
+    if (this->_WaitingOn.notnilp())
+      return "(Waiting on " + _rep_(this->_WaitingOn) + ")";
     return "(Running)";
   case Suspended:
     return "(Suspended)";
@@ -362,6 +387,10 @@ CL_DEFUN core::SimpleBaseString_sp mp__process_phase_string(Process_sp process) 
 CL_DOCSTRING(R"dx(Current Phase of the process. Nascent = 0, Running = 1, Suspended = 2, Exited = 3)dx");
 DOCGROUP(clasp);
 CL_DEFUN int mp__process_phase(Process_sp process) { return process->phase(); };
+
+CL_DOCSTRING(R"dx(Return the Mutex, SharedMutex or ConditionVariable on which the process is currently parked, or NIL if the process is not blocked. Reads are racy and informational only.)dx");
+DOCGROUP(clasp);
+CL_DEFUN core::T_sp mp__process_waiting_on(Process_sp process) { return process->_WaitingOn; };
 
 CL_DOCSTRING(R"dx(Return the owner of the lock - this may be NIL if it's not locked.)dx");
 DOCGROUP(clasp);
@@ -398,6 +427,12 @@ CL_DEFUN core::List_sp mp__all_processes() { return _lisp->processes(); }
 CL_DOCSTRING(R"dx(Return the name of a process, as provided at its creation.)dx");
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp mp__process_name(Process_sp p) { return p->_Name; }
+
+CL_DOCSTRING(R"dx(Set the name of a process.)dx");
+DOCGROUP(clasp);
+CL_DEFUN void mp__set_process_name(Process_sp p, core::T_sp obj) {
+  p->_Name = obj;
+}
 
 CL_LAMBDA(&optional (process mp:*current-process*));
 DOCGROUP(clasp);
@@ -535,7 +570,11 @@ CL_DEFUN bool mp__get_lock(core::T_sp m, bool waitp) {
     TYPE_ERROR(m, mp::_sym_Mutex_O);
   }
   Mutex_sp mm = gc::As_unsafe<Mutex_sp>(m);
-  return mm->lock(waitp);
+  if (waitp) {
+    WaitGuard g(m);
+    return mm->lock(true);
+  }
+  return mm->lock(false);
 }
 
 CL_LAMBDA(mutex);
@@ -562,12 +601,16 @@ CL_DOCSTRING(R"dx(Wait on the given condition variable with the given mutex)dx")
 CL_DOCSTRING_LONG(
     R"dx(In more detail: The mutex must already be held by this thread. Then, atomically, the mutex is released and this thread blocks on the condition variable (i.e. execution will not continue).\n\nLater, the thread will resume and obtain the mutex again. Ideally this will be when the process is properly notified (see below), but occasionally the thread may resume spuriously, so make sure to check that the condition is actually true after this function returns.)dx");
 DOCGROUP(clasp);
-CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mutex) { return cv->wait(mutex); };
+CL_DEFUN bool mp__condition_variable_wait(ConditionVariable_sp cv, Mutex_sp mutex) {
+  WaitGuard g(cv);
+  return cv->wait(mutex);
+};
 
 CL_DOCSTRING(R"dx(Like CONDITION-VARIABLE-WAIT, except that a timeout (in seconds) may be provided.)dx");
 DOCGROUP(clasp);
 CL_DEFUN bool mp__condition_variable_timedwait(ConditionVariable_sp cv, Mutex_sp mutex, double timeout_seconds) {
   //  printf("%s:%d   timeout_seconds = %lf\n", __FILE__, __LINE__, timeout_seconds );
+  WaitGuard g(cv);
   return cv->timed_wait(mutex, timeout_seconds);
 };
 

@@ -107,6 +107,12 @@ public:
   core::T_sp _AbortCondition;
   core::ThreadLocalState* _ThreadInfo;
   std::atomic<ProcessPhase> _Phase;
+  // The Mutex / SharedMutex / ConditionVariable this thread is currently
+  // parked on, or NIL when running. Written by the thread itself
+  // immediately before / after the park; read opportunistically by other
+  // threads (e.g. Swank's thread-list display). Informational only --
+  // racy reads are acceptable.
+  core::T_sp _WaitingOn;
   //    dont_expose<ConditionVariable> _ExitBarrier;
   size_t _StackSize;
   dont_expose<pthread_t> _TheThread;
@@ -121,7 +127,7 @@ public:
       : _Parent(nil<core::T_O>()), _Name(name), _Function(function), _Arguments(arguments),
         _InitialSpecialBindings(initialSpecialBindings), _ReturnValuesList(nil<core::T_O>()), _Aborted(false),
         _AbortCondition(nil<core::T_O>()), _ThreadInfo(NULL), _Phase(Nascent),
-        _StackSize(stack_size) {
+        _WaitingOn(nil<core::T_O>()), _StackSize(stack_size) {
     if (!function) {
       printf("%s:%d Trying to create a process and the function is NULL\n", __FILE__, __LINE__);
     }
