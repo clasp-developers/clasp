@@ -2626,7 +2626,11 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         //
         if (oldCodeClient->literalsSize() != 0 &&
             (newCodeDataStart <= newCodeLiteralsStart && newCodeLiteralsEnd <= newCodeDataEnd)) {
+          // newCodeLiteralsStart is in write-protected JIT (MAP_JIT) memory on
+          // Apple Silicon; switch this thread to write mode around the copy.
+          llvmo::JITDataReadWriteMaybeExecute();
           memcpy((void*)newCodeLiteralsStart, (void*)oldCodeClient->literalsStart(), newCodeClient->literalsSize());
+          llvmo::JITDataReadExecute();
         }
         //
         // Now set the forwarding pointer from the oldCode object to the newCodeClient

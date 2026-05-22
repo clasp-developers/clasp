@@ -237,7 +237,11 @@ CL_LISPIFY_NAME("CODE-LITERAL");
 CL_DEFUN_SETF core::T_sp code_literal_set(core::T_sp lit,
                                           ObjectFile_sp code, size_t idx) {
   core::T_O** literals = (core::T_O**)(code->literalsStart());
+  // The literals vector lives in write-protected JIT (MAP_JIT) memory on Apple
+  // Silicon; switch this thread to write mode around the store to avoid a SIGBUS.
+  JITDataReadWriteMaybeExecute();
   literals[idx] = lit.raw_();
+  JITDataReadExecute();
   return lit;
 }
 
