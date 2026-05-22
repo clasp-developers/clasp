@@ -9,7 +9,7 @@ From: /home/drmeister/Development/cando/amber.sif
 #    apt update
     apt install --yes libzmq3-dev
     cd /mnt
-    ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config-18" --build-path=build-apptainer/
+    ./koga --reproducible-build --extensions=cando --build-mode=native --llvm-config="/usr/bin/llvm-config-18" --build-path=build-apptainer/
     ninja -C build-apptainer
     ninja -C build-apptainer install
     mkdir -p /home/cando/

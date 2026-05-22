@@ -1,10 +1,22 @@
 BootStrap: docker
-From: debian:latest
+From: ubuntu:26.04
+
+%setup
+    mkdir -p ${APPTAINER_ROOTFS}/opt/arm
 
 %files
-    $HOME/Downloads/AmberTools23.tar.bz2 /downloads/AmberTools23.tar.bz2
+    $HOME/Downloads/ambertools26.tar.bz2 /downloads/ambertools26.tar.bz2
+    $HOME/Downloads/rosetta.tar.bz2 /downloads/rosetta.tar.bz2
+
 
 %post
+    set -eo pipefail
+    export DEBIAN_FRONTEND=noninteractive
+    export DEBCONF_NONINTERACTIVE_SEEN=true
+    export TZ=America/New_York
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+    echo $TZ > /etc/timezone
+
     apt upgrade
     apt update
     apt -y install tcsh make \
@@ -12,22 +24,28 @@ From: debian:latest
                flex bison patch bc \
                libbz2-dev libzip-dev \
                xorg-dev wget cmake \
-               mpich openssh-client linux-perf
-    apt install --yes bzip2
+               mpich openssh-client linux-perf \
+               libtool-bin libvterm-dev bzip2
+               
     cd /opt
-    bunzip2 -c /downloads/AmberTools23.tar.bz2 | tar xvf - 
-    cd /opt/amber22_src/build
-    mkdir /opt/amber22
-    cmake /opt/amber22_src \
-	  -DCMAKE_INSTALL_PREFIX=/opt/amber22 \
+    bunzip2 -c /downloads/rosetta.tar.bz2 | tar xvf - --strip-components=1
+    bunzip2 -c /downloads/ambertools26.tar.bz2 | tar xvf -
+    mkdir -p /opt/ambertools26_src/build
+    cd /opt/ambertools26_src/build
+    mkdir /opt/ambertools26
+    ln -s /opt/ambertools26 /opt/amber
+    cmake /opt/ambertools26_src \
+	  -DCMAKE_INSTALL_PREFIX=/opt/ambertools26 \
 	  -DCOMPILER=GNU \
 	  -DBUILD_GUI=FALSE \
 	  -DMPI=FALSE -DCUDA=FALSE -DINSTALL_TESTS=FALSE \
 	  -DDOWNLOAD_MINICONDA=FALSE \
 	  -DBUILD_PYTHON=FALSE \
 	  2>&1 | tee cmake.log
-    make -j20 install
-    ln -s /opt/amber22 /opt/amber
+    make -j20 install 2>&1 | tee /tmp/make.log
+
+
+
     apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
     bash Miniconda3-latest-Linux-aarch64.sh -b -p /home/cando/miniconda3
@@ -50,6 +68,9 @@ From: debian:latest
 
 %environment
     export AMBERHOME=/opt/amber
+    export ROSETTA_HOME=/opt/rosetta
+    export PATH=${AMBERHOME}/bin:${PATH}
+    export LD_LIBRARY_PATH=${AMBERHOME}/lib:${LD_LIBRARY_PATH}
 #    export LD_LIBRARY_PATH=/usr/local/lib
 #    export XDG_CACHE_HOME=/home/cando/.cache
 
