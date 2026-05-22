@@ -219,6 +219,11 @@
   (append-cflags configuration "-std=gnu++20" :type :cxxflags)
   #+darwin (append-cflags configuration "-stdlib=libc++" :type :cxxflags)
   #+darwin (append-cflags configuration "-I/usr/local/include")
+  ;; Apple Silicon Homebrew installs headers (e.g. boost, which ships no
+  ;; pkg-config file) under /opt/homebrew rather than the Intel /usr/local
+  ;; prefix.  Add it to the search path when present.
+  #+darwin (when (probe-file #P"/opt/homebrew/include/")
+             (append-cflags configuration "-I/opt/homebrew/include"))
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector -stdlib=libstdc++"
                                        :type :cxxflags)
   #+linux (append-cflags configuration "-fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-stack-protector"
@@ -317,7 +322,11 @@ has not been set."
          (message :emph "Configuring non-reproducible build")
          (loop for variant in (variants configuration)
                do (append-ldflags variant
-                                  (format nil "-Wl,-rpath,~a"
+                                  ;; Quote the path: the build directory may
+                                  ;; contain spaces, and ninja passes ldflags
+                                  ;; through /bin/sh which would otherwise split
+                                  ;; the rpath at the space.
+                                  (format nil "-Wl,-rpath,\"~a\""
                                           (normalize-directory
                                            (uiop:ensure-absolute-pathname
                                             (merge-pathnames
