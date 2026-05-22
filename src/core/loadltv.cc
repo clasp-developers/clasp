@@ -900,7 +900,11 @@ struct loadltv {
     bool seen = false;
     for (size_t i = 0; i < nlits; ++i) {
       if (lits[i] == function.raw_()) {
+        // lits[] is in write-protected JIT (MAP_JIT) memory on Apple Silicon;
+        // switch this thread to write mode just for the store.
+        llvmo::JITDataReadWriteMaybeExecute();
         lits[i] = scf.raw_();
+        llvmo::JITDataReadExecute();
         seen = true;
       }
     }
@@ -1094,7 +1098,13 @@ struct loadltv {
     } else {
       T_O** lits = (T_O**)vlits;
       for (size_t i = 0; i < nlits; ++i) {
-        lits[i] = get_ltv(read_index()).raw_();
+        // Read the literal in execute mode (reads are fine), then switch this
+        // thread to write mode only for the store: lits[] is in write-protected
+        // JIT (MAP_JIT) memory on Apple Silicon and a bare store faults (SIGBUS).
+        T_O* value = get_ltv(read_index()).raw_();
+        llvmo::JITDataReadWriteMaybeExecute();
+        lits[i] = value;
+        llvmo::JITDataReadExecute();
       }
       /*
       uint16_t nfuns = read_u16();
