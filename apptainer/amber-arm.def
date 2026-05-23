@@ -19,6 +19,12 @@ From: ubuntu:26.04
 
     apt upgrade
     apt update
+
+    apt install -y nodejs npm git curl
+    npm install -g @anthropic-ai/claude-code
+    useradd -m user
+    export PATH="/root/.npm/_npx:$PATH"
+               
     apt -y install tcsh make \
                gcc gfortran g++ \
                flex bison patch bc \
@@ -26,7 +32,7 @@ From: ubuntu:26.04
                xorg-dev wget cmake \
                mpich openssh-client linux-perf \
                libtool-bin libvterm-dev bzip2
-               
+
     cd /opt
     bunzip2 -c /downloads/rosetta.tar.bz2 | tar xvf - --strip-components=1
     bunzip2 -c /downloads/ambertools26.tar.bz2 | tar xvf -
@@ -46,7 +52,7 @@ From: ubuntu:26.04
 
 
 
-    apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget
+    apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget gdb
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
     bash Miniconda3-latest-Linux-aarch64.sh -b -p /home/cando/miniconda3
     rm -rf Miniconda3-latest-Linux-aarch64.sh
@@ -69,10 +75,13 @@ From: ubuntu:26.04
 %environment
     export AMBERHOME=/opt/amber
     export ROSETTA_HOME=/opt/rosetta
-    export PATH=${AMBERHOME}/bin:${PATH}
+    export PATH=${AMBERHOME}/bin:/root/.npm/_npx:${PATH}
     export LD_LIBRARY_PATH=${AMBERHOME}/lib:${LD_LIBRARY_PATH}
+    export ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
 #    export LD_LIBRARY_PATH=/usr/local/lib
 #    export XDG_CACHE_HOME=/home/cando/.cache
 
-
+%runscript
+     exec claude "$@"
 
