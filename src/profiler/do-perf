@@ -11,6 +11,7 @@ echo The system stack depth is in /proc/sys/kernel/perf_event_max_stack = `cat /
 sudo perf record -p $PID -F $RATE --call-graph fp,60000 -o $DIR/out-$PID.data -- sleep $TIME
 sudo chmod go+rw $DIR/out-$PID.data
 perf script -i $DIR/out-$PID.data --max-stack=60000 > $DIR/out-$PID.perf
+echo FLAME_GRAPH_HOME=$FLAME_GRAPH_HOME
 $FLAME_GRAPH_HOME/stackcollapse-perf.pl $DIR/out-$PID.perf > $DIR/out-$PID.folded
 $FLAME_GRAPH_HOME/flamegraph.pl --color=clasp $DIR/out-$PID.folded > $DIR/out-$PID.svg
 cp $DIR/out-$PID.svg $FLAME_DIR/latest-flame-graph.svg

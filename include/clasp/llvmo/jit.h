@@ -89,6 +89,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.fwd.h>
 #include <clasp/llvmo/translators.h>
 #include <clasp/llvmo/insertPoint.fwd.h>
+#include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugLoc.fwd.h>
 #include <clasp/llvmo/llvmoPackage.h>
 

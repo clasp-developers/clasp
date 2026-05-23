@@ -84,6 +84,13 @@ public:
   size_t _Size;
   size_t _ObjectId;
   JITDylib_sp _TheJITDylib;
+  // If true, this ObjectFile is transient arena-init scaffolding (shared
+  // trampoline / stub template) that must not be serialized into snapshots.
+  // The ObjectFile is still registered in _AllObjectFiles normally — LLVM's
+  // link layer plugin looks it up by name during materialization, so it must
+  // stay findable at runtime. The snapshot save walker checks this flag and
+  // skips any ObjectFile with it set.
+  bool _TransientSkipSnapshot = false;
   //
   // Code data
   void* _TextSectionStart;

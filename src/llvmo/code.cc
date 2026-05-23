@@ -17,6 +17,7 @@
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/trampoline_arena.h>
 
 namespace llvmo {
 
@@ -529,15 +530,12 @@ CL_DEFUN core::T_sp jit_code_entries() {
   return ll.result();
 }
 
-CL_DOCSTRING(R"dx(Generate a list of JITted symbols to /tmp/perf-<pid>.map)dx");
+CL_DOCSTRING(R"dx(Append JITted symbols from the GDB JIT descriptor to /tmp/perf-<pid>.map.
+Shares the same file as arena-trampoline entries and the per-compile callback
+from jit_register_symbol — all writes go through perf_map_append.)dx");
 DOCGROUP(clasp);
 CL_DEFUN void ext__generate_perf_map() {
-  stringstream ss;
-  ss << "/tmp/perf-" << getpid() << ".map";
-  core::clasp_write_string(fmt::format("Writing to {}\n", ss.str()));
-  FILE* fout = fopen(ss.str().c_str(), "w");
   jit_code_entry* jce = __jit_debug_descriptor.first_entry;
-  ql::list ll;
   while (jce) {
     const char* of_start = jce->symfile_addr;
     size_t of_length = jce->symfile_size;
@@ -551,11 +549,12 @@ CL_DEFUN void ext__generate_perf_map() {
     llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> obj = llvm::object::ObjectFile::createObjectFile(memr);
     for (auto sym : (*obj)->symbols()) {
       if ((*sym.getAddress()) != 0)
-        fprintf(fout, "%lX %lX %s\n", (uintptr_t)(*sym.getAddress()), (size_t)sym.getCommonSize(), (sym).getName()->str().c_str());
+        perf_map_append((uint8_t*)(uintptr_t)(*sym.getAddress()),
+                        (size_t)sym.getCommonSize(),
+                        (sym).getName()->str());
     }
     jce = jce->next_entry;
   }
-  fclose(fout);
 }
 
 CL_LISPIFY_NAME(describe_code);
