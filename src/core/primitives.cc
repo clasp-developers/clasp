@@ -269,6 +269,18 @@ CL_DEFUN T_sp core__clasp_git_full_commit() {
 #endif
 };
 
+CL_LAMBDA();
+CL_DECLARE();
+CL_DOCSTRING(R"dx(build-mode - :bytecode or :native, the mode clasp's image was built with. Note: this reports the build-time configuration, not what COMPILE currently emits - a :native build still carries a bytecode compiler, and a :bytecode build can JIT to native via auto-compilation.)dx");
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__build_mode() {
+#ifdef CLASP_BUILD_MODE_BYTECODE
+  return _lisp->internKeyword("BYTECODE");
+#else
+  return _lisp->internKeyword("NATIVE");
+#endif
+};
+
 CL_LAMBDA(obj);
 CL_DECLARE();
 CL_DOCSTRING(
