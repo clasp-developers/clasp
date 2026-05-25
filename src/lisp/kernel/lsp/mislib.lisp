@@ -267,11 +267,11 @@ where CREATED is true only if we succeeded on creating all directories."
 	(setf d (nconc d (list item)))
 	(let* ((p (make-pathname :directory d :defaults *default-pathname-defaults*)))
 	  (unless (or (symbolp item) (si::file-kind p nil))
-	    (setf created t)
 	    (let ((ps (namestring p)))
 	      (when verbose
 		(format t "~%;;; Making directory ~A" ps))
-	      (si::mkdir ps mode)))))
+	      (when (core::ensure-directory ps mode)
+		(setf created t))))))
       (values pathname created))))
 
 (defun hash-table-iterator (hash-table)
