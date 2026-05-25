@@ -82,9 +82,51 @@ struct loadltv {
   // native modules
   T_sp _JITDylib = nil<T_O>();
 
-  loadltv(Stream_sp stream) : _stream(stream) {}
+  // Read buffer. loadltv otherwise pulls the FASL one byte / one small field at
+  // a time straight from the stream, and every such call is a virtual stream
+  // dispatch plus an interrupt-park (BEGIN_PARK/END_PARK). Reading the stream in
+  // large chunks and serving bytes from this buffer removes that per-byte
+  // overhead, which dominates boot (the base image is loaded through this path).
+  // The loader owns the stream for the whole load (load_bytecode_stream makes a
+  // fresh loader and the caller closes the stream afterwards), so reading ahead
+  // is safe.
+  static constexpr size_t BUFSIZE = 65536;
+  std::vector<unsigned char> _buf;
+  size_t _bufpos = 0;
+  size_t _buflen = 0;
 
-  inline uint8_t read_u8() { return stream_read_byte(_stream).unsafe_fixnum(); }
+  loadltv(Stream_sp stream) : _stream(stream), _buf(BUFSIZE) {}
+
+  // Refill the buffer from the stream; returns the number of bytes now available.
+  size_t refill() {
+    _buflen = (size_t)stream_read_byte8(_stream, _buf.data(), BUFSIZE);
+    _bufpos = 0;
+    return _buflen;
+  }
+
+  // Copy n bytes of the (buffered) stream into dst.
+  inline void read_bytes(unsigned char* dst, size_t n) {
+    while (n > 0) {
+      if (_bufpos >= _buflen) {
+        if (refill() == 0)
+          SIMPLE_ERROR("Invalid FASL: unexpected end of stream");
+      }
+      size_t avail = _buflen - _bufpos;
+      size_t take = (n < avail) ? n : avail;
+      memcpy(dst, _buf.data() + _bufpos, take);
+      _bufpos += take;
+      dst += take;
+      n -= take;
+    }
+  }
+
+  inline uint8_t read_u8() {
+    if (_bufpos >= _buflen) {
+      if (refill() == 0)
+        SIMPLE_ERROR("Invalid FASL: unexpected end of stream");
+    }
+    return _buf[_bufpos++];
+  }
 
   inline int8_t read_s8() {
     uint8_t byte = read_u8();
@@ -98,7 +140,7 @@ struct loadltv {
 
   inline uint16_t read_u16() {
     unsigned char bytes[2];
-    stream_read_byte8(_stream, &bytes[0], 2);
+    read_bytes(&bytes[0], 2);
     uint16_t high = bytes[0];
     uint16_t low = bytes[1];
     return (high << 8) | low;
@@ -116,7 +158,7 @@ struct loadltv {
 
   inline uint32_t read_u32() {
     unsigned char bytes[4];
-    stream_read_byte8(_stream, &bytes[0], 4);
+    read_bytes(&bytes[0], 4);
     uint32_t b0 = bytes[0];
     uint32_t b1 = bytes[1];
     uint32_t b2 = bytes[2];
@@ -136,7 +178,7 @@ struct loadltv {
 
   inline uint64_t read_u64() {
     unsigned char bytes[8];
-    stream_read_byte8(_stream, &bytes[0], 8);
+    read_bytes(&bytes[0], 8);
     uint64_t b0 = bytes[0];
     uint64_t b1 = bytes[1];
     uint64_t b2 = bytes[2];
@@ -150,7 +192,7 @@ struct loadltv {
 
   inline __uint128_t read_u80() {
     unsigned char bytes[10];
-    stream_read_byte8(_stream, bytes, 10);
+    read_bytes(bytes, 10);
     return (__uint128_t{bytes[0]} << 72) | (__uint128_t{bytes[1]} << 64) | (__uint128_t{bytes[2]} << 56) |
            (__uint128_t{bytes[3]} << 48) | (__uint128_t{bytes[4]} << 40) | (__uint128_t{bytes[5]} << 32) |
            (__uint128_t{bytes[6]} << 24) | (__uint128_t{bytes[7]} << 16) | (__uint128_t{bytes[8]} << 8) |
@@ -159,7 +201,7 @@ struct loadltv {
 
   inline __uint128_t read_u128() {
     unsigned char bytes[16];
-    stream_read_byte8(_stream, bytes, 16);
+    read_bytes(bytes, 16);
     return (__uint128_t{bytes[0]} << 120) | (__uint128_t{bytes[1]} << 112) | (__uint128_t{bytes[2]} << 104) |
            (__uint128_t{bytes[3]} << 96) | (__uint128_t{bytes[4]} << 88) | (__uint128_t{bytes[5]} << 80) |
            (__uint128_t{bytes[6]} << 72) | (__uint128_t{bytes[7]} << 64) | (__uint128_t{bytes[8]} << 56) |
@@ -302,7 +344,7 @@ struct loadltv {
     SimpleBaseString_sp str = SimpleBaseString_O::makeSize(len);
     // careful, we're directly writing into the array data here
     unsigned char* data = (unsigned char*)(str->rowMajorAddressOfElement_(0));
-    stream_read_byte8(_stream, data, len);
+    read_bytes(data, len);
     set_ltv(str, next_index());
   }
 
@@ -349,7 +391,7 @@ struct loadltv {
   void op_utf8_string() {
     uint16_t blen = read_u16();
     unsigned char* bytes = (unsigned char*)malloc(blen);
-    stream_read_byte8(_stream, bytes, blen);
+    read_bytes(bytes, blen);
     SimpleCharacterString_sp buf = SimpleCharacterString_O::make(blen); // max
     size_t len = fill_utf8_string(buf, bytes, blen);
     free(bytes);
@@ -734,7 +776,10 @@ struct loadltv {
     size_t index = next_index();
     uint32_t len = read_u32();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
-    cl__read_sequence(bytes, _stream, clasp_make_fixnum(0), nil<T_O>());
+    // Read the module bytecode straight into the vector through our buffer
+    // (equivalent to the previous cl__read_sequence, but without per-call stream
+    // overhead and consistent with the read-ahead buffer position).
+    read_bytes((unsigned char*)bytes->rowMajorAddressOfElement_(0), len);
     set_ltv(BytecodeModule_O::make(bytes), index);
   }
 
@@ -1076,7 +1121,7 @@ struct loadltv {
     // We need to keep this unlinked object code around so that it can be
     // saved in snapshots for relocating, so we just malloc to dodge GC.
     unsigned char* mc = (unsigned char*)malloc(nmc);
-    stream_read_byte8(_stream, mc, nmc); // read in machine code
+    read_bytes(mc, nmc); // read in machine code
     // Now feed the machine code to the JIT.
     llvm::StringRef sbuffer((const char*)mc, nmc);
     llvm::StringRef name(uniqueName);
@@ -1285,7 +1330,7 @@ struct loadltv {
 
   void load() {
     uint8_t header[BC_HEADER_SIZE];
-    stream_read_byte8(_stream, header, BC_HEADER_SIZE);
+    read_bytes(header, BC_HEADER_SIZE);
     uint64_t ninsts = ltv_header_decode(header);
     for (size_t i = 0; i < ninsts; ++i)
       load_instruction();
