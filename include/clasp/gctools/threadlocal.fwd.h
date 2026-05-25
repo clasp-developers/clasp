@@ -25,13 +25,21 @@ struct MonitorAllocations {
 #endif
 
 struct GlobalAllocationProfiler {
-  std::atomic<int64_t> _BytesAllocated;
+  // These counters live in the THREAD_LOCAL ThreadLocalStateLowLevel (as the
+  // member _Allocations) and are only ever accessed via
+  // my_thread_low_level->_Allocations, i.e. by the owning thread alone (see
+  // gcalloc_boehm.h, gcFunctions.cc, startRunStop.cc, memoryManagement.cc).
+  // There is no shared/global instance and no cross-thread read, so atomics are
+  // pure overhead on registerAllocation(), which runs on every heap allocation.
+  // Plain int64_t with in-class zero-init (the previous atomics were not all
+  // initialized by the constructors below).
+  int64_t _BytesAllocated = 0;
   size_t _AllocationSizeThreshold;
   size_t _AllocationNumberThreshold;
-  std::atomic<int64_t> _AllocationSizeCounter;
-  std::atomic<int64_t> _AllocationNumberCounter;
-  std::atomic<int64_t> _HitAllocationNumberCounter;
-  std::atomic<int64_t> _HitAllocationSizeCounter;
+  int64_t _AllocationSizeCounter = 0;
+  int64_t _AllocationNumberCounter = 0;
+  int64_t _HitAllocationNumberCounter = 0;
+  int64_t _HitAllocationSizeCounter = 0;
 #ifdef DEBUG_MONITOR_ALLOCATIONS
   MonitorAllocations _Monitor;
 #endif
