@@ -902,4 +902,10 @@
         *standard-pprint-dispatch* *initial-pprint-dispatch*)
   (setf (pprint-dispatch-table-read-only-p *standard-pprint-dispatch*) t)
   (setf (first (cdr si::+io-syntax-progv-list+)) *standard-pprint-dispatch*)
-  (setf *print-pretty* t))
+  ;; Default *print-pretty* to NIL, matching SBCL/CCL/CLISP. clasp's pretty
+  ;; printer is a CLOS Gray stream (a C++<->Lisp generic-dispatch per output
+  ;; character), making it ~370x slower than the ordinary printer; defaulting
+  ;; it on made every princ/prin1/format-~A/print pay that cost. The pretty
+  ;; printer remains available via PPRINT, ~<...~:>, *print-pretty* bindings,
+  ;; and the interactive REPL (which binds it back to T).
+  (setf *print-pretty* nil))
