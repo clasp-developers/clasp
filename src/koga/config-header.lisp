@@ -25,6 +25,7 @@
                  (if (eq (build-mode configuration) :bytecode)
                      "fasl"
                      "nfasl")
+                 "CLASP_BUILD_MODE_BYTECODE" (eq (build-mode configuration) :bytecode)
                  "USE_COMPILE_FILE_PARALLEL" (compile-file-parallel configuration)
                  "USE_DEFAULT_NATIVE" (default-native configuration)
                  "FORCE_STARTUP_EXTERNAL_LINKAGE" (force-startup-external-linkage configuration)
