@@ -270,7 +270,7 @@ where CREATED is true only if we succeeded on creating all directories."
 	    (let ((ps (namestring p)))
 	      (when verbose
 		(format t "~%;;; Making directory ~A" ps))
-	      (when (core::ensure-directory ps mode)
+	      (when (core:ensure-directory ps mode)
 		(setf created t))))))
       (values pathname created))))
 
