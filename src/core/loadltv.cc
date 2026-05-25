@@ -1315,6 +1315,71 @@ struct ltv_MmapInfo {
   ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len) {};
 };
 
+// Apple Silicon / parallel-build hardening for the FASL linker.
+//
+// clasp's GC and thread-coordination signals can interrupt slow syscalls
+// (EINTR), and a heavily parallel build can momentarily run into file-descriptor
+// pressure (EMFILE/ENFILE). The original code retried none of these and did not
+// check open(), so a transiently-failed open() returned -1 and only surfaced
+// later as a fatal and misleading "Could not mmap ... Bad file descriptor"
+// abort, breaking the whole build. These helpers retry transient failures so the
+// linker is robust under load.
+static bool ltv_transient_errno() {
+  return errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EAGAIN;
+}
+
+static int ltv_retry_open(const char* path, int flags) {
+  for (int attempt = 0;; ++attempt) {
+    int fd = ::open(path, flags);
+    if (fd >= 0 || !ltv_transient_errno() || attempt >= 1000)
+      return fd;
+    if (errno != EINTR)
+      usleep(1000); // brief backoff for fd-pressure (EMFILE/ENFILE/EAGAIN)
+  }
+}
+
+static int ltv_retry_close(int fd) {
+  int r;
+  do {
+    r = ::close(fd);
+  } while (r < 0 && errno == EINTR);
+  return r;
+}
+
+static int ltv_retry_munmap(void* addr, size_t len) {
+  int r;
+  do {
+    r = ::munmap(addr, len);
+  } while (r < 0 && errno == EINTR);
+  return r;
+}
+
+static int ltv_retry_rename(const char* from, const char* to) {
+  int r;
+  do {
+    r = ::rename(from, to);
+  } while (r < 0 && errno == EINTR);
+  return r;
+}
+
+// Write the whole buffer, retrying on EINTR and continuing after partial writes.
+// A bare write() may transfer fewer bytes than requested (or be interrupted),
+// which previously silently truncated the linked FASL.
+static bool ltv_write_all(int fd, const void* buf, size_t len) {
+  const uint8_t* p = static_cast<const uint8_t*>(buf);
+  while (len > 0) {
+    ssize_t w = ::write(fd, p, len);
+    if (w < 0) {
+      if (errno == EINTR)
+        continue;
+      return false;
+    }
+    p += w;
+    len -= static_cast<size_t>(w);
+  }
+  return true;
+}
+
 void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instruction_count, bool verbose) {
   String_sp filename = gc::As<String_sp>(cl__namestring(output));
   std::string sfilename = filename->get_std_string();
@@ -1322,7 +1387,17 @@ void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instr
   strncpy(bfilename, sfilename.c_str(), sfilename.size());
   bfilename[sfilename.size()] = '\0';
   strcat(bfilename, "XXXXXX");
-  int fout = mkstemp(bfilename);
+  int fout;
+  for (int attempt = 0;; ++attempt) {
+    // mkstemp() overwrites the "XXXXXX" template in place, so it must be
+    // restored before each retry.
+    strcpy(bfilename + sfilename.size(), "XXXXXX");
+    fout = mkstemp(bfilename);
+    if (fout >= 0 || !ltv_transient_errno() || attempt >= 1000)
+      break;
+    if (errno != EINTR)
+      usleep(1000);
+  }
   if (fout < 0) {
     SIMPLE_ERROR("Could not open temporary mkstemp file with {} as the template - error: {}", _rep_(filename), strerror(errno));
   }
@@ -1334,23 +1409,27 @@ void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instr
   // Write header
   uint8_t header[BC_HEADER_SIZE];
   ltv_header_encode(header, instruction_count);
-  write(fout, header, BC_HEADER_SIZE);
+  if (!ltv_write_all(fout, header, BC_HEADER_SIZE)) {
+    SIMPLE_ERROR("Could not write header to {} - error: {}", _rep_(filename), strerror(errno));
+  }
 
   for (auto mmap : mmaps) {
-    write(fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE);
-    int res = munmap(mmap._Memory, mmap._Len);
+    if (!ltv_write_all(fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE)) {
+      SIMPLE_ERROR("Could not write body to {} - error: {}", _rep_(filename), strerror(errno));
+    }
+    int res = ltv_retry_munmap(mmap._Memory, mmap._Len);
     if (res != 0) {
-      SIMPLE_ERROR("Could not munmap memory");
+      SIMPLE_ERROR("Could not munmap memory - error: {}", strerror(errno));
     }
   }
 
   if (verbose)
     clasp_write_string(fmt::format("Closing {}\n", _rep_(filename)));
-  close(fout);
-  int ren = rename(bfilename, sfilename.c_str());
+  ltv_retry_close(fout);
+  int ren = ltv_retry_rename(bfilename, sfilename.c_str());
   if (ren < 0) {
     std::string sbfilename(bfilename);
-    SIMPLE_ERROR("Could not rename {} to {}", sbfilename, sfilename.c_str());
+    SIMPLE_ERROR("Could not rename {} to {} - error: {}", sbfilename, sfilename.c_str(), strerror(errno));
   }
   if (verbose)
     clasp_write_string(fmt::format("Returning {}\n", _rep_(filename)));
@@ -1365,11 +1444,14 @@ CL_DEFUN void core__link_fasl_files(T_sp output, T_sp files, bool verbose) {
     SimpleVector_sp vfiles = files.as_unsafe<SimpleVector_O>();
     for (auto const& tfile : vfiles) {
       String_sp filename = cl__namestring(tfile).as<String_O>();
-      int fd = open(filename->get_std_string().c_str(), O_RDONLY);
+      int fd = ltv_retry_open(filename->get_std_string().c_str(), O_RDONLY);
+      if (fd < 0) {
+        SIMPLE_ERROR("Could not open {} because of {}", _rep_(filename), strerror(errno));
+      }
       off_t fsize = lseek(fd, 0, SEEK_END);
       lseek(fd, 0, SEEK_SET);
       uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-      close(fd);
+      ltv_retry_close(fd);
       if (memory == MAP_FAILED) {
         SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
       }
@@ -1380,11 +1462,14 @@ CL_DEFUN void core__link_fasl_files(T_sp output, T_sp files, bool verbose) {
     for (size_t ii = 0; files.notnilp(); ++ii) {
       String_sp filename = gc::As<String_sp>(cl__namestring(oCar(files)));
       files = oCdr(files);
-      int fd = open(filename->get_std_string().c_str(), O_RDONLY);
+      int fd = ltv_retry_open(filename->get_std_string().c_str(), O_RDONLY);
+      if (fd < 0) {
+        SIMPLE_ERROR("Could not open {} because of {}", _rep_(filename), strerror(errno));
+      }
       off_t fsize = lseek(fd, 0, SEEK_END);
       lseek(fd, 0, SEEK_SET);
       uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-      close(fd);
+      ltv_retry_close(fd);
       if (memory == MAP_FAILED) {
         SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
       }
