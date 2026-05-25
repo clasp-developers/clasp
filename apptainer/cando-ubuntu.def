@@ -32,5 +32,6 @@ From: /home/drmeister/Development/cando/amber.sif
     export LD_LIBRARY_PATH=/usr/local/lib
 #    export XDG_CACHE_HOME=/home/cando/.cache
 
-
+%runscript
+    exec cando "$@"
 

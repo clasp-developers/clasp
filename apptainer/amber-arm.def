@@ -31,7 +31,7 @@ From: ubuntu:26.04
                libbz2-dev libzip-dev \
                xorg-dev wget cmake \
                mpich openssh-client linux-perf \
-               libtool-bin libvterm-dev bzip2
+               libtool-bin libvterm-dev bzip2 gdb gdbserver
 
     cd /opt
     bunzip2 -c /downloads/rosetta.tar.bz2 | tar xvf - --strip-components=1
@@ -52,7 +52,7 @@ From: ubuntu:26.04
 
 
 
-    apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget gdb
+    apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget 
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
     bash Miniconda3-latest-Linux-aarch64.sh -b -p /home/cando/miniconda3
     rm -rf Miniconda3-latest-Linux-aarch64.sh
@@ -81,7 +81,4 @@ From: ubuntu:26.04
 
 #    export LD_LIBRARY_PATH=/usr/local/lib
 #    export XDG_CACHE_HOME=/home/cando/.cache
-
-%runscript
-     exec claude "$@"
 
