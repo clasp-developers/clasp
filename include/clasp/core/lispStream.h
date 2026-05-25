@@ -685,6 +685,9 @@ public:
   String_sp get_string();
 
   claspCharacter write_char(claspCharacter c) override;
+  // Bulk override: avoids the per-character boxing + virtual vectorPushExtend
+  // of the default AnsiStream_O::write_string char-by-char loop.
+  void write_string(String_sp data, cl_index start, cl_index end) override;
   void clear_output() override;
   void finish_output() override;
   void force_output() override;

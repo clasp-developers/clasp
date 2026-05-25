@@ -668,10 +668,15 @@ Use special code 0 to cancel this operation.")
 	   (push (subseq line start end) list)))))
 
 (defun tpl-print (values)
-  (fresh-line)
-  (dolist (v values)
-    (prin1 v)
-    (terpri)))
+  ;; The global default of *print-pretty* is NIL (the ordinary printer is far
+  ;; faster than clasp's CLOS-Gray-stream pretty printer). Re-enable pretty
+  ;; printing for interactive REPL results only, where the per-form cost is
+  ;; irrelevant and nicely-wrapped output is desirable.
+  (let ((*print-pretty* t))
+    (fresh-line)
+    (dolist (v values)
+      (prin1 v)
+      (terpri))))
 
 (defun tpl-unknown-command (command)
   (format t "Unknown top level command: ~s~%" command)

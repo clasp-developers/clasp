@@ -428,6 +428,11 @@ namespace llvmo {
 core::T_sp identify_code_or_library(gctools::clasp_ptr_t entry_point);
 
 size_t countObjectFileNames(const std::string& name);
+// Maintain the O(1) name->count index used by countObjectFileNames.
+// recordObjectFileName is called for every registered object file;
+// clearObjectFileNameCounts is called whenever _AllObjectFiles is cleared.
+void recordObjectFileName(const std::string& name);
+void clearObjectFileNameCounts();
 
 std::string createIRModuleObjectFileName(size_t startupId, std::string& prefix);
 bool verifyIRModuleObjectFileStartupSymbol(const std::string& name);
@@ -456,6 +461,8 @@ template <typename Stage = gctools::RuntimeStage> void registerObjectFile(Object
     expected = _lisp->_Roots._AllObjectFiles.load();
     entry->rplacd(expected);
   } while (!_lisp->_Roots._AllObjectFiles.compare_exchange_weak(expected, entry));
+  // Keep the O(1) countObjectFileNames index in sync (single add point).
+  recordObjectFileName(name);
 }
 
 }; // namespace llvmo
