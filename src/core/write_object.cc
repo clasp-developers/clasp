@@ -49,6 +49,8 @@ THE SOFTWARE.
 namespace core {
 
 bool will_print_as_hash(T_sp x) {
+  if (core::_sym_PERCENTcircle_check->fboundp())
+    return ((T_sp)core::eval::funcall(core::_sym_PERCENTcircle_check, x)).notnilp();
   T_sp circle_counter = _sym_STARcircle_counterSTAR->symbolValue();
   HashTable_sp circle_stack = gc::As<HashTable_sp>(_sym_STARcircle_stackSTAR->symbolValue());
   T_sp code = circle_stack->gethash(x, unbound<T_O>());
@@ -141,7 +143,8 @@ T_sp do_write_object_circle(T_sp x, T_sp stream) {
 }
 
 T_sp write_object(T_sp x, T_sp stream) {
-  // With *print-pretty*, go immediately to the pretty printer, which does its own *print-circle* etc.
+  if (core::_sym_PERCENTwrite_object->fboundp())
+    return core::eval::funcall(core::_sym_PERCENTwrite_object, x, stream);
   if (!cl::_sym_STARprint_prettySTAR.unboundp() && cl::_sym_STARprint_prettySTAR->boundP() &&
       cl::_sym_STARprint_prettySTAR->symbolValue().notnilp()) {
     T_mv mv_f = eval::funcall(cl::_sym_pprint_dispatch, x);

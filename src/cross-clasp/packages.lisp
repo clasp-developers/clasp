@@ -364,6 +364,17 @@
            #:stream-line-length #:stream-line-column
            #:stream-file-position #:stream-advance-to-column))
 
+(defpackage #:cross-clasp.clasp.incless-intrinsic
+  (:use #:cl)
+  (:export #:*client*
+           #:client))
+(defpackage #:cross-clasp.clasp.inravina-intrinsic
+  (:use #:cl)
+  (:export #:client))
+(defpackage #:cross-clasp.clasp.invistra-intrinsic
+  (:use #:cl)
+  (:export #:client))
+
 (defpackage #:cross-clasp
   (:use #:cl)
   (:local-nicknames (#:m #:maclina.machine)

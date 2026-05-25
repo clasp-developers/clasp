@@ -251,7 +251,7 @@ T_sp stream_open(T_sp fn, StreamDirection direction, StreamIfExists if_exists, S
 CL_LISPIFY_NAME("gray:%close")
 CL_DEFUN T_sp stream_close(T_sp stream, T_sp abort) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->close(abort)
-                                    : eval::funcall(gray::_sym_close, stream, kw::_sym_abort, abort);
+                                    : eval::funcall(cl::_sym_close, stream, kw::_sym_abort, abort);
 }
 
 // Low level byte functions
@@ -469,7 +469,7 @@ void stream_write_sequence(T_sp stream, T_sp data, cl_index start, cl_index end)
 CL_LISPIFY_NAME("gray:%open-stream-p")
 CL_DEFUN bool stream_open_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->open_p()
-                                    : T_sp(eval::funcall(gray::_sym_open_stream_p, stream)).notnilp();
+                                    : T_sp(eval::funcall(cl::_sym_open_stream_p, stream)).notnilp();
 }
 
 bool stream_p(T_sp stream) {
@@ -479,7 +479,7 @@ bool stream_p(T_sp stream) {
 CL_LISPIFY_NAME("gray:%input-stream-p")
 CL_DEFUN bool stream_input_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->input_p()
-                                    : T_sp(eval::funcall(gray::_sym_input_stream_p, stream)).notnilp();
+                                    : T_sp(eval::funcall(cl::_sym_input_stream_p, stream)).notnilp();
 }
 
 // This function is exposed to CL because it is needed to implement
@@ -488,7 +488,7 @@ CL_DEFUN bool stream_input_p(T_sp stream) {
 CL_LISPIFY_NAME("gray:%output-stream-p")
 CL_DEFUN bool stream_output_p(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->output_p()
-                                    : T_sp(eval::funcall(gray::_sym_output_stream_p, stream)).notnilp();
+                                    : T_sp(eval::funcall(cl::_sym_output_stream_p, stream)).notnilp();
 }
 
 // This function is exposed to CL because it is needed to implement
@@ -508,7 +508,7 @@ CL_DEFUN bool stream_interactive_p(T_sp stream) {
 CL_LISPIFY_NAME("gray:%stream-element-type")
 CL_DEFUN T_sp stream_element_type(T_sp stream) {
   return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->element_type()
-                                    : eval::funcall(gray::_sym_stream_element_type, stream);
+                                    : eval::funcall(cl::_sym_stream_element_type, stream);
 }
 
 // This function is exposed to CL because it is needed to implement
@@ -650,11 +650,11 @@ void stream_restore_input_cursor(T_sp stream) {
 // Stream pathname functions
 
 T_sp stream_pathname(T_sp stream) {
-  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->pathname() : eval::funcall(gray::_sym_pathname, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->pathname() : eval::funcall(cl::_sym_pathname, stream);
 }
 
 T_sp stream_truename(T_sp stream) {
-  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->truename() : eval::funcall(gray::_sym_truename, stream);
+  return stream.isA<AnsiStream_O>() ? stream.as_unsafe<AnsiStream_O>()->truename() : eval::funcall(cl::_sym_truename, stream);
 }
 
 // Stream file descriptor functions
