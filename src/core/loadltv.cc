@@ -81,6 +81,12 @@ struct loadltv {
   size_t _next_index = 0;
   // native modules
   T_sp _JITDylib = nil<T_O>();
+  // Cache the last (debug-info path literal -> FileScope). Consecutive debug
+  // locations from the same source file share the same path literal, so this
+  // avoids a redundant string copy + locked hash intern (core__file_scope) per
+  // location during boot. eq-compared; falls back to the real call on a miss.
+  T_sp _lastDebugPath = nil<T_O>();
+  T_sp _lastDebugScope = nil<T_O>();
 
   // Read buffer. loadltv otherwise pulls the FASL one byte / one small field at
   // a time straight from the stream, and every such call is a virtual stream
@@ -1009,8 +1015,14 @@ struct loadltv {
     Integer_sp end = Integer_O::create(read_u32());
     T_sp path = get_ltv(read_index());
     uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
-    T_mv sfi_mv = core__file_scope(path);
-    FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
+    FileScope_sp sfi;
+    if (path == _lastDebugPath && _lastDebugScope.notnilp()) {
+      sfi = gc::As_unsafe<FileScope_sp>(_lastDebugScope);
+    } else {
+      sfi = gc::As<FileScope_sp>(core__file_scope(path));
+      _lastDebugPath = path;
+      _lastDebugScope = sfi;
+    }
     SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filepos, line, column);
     return BytecodeDebugLocation_O::make(start, end, spi);
   }
