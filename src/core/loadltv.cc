@@ -571,8 +571,17 @@ struct loadltv {
     for (size_t i = 0; i < rank; ++i) {
       uint16_t dim = read_u16();
       dims << clasp_make_fixnum(dim);
-      total *= dim;
+      // Overflow-checked: with rank up to 255 and dim up to 0xFFFF, total can
+      // overflow size_t on a malformed FASL, then be passed to make_vector /
+      // make_mdarray as a wrapped-around small value -- mismatch with the per-
+      // element fill loop would read/write past the allocated buffer.
+      if (__builtin_mul_overflow(total, (size_t)dim, &total))
+        SIMPLE_ERROR("Invalid FASL: op_array dimension product overflows size_t");
     }
+    // Defense in depth against absurd FASL-supplied sizes.
+    constexpr size_t MAX_ARRAY_TOTAL = (size_t)1 << 30; // 1G elements
+    if (total > MAX_ARRAY_TOTAL)
+      SIMPLE_ERROR("Invalid FASL: op_array total size {} exceeds limit {}", total, MAX_ARRAY_TOTAL);
     Array_sp arr =
         (rank == 1)
             // very unsure about the cast, but this is an ambiguous ?: otherwise
@@ -642,10 +651,23 @@ struct loadltv {
   void op_bignum() {
     size_t index = next_index();
     int64_t ssize = read_s64();
-    mp_limb_t limbs[std::abs(ssize)];
-    for (size_t i = std::abs(ssize); i > 0; --i)
+    // ssize carries sign; std::abs(ssize) is the limb count. Three hazards in the
+    // original code, all triggerable by one byte of a malformed FASL:
+    //   (1) std::abs(INT64_MIN) is undefined behavior.
+    //   (2) A stack VLA sized straight from file input can overflow the stack
+    //       (or be smashed) on any large value.
+    //   (3) No upper bound -- a malformed FASL can ask for tens of GB.
+    // Reject INT64_MIN, cap at a sane limit, and heap-allocate via std::vector.
+    if (ssize == std::numeric_limits<int64_t>::min())
+      SIMPLE_ERROR("Invalid FASL: op_bignum size INT64_MIN");
+    constexpr uint64_t MAX_LIMBS = (uint64_t)1 << 20; // ~8 MB bignum, very generous
+    uint64_t size = (uint64_t)std::abs(ssize);
+    if (size > MAX_LIMBS)
+      SIMPLE_ERROR("Invalid FASL: op_bignum size {} exceeds limit {}", size, MAX_LIMBS);
+    std::vector<mp_limb_t> limbs(size);
+    for (size_t i = size; i > 0; --i)
       limbs[i - 1] = read_u64();
-    set_ltv(bignum_result(ssize, limbs), index);
+    set_ltv(bignum_result(ssize, limbs.data()), index);
   }
 
   void op_binary16() {
