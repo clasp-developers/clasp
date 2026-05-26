@@ -8,14 +8,12 @@ use mmtk::vm::slot::Slot;
 //   CONS_TAG    = 0b011 = 3
 //   ZERO_TAG_MASK = 0x07
 //
-// A slot holds a GC-managed heap pointer iff (value & POINTER_TAG_MASK) == POINTER_TAG_EQ,
-// where POINTER_TAG_MASK = ~(GENERAL_TAG ^ CONS_TAG) & ZERO_TAG_MASK = ~2 & 7 = 5
-//   and POINTER_TAG_EQ   = GENERAL_TAG & CONS_TAG = 1.
+// A slot holds a GC-managed heap pointer iff (value & TAG_MASK) == GENERAL_TAG or CONS_TAG.
 // All other tags (fixnums, characters, single-floats, vaslist, unbound, ...) return None.
-const TAG_MASK: usize = 0x07;
+const TAG_MASK: usize = 0b111;
 const PTR_MASK: usize = !TAG_MASK;
-const POINTER_TAG_MASK: usize = 5;
-const POINTER_TAG_EQ: usize = 1;
+const GENERAL_TAG: usize = 0b001;
+const CONS_TAG: usize = 0b011;
 
 /// An MMTk slot holding a Clasp tagged pointer.
 ///
@@ -37,7 +35,8 @@ impl ClaspVMSlot {
 impl Slot for ClaspVMSlot {
     fn load(&self) -> Option<ObjectReference> {
         let tagged = unsafe { (*self.slot).load(Ordering::Relaxed) };
-        if (tagged & POINTER_TAG_MASK) == POINTER_TAG_EQ {
+        let tag = tagged & TAG_MASK;
+        if tag == GENERAL_TAG || tag == CONS_TAG {
             ObjectReference::from_raw_address(unsafe { Address::from_usize(tagged & PTR_MASK) })
         } else {
             None
