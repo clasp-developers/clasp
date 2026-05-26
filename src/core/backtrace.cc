@@ -116,12 +116,16 @@ static SimpleBaseString_sp lu_procname(unw_cursor_t* cursorp) {
       return SimpleBaseString_O::make("<unknown libunwind error>");
     }
     if (nbytes >= 4096) {
-      // Too long. Give up, putting an ellipsis on the end
-      char fnamedot[nbytes + 3];
-      fnamedot[0] = '\0';
-      strcat(fnamedot, fname);
-      strcat(fnamedot, "...");
-      return SimpleBaseString_O::make(fnamedot);
+      // Too long. libunwind returned UNW_ENOMEM, which means it filled (up to)
+      // nbytes bytes and may NOT have written a terminating NUL. The previous
+      // code did strcat(fnamedot, fname), which assumes fname is NUL-terminated
+      // -- without that guarantee it reads off the end of the buffer into the
+      // stack until it finds a NUL and writes that past fnamedot. Bound the
+      // read with strnlen and build the result without strcat.
+      size_t len = strnlen(fname, nbytes);
+      std::string s(fname, len);
+      s.append("...");
+      return SimpleBaseString_O::make(s);
     } else
       nbytes <<= 1;
   } while (true);
