@@ -42,10 +42,20 @@ DOCGROUP(clasp);
 CL_DEFUN void serve_event_internal__ll_fd_zero(clasp_ffi::ForeignData_sp fdset) { FD_ZERO(fdset->data<fd_set*>()); }
 
 DOCGROUP(clasp);
-CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) { FD_SET(fd, fdset->data<fd_set*>()); }
+// Range-check fd: FD_SET/FD_ISSET write/read out of bounds of the fd_set bit
+// array for fd outside [0, FD_SETSIZE).
+static inline void serve_event_check_fd(int fd) {
+  if (fd < 0 || fd >= FD_SETSIZE)
+    SIMPLE_ERROR("File descriptor {} out of range for fd_set [0..{})", fd, (int)FD_SETSIZE);
+}
+CL_DEFUN void serve_event_internal__ll_fd_set(int fd, clasp_ffi::ForeignData_sp fdset) {
+  serve_event_check_fd(fd);
+  FD_SET(fd, fdset->data<fd_set*>());
+}
 
 DOCGROUP(clasp);
 CL_DEFUN int serve_event_internal__ll_fd_isset(int fd, clasp_ffi::ForeignData_sp fdset) {
+  serve_event_check_fd(fd);
   return FD_ISSET(fd, fdset->data<fd_set*>());
 }
 
