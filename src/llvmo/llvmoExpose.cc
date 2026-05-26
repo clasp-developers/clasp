@@ -255,7 +255,18 @@ const char* my_LLVMSymbolLookupCallback(void* DisInfo, uint64_t ReferenceValue, 
       ss << "[" << dbg_safe_repr(*(void**)ReferenceValue) << "]";
     }
     ss << "}";
-    strcpy(global_LLVMSymbolLookupCallbackBuffer, ss.str().c_str());
+    {
+      // Bounded copy: ss may exceed CALLBACK_BUFFER_SIZE (e.g. when
+      // dbg_safe_repr emits a long object printout). strcpy with no length
+      // check would overflow the fixed buffer. Truncate -- this is a JIT
+      // debug/diagnostic path, so a clipped name is acceptable.
+      const std::string s = ss.str();
+      size_t n = s.size() < (size_t)(CALLBACK_BUFFER_SIZE - 1)
+                     ? s.size()
+                     : (size_t)(CALLBACK_BUFFER_SIZE - 1);
+      memcpy(global_LLVMSymbolLookupCallbackBuffer, s.data(), n);
+      global_LLVMSymbolLookupCallbackBuffer[n] = '\0';
+    }
     *ReferenceName = global_LLVMSymbolLookupCallbackBuffer;
     //    printf("%s:%d:%s Returning symbol-table result |%s|\n", __FILE__, __LINE__, __FUNCTION__, *ReferenceName);
     return *ReferenceName;
@@ -268,7 +279,18 @@ const char* my_LLVMSymbolLookupCallback(void* DisInfo, uint64_t ReferenceValue, 
     if (ReferenceValue != (uintptr_t)data.dli_saddr) {
       ss << "+" << (ReferenceValue - (uintptr_t)data.dli_saddr);
     }
-    strcpy(global_LLVMSymbolLookupCallbackBuffer, ss.str().c_str());
+    {
+      // Bounded copy: ss may exceed CALLBACK_BUFFER_SIZE (e.g. when
+      // dbg_safe_repr emits a long object printout). strcpy with no length
+      // check would overflow the fixed buffer. Truncate -- this is a JIT
+      // debug/diagnostic path, so a clipped name is acceptable.
+      const std::string s = ss.str();
+      size_t n = s.size() < (size_t)(CALLBACK_BUFFER_SIZE - 1)
+                     ? s.size()
+                     : (size_t)(CALLBACK_BUFFER_SIZE - 1);
+      memcpy(global_LLVMSymbolLookupCallbackBuffer, s.data(), n);
+      global_LLVMSymbolLookupCallbackBuffer[n] = '\0';
+    }
     *ReferenceName = global_LLVMSymbolLookupCallbackBuffer;
     //    printf("%s:%d:%s Returning dladdr result |%s|\n", __FILE__, __LINE__, __FUNCTION__, *ReferenceName);
     return *ReferenceName;
