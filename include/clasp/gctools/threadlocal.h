@@ -343,7 +343,7 @@ public:
     walk((gctools::Tagged*)&_WriteToStringOutputStream);
     // multiple values shouldn't be needed since we only GC at safe points
     walk((gctools::Tagged*)&_DynEnvStackBottom);
-    walk((gctools::Tagged*)&_UnwindDest);
+    //walk((gctools::Tagged*)&_UnwindDest);
   }
   // Call a function on the addresses of objects in the bytecode stack.
   template <std::invocable<gctools::Tagged*> Walker>
