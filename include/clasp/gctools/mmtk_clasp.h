@@ -52,6 +52,9 @@ extern bool mmtk_clasp_is_live_object(void* object_ref);
 extern bool mmtk_clasp_will_never_move(void* object_ref);
 extern bool mmtk_clasp_is_in_mmtk_spaces(const void* object_ref);
 extern bool mmtk_clasp_is_mapped_address(void* addr);
+// Returns true iff addr is the ObjectReference (client pointer) of a live MMTk object.
+// Requires the vo_bit feature in the Rust binding.
+extern bool mmtk_clasp_is_mmtk_object(const void* addr);
 
 // GC control
 extern void mmtk_clasp_handle_user_collection_request(void* tls);

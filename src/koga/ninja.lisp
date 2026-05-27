@@ -174,7 +174,8 @@
                       :pool "console"))
   (ninja:write-rule output-stream :compile-module
                     :command "$clasp --non-interactive --norc --disable-mpi --image $image --feature ignore-extensions --load compile-module.lisp -- $fasl $source"
-                    :description "Compiling module $in")
+                    :description "Compiling module $in"
+                    :pool "console")
   (ninja:write-rule output-stream :regression-tests
                     :command "$clasp --norc --non-interactive --base --feature ignore-extensions --load \"sys:src;lisp;regression-tests;run-all.lisp\""
                     :description "Running regression tests"
@@ -217,7 +218,7 @@
                     :description "Updating unicode tables")
   (when (cargo configuration)
     (ninja:write-rule output-stream :cargo-build
-                      :command (format nil "~a build --release --manifest-path ../src/mmtk_clasp/Cargo.toml --target-dir mmtk_cargo"
+                      :command (format nil "~a build --manifest-path ../src/mmtk_clasp/Cargo.toml --target-dir mmtk_cargo"
                                        (cargo configuration))
                       :restat 1
                       :description "Building MMTk Clasp binding")))
@@ -485,7 +486,7 @@
                      :outputs (list (build-name "generated"))
                      :inputs generated)
   (let ((mmtk-lib (when (eq :mmtk *variant-gc*)
-                    (make-source "mmtk_cargo/release/libmmtk_clasp.a" :build))))
+                    (make-source "mmtk_cargo/debug/libmmtk_clasp.a" :build))))
     ;; Emit cargo-build only once — all mmtk variants share the same static lib.
     (when (and mmtk-lib (not *variant-debug*))
       (ninja:write-build output-stream :cargo-build

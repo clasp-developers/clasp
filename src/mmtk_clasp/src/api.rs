@@ -160,6 +160,12 @@ pub extern "C" fn mmtk_clasp_is_mapped_address(address: Address) -> bool {
     memory_manager::is_mapped_address(address)
 }
 
+#[cfg(feature = "vo_bit")]
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_is_mmtk_object(address: Address) -> bool {
+    memory_manager::is_mmtk_object(address).is_some()
+}
+
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_handle_user_collection_request(tls: VMMutatorThread) {
     memory_manager::handle_user_collection_request::<ClaspVM>(mmtk(), tls);

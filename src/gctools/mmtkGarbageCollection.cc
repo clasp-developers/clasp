@@ -41,11 +41,9 @@ namespace gctools {
 __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
   // Build and initialise the MMTk instance.
   MMTkClaspBuilder builder = mmtk_clasp_create_builder();
-  // NoGC plan: allocate but never collect (Phase 1).
-  mmtk_clasp_set_option(builder, "plan", "NoGC");
-  // Dynamic heap: start at 1 GiB, grow up to 96 GiB as needed (NoGC never collects).
-  mmtk_clasp_set_dynamic_heap_size(builder, (size_t)1 * 1024 * 1024 * 1024,
-                                   (size_t)96 * 1024 * 1024 * 1024);
+  mmtk_clasp_set_option(builder, "plan", "Immix");
+  mmtk_clasp_set_dynamic_heap_size(builder, (size_t)256 * 1024 * 1024,
+                                   (size_t)4 * 1024 * 1024 * 1024);
   mmtk_clasp_init(builder);
 
   // Set up thread-local state for the main thread.
@@ -91,14 +89,31 @@ CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 // Scan the pointer fields of an object, calling callback for each field address.
 // Uses scan::cons / scan::general_pointers; weak pointers are treated as strong
 // for now (they are traced but not cleared if the referent dies).
-extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data) {
+extern "C" [[clang::optnone]] void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data) {
   const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
+  auto scan = [&](core::T_O** field) {
+    gctools::Tagged thing = *(gctools::Tagged*)field;
+    switch (gctools::ptag(thing)) {
+    case gctools::general_tag: {
+      void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
+      if (header < (gctools::Header_s*)0x1000) abort();
+      if (!header->isValidGeneralObject()) abort();
+    } break;
+    case gctools::cons_tag: {
+      void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
+      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
+      if (header < (gctools::ConsHeader_s*)0x1000) abort();
+      if (!header->isValidConsObject()) abort();
+    }
+    }
+    callback(static_cast<void*>(field), data);
+  };
   if (near->_badge_stamp_wtag_mtag.consObjectP()) {
-    gctools::scan::cons(static_cast<core::Cons_O*>(client),
-                        [&](core::T_O** field) { callback(static_cast<void*>(field), data); });
+    gctools::scan::cons(static_cast<core::Cons_O*>(client), scan);
   } else {
     gctools::scan::general_pointers(static_cast<core::General_O*>(client),
-                                    [&](core::T_O** field) { callback(static_cast<void*>(field), data); });
+                                    scan);
   }
 }
 
@@ -128,37 +143,54 @@ extern "C" MMTkClaspMutator clasp_get_mutator(void* tls) {
 // These are called with the world stopped.
 
 extern "C" void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void* data) {
-  gctools::walkGlobalRoots([&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); });
+  gctools::walkGlobalRoots([&](gctools::Tagged* tp) {
+    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
+    switch (gctools::ptag(*tp)) {
+    case gctools::general_tag:
+    case gctools::cons_tag: {
+      if (client < (void*)0x1000) abort();
+    } break;
+    }
+    callback(static_cast<void*>(tp), data);
+  });
 }
 
 extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallback callback, void* data) {
   core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
-  ts->walkRoots([&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); });
-  ts->walkVMStack([&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); });
+  auto walk = [&](gctools::Tagged* tp) {
+    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
+    switch (gctools::ptag(*tp)) {
+    case gctools::general_tag: {
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
+      if (header > (gctools::Header_s*)0x1000 && header->isValidGeneralObject())
+        callback(static_cast<void*>(tp), data);
+      else abort();
+    } break;
+    case gctools::cons_tag: {
+      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
+      if (header > (gctools::ConsHeader_s*)0x1000 && header->isValidConsObject())
+        callback(static_cast<void*>(tp), data);
+      else abort();
+    } break;
+    }
+    //callback(static_cast<void*>(tp), data);
+  };
+  ts->walkRoots(walk);
+  ts->walkVMStack(walk);
 }
 
 extern "C" void clasp_walk_thread_conservative_roots(void* tls, ClaspConservativeRootCallback callback, void* data) {
   core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
   ts->walkControlStack([&](gctools::Tagged* tp) {
-    // Strip the tag without using untag_object (which asserts) since stack
-    // values may have coincidental tag bits and not be valid pointers.
+    // Strip all tag bits to get a potential client pointer.  Only aligned,
+    // non-null addresses can be MMTk object references.
     void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
-    if (!client || !mmtk_clasp_is_in_mmtk_spaces(client))
+    if (!client)
       return;
-    switch (gctools::ptag(*tp)) {
-    case gctools::general_tag: {
-      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
-      if (header->isValidGeneralObject())
-        callback(client, data);
-    } break;
-    case gctools::cons_tag: {
-      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
-      if (header->isValidConsObject())
-        callback(client, data);
-    } break;
-    default:
-      break;
-    }
+    // The VO bit is the authoritative check: MMTk sets it at allocation and
+    // clears it at reclamation, so it is reliable without inspecting headers.
+    if (mmtk_clasp_is_mmtk_object(client))
+      callback(client, data);
   });
 }
 

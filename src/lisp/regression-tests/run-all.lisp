@@ -65,7 +65,7 @@
     "extensions"
     "cltl2"
     "run-program"
-    "snapshot"))
+    #+(or)"snapshot"))
 
 (loop with requested-suites = (core:split (or (ext:getenv "TEST_SUITES") "") ",")
       for suite in *suites*

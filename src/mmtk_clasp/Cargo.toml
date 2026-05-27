@@ -16,5 +16,6 @@ libc = "0.2"
 thread-id = "*"
 
 [features]
-default = []
+default = ["vo_bit", "immix_non_moving"]
 vo_bit = ["mmtk/vo_bit"]
+immix_non_moving = ["mmtk/immix_non_moving"]

@@ -343,7 +343,7 @@ has not been set."
     (setf (cargo configuration) cargo))
   ;; For mmtk variants, link against the static library produced by cargo.
   ;; The path is relative to the build directory where ninja runs.
-  (append-ldlibs configuration "mmtk_cargo/release/libmmtk_clasp.a" :gc :mmtk)
+  (append-ldlibs configuration "mmtk_cargo/debug/libmmtk_clasp.a" :gc :mmtk)
   #+linux (append-ldlibs configuration "-lpthread -ldl -lm" :gc :mmtk))
 
 (defmethod configure-unit (configuration (unit (eql :asdf)))
