@@ -996,12 +996,14 @@ palettes, your value is honored and a warning is printed to
 ;;;                                            duration=10s, rate=97Hz)
 ;;;   key=value:key=value:...              -> enabled with overrides
 ;;;
-;;; Known keys: path, duration (seconds), rate (Hz). Unknown keys emit
-;;; a warning but do not disable the profiler.
+;;; Known keys: path, duration (seconds), rate (Hz). The path value
+;;; may contain ${PID} which is replaced with the process ID at
+;;; snapshot time. Unknown keys emit a warning but do not disable
+;;; the profiler.
 ;;;
 ;;; Examples:
 ;;;   CLASP_FLAME_PROFILE=1 cando ...
-;;;   CLASP_FLAME_PROFILE=path=/tmp/foo.svg:duration=5:rate=499 cando ...
+;;;   CLASP_FLAME_PROFILE=path=/tmp/foo-${PID}.svg:duration=5:rate=499 cando ...
 ;;;   kill -USR2 <pid>
 ;;; ---------------------------------------------------------------------------
 
@@ -1070,10 +1072,21 @@ Known keys: path, duration, rate."
                              errors))))))))
            (values t plist (nreverse errors)))))))
 
+  (defun expand-path-variables (path)
+    "Replace ${PID} in PATH with the current process ID."
+    (let ((pos (search "${PID}" path)))
+      (if pos
+          (concatenate 'string
+                       (subseq path 0 pos)
+                       (princ-to-string (core:getpid))
+                       (expand-path-variables (subseq path (+ pos 6))))
+          path)))
+
   (defun snapshot (path &key (duration *snapshot-duration*))
     "Run DURATION seconds of sampling profiling on a background thread
 and write the flame graph SVG to PATH. Returns T if a snapshot was
 spawned, NIL if the profiler was already running."
+    (setf path (expand-path-variables path))
     (when (ext:profile-running-p)
       (format *error-output* "flamegraph: profiler already running~%")
       (return-from snapshot nil))
