@@ -24,9 +24,11 @@
 ;;;; All other records in the .dif are records to add as-is.
 ;;;;
 ;;;; The base-fingerprint is a hash of the *canonical* form (normalized,
-;;;; sorted) of the base .sif used at diff time.  At merge time we re-hash
-;;;; the supplied base and refuse to proceed on a mismatch — this catches
-;;;; the case where a stale .dif is applied against a freshly-rebuilt base.
+;;;; sorted) of the base .sif used at diff time.  The hash is recorded for
+;;;; diagnostics but not enforced at merge time — the strict check was too
+;;;; restrictive since any core C++ change invalidates the hash even when
+;;;; the extension's additions are independent.  The format-version check
+;;;; and dedupe-and-check-records conflict detection remain active.
 ;;;;
 ;;;; This tool assumes that every extension's .sif is a strict superset of
 ;;;; the bare-clasp .sif (additive only — no removed records or removed
@@ -244,6 +246,7 @@
     (t
      (let ((expected (getf fingerprint :hash))
            (actual   (compute-base-fingerprint base-fwd base-rest)))
+       #+(or)
        (unless (string= expected actual)
          (error "base ~A does not match the base used to produce diff ~A.~%~
                  expected fingerprint: ~A~%~
