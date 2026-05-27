@@ -173,6 +173,7 @@
              #~"kernel/cmp/external-clang.lisp"
              #~"kernel/cmp/disltv.lisp"
              #~"kernel/lsp/flamegraph.lisp"
+             #~"kernel/lsp/profiler.lisp"
              #~"kernel/cleavir/auto-compile.lisp"))
 
 (defun add-extension-sources (target)
