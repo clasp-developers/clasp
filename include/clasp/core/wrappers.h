@@ -46,11 +46,11 @@ template <typename FunctionPtrType, typename Policies> class WRAPPER_VariadicMet
 
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies>
-class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), Policies> : public core::SimpleFun_O {
+class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), Policies> : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_VariadicMethod<RT (OT::*)(ARGS...), Policies> MyType;
   typedef RT (OT::*MethodType)(ARGS...);
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -59,7 +59,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : core::SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), mptr(ptr) {
+    : core::XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -106,11 +106,11 @@ public:
 //
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies>
-class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, Policies> : public core::SimpleFun_O {
+class WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, Policies> : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_VariadicMethod<RT (OT::*)(ARGS...) const, Policies> MyType;
   typedef RT (OT::*MethodType)(ARGS...) const;
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -119,7 +119,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_VariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : core::SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), mptr(ptr) {
+    : core::XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), mptr(ptr) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 

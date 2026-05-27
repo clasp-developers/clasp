@@ -32,14 +32,14 @@ THE SOFTWARE.
 #include <clasp/clbind/wrapped_iterator.h>
 namespace clbind {
 
-template <typename Pols, typename OT, typename Begin, typename End> class WRAPPER_Iterator : public core::SimpleFun_O {
+template <typename Pols, typename OT, typename Begin, typename End> class WRAPPER_Iterator : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_Iterator MyType;
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
 
 public:
   WRAPPER_Iterator(core::FunctionDescription_sp fdesc, core::T_sp code, Begin begin, End end)
-    : core::SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), _begin(begin), _end(end){};
+    : core::XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()), _begin(begin), _end(end){};
 
 private:
   typedef std::invoke_result_t<Begin, OT> IteratorType;

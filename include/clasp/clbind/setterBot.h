@@ -1,8 +1,8 @@
 template <typename SetterPolicies, typename OT, typename MemberType>
-class WRAPPER_Setter<SetterPolicies, OT, MemberType* const(OT::*)> : public core::SimpleFun_O {
+class WRAPPER_Setter<SetterPolicies, OT, MemberType* const(OT::*)> : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_Setter<SetterPolicies, OT, MemberType* const(OT::*)> MyType;
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
   typedef MemberType* const(OT::*VariablePtrType);
 
 private:
@@ -10,7 +10,7 @@ private:
 
 public:
   WRAPPER_Setter(VariablePtrType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()){};
+    : mptr(ptr), XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()){};
 
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
