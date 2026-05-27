@@ -135,5 +135,6 @@
           register-command-line-option
           unregister-command-line-option
           print-extension-command-line-help
-          process-extension-command-line-arguments))
+          process-extension-command-line-arguments
+          with-flame-profile))
 ) ; eval-when
