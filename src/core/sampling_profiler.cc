@@ -41,6 +41,11 @@
 #if defined(__linux__)
 #  include <sys/syscall.h>
 #endif
+#if defined(__APPLE__)
+#  include <mach-o/dyld.h>
+#  include <mach-o/loader.h>
+#  include <mach/vm_prot.h>
+#endif
 
 #include <cxxabi.h>
 #include <dlfcn.h>
@@ -76,6 +81,129 @@ struct sigaction      g_prev_sigaction;     // clasp's original SIGPROF handler
 bool                  g_prev_sigaction_saved = false;
 
 std::mutex            g_lifecycle_lock;     // serializes start/stop/save/reset
+
+// ---------------------------------------------------------------------------
+// Executable-range cache for return-address validation.
+//
+// Built at profile-start from /proc/self/maps (Linux) or dyld image list
+// (macOS), sorted by start address. The SIGPROF handler binary-searches
+// each saved_rip against this cache: if the address isn't in any executable
+// mapping, the frame-pointer chain is broken (the "saved rip" is garbage
+// from a frame compiled without -fno-omit-frame-pointer) and the walk stops.
+//
+// The cache is immutable once published. New JIT pages allocated during
+// profiling are registered via sampling_profiler_add_executable_range(),
+// which appends to a separate lock-free array that the handler also checks.
+// ---------------------------------------------------------------------------
+
+struct ExecRange {
+  uintptr_t lo;
+  uintptr_t hi;  // exclusive
+};
+
+// Snapshot from /proc/self/maps at profile-start. Sorted by lo, searched
+// with binary search. Not modified after construction.
+static ExecRange*  g_exec_ranges = nullptr;
+static size_t      g_exec_range_count = 0;
+
+// Dynamic additions during profiling (JIT, arena pages). Append-only, read
+// by the signal handler. _count is the publication fence — the handler reads
+// up to _count entries. Writers bump _count after the entry is fully written.
+static constexpr size_t MAX_DYNAMIC_EXEC_RANGES = 4096;
+static ExecRange   g_dynamic_exec_ranges[MAX_DYNAMIC_EXEC_RANGES];
+static std::atomic<size_t> g_dynamic_exec_range_count{0};
+
+static void build_exec_range_cache() {
+  // Free previous cache if any.
+  if (g_exec_ranges) { free(g_exec_ranges); g_exec_ranges = nullptr; }
+  g_exec_range_count = 0;
+  g_dynamic_exec_range_count.store(0, std::memory_order_release);
+
+  std::vector<ExecRange> ranges;
+
+#if defined(__linux__)
+  FILE* fp = fopen("/proc/self/maps", "r");
+  if (!fp) return;
+  char line[512];
+  while (fgets(line, sizeof(line), fp)) {
+    uintptr_t lo = 0, hi = 0;
+    char perms[8] = {};
+    if (sscanf(line, "%lx-%lx %4s", &lo, &hi, perms) >= 3) {
+      if (perms[2] == 'x')
+        ranges.push_back({lo, hi});
+    }
+  }
+  fclose(fp);
+#elif defined(__APPLE__)
+  // dyld provides the loaded image list. Each Mach-O segment with VM_PROT_EXECUTE
+  // is an executable range.
+  uint32_t count = _dyld_image_count();
+  for (uint32_t i = 0; i < count; ++i) {
+    const struct mach_header* hdr = _dyld_get_image_header(i);
+    if (!hdr) continue;
+    intptr_t slide = _dyld_get_image_vmaddr_slide(i);
+    if (hdr->magic == MH_MAGIC_64) {
+      const struct mach_header_64* h64 = (const struct mach_header_64*)hdr;
+      const uint8_t* p = (const uint8_t*)(h64 + 1);
+      for (uint32_t j = 0; j < h64->ncmds; ++j) {
+        const struct load_command* lc = (const struct load_command*)p;
+        if (lc->cmd == LC_SEGMENT_64) {
+          const struct segment_command_64* seg = (const struct segment_command_64*)p;
+          if (seg->initprot & VM_PROT_EXECUTE) {
+            uintptr_t lo = (uintptr_t)(seg->vmaddr + slide);
+            ranges.push_back({lo, lo + seg->vmsize});
+          }
+        }
+        p += lc->cmdsize;
+      }
+    }
+  }
+#endif
+
+  // Sort and coalesce adjacent/overlapping ranges.
+  std::sort(ranges.begin(), ranges.end(),
+            [](const ExecRange& a, const ExecRange& b) { return a.lo < b.lo; });
+  std::vector<ExecRange> merged;
+  for (auto& r : ranges) {
+    if (!merged.empty() && r.lo <= merged.back().hi)
+      merged.back().hi = std::max(merged.back().hi, r.hi);
+    else
+      merged.push_back(r);
+  }
+
+  g_exec_range_count = merged.size();
+  g_exec_ranges = (ExecRange*)malloc(g_exec_range_count * sizeof(ExecRange));
+  if (g_exec_ranges)
+    std::memcpy(g_exec_ranges, merged.data(), g_exec_range_count * sizeof(ExecRange));
+  else
+    g_exec_range_count = 0;
+}
+
+// Signal-safe binary search of the static cache.
+static inline bool exec_cache_contains(uintptr_t pc) {
+  // Check static cache (sorted, binary search).
+  size_t lo = 0, hi = g_exec_range_count;
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (pc < g_exec_ranges[mid].lo)
+      hi = mid;
+    else if (pc >= g_exec_ranges[mid].hi)
+      lo = mid + 1;
+    else
+      return true;
+  }
+  // Check dynamic ranges (small, linear scan).
+  size_t dyn_count = g_dynamic_exec_range_count.load(std::memory_order_acquire);
+  for (size_t i = 0; i < dyn_count; ++i) {
+    if (pc >= g_dynamic_exec_ranges[i].lo && pc < g_dynamic_exec_ranges[i].hi)
+      return true;
+  }
+  return false;
+}
+
+static inline bool plausible_rip(uintptr_t rip) {
+  return rip != 0 && exec_cache_contains(rip);
+}
 
 // Read CLOCK_MONOTONIC in nanoseconds. clock_gettime is async-signal-safe
 // on Linux and macOS for CLOCK_MONOTONIC.
@@ -174,8 +302,13 @@ static inline bool plausible_rbp(uintptr_t rbp) {
 
 // Walk the frame-pointer chain starting at (rip, rbp) and fill `out` with
 // up to `max_depth` native PCs. Returns the number of frames recorded.
-// Terminates on: out-of-stack-range rbp, null saved rbp, zero saved rip,
-// non-advancing rbp, or max_depth.
+// Terminates on: out-of-stack-range rbp, null saved rbp, non-executable
+// saved rip, non-advancing rbp, or max_depth.
+//
+// The plausible_rip check catches frames compiled without frame pointers:
+// if a function uses rbp as a general register, the "saved rip" read from
+// [rbp+8] will typically not point into executable memory, stopping the
+// walk before it follows garbage.
 //
 // Safety: uses only register-read + bounded pointer walk + plausibility
 // checks + out-of-process writes. No libc calls, no allocation, no locks.
@@ -188,7 +321,7 @@ static uint32_t walk_fp(uintptr_t rip_top, uintptr_t rbp_top,
   while (d < max_depth && plausible_rbp(rbp)) {
     uintptr_t saved_rbp = *((uintptr_t*)rbp);
     uintptr_t saved_rip = *((uintptr_t*)(rbp + 8));
-    if (saved_rip == 0) break;
+    if (!plausible_rip(saved_rip)) break;
     out[d++] = (uint64_t)saved_rip;
     // In stack-grows-down SysV ABI the caller's rbp lives at a higher
     // address than the callee's. A non-advancing (or going-down) saved_rbp
@@ -367,6 +500,10 @@ bool sampling_profiler_start(unsigned rate_hz, unsigned max_depth, size_t buffer
   g_samples_recorded.store(0, std::memory_order_release);
   g_samples_dropped.store(0, std::memory_order_release);
   g_max_depth = max_depth;
+
+  // Snapshot executable memory mappings for return-address validation.
+  // Must happen before arming the timer so the handler can use the cache.
+  build_exec_range_cache();
 
   if (!install_sigaction()) return false;
   // Populate this thread's stack bounds now, from a safe context, before
@@ -622,6 +759,13 @@ size_t sampling_profiler_bytes_used() { return g_write_offset.load(); }
 
 void sampling_profiler_register_current_thread() {
   populate_stack_bounds_for_this_thread();
+}
+
+void sampling_profiler_add_executable_range(uintptr_t lo, uintptr_t hi) {
+  size_t idx = g_dynamic_exec_range_count.load(std::memory_order_acquire);
+  if (idx >= MAX_DYNAMIC_EXEC_RANGES) return;
+  g_dynamic_exec_ranges[idx] = {lo, hi};
+  g_dynamic_exec_range_count.store(idx + 1, std::memory_order_release);
 }
 
 core::T_sp SymbolicatedSample::encode() {

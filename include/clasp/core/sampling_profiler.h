@@ -83,6 +83,12 @@ std::vector<SymbolicatedSample> sampling_profiler_symbolicated_samples();
 // (or this function) themselves once before being sampled.
 void sampling_profiler_register_current_thread();
 
+// Register an executable memory range with the profiler's return-address
+// validator. Call this when new executable pages are allocated (JIT, arena)
+// so the frame-pointer walker recognizes return addresses in them.
+// Lock-free, safe to call from any thread while the profiler is running.
+void sampling_profiler_add_executable_range(uintptr_t lo, uintptr_t hi);
+
 // Diagnostics.
 size_t sampling_profiler_samples_recorded();
 size_t sampling_profiler_samples_dropped();

@@ -39,6 +39,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/sampling_profiler.h>
 #include <clasp/llvmo/trampoline_arena.h>
 #include <elf.h>
 
@@ -154,6 +155,7 @@ uint8_t* ExecutableArena::allocate() {
     _current_offset = 0;
     _pages.push_back({(uintptr_t)p, (uintptr_t)p + _page_size});
     _pages_published.store(_pages.size(), std::memory_order_release);
+    core::sampling_profiler_add_executable_range((uintptr_t)p, (uintptr_t)p + _page_size);
   }
 
   uint8_t* slot = _current_page + _current_offset;
