@@ -42,6 +42,7 @@
 #  include <sys/syscall.h>
 #endif
 
+#include <cxxabi.h>
 #include <dlfcn.h>
 #include <unordered_map>
 #include <string>
@@ -504,7 +505,10 @@ static std::string symbolicate_one(uint64_t pc,
   } else {
     Dl_info info;
     if (dladdr((void*)(uintptr_t)pc, &info) && info.dli_sname && info.dli_sname[0]) {
-      name = info.dli_sname;
+      int status = -1;
+      char* demangled = abi::__cxa_demangle(info.dli_sname, nullptr, nullptr, &status);
+      name = (status == 0 && demangled) ? demangled : info.dli_sname;
+      free(demangled);
     } else {
       char buf[32];
       snprintf(buf, sizeof buf, "0x%lx", (unsigned long)pc);

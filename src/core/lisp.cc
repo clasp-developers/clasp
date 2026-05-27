@@ -61,6 +61,7 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/sampling_profiler.h>
 #include <clasp/core/lispList.h>
 #include <clasp/core/bundle.h>
 #include <clasp/core/bformat.h>
@@ -391,6 +392,7 @@ void Lisp::initializeMainThread() {
       mp::Process_O::make_process(INTERN_(core, top_level), nil<T_O>(), _lisp->copy_default_special_bindings(), nil<T_O>(), 0);
   main_process->_TheThread._value = pthread_self();
   my_thread->initialize_thread(main_process);
+  sampling_profiler_register_current_thread();
 }
 
 void Lisp::startupLispEnvironment() {
