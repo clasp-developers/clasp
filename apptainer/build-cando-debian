@@ -6,4 +6,4 @@
 
 rm -rf build-apptainer/*
 tar --exclude-vcs -cvf systems.tar -C $HOME ./common-lisp 
-apptainer build -F --bind $PWD:/mnt cando.sif apptainer/cando-debian.def
+apptainer build -F --bind $PWD:/mnt cando.sif apptainer/cando-ubuntu.def

@@ -62,3 +62,5 @@ repos-*.sexp
 *__pycache__*
 makefile
 rosetta.tar
+*.sif
+systems.tar
