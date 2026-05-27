@@ -23,6 +23,7 @@
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/llvmo/trampoline_arena.h>    // arena-mode trampolines
 #include <clasp/llvmo/trampoline_x86_64.h>   // hardcoded x86_64 trampoline templates
+#include <clasp/llvmo/trampoline_aarch64.h>  // hardcoded AArch64 trampoline templates
 #include <clasp/llvmo/jit.h>                 // ClaspJIT_O full def (member access on ClaspJIT_sp)
 #include <clasp/llvmo/llvmoExpose.h>         // Module_sp, LLVMContext_sp
 #include "clasp/llvmo/trampolineWork.h"
@@ -162,6 +163,50 @@ static bool ensure_trampoline_arena_initialized(TrampolineKind kind) {
   }
 
   // Copy code template and patch the target address into the movabs immediate
+  std::vector<uint8_t> code(code_template, code_template + code_sz);
+  std::memcpy(code.data() + patch_offset, &target_addr, 8);
+
+  bool installed = (kind == TrampolineKind::GF)
+      ? gf_arena_install_trampoline_template(code.data(), code_sz,
+                                              cie, cie_size,
+                                              fde_data, fde_sz)
+      : arena_install_trampoline_template(code.data(), code_sz,
+                                           cie, cie_size,
+                                           fde_data, fde_sz);
+  if (!installed) {
+    fprintf(stderr, "[trampoline-arena] %s install failed\n", kind_label(kind));
+    state.store(2, std::memory_order_release);
+    return false;
+  }
+  fprintf(stderr, "[trampoline-arena] %s template installed, target %p\n",
+          kind_label(kind), (void*)target_addr);
+  state.store(1, std::memory_order_release);
+  return true;
+#elif defined(__aarch64__)
+  using namespace trampoline_aarch64;
+  const uint8_t* code_template;
+  size_t code_sz;
+  size_t patch_offset;
+  const uint8_t* fde_data;
+  size_t fde_sz;
+  uint64_t target_addr;
+
+  if (kind == TrampolineKind::GF) {
+    code_template = gf_code;
+    code_sz       = gf_code_size;
+    patch_offset  = gf_target_offset;
+    fde_data      = gf_fde;
+    fde_sz        = gf_fde_size;
+    target_addr   = (uint64_t)g_gf_dispatch_entry_point_n;
+  } else {
+    code_template = bytecode_code;
+    code_sz       = bytecode_code_size;
+    patch_offset  = bytecode_target_offset;
+    fde_data      = bytecode_fde;
+    fde_sz        = bytecode_fde_size;
+    target_addr   = (uint64_t)&bytecode_call;
+  }
+
   std::vector<uint8_t> code(code_template, code_template + code_sz);
   std::memcpy(code.data() + patch_offset, &target_addr, 8);
 
