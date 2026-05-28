@@ -40,11 +40,20 @@
 ;;; This happens to be the first non-:TYPE defstruct during build.
 ;;; But FIXME: It's redundant to core:source-pos-info and should be vaporized.
 (defstruct source-location
-  pathname offset
+  %pathname offset
   ;; A symbol like DEFVAR, DEFUN, etc for display.
   (definer nil :type symbol)
   ;; Any other metadata, mostly for user display. E.g. specializers of a method.
   (description nil :type list))
+
+(defgeneric source-location-pathname (source-location))
+(defmethod source-location-pathname ((sl source-location))
+  (source-location-%pathname sl))
+;; See FIXME above about source-pos-info.
+(defmethod source-location-pathname ((spi core:source-pos-info))
+  (core:file-scope-pathname
+   (core:file-scope
+    (core:source-pos-info-file-handle spi))))
 
 (defun source-locations-set-info (source-locations definer &optional description)
   (loop for sl in source-locations
@@ -56,7 +65,7 @@
   (multiple-value-bind (file pos)
       (compiled-function-file function)
     (if file
-        (list (make-source-location :pathname file :offset pos :definer 'defun))
+        (list (make-source-location :%pathname file :offset pos :definer 'defun))
         nil)))
 
 ;; FIXME: Move this source debug stuff to an interface
@@ -65,7 +74,7 @@
   (let ((csi (core:file-scope
               (core:source-pos-info-file-handle source-position-info))))
     (make-source-location
-     :pathname (core:file-scope-pathname csi)
+     :%pathname (core:file-scope-pathname csi)
      :offset (core:source-pos-info-filepos source-position-info)
      :definer definer)))
 
@@ -80,7 +89,7 @@
           (when cppinfo
             ;; This is a list (filename offset)
             (make-source-location
-             :pathname (pathname (first cppinfo))
+             :%pathname (pathname (first cppinfo))
              :offset (second cppinfo)
              :definer 'defclass))))))
 
@@ -129,7 +138,7 @@
     (multiple-value-bind (file pos)
         (compiled-function-file gf)
       (if file
-          (list* (make-source-location :pathname file :offset pos :definer 'defgeneric)
+          (list* (make-source-location :%pathname file :offset pos :definer 'defgeneric)
                  method-sls)
           method-sls))))
 
@@ -153,7 +162,7 @@ Return the source-location for the name/kind pair"
                (mapcar (lambda (dir-pos)
                          (let ((dir (first dir-pos))
                                (pos (second dir-pos)))
-                           (make-source-location :pathname (merge-pathnames dir sys-dir)
+                           (make-source-location :%pathname (merge-pathnames dir sys-dir)
                                                  :offset pos
                                                  ;; FIXME
                                                  :definer 'defmethod)))
