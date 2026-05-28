@@ -1581,6 +1581,14 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   }
 }
 
+// Legacy-path hook retained for src/core/trampoline/trampoline.cc which is
+// still compiled into libclasp (its IR is also embedded as global_trampoline
+// for target-datalayout extraction). The arena-mode trampolines no longer
+// indirect through this pointer — they call bytecode_call via an absolute
+// address baked into the trampoline template by LLVM. Will be removed when
+// the legacy LLVM trampoline path is deleted.
+gctools::return_type (*g_bytecode_call_ptr)(unsigned char*, core::T_O*, size_t, core::T_O**) = bytecode_call;
+
 }; // extern C
 
 namespace core {

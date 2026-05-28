@@ -70,6 +70,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/jit.h>
+#include <clasp/llvmo/trampoline_arena.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/stackmap.h>
 
@@ -299,6 +300,16 @@ bool library_with_name(const std::string& name, bool isExecutable, std::string& 
 
 bool lookup_address(uintptr_t address, const char*& symbol, uintptr_t& start, uintptr_t& end) {
   void* ip = (void*)address;
+  // Arena trampoline slot: side table has the name and exact range. The
+  // returned `symbol` pointer aliases the side-table entry's std::string,
+  // which is stable for the process lifetime (the table is append-only and
+  // never deallocates entries).
+  if (const llvmo::TrampolineEntry* e = llvmo::arena_lookup_by_pc(address)) {
+    symbol = e->name.c_str();
+    start = (uintptr_t)e->code_start;
+    end = start + e->code_size;
+    return true;
+  }
   T_sp of = llvmo::only_object_file_for_instruction_pointer(ip);
   if (!gc::IsA<llvmo::ObjectFile_sp>(of))
     return false; // no ofi found

@@ -1529,6 +1529,18 @@ CL_DEFUN void core__fcntl_non_blocking(int filedes) {
 CL_DOCSTRING(R"dx(Close the file descriptor)dx");
 CL_DEFUN void core__close_fd(int filedes) { close(filedes); };
 
+CL_DOCSTRING(R"dx(Flush file descriptor to disk (fsync). Returns 0 on success, -1 on error.)dx");
+CL_DEFUN int core__fsync(int filedes) { return fsync(filedes); };
+
+CL_DOCSTRING(R"dx(Open a path read-only, fsync it, and close it. Useful for fsyncing a directory.)dx");
+CL_DEFUN void core__fsync_directory(String_sp path) {
+  int fd = open(path->get_path_string().c_str(), O_RDONLY);
+  if (fd >= 0) {
+    fsync(fd);
+    close(fd);
+  }
+};
+
 CL_DEFUN int64_t core__lseek(int fd, int64_t offset, Symbol_sp whence) {
   int iwhence;
   if (whence == kw::_sym_seek_set) {

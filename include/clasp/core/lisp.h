@@ -279,6 +279,10 @@ public:
     std::atomic<T_sp> _AllObjectFiles;
     std::atomic<T_sp> _AllCodeBlocks;
     std::atomic<T_sp> _AllBytecodeModules;
+    // Every GFBytecodeSimpleFun ever made (atomic-pushed list of cons cells).
+    // Walked by arena_post_load_regenerate_trampolines after a snapshot load
+    // so the dispatch trampoline for each generic function gets re-attached.
+    std::atomic<T_sp> _AllGFBytecodeFuns;
     SimpleFun_sp _UnboundCellFunctionEntryPoint;
     T_sp _TerminalIO;
     List_sp _ActiveThreads;
