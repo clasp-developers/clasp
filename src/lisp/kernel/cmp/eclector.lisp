@@ -29,14 +29,6 @@ EXT:STREAM-SOURCE-LOCATION can be used to get the current source location from t
    *compile-file-source-debug-lineno*
    *compile-file-source-debug-offset*))
 
-(defmacro ext:with-source-location ((loc) &body body)
-  "Evaluate body with the current source location bound to LOC. The current source location is what's returned by EXT:CURRENT-SOURCE-LOCATION and is used in error reporting."
-  (let ((gloc (gensym "LOCATION")))
-    `(let ((,gloc ,loc))
-       (check-type ,gloc core:source-pos-info)
-       (let ((core:*current-source-pos-info* ,gloc))
-         ,@body))))
-
 ;;; these two basically exist to keep uniform source-location- names
 (declaim (inline ext:source-location-lineno ext:source-location-column))
 (defun ext:source-location-lineno (spi)

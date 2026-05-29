@@ -133,7 +133,6 @@
           ;; source info tracking and use
           source-location-lineno source-location-column
           stream-source-location with-source-tracking
-          with-source-location
           read-source augment-source eval-source compile-source
           ;; Misc
           printing-char-p))
