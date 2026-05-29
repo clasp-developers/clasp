@@ -130,6 +130,10 @@
           setf-expander
           ;; C++ iterators
           do-c++-iterator map-c++-iterator
+          ;; source info tracking and use
+          source-location-lineno source-location-column
+          stream-source-location with-source-tracking
+          read-source augment-source eval-source compile-source
           ;; Misc
           printing-char-p))
 ) ; eval-when
