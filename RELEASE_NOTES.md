@@ -9,6 +9,7 @@
 * Arguments to bytecode functions are made available to debuggers.
 * `ext:deoptimize` can temporarily replace almost all native-compiled functions with a simpler bytecode version with better debuggability. `ext:reoptimize` restores the native version.
 * A style warning is signaled if the compiler assumes a symbol names a function and then sees it defined as a macro.
+* New interfaces for reading and evaluating code with tracked source locations: `ext:with-source-tracking`, `ext:stream-source-location`, `ext:read-source`, `ext:augment-source`, `ext:eval-source`, `ext:compile-source`.
 
 ## Changed
 * Use Khazern extended for CL:LOOP

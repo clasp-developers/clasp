@@ -330,7 +330,6 @@
           with-dbg-lexical-block
           dbg-variable-alloca
           dbg-variable-value
-          compile-file-source-pos-info
           c++-field-offset
           c++-field-index
           c++-struct-type
