@@ -43,13 +43,33 @@ To run a single regression test, the test driver is invoked via `ninja` but take
 
 The precise GC needs a layout descriptor for every managed C++ class. These descriptors are produced by the **clasp-analyzer**, a libclang-based pass that reads the C++ headers and writes a `.sif` file (a stream of top-level Common Lisp s-expressions, one record per class).
 
-- `src/lisp/modules/clasp-analyzer/` — the analyzer itself (Lisp; uses `clang-tool` from `src/lisp/modules/clang-tool/`)
-- `src/analysis/clasp_gc.sif` — committed canonical descriptor for plain Clasp
-- `src/analysis/clasp_gc_cando.sif` — committed canonical descriptor for cando builds (selected when `:cando` is in `*extensions*` — see `src/analysis/cscript.lisp`)
-- `src/analysis/sif-tools.lisp` — diff/merge/compare utilities; defines the `.dif` format (base-fingerprint + record additions) for incremental updates
-- `analyze` / `analyze-boehm` ninja targets re-run the analyzer to regenerate the `.sif` files
+Since the `analysis-merge` work (merged into `main` in May 2026), analysis is split into a **base descriptor plus per-extension additive deltas**, merged at build time. The regular build never re-runs the analyzer — it only merges committed artifacts. Regenerating the analysis is a separate, explicit step driven by the `./analyze` script.
 
-The format header in `sif-tools.lisp` is the authoritative grammar reference. `.sif.new`, `.sif.old`, `.dif`, and `_combined.sif` files in `src/analysis/` are scratch — only the two filenames listed above are tracked.
+Key files:
+
+- `src/lisp/modules/clasp-analyzer/` — the analyzer itself (Lisp; uses `clang-tool` from `src/lisp/modules/clang-tool/`)
+- `src/analysis/clasp_gc.sif` — committed **base** descriptor (bare Clasp, no extensions). This is the only canonical `.sif`; the regular build treats it purely as an *input*.
+- `extensions/<ext>/src/analysis/clasp_gc.dif` — committed **additive delta** for each extension (e.g. `extensions/cando/src/analysis/clasp_gc.dif`): only the records the extension adds on top of the base. Each `.dif` opens with a `base-fingerprint` record (format version, base hash, record count).
+- `src/analysis/sif-tools.lisp` — diff/merge/compare utilities; defines the `.dif` format (base-fingerprint + forward-decl/record additions). The format header here is the authoritative grammar reference.
+
+Regenerating descriptors — the `./analyze` script (repo root) does a clean throwaway build in `build-analysis/`, never touching your real `build/` tree:
+
+- `./analyze` — regenerate the base `clasp_gc.sif` **and** every discovered extension's `.dif`
+- `./analyze cando` — regenerate just cando's `.dif`, diffing against the already-committed base (skips the base)
+- `./analyze --base-only` — regenerate only the base `clasp_gc.sif`, no extensions
+- After regenerating, commit the changed `src/analysis/clasp_gc.sif` and/or `extensions/*/src/analysis/clasp_gc.dif`.
+
+What the ninja rules do (emitted by `src/koga/ninja.lisp`, scripts in `src/koga/scripts.lisp`):
+
+- `analyze-generate` runs the clang-tool pass → a full `.sif` (base, or `clasp_gc_<ext>_target.sif` for an extension build).
+- `diff-sif` (`sif-tools:diff-sif-files`) subtracts the base from the extension target → the additive `.dif`. Extensions must be strictly additive; it errors if the target is missing anything the base has.
+- `merge-sif` (`sif-tools:merge-sif-files`) runs during a normal **precise** build, folding the base + every enabled extension's committed `.dif` into `build/<variant>/generated/clasp_gc_combined.sif`, which then feeds header generation. It errors on genuine stamp-key conflicts between inputs.
+
+Notes:
+- On the `base-fingerprint`: `merge-sif` warns if a `.dif` has no fingerprint and errors on a `:format-version` mismatch, but the actual base-hash equality check is **currently disabled** (`#+(or)` in `verify-base-fingerprint`, commit `c284760e6` "Remove the strict test checking hashes"). So a `.dif` generated against a now-stale base is not caught automatically — regenerate `.dif`s after changing the base.
+- The `analyze` ninja target is only emitted for the non-precise (`boehm`) variant with **at most one** extension. With multiple extensions enabled the regular `build.ninja` skips the analyze target entirely — use `./analyze <ext>` per-extension instead.
+- `src/analysis/clasp_gc_cando.sif` is a **leftover from the old monolithic flow and is no longer referenced** by the build; the cando descriptor now lives as `extensions/cando/src/analysis/clasp_gc.dif`.
+- `.sif.new`, `.sif.old`, scratch `.dif`, and `_combined.sif` files in build/scratch locations are not tracked; the tracked artifacts are `src/analysis/clasp_gc.sif` and each `extensions/*/src/analysis/clasp_gc.dif`.
 
 ## Code layout (big picture)
 

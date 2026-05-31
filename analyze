@@ -6,9 +6,12 @@ set -euo pipefail
 NINJA_OPTIONS=""
 KOGA_ARGS=()
 SELECTED_EXTS=()
+BASE_ONLY=0
 for arg in "$@"; do
   if [[ $arg == --jobs=* ]]; then
     NINJA_OPTIONS="-j ${arg#*=}"
+  elif [[ $arg == --base-only ]]; then
+    BASE_ONLY=1
   elif [[ $arg == -* ]]; then
     KOGA_ARGS+=("$arg")
   else
@@ -26,7 +29,14 @@ discover_extensions() {
   done
 }
 
-if [[ ${#SELECTED_EXTS[@]} -eq 0 ]]; then
+if [[ $BASE_ONLY -eq 1 ]]; then
+  if [[ ${#SELECTED_EXTS[@]} -ne 0 ]]; then
+    echo "error: --base-only cannot be combined with extension names (${SELECTED_EXTS[*]})" >&2
+    exit 1
+  fi
+  EXTS=()
+  RUN_BASE=1
+elif [[ ${#SELECTED_EXTS[@]} -eq 0 ]]; then
   EXTS=( $(discover_extensions) )
   RUN_BASE=1
 else

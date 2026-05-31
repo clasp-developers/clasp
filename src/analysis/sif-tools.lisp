@@ -229,10 +229,12 @@
         :record-count (length records)))
 
 (defun verify-base-fingerprint (fingerprint base-fwd base-rest base-path diff-path)
-  "Check that the base supplied to a merge matches the base used to
-   generate the diff.  Errors on mismatch.  Warns (and proceeds) when no
+  "Check that the diff supplied to a merge is compatible with the base.
+   Errors on a :format-version mismatch.  Warns (and proceeds) when no
    fingerprint is present in the diff (legacy .dif files predate this
-   check)."
+   check).  The base-hash equality check is currently disabled (#+(or)
+   below), so a diff generated against a now-stale base is NOT caught
+   here — regenerate .dif files after changing the base."
   (cond
     ((null fingerprint)
      (warn "no base-fingerprint in ~A — base/diff compatibility unverified"
