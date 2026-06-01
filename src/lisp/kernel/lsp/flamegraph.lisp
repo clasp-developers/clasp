@@ -997,13 +997,14 @@ palettes, your value is honored and a warning is printed to
 ;;;   key=value:key=value:...              -> enabled with overrides
 ;;;
 ;;; Known keys: path, duration (seconds), rate (Hz). The path value
-;;; may contain ${PID} which is replaced with the process ID at
+;;; may contain ${PID} which is replaced with the process ID and
+;;; ${HOME} which is replaced with the HOME environment variable at
 ;;; snapshot time. Unknown keys emit a warning but do not disable
 ;;; the profiler.
 ;;;
 ;;; Examples:
 ;;;   CLASP_FLAME_PROFILE=1 cando ...
-;;;   CLASP_FLAME_PROFILE=path=/tmp/foo-${PID}.svg:duration=5:rate=499 cando ...
+;;;   CLASP_FLAME_PROFILE=path=${HOME}/profiles/foo-${PID}.svg:duration=5:rate=499 cando ...
 ;;;   kill -USR2 <pid>
 ;;; ---------------------------------------------------------------------------
 
@@ -1072,15 +1073,33 @@ Known keys: path, duration, rate."
                              errors))))))))
            (values t plist (nreverse errors)))))))
 
-  (defun expand-path-variables (path)
-    "Replace ${PID} in PATH with the current process ID."
-    (let ((pos (search "${PID}" path)))
+  (defun replace-first (string pattern replacement)
+    "Replace the first occurrence of PATTERN in STRING with REPLACEMENT.
+Returns the new string, or STRING unchanged if PATTERN is not found."
+    (let ((pos (search pattern string)))
       (if pos
           (concatenate 'string
-                       (subseq path 0 pos)
-                       (princ-to-string (core:getpid))
-                       (expand-path-variables (subseq path (+ pos 6))))
-          path)))
+                       (subseq string 0 pos)
+                       replacement
+                       (subseq string (+ pos (length pattern))))
+          string)))
+
+  (defun substitute-vars (path vars)
+    "One pass: replace the first occurrence of each variable in VARS."
+    (loop with s = path
+          for (pattern . replacement) in vars
+          do (setf s (replace-first s pattern replacement))
+          finally (return s)))
+
+  (defun expand-path-variables (path)
+    "Replace ${PID} and ${HOME} in PATH with the process ID and home directory."
+    (let ((vars `(("${PID}" . ,(princ-to-string (core:getpid)))
+                  ("${HOME}" . ,(or (ext:getenv "HOME") "")))))
+      (loop for previous = nil then result
+            for result = (substitute-vars path vars)
+              then (substitute-vars result vars)
+            until (equal result previous)
+            finally (return result))))
 
   (defun snapshot (path &key (duration *snapshot-duration*))
     "Run DURATION seconds of sampling profiling on a background thread
