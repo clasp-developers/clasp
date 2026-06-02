@@ -13,6 +13,7 @@
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/unwind.h> // sjlj_throw (issue #1784 SLAD routing)
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/lispStream.h>
@@ -457,8 +458,21 @@ The following &KEY arguments are defined:
 DOCGROUP(clasp);
 CL_DEFUN void gctools__save_lisp_and_die(core::String_sp filename, bool executable, bool testMemory) {
 #ifdef USE_PRECISE_GC
-  throw(snapshotSaveLoad::SaveLispAndDie(filename->get_std_string(), executable,
-                                         globals_->_Bundle->_Directories->_LibDir, true, snapshotSaveLoad::ForwardingEnum::noStomp, testMemory ));
+  snapshotSaveLoad::SaveLispAndDie sld(filename->get_std_string(), executable,
+                                       globals_->_Bundle->_Directories->_LibDir, true,
+                                       snapshotSaveLoad::ForwardingEnum::noStomp, testMemory);
+#ifdef _TARGET_OS_DARWIN
+  // issue #1784 (sibling): on macOS arm64 a raw C++ `throw SaveLispAndDie` derails
+  // across the deep native frames before reaching the catch in run_clasp -> the
+  // process terminates instead of saving (the SLAD-SNAPSHOT/SLAD-EXECUTABLE tests).
+  // Route it through clasp's SJLJ unwind (_longjmp, no unwind tables -> immune), the
+  // same way #1784 routes mp:abort/exit-process. The payload is GC-free; stash it and
+  // sjlj_throw to the catch tag established in run_clasp.
+  snapshotSaveLoad::set_pending_save_lisp_and_die(sld);
+  core::sjlj_throw(snapshotSaveLoad::save_lisp_and_die_catch_tag());
+#else
+  throw sld;
+#endif
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
