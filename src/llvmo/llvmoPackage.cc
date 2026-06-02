@@ -55,6 +55,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
+#include <clasp/llvmo/code.h> // JITDataReadWriteMaybeExecute / JITDataReadExecute (W^X)
 #include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/funcallableInstance.h>
@@ -690,7 +691,15 @@ CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, 
   if (!found)
     SIMPLE_ERROR("Could not find pointer for name |{}|", name);
   core::T_O** tptr = (core::T_O**)ptr;
+  // The JIT'd global (e.g. an FFI callback's `callback-lisp-function-N`) lives in
+  // MAP_JIT memory, which on Apple Silicon is write-protected (execute mode) by
+  // default; switch this thread to write mode around the store or it faults with a
+  // SIGBUS (KERN_PROTECTION_FAILURE). This is the W^X store site that make-callback
+  // / %defcallback hits (the defcallback-native regression test); the other literal
+  // write sites are wrapped in compiler.cc / loadltv.cc.
+  JITDataReadWriteMaybeExecute();
   *tptr = value.raw_();
+  JITDataReadExecute();
   return value;
 }
 
