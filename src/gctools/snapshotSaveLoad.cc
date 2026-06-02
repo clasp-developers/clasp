@@ -1881,8 +1881,12 @@ void* snapshot_save_impl(void* data) {
 #ifdef _TARGET_OS_DARWIN
     // Quote every path that may contain spaces (the build/lib dir can, e.g. a Dropbox
     // path "/Users/.../gbt Dropbox/..."); this command is run through system() (a shell),
-    // so an unquoted -force_load path with a space gets split and the link fails.
-    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o\"" + snapshot_data->_FileName +
+    // so an unquoted path with a space gets split and the link fails.
+    // Add an absolute -L for the lib dir (as the Linux branch already does): BUILD_LINKFLAGS
+    // only carries a RELATIVE -Lboehmprecise/lib, so without this, -lclasp resolves only when
+    // save-lisp-and-die :executable is run with CWD=build/. The absolute -L makes it link from
+    // any working directory (the runtime rpath is already absolute).
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L\"" + snapshot_data->_LibDir + "\" -o\"" + snapshot_data->_FileName +
           "\" -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " \"" + filename + "\" -Wl,-force_load,\"" +
           snapshot_data->_LibDir + "/libiclasp.a\" -lclasp " BUILD_LIB;
 #endif
