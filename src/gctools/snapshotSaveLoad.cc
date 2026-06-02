@@ -2598,7 +2598,14 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         //
         if (oldCodeClient->literalsSize() != 0 &&
             (newCodeDataStart <= newCodeLiteralsStart && newCodeLiteralsEnd <= newCodeDataEnd)) {
+          // The new code's literal vector lives in the CodeBlock's MAP_JIT data
+          // region, which on Apple Silicon is write-protected (execute mode) by
+          // default; switch this thread to write mode around the store or snapshot
+          // LOAD faults with SIGBUS (KERN_PROTECTION_FAILURE), same W^X hazard as the
+          // other JIT-literal write sites (compiler.cc literals_vset, loadltv, etc.).
+          llvmo::JITDataReadWriteMaybeExecute();
           memcpy((void*)newCodeLiteralsStart, (void*)oldCodeClient->literalsStart(), newCodeClient->literalsSize());
+          llvmo::JITDataReadExecute();
         }
         //
         // Now set the forwarding pointer from the oldCode object to the newCodeClient
@@ -2632,7 +2639,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       fixup_objects_t fixup_objects(LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo);
       globalPointerFix = maybe_follow_forwarding_pointer;
       globalPointerFixStage = "snapshot_load/fixupObjects";
+      // Load fixup writes relocated pointers INTO the loaded objects in place; code
+      // objects live in MAP_JIT (W^X) memory, so run in write mode on Apple Silicon or
+      // the store faults with SIGBUS. (The save path fixes up a RW copy, so it's fine.)
+      llvmo::JITDataReadWriteMaybeExecute();
       walk_temporary_root_objects(root_holder, fixup_objects);
+      llvmo::JITDataReadExecute();
     }
 
 #ifdef DEBUG_GUARD
@@ -2650,7 +2662,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     }
 
     fixup_internals_t internals(&fixup, &islInfo);
+    // Same MAP_JIT W^X hazard as fixupObjects above (in-place fixup of code objects).
+    llvmo::JITDataReadWriteMaybeExecute();
     walk_temporary_root_objects(root_holder, internals);
+    llvmo::JITDataReadExecute();
 
     //
     // Release the temporary roots
