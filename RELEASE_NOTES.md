@@ -32,6 +32,9 @@
   effect is still needed.
 * FASO and other compile-file output types, other than FASL. `compile-file` now always produces a FASL.
 
+## Optimized
+* FASL loading batches reads more, improving load times. Thanks @dg1sbg.
+
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 
 ## Added
