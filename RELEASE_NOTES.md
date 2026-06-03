@@ -25,6 +25,7 @@
 * Literal arrays with fill pointers are not dumped with excess elements.
 * `setf` of `apply` no longer has multiple evaluation problems.
 * Improve error messages for package name conflicts. Fixes #1722.
+* FASL loading is more resilient in the face of heavy file use and interruptions. Thanks @dg1sbg.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used
