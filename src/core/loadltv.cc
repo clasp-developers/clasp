@@ -29,6 +29,9 @@
 #include <virtualMachine.h>
 #undef DEFINE_BYTECODE_LTV_OPS
 
+// number of times to try I/O (e.g. open(2)) before giving up
+#define LTV_IO_ATTEMPTS 1000
+
 namespace core {
 
 #define BC_HEADER_SIZE 16
@@ -1315,47 +1318,59 @@ struct ltv_MmapInfo {
   ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len) {};
 };
 
-// Apple Silicon / parallel-build hardening for the FASL linker.
-//
 // clasp's GC and thread-coordination signals can interrupt slow syscalls
 // (EINTR), and a heavily parallel build can momentarily run into file-descriptor
 // pressure (EMFILE/ENFILE). These helpers retry transient failures so the
 // linker is robust under load.
+// They generally return the same value as the underlying syscall, and set errno
+// in the same way.
 static bool ltv_transient_errno() {
   return errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EAGAIN;
 }
 
 static int ltv_retry_open(const char* path, int flags) {
-  for (int attempt = 0;; ++attempt) {
-    int fd = ::open(path, flags);
-    if (fd >= 0 || !ltv_transient_errno() || attempt >= 1000)
-      return fd;
-    if (errno != EINTR)
-      usleep(1000); // brief backoff for fd-pressure (EMFILE/ENFILE/EAGAIN)
-  }
+  int fd;
+  BEGIN_PARK {
+    for (int attempt = 0;; ++attempt) {
+      fd = ::open(path, flags);
+      if (fd >= 0 || !ltv_transient_errno() || attempt >= LTV_IO_ATTEMPTS)
+        break;
+      if (errno != EINTR)
+        usleep(1000); // brief backoff for fd-pressure (EMFILE/ENFILE/EAGAIN)
+    }
+  } END_PARK;
+  return fd;
 }
 
 static int ltv_retry_close(int fd) {
   int r;
-  do {
-    r = ::close(fd);
-  } while (r < 0 && errno == EINTR);
+  BEGIN_PARK {
+    do {
+      r = ::close(fd);
+    } while (r < 0 && errno == EINTR);
+  } END_PARK;
   return r;
 }
 
 static int ltv_retry_munmap(void* addr, size_t len) {
+  // Linux does not document munmap as possibly failing with EINTR, but it seems
+  // to be possible deep in the source code, and this behavior has been observed.
   int r;
-  do {
-    r = ::munmap(addr, len);
-  } while (r < 0 && errno == EINTR);
+  BEGIN_PARK {
+    do {
+      r = ::munmap(addr, len);
+    } while (r < 0 && errno == EINTR);
+  } END_PARK;
   return r;
 }
 
 static int ltv_retry_rename(const char* from, const char* to) {
   int r;
-  do {
-    r = ::rename(from, to);
-  } while (r < 0 && errno == EINTR);
+  BEGIN_PARK {
+    do {
+      r = ::rename(from, to);
+    } while (r < 0 && errno == EINTR);
+  } END_PARK;
   return r;
 }
 
@@ -1363,17 +1378,23 @@ static int ltv_retry_rename(const char* from, const char* to) {
 // A bare write() may transfer fewer bytes than requested (or be interrupted).
 static bool ltv_write_all(int fd, const void* buf, size_t len) {
   const uint8_t* p = static_cast<const uint8_t*>(buf);
-  while (len > 0) {
-    ssize_t w = ::write(fd, p, len);
-    if (w < 0) {
-      if (errno == EINTR)
-        continue;
-      return false;
+  bool ret = true;
+  BEGIN_PARK {
+    while (len > 0) {
+      ssize_t w = ::write(fd, p, len);
+      if (w < 0) {
+        if (errno == EINTR)
+          continue;
+        else { // some actually problematic error
+          ret = false;
+          break;
+        }
+      }
+      p += w;
+      len -= static_cast<size_t>(w);
     }
-    p += w;
-    len -= static_cast<size_t>(w);
-  }
-  return true;
+  } END_PARK;
+  return ret;
 }
 
 void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instruction_count, bool verbose) {
@@ -1389,7 +1410,7 @@ void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instr
     // restored before each retry.
     strcpy(bfilename + sfilename.size(), "XXXXXX");
     fout = mkstemp(bfilename);
-    if (fout >= 0 || !ltv_transient_errno() || attempt >= 1000)
+    if (fout >= 0 || !ltv_transient_errno() || attempt >= LTV_IO_ATTEMPTS)
       break;
     if (errno != EINTR)
       usleep(1000);
