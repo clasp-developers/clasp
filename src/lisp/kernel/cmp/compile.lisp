@@ -2,11 +2,6 @@
 
 ;;;; Top-level interface: CL:COMPILE
 
-(defun compile-with-hook (compile-hook definition env)
-  (with-compilation-unit ()
-    (with-compilation-results ()
-      (funcall compile-hook definition env))))
-
 (defun coerce-to-lexenv (thing)
   (typecase thing
     (null (make-null-lexical-environment))
@@ -14,24 +9,29 @@
     (t ; assume cleavir. FIXME
      (funcall (find-symbol "CLEAVIR-ENV->BYTECODE" "CLASP-CLEAVIR") thing))))
 
+;; early sham definition. Actual definition in cleavir/compile-bytecode
+(declaim (notinline btb-compile))
+(defun btb-compile (definition environment)
+  (declare (ignore environment))
+  definition)
+
 ;;; This implements the pure functional part of CL:COMPILE, i.e.
 ;;; it computes and returns a compiled definition. It also accepts
 ;;; an environment argument. CL:COMPILE is defined in terms of this.
 (defun compile-definition (definition environment)
   (cond
-    ((and (typep definition 'core:bytecode-simple-fun)
-          (boundp '*btb-compile-hook*)
-          *btb-compile-hook*)
-     (compile-with-hook *btb-compile-hook* definition environment))
+    ((and (typep definition 'core:bytecode-simple-fun) *compile-native*)
+     (with-compilation-unit ()
+       (with-compilation-results ()
+         (btb-compile definition environment))))
     ((and (typep definition 'core:closure)
           (typep (core:function/entry-point definition)
                  'core:bytecode-simple-fun)
-          (boundp '*btb-compile-hook*)
-          *btb-compile-hook*)
+          *compile-native*)
      (multiple-value-bind (csfun warn fail)
-         (compile-with-hook *btb-compile-hook*
-                            (core:function/entry-point definition)
-                            environment)
+         (with-compilation-unit ()
+           (with-compilation-results ()
+             (btb-compile (core:function/entry-point definition) environment)))
        (let ((cells nil))
          (dotimes (i (core:closure-length definition))
            (push (core:closure-ref definition i) cells))
@@ -47,8 +47,8 @@
      (with-compilation-unit ()
        (with-compilation-results ()
          (let ((bc (cmp:bytecompile definition environment)))
-           (if (and (boundp '*btb-compile-hook*) *btb-compile-hook*)
-               (funcall *btb-compile-hook* bc environment)
+           (if *compile-native*
+               (btb-compile bc environment)
                bc)))))
     (t (error "COMPILE doesn't know how to handle ~a" definition))))
 

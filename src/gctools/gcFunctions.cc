@@ -798,9 +798,11 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 
   bool default_native = false;
 #ifdef USE_DEFAULT_NATIVE
+  INTERN_(comp, STARcompile_nativeSTAR)->defparameter(_lisp->_true());
   INTERN_(comp, STARcompile_file_nativeSTAR)->defparameter(_lisp->_true());
   default_native = true;
 #else
+  INTERN_(comp, STARcompile_nativeSTAR)->defparameter(nil<core::T_O>());
   INTERN_(comp, STARcompile_file_nativeSTAR)->defparameter(nil<core::T_O>());
 #endif
   if (buildReport)
