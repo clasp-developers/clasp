@@ -88,14 +88,10 @@ struct loadltv {
   T_sp _lastDebugPath = nil<T_O>();
   T_sp _lastDebugScope = nil<T_O>();
 
-  // Read buffer. loadltv otherwise pulls the FASL one byte / one small field at
-  // a time straight from the stream, and every such call is a virtual stream
-  // dispatch plus an interrupt-park (BEGIN_PARK/END_PARK). Reading the stream in
-  // large chunks and serving bytes from this buffer removes that per-byte
-  // overhead, which dominates boot (the base image is loaded through this path).
-  // The loader owns the stream for the whole load (load_bytecode_stream makes a
-  // fresh loader and the caller closes the stream afterwards), so reading ahead
-  // is safe.
+  // Read buffer. Doing an I/O operation is slow (both due to the general
+  // nature of things, and our own overhead), so we try to batch
+  // things into big reads as much as possible.
+  // The loader owns the stream for the whole load, so reading ahead is safe.
   static constexpr size_t BUFSIZE = 65536;
   std::vector<unsigned char> _buf;
   size_t _bufpos = 0;
@@ -782,9 +778,7 @@ struct loadltv {
     size_t index = next_index();
     uint32_t len = read_u32();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
-    // Read the module bytecode straight into the vector through our buffer
-    // (equivalent to the previous cl__read_sequence, but without per-call stream
-    // overhead and consistent with the read-ahead buffer position).
+    // Read the module bytecode straight into the vector through our buffer.
     read_bytes((unsigned char*)bytes->rowMajorAddressOfElement_(0), len);
     set_ltv(BytecodeModule_O::make(bytes), index);
   }
@@ -1017,9 +1011,9 @@ struct loadltv {
     uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
     FileScope_sp sfi;
     if (path == _lastDebugPath && _lastDebugScope.notnilp()) {
-      sfi = gc::As_unsafe<FileScope_sp>(_lastDebugScope);
+      sfi = _lastDebugScope.as_assert<FileScope_O>();
     } else {
-      sfi = gc::As<FileScope_sp>(core__file_scope(path));
+      sfi = core__file_scope(path).as<FileScope_O>();
       _lastDebugPath = path;
       _lastDebugScope = sfi;
     }
