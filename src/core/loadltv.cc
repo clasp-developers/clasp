@@ -1319,10 +1319,7 @@ struct ltv_MmapInfo {
 //
 // clasp's GC and thread-coordination signals can interrupt slow syscalls
 // (EINTR), and a heavily parallel build can momentarily run into file-descriptor
-// pressure (EMFILE/ENFILE). The original code retried none of these and did not
-// check open(), so a transiently-failed open() returned -1 and only surfaced
-// later as a fatal and misleading "Could not mmap ... Bad file descriptor"
-// abort, breaking the whole build. These helpers retry transient failures so the
+// pressure (EMFILE/ENFILE). These helpers retry transient failures so the
 // linker is robust under load.
 static bool ltv_transient_errno() {
   return errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EAGAIN;
@@ -1363,8 +1360,7 @@ static int ltv_retry_rename(const char* from, const char* to) {
 }
 
 // Write the whole buffer, retrying on EINTR and continuing after partial writes.
-// A bare write() may transfer fewer bytes than requested (or be interrupted),
-// which previously silently truncated the linked FASL.
+// A bare write() may transfer fewer bytes than requested (or be interrupted).
 static bool ltv_write_all(int fd, const void* buf, size_t len) {
   const uint8_t* p = static_cast<const uint8_t*>(buf);
   while (len > 0) {
