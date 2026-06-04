@@ -736,17 +736,15 @@ std::string CodeBlock_O::__repr__() const {
 void CodeBlock_O::describe() const { printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__); }
 
 // Object-file names are uniquified at registration time
-// (ensureUniqueMemoryBufferName -> countObjectFileNames). The original
-// countObjectFileNames rescanned the whole _AllObjectFiles list with a memcmp
-// per call, which is O(N) per registration and therefore O(N^2) as JITted
-// modules accumulate -- a real scalability cost for long-running /
-// compilation-heavy processes (it was the #1 self-time function, ~15%, in a
-// profiled workload). We maintain an auxiliary name->count index updated at the
+// (ensureUniqueMemoryBufferName -> countObjectFileNames).
+// We maintain an auxiliary name->count index updated at the
 // single registration site (recordObjectFileName) and reset whenever
 // _AllObjectFiles is cleared (clearObjectFileNameCounts), making the lookup
 // O(1). _AllObjectFiles is only ever appended to (registerObjectFile) or
 // bulk-cleared -- never individually pruned -- so the index stays in sync. The
 // map holds no GC pointers; a mutex guards it because registration can race.
+// NOTE: If we ever get to the point of GCing object files, this is another thing
+// that will need to be kept synced.
 static std::mutex& objectFileNameCountsMutex() {
   static std::mutex m;
   return m;
@@ -758,7 +756,7 @@ static std::unordered_map<std::string, size_t>& objectFileNameCounts() {
 
 void recordObjectFileName(const std::string& name) {
   std::lock_guard<std::mutex> guard(objectFileNameCountsMutex());
-  ++objectFileNameCounts()[name];
+  ++objectFileNameCounts()[name]; // count is zero-initialized if it didn't exist
 }
 
 void clearObjectFileNameCounts() {
