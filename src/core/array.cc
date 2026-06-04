@@ -528,30 +528,26 @@ CL_DOCSTRING(R"dx(copy_subarray)dx")
 DOCGROUP(clasp)
 CL_LAMBDA(dest destStart orig origStart len)
 CL_DEFUN
-void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
+void core__copy_subarray(Array_sp dest, size_t destStart, Array_sp orig, size_t origStart, size_t len) {
   // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
   //       Currently this is very inefficient
-  size_t iLen = unbox_fixnum(len);
-  if (iLen == 0) return;
-  size_t iDestStart = unbox_fixnum(destStart);
-  size_t iOrigStart = unbox_fixnum(origStart);
-  if ((iLen + iDestStart) >= dest->arrayTotalSize())
-    iLen = dest->arrayTotalSize() - iDestStart;
-  if ((iLen + iOrigStart) >= orig->arrayTotalSize())
-    iLen = orig->arrayTotalSize() - iOrigStart;
-  if (iDestStart < iOrigStart) {
-    for (size_t i = 0; i < iLen; ++i) {
-      dest->rowMajorAset(iDestStart, orig->rowMajorAref(iOrigStart));
-      ++iDestStart;
-      ++iOrigStart;
+  if ((len + destStart) >= dest->arrayTotalSize())
+    len = dest->arrayTotalSize() - destStart;
+  if ((len + origStart) >= orig->arrayTotalSize())
+    len = orig->arrayTotalSize() - origStart;
+  if (destStart < origStart) {
+    for (size_t i = 0; i < len; ++i) {
+      dest->rowMajorAset(destStart, orig->rowMajorAref(origStart));
+      ++destStart;
+      ++origStart;
     }
   } else {
-    iDestStart += iLen;
-    iOrigStart += iLen;
-    for (size_t i = 0; i < iLen; ++i) {
-      --iDestStart;
-      --iOrigStart;
-      dest->rowMajorAset(iDestStart, orig->rowMajorAref(iOrigStart));
+    destStart += len;
+    origStart += len;
+    for (size_t i = 0; i < len; ++i) {
+      --destStart;
+      --origStart;
+      dest->rowMajorAset(destStart, orig->rowMajorAref(origStart));
     }
   }
 }

@@ -334,11 +334,7 @@ public:
   virtual std::string get_std_string() const override { notStringError(this->asSmartPtr()); }
   virtual std::string get_path_string() const override { notStringError(this->asSmartPtr()); }
   virtual vector<size_t> arrayDimensionsAsVector() const override {
-    vector<size_t> dims;
-    for (size_t i(0); i < this->_Dimensions.length(); ++i) {
-      dims.push_back(this->_Dimensions[i]);
-    }
-    return dims;
+    return vector<size_t>(_Dimensions.begin(), _Dimensions.end());
   }
   virtual void resize(size_t size, T_sp init_element = nil<T_O>(), bool initElementSupplied = false) = 0;
   virtual void unsafe_fillArrayWithElt(T_sp element, size_t start, size_t end) final {
@@ -426,9 +422,7 @@ public:
     end = this->length();
   }
   virtual vector<size_t> arrayDimensionsAsVector() const override {
-    vector<size_t> dims;
-    dims.push_back(this->length());
-    return dims;
+    return vector<size_t>(1, length());
   }
 };
 }; // namespace core
@@ -487,9 +481,8 @@ public:
   virtual size_t elementSizeInBytes() const override { return sizeof(value_type); };
   virtual void* rowMajorAddressOfElement_(size_t i) const override { return (void*)&(this->_Data[i]); };
   virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
-    for (size_t i(start); i < end; ++i) {
-      (*this)[i] = leaf_type::from_object(initialElement);
-    }
+    std::fill(begin() + start, begin() + end,
+              leaf_type::from_object(initialElement));
   };
   virtual Array_sp reverse() const final {
     auto result = leaf_type::make(this->length());
@@ -508,11 +501,28 @@ public:
     BOUNDS_ASSERT(start <= end && end <= this->length());
     return leaf_type::make(end - start, value_type(), true, end - start, (value_type*)this->rowMajorAddressOfElement_(start));
   }
+  using Base::element_type; // not otherwise visible in this weird template
   virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
-    // TODO: Write specialized versions of this to speed it up
+    // NOTE: This needs to copy left to right (as std::copy does) in case
+    // newSubseq is us, i.e. the ranges are overlapping.
     BOUNDS_ASSERT(start <= end && end <= this->length());
-    for (size_t i(start), ni(0); i < end; ++i, ++ni) {
-      (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
+    // If newSubseq has the same element type, copy elements directly, without
+    // boxing up a Lisp object for every element.
+    if (element_type() == newSubseq->element_type()) {
+      AbstractSimpleVector_sp baseother;
+      size_t ostart, oend;
+      newSubseq->asAbstractSimpleVectorRange(baseother, ostart, oend);
+      leaf_smart_ptr_type other = baseother.as_assert<leaf_type>();
+      std::copy(other->begin() + ostart, other->begin() + ostart + end - start,
+                begin() + start);
+    } else {
+      // Otherwise do the dumb thing. This could potentially be smarter in some
+      // cases, e.g. copying bytes to uint16_t doesn't need boxing. TODO?
+      // But it would require type discrimination, so it might be left better
+      // for Lisp compiler specialization of REPLACE.
+      for (size_t i(start), ni(0); i < end; ++i, ++ni) {
+        (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
+      }
     }
     return newSubseq;
   }
@@ -587,8 +597,7 @@ public:
   static T_sp to_object(value_type v) { return Integer_O::create(v); }
   virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
     // FIXME: Could be done more efficiently by writing whole words, but be careful about the ends.
-    for (size_t i = start; i < end; ++i)
-      (*this)[i] = from_object(initialElement);
+    std::fill(begin() + start, begin() + end, from_object(initialElement));
   }
   virtual size_t elementSizeInBytes() const override { bitVectorDoesntSupportError(); }
   virtual void* rowMajorAddressOfElement_(size_t i) const override { bitVectorDoesntSupportError(); }
@@ -610,14 +619,26 @@ public:
   Array_sp unsafe_subseq(size_t start, size_t end) const override {
     BOUNDS_ASSERT(0 <= start && start < end && end <= this->length());
     leaf_smart_ptr_type sbv = leaf_type::make(end - start);
-    for (size_t i(0), iEnd(end - start); i < iEnd; ++i)
-      (*sbv)[i] = (*this)[start + i];
+    std::copy(begin() + start, begin() + end, sbv->begin());
     return sbv;
   }
+  using Base::element_type;
   Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp other) override {
+    // TODO: Could be done much faster without boxing by copying whole bit
+    // array words and masking appropriately.
+    // See also notes in template_SimpleVector unsafe_setf_subseq above.
     BOUNDS_ASSERT(0 <= start && start < end && end <= this->length());
-    for (size_t i = start, ni = 0; i < end; ++i, ++ni)
-      (*this)[i] = from_object(other->rowMajorAref(ni));
+    if (element_type() == other->element_type()) {
+      AbstractSimpleVector_sp baseother;
+      size_t ostart, oend;
+      other->asAbstractSimpleVectorRange(baseother, ostart, oend);
+      leaf_smart_ptr_type rother = baseother.as_assert<leaf_type>();
+      std::copy(rother->begin() + ostart, rother->begin() + ostart + end - start,
+                begin() + start);
+    } else {
+      for (size_t i = start, ni = 0; i < end; ++i, ++ni)
+        (*this)[i] = from_object(other->rowMajorAref(ni));
+    }
     return other;
   }
 };
@@ -998,7 +1019,7 @@ T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp e
 
 namespace core {
 
-void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len);
+void core__copy_subarray(Array_sp dest, size_t destStart, Array_sp orig, size_t origStart, size_t len);
 
 T_sp core__rowMajorAset(T_sp, Array_sp, gc::Fixnum);
 T_sp cl__rowMajorAref(Array_sp, gc::Fixnum);
