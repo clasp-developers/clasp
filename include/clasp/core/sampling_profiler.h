@@ -13,6 +13,8 @@
  *
  * See Phase 4 / Phase 5 for post-mortem symbolication and flame-graph
  * output — this header covers the recording side only.
+ * Phase 4 is Symbolication
+ * Phase 5 is collapsed-stacks aggregation - see sampling_profiler.cc
  */
 #pragma once
 
