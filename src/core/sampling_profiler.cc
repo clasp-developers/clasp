@@ -508,7 +508,7 @@ bool sampling_profiler_start(unsigned rate_hz, unsigned max_depth, size_t buffer
   if (!install_sigaction()) return false;
   // Populate this thread's stack bounds now, from a safe context, before
   // any sample can fire. pthread_getattr_np is not async-signal-safe.
-  populate_stack_bounds_for_this_thread();
+  sampling_profiler_register_current_thread();
   // Publish running=true BEFORE arming the timer so the first tick sees
   // it. Release ordering pairs with the handler's acquire load.
   g_running.store(true, std::memory_order_release);
