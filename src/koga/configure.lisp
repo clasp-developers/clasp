@@ -532,9 +532,7 @@ is not compatible with snapshots.")
           :type list
           :documentation "The configuration units")
    (outputs :accessor outputs
-            :initform (alexandria:plist-hash-table (list :trampoline
-                                                         (list (make-source #P"trampoline.lisp" :build))
-                                                         :generate-sif
+            :initform (alexandria:plist-hash-table (list :generate-sif
                                                          (list (make-source #P"generate-sif.lisp" :build))
                                                          :generate-headers
                                                          (list (make-source #P"generate-headers.lisp" :variant)
@@ -592,8 +590,7 @@ is not compatible with snapshots.")
                                                                :libclasp :iclasp :base :modules :extension
                                                                :extension-link :snapshot :install-bin :install-code
                                                                :clasp :regression-tests :analyzer :analyze
-                                                               :tags :install-extension-code :vm-header
-                                                               :trampoline)
+                                                               :tags :install-extension-code :vm-header)
                                                          :config-h
                                                          (list (make-source #P"config.h" :variant)
                                                                :scraper)
