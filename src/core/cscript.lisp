@@ -1,5 +1,6 @@
 (k:sources :libclasp
            #~"dummy.cc"
+           #~"sampling_profiler.cc"
            #~"mpPackage.cc"
            #~"nativeVector.cc"
            #~"evaluator.cc"

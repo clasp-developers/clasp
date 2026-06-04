@@ -1,0 +1,81 @@
+BootStrap: docker
+From: ubuntu:26.04
+
+%files
+    $HOME/Downloads/ambertools26.tar.bz2 /downloads/ambertools26.tar.bz2
+    $HOME/Downloads/rosetta.tar.bz2 /downloads/rosetta.tar.bz2
+
+
+%post
+    set -eo pipefail
+    export DEBIAN_FRONTEND=noninteractive
+    export DEBCONF_NONINTERACTIVE_SEEN=true
+    export TZ=America/New_York
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+    echo $TZ > /etc/timezone
+
+    apt upgrade
+    apt update
+
+    apt install -y nodejs npm git curl
+    npm install -g @anthropic-ai/claude-code
+    useradd -m user
+    export PATH="/root/.npm/_npx:$PATH"
+               
+    apt -y install tcsh make \
+               gcc gfortran g++ \
+               flex bison patch bc \
+               libbz2-dev libzip-dev \
+               xorg-dev wget cmake \
+               mpich openssh-client linux-perf \
+               libtool-bin libvterm-dev bzip2 gdb gdbserver
+
+    cd /opt
+    bunzip2 -c /downloads/rosetta.tar.bz2 | tar xvf - --strip-components=1
+    bunzip2 -c /downloads/ambertools26.tar.bz2 | tar xvf -
+    mkdir -p /opt/ambertools26_src/build
+    cd /opt/ambertools26_src/build
+    mkdir /opt/ambertools26
+    ln -s /opt/ambertools26 /opt/amber
+    cmake /opt/ambertools26_src \
+	  -DCMAKE_INSTALL_PREFIX=/opt/ambertools26 \
+	  -DCOMPILER=GNU \
+	  -DBUILD_GUI=FALSE \
+	  -DMPI=FALSE -DCUDA=FALSE -DINSTALL_TESTS=FALSE \
+	  -DDOWNLOAD_MINICONDA=FALSE \
+	  -DBUILD_PYTHON=FALSE \
+	  2>&1 | tee cmake.log
+    make -j20 install 2>&1 | tee /tmp/make.log
+
+
+
+    apt install --yes binutils libboost-all-dev clang-18 libclang-cpp18-dev libclang-18-dev libgmp-dev libfmt-dev libunwind-dev llvm-18 llvm-18-dev ninja-build sbcl jupyterlab emacs openssh-client openssh-server libnetcdf-dev expat gocryptfs nodejs npm strace emacs libelf-dev wget 
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+    bash Miniconda3-latest-Linux-aarch64.sh -b -p /home/cando/miniconda3
+    rm -rf Miniconda3-latest-Linux-aarch64.sh
+    export PATH="/home/cando/miniconda3/bin:${PATH}"
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+    conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
+    conda install -y -c conda-forge jupyterlab sidecar # ambertools not available
+    jupyter-lab build
+#    cd /mnt
+#    ./koga --reproducible-build --extensions=cando --build-mode=bytecode-faso --llvm-config="/usr/bin/llvm-config-18" --build-path=build-apptainer/
+#    ninja -C build-apptainer
+#    ninja -C build-apptainer install
+#    mkdir -p /home/cando/
+#    chmod ugo+rwx /home/cando/
+#    tar -xvf /mnt/systems.tar -C /home/cando
+#    whoami
+#    ls /home/
+#    chmod -R ugo+rw /home/cando/
+
+%environment
+    export AMBERHOME=/opt/amber
+    export ROSETTA_HOME=/opt/rosetta
+    export PATH=${AMBERHOME}/bin:/root/.npm/_npx:${PATH}
+    export LD_LIBRARY_PATH=${AMBERHOME}/lib:${LD_LIBRARY_PATH}
+    export ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+
+#    export LD_LIBRARY_PATH=/usr/local/lib
+#    export XDG_CACHE_HOME=/home/cando/.cache
+
