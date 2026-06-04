@@ -11,7 +11,12 @@
  *     the preceding CIE (= cie_size + 4).
  *   - FDE's PC range = code_size.
  * Because every slot has the same layout, the bytes are identical across
- * slots and a single memcpy is all that's required.
+ * slots and a single memcpy is all that's required.  Each copy does NOT
+ * need to be patched with a different address because we use an 8-byte absolute
+ * address to bytecode_vm.  The trampolines are fixed once at startup and then
+ * copied without further changes.  All each trampoline needs is to exist in
+ * a unique memory space so the return address from bytecode_vm on the stack
+ * can be associated with a function name in /tmp/perf-<pid>.map
  *
  * For unwinding, each slot registers its own CIE+FDE with libgcc via
  * __register_frame(slot + code_size). The trailing 4-byte zero terminator
