@@ -186,9 +186,9 @@ substrings — empty substrings are preserved."
 
 (defun join (list sep)
   (with-output-to-string (out)
-    (loop for cell on list
-          do (write-string (car cell) out)
-             (when (cdr cell) (write-char sep out)))))
+    (loop for (item . rest) on list
+          do (write-string item out)
+          when rest do (write-char sep out))))
 
 (defun list-string< (a b)
   "Lexicographic comparison of two lists of strings."
