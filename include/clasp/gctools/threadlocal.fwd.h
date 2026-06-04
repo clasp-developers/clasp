@@ -24,15 +24,11 @@ struct MonitorAllocations {
 };
 #endif
 
-struct GlobalAllocationProfiler {
+struct AllocationProfiler {
   // These counters live in the THREAD_LOCAL ThreadLocalStateLowLevel (as the
   // member _Allocations) and are only ever accessed via
   // my_thread_low_level->_Allocations, i.e. by the owning thread alone (see
   // gcalloc_boehm.h, gcFunctions.cc, startRunStop.cc, memoryManagement.cc).
-  // There is no shared/global instance and no cross-thread read, so atomics are
-  // pure overhead on registerAllocation(), which runs on every heap allocation.
-  // Plain int64_t with in-class zero-init (the previous atomics were not all
-  // initialized by the constructors below).
   int64_t _BytesAllocated = 0;
   size_t _AllocationSizeThreshold;
   size_t _AllocationNumberThreshold;
@@ -44,10 +40,10 @@ struct GlobalAllocationProfiler {
   MonitorAllocations _Monitor;
 #endif
 
-  GlobalAllocationProfiler()
+  AllocationProfiler()
       : _AllocationSizeThreshold(1024 * 1024), _AllocationNumberThreshold(16386), _HitAllocationNumberCounter(0),
         _HitAllocationSizeCounter(0){};
-  GlobalAllocationProfiler(size_t size, size_t number)
+  AllocationProfiler(size_t size, size_t number)
       : _AllocationSizeThreshold(size), _AllocationNumberThreshold(number), _HitAllocationNumberCounter(0),
         _HitAllocationSizeCounter(0){};
 
@@ -96,7 +92,7 @@ struct GlobalAllocationProfiler {
 struct ThreadLocalStateLowLevel {
   void* _StackTop;
   bool _DisableInterrupts;
-  GlobalAllocationProfiler _Allocations;
+  AllocationProfiler _Allocations;
   // Time unwinds
   std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;
   std::chrono::duration<size_t, std::nano> _unwind_time;
