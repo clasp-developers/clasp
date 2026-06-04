@@ -25,7 +25,9 @@
 ;;; should work for both lambda expressions and bytecode functions.
 (defun disassemble-to-ir (thing)
   (let* ((*save-module-for-disassemble* t)
-         (*saved-module-from-clasp-jit* nil))
+         (*saved-module-from-clasp-jit* nil)
+         ;; If the user specified :type :ir they want IR, so force compilation.
+         (*compile-native* t))
     (compile nil thing)
     (if *saved-module-from-clasp-jit*
         (format t "~&Disassembly: ~a~%" *saved-module-from-clasp-jit*)
