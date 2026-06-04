@@ -201,7 +201,7 @@
          (primitive-unwinds "cc_makeCell" :t* nil)
          (primitive-unwinds "cc_checkBound" :size_t (list :t* :size_t :t*))
          (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
-         (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i8))
+         (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i64))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 

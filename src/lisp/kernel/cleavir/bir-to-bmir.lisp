@@ -324,6 +324,7 @@
 (define-vector-transforms double-float)
 (define-vector-transforms base-char)
 (define-vector-transforms character)
+(define-vector-transforms bit)
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 

@@ -658,6 +658,7 @@ Optimizations are available for any of:
 (define-vector-transforms double-float)
 (define-vector-transforms base-char)
 (define-vector-transforms character)
+(define-vector-transforms bit)
 
 (deftransform array-rank (((arr (array * (*))))) 1)
 (deftransform array-dimension (((arr (simple-array * (*))) (dimension (eql 0))))

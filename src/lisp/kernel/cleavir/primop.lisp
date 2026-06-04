@@ -312,7 +312,8 @@
     ((single-float) :single-float)
     ((double-float) :double-float)
     ((base-char) :base-char)
-    ((character) :character)))
+    ((character) :character)
+    ((bit) :utfixnum))) ;; see KLUDGE in vref
 
 (cleavir-primop-info:defprimop core:vref 2 :value :flushable)
 (cleavir-primop-info:defprimop core::vset 3 :value :flushable)
@@ -329,28 +330,42 @@
 (defmethod translate-primop ((nsym (eql 'core:vref)) inst)
   (destructuring-bind (element-type &optional order)
       (cleavir-primop-info:arguments (bir:info inst))
-    (let* ((vec (in (first (bir:inputs inst))))
-           (index (in (second (bir:inputs inst))))
-           (addr (%vector-element-address vec element-type index))
-           (vrtype (element-type->vrtype element-type)))
-      (out
-       (if order
-           (cmp:irc-typed-load-atomic (vrtype->llvm vrtype) addr
-                                      :order (cmp::order-spec->order order))
-           (cmp:irc-typed-load (vrtype->llvm vrtype) addr))
-       (first (bir:outputs inst))))))
+    (out
+     (if (member element-type '(bit))
+         ;; sub-byte types have to be special cased
+         ;; since they don't use addressing
+         ;; FIXME: atomicity? probably needs a lock or some crap
+         (let* ((vec (in (first (bir:inputs inst))))
+                (index (in (second (bir:inputs inst)))))
+           ;; KLUDGE cc_simpleBitVectorAref returns an i8, but we need a utfixnum
+           ;; better would be to have it return an i1 (if that's possible in C++)
+           ;; and to have an rtype for that, or failing that an rtype for i8.
+           (cmp:irc-zext
+            (%intrinsic-call "cc_simpleBitVectorAref" (list vec index))))
+         ;; for normal element types, just get the address and load from there.
+         (let* ((vec (in (first (bir:inputs inst))))
+                (index (in (second (bir:inputs inst))))
+                (addr (%vector-element-address vec element-type index))
+                (vrtype (element-type->vrtype element-type)))
+           (if order
+               (cmp:irc-typed-load-atomic (vrtype->llvm vrtype) addr
+                                          :order (cmp::order-spec->order order))
+               (cmp:irc-typed-load (vrtype->llvm vrtype) addr))))
+     (first (bir:outputs inst)))))
 
 (defmethod translate-primop ((nsym (eql 'core::vset)) inst)
   (destructuring-bind (element-type &optional order)
       (cleavir-primop-info:arguments (bir:info inst))
-    (let* ((val (in (first (bir:inputs inst))))
-           (vec (in (second (bir:inputs inst))))
-           (index (in (third (bir:inputs inst))))
-           (addr (%vector-element-address vec element-type index)))
-      (if order
-          (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))
-          (cmp:irc-store val addr))
-      ;; Teturn the new value because it's a bit involved to rewrite BIR to use
+    (let ((val (in (first (bir:inputs inst))))
+          (vec (in (second (bir:inputs inst))))
+          (index (in (third (bir:inputs inst)))))
+      (if (member element-type '(bit))
+          (%intrinsic-call "cc_simpleBitVectorAset" (list vec index val))
+          (let ((addr (%vector-element-address vec element-type index)))
+            (if order
+                (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))
+                (cmp:irc-store val addr))))
+      ;; Return the new value because it's a bit involved to rewrite BIR to use
       ;; a linear datum more than once.
       (out val (first (bir:outputs inst))))))
 
