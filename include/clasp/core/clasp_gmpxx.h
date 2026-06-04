@@ -28,9 +28,17 @@ THE SOFTWARE.
 
 /* Define a C++ GMP wrapper */
 
+/* One one of the clusters I was building on (I'm going to guess the arm64)
+   I got a lot of these warnings so I'm adding this #pragma to silence them
+*/
+#ifdef __aarch64__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-literal-operator"
+#endif
 #include <gmpxx.h>
+
+#ifdef __arch64__
 #pragma clang diagnostic pop
+#endif
 
 typedef mpz_class Bignum;
