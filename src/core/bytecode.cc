@@ -240,13 +240,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
   uintptr_t bytecode_start = (uintptr_t)(bc->rowMajorAddressOfElement_(0));
   uintptr_t bytecode_end = (uintptr_t)(bc->rowMajorAddressOfElement_(bc->length()));
 #endif
-  MultipleValues& multipleValues = core::lisp_multipleValues();
-  // Resolve the thread-local pointer once per VM frame. On Darwin every
-  // `my_thread` access is a _tlv_get_addr thunk call; the interpreter hits it on
-  // every call (maybe_step_call's breakstep check) and in several opcodes, so
+  // Resolve the thread-local pointer once per VM frame. Access TLS is
+  // not a trivial operation, e.g. on Darwin every `my_thread` access is a
+  // _tlv_get_addr thunk call; the interpreter hits it on every call
+  // (maybe_step_call's breakstep check) and in several opcodes, so
   // caching it here removes a per-call/per-op thunk. The thread does not change
-  // during a VM frame.
+  // during a VM frame, or really at all after the thread is initialized.
   ThreadLocalState* thread = my_thread;
+  MultipleValues& multipleValues = thread->_MultipleValues;
   unsigned char* pc = vm._pc;
   while (1) {
     VM_PC_CHECK(vm, pc, bytecode_start, bytecode_end);
@@ -682,7 +683,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp texisting_values((gctools::Tagged)vm.pop(sp));
       size_t existing_values = texisting_values.unsafe_fixnum();
       DBG_VM("  existing-values = %zu\n", existing_values);
-      vm.copyto(sp, existing_values, &my_thread->_MultipleValues._Values[0]);
+      vm.copyto(sp, existing_values, &multipleValues._Values[0]);
       multipleValues.setSize(existing_values);
       vm.drop(sp, existing_values);
       pc++;
@@ -771,8 +772,8 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       vm._pc = pc;
       TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
       vm.setreg(fp, n, env.raw_());
-      gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
-      DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+      gctools::StackAllocate<Cons_O> sa_ec(env, thread->dynEnvStackGet());
+      DynEnvPusher dep(thread, sa_ec.asSmartPtr());
       _setjmp(target);
     again:
       try {
@@ -781,7 +782,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc = vm._pc;
       } catch (Unwind& uw) {
         if (uw.getFrame() == frame) {
-          my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
+          thread->dynEnvStackGet() = sa_ec.asSmartPtr();
           goto again;
         } else
           throw;
@@ -1055,7 +1056,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
 static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, MultipleValues& multipleValues, T_O** literals,
                                     T_O** closed, Closure_O* closure, core::T_O** fp, core::T_O** sp, size_t lcc_nargs,
                                     core::T_O** lcc_args, uint8_t sub_opcode) {
-  ThreadLocalState* thread = my_thread; // cache TLS pointer once (see bytecode_vm)
+  ThreadLocalState* thread = my_thread; // only grab TLS pointer once (see bytecode_vm)
   switch ((vm_code)sub_opcode) {
   case vm_code::ref: {
     uint8_t low = *(pc + 1);
@@ -1396,8 +1397,8 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     vm._pc = pc;
     TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
     vm.setreg(fp, n, env.raw_());
-    gctools::StackAllocate<Cons_O> sa_ec(env, my_thread->dynEnvStackGet());
-    DynEnvPusher dep(my_thread, sa_ec.asSmartPtr());
+    gctools::StackAllocate<Cons_O> sa_ec(env, thread->dynEnvStackGet());
+    DynEnvPusher dep(thread, sa_ec.asSmartPtr());
     _setjmp(target);
   again:
     try {
@@ -1406,7 +1407,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       pc = vm._pc;
     } catch (Unwind& uw) {
       if (uw.getFrame() == frame) {
-        my_thread->dynEnvStackGet() = sa_ec.asSmartPtr();
+        thread->dynEnvStackGet() = sa_ec.asSmartPtr();
         goto again;
       } else
         throw;
