@@ -27,6 +27,7 @@
 * `setf` of `apply` no longer has multiple evaluation problems.
 * Improve error messages for package name conflicts. Fixes #1722.
 * FASL loading is more resilient in the face of heavy file use and interruptions. Thanks @dg1sbg.
+* Writing non-base-chars into base strings by various means (e.g. `replace`) now signals an error instead of treating the low byte of the codepoint as a base char.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used
@@ -36,6 +37,7 @@
 
 ## Optimized
 * FASL loading batches reads more, improving load times. Thanks @dg1sbg.
+* Array copying operations like `subseq` and `replace` cons less.
 
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 
