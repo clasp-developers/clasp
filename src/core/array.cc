@@ -529,27 +529,11 @@ DOCGROUP(clasp)
 CL_LAMBDA(dest destStart orig origStart len)
 CL_DEFUN
 void core__copy_subarray(Array_sp dest, size_t destStart, Array_sp orig, size_t origStart, size_t len) {
-  // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
-  //       Currently this is very inefficient
   if ((len + destStart) >= dest->arrayTotalSize())
     len = dest->arrayTotalSize() - destStart;
   if ((len + origStart) >= orig->arrayTotalSize())
     len = orig->arrayTotalSize() - origStart;
-  if (destStart < origStart) {
-    for (size_t i = 0; i < len; ++i) {
-      dest->rowMajorAset(destStart, orig->rowMajorAref(origStart));
-      ++destStart;
-      ++origStart;
-    }
-  } else {
-    destStart += len;
-    origStart += len;
-    for (size_t i = 0; i < len; ++i) {
-      --destStart;
-      --origStart;
-      dest->rowMajorAset(destStart, orig->rowMajorAref(origStart));
-    }
-  }
+  dest->copy_nd(orig, destStart, origStart, len);
 }
 
 CL_LISPIFY_NAME("cl:aref"); // SETF symbol

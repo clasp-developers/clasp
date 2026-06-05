@@ -2695,13 +2695,12 @@ CL_LAMBDA(s);
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_string_output_stream_from_string)dx");
 CL_DEFUN StringOutputStream_sp core__make_string_output_stream_from_string(T_sp s) {
-  StringOutputStream_sp strm = StringOutputStream_O::create();
-  bool stringp = cl__stringp(s);
-  unlikely_if(!stringp || !gc::As<Array_sp>(s)->arrayHasFillPointerP()) {
+  if (s.isA<StrNs_O>() && s.as<StrNs_O>()->arrayHasFillPointerP()) [[likely]] {
+    StringOutputStream_sp strm = StringOutputStream_O::create();
+    strm->_contents = s.as_unsafe<StrNs_O>();
+    return strm;
+  } else
     FEerror("~S is not a string with a fill-pointer.", 1, s.raw_());
-  }
-  strm->_contents = gc::As<String_sp>(s);
-  return strm;
 }
 
 void StringOutputStream_O::clear() {
@@ -2739,70 +2738,55 @@ void StringOutputStream_O::write_string(String_sp data, cl_index start, cl_index
   const cl_index newFill = oldFill + count;
   // Grow the destination once (geometric) so the copy needs no per-character
   // reallocation or fill-pointer check. _contents is always an adjustable
-  // fill-pointer string (an MDArray) for a string-output-stream; resize keeps
+  // fill-pointer string (a StrNs_O) for a string-output-stream; resize keeps
   // the fill pointer for fill-pointer arrays.
+  // Note that the C++ type of _contents is String_sp, because it's in the super
+  // shared with string input streams. Bit awkward.
   if (newFill > static_cast<cl_index>(this->_contents->arrayTotalSize())) {
-    cl_index newTotal = static_cast<cl_index>(this->_contents->arrayTotalSize()) * 2;
-    if (newTotal < newFill)
-      newTotal = newFill;
-    gc::As<MDArray_sp>(this->_contents)->resize(newTotal);
+    this->_contents.as_assert<StrNs_O>()->resize(newFill);
   }
   StreamCursor& cur = this->_output_cursor;
-  // Resolve the underlying simple vectors so element access is a non-virtual,
-  // typed indexing operation. Boehm GC is non-moving and the copy loop below
-  // performs no allocation, so these references stay valid throughout.
-  AbstractSimpleVector_sp ssv;
-  size_t s0, s1;
-  data->asAbstractSimpleVectorRange(ssv, s0, s1);
-  AbstractSimpleVector_sp dsv;
-  size_t d0, d1;
-  this->_contents->asAbstractSimpleVectorRange(dsv, d0, d1);
-  const cl_index srcOff = static_cast<cl_index>(s0) + start;
-  const cl_index dstOff = static_cast<cl_index>(d0) + oldFill;
-  bool fast = true;
-  if (gc::IsA<SimpleCharacterString_sp>(dsv)) {
-    SimpleCharacterString_O& dst = *gc::As_unsafe<SimpleCharacterString_sp>(dsv);
-    if (gc::IsA<SimpleCharacterString_sp>(ssv)) {
-      SimpleCharacterString_O& src = *gc::As_unsafe<SimpleCharacterString_sp>(ssv);
-      for (cl_index i = 0; i < count; ++i) {
-        claspCharacter c = src[srcOff + i];
-        dst[dstOff + i] = c;
-        cur.update(c);
-      }
-    } else if (gc::IsA<SimpleBaseString_sp>(ssv)) {
-      SimpleBaseString_O& src = *gc::As_unsafe<SimpleBaseString_sp>(ssv);
-      for (cl_index i = 0; i < count; ++i) {
-        claspCharacter c = src[srcOff + i]; // widen 8 -> 32 bits
-        dst[dstOff + i] = c;
-        cur.update(c);
-      }
-    } else
-      fast = false;
-  } else if (gc::IsA<SimpleBaseString_sp>(dsv) && gc::IsA<SimpleBaseString_sp>(ssv)) {
-    SimpleBaseString_O& dst = *gc::As_unsafe<SimpleBaseString_sp>(dsv);
-    SimpleBaseString_O& src = *gc::As_unsafe<SimpleBaseString_sp>(ssv);
-    for (cl_index i = 0; i < count; ++i) {
-      claspChar c = src[srcOff + i];
-      dst[dstOff + i] = c;
-      cur.update(c);
-    }
+  // copy data. We try to avoid boxing and dispatch as much as possible by
+  // using copy_n.
+  AbstractSimpleVector_sp svdata;
+  size_t svstart, svend;
+  data->asAbstractSimpleVectorRange(svdata, svstart, svend);
+  if (_contents.isA<Str8Ns_O>()) {
+    Str8Ns_sp contents = _contents.as_unsafe<Str8Ns_O>();
+    if (svdata.isA<SimpleCharacterString_O>()) {
+      SimpleCharacterString_sp rsvdata = svdata.as_unsafe<SimpleCharacterString_O>();
+      // Note that this could result in an error, if data has wide characters
+      // that don't fit in a base string!
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else if (svdata.isA<SimpleBaseString_O>()) {
+      SimpleBaseString_sp rsvdata = svdata.as_unsafe<SimpleBaseString_O>();
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else TYPE_ERROR(data, cl::_sym_string);
+  } else if (_contents.isA<StrWNs_O>()) {
+    StrWNs_sp contents = _contents.as_unsafe<StrWNs_O>();
+    if (svdata.isA<SimpleBaseString_O>()) {
+      SimpleBaseString_sp rsvdata = svdata.as_unsafe<SimpleBaseString_O>();
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else if (svdata.isA<SimpleCharacterString_O>()) {
+      SimpleCharacterString_sp rsvdata = svdata.as_unsafe<SimpleCharacterString_O>();
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else TYPE_ERROR(data, cl::_sym_string);
   } else {
-    // Character source into a base destination may narrow; defer to the safe
-    // path which raises the proper type error for out-of-range characters.
-    fast = false;
+    // contents is a StrNs but not a Str8Ns or StrWNs.
+    // should be impossible but who knows. do it the dumbest available way.
+    _contents->copy_nd(svdata, oldFill, start + svstart, count);
+    for (cl_index i = 0; i < count; ++i)
+      cur.update(clasp_as_claspCharacter(svdata->rowMajorAref(start + svstart + i).as_unsafe<Character_O>()));
   }
-  if (fast) {
-    this->_contents->fillPointerSet(newFill);
-    return;
-  }
-  // Safe fallback: cursor updated identically to the per-char path, content
-  // copied with the tested type-checking subseq machinery.
-  for (cl_index i = start; i < end; ++i)
-    cur.update(clasp_as_claspCharacter(cl__char(data, i)));
-  Array_sp src = (start == 0 && static_cast<cl_index>(data->length()) == end)
-                     ? gc::As_unsafe<Array_sp>(data)
-                     : gc::As_unsafe<Array_sp>(data->unsafe_subseq(start, end));
-  this->_contents->unsafe_setf_subseq(oldFill, newFill, src);
+
   this->_contents->fillPointerSet(newFill);
 }
 
