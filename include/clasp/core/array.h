@@ -27,7 +27,8 @@ THE SOFTWARE.
 /* -^- */
 
 #include <algorithm> // range algorithms
-#include <limits> // numeric_limits for casting
+#include <limits>    // numeric_limits for casting
+#include <type_traits> // is_integral etc.
 #include <concepts> // beware
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/clasp_gmpxx.h>
@@ -534,30 +535,14 @@ public:
                          begin() + dest_start + n);
     }
   }
-  // OK case: Copying between integral types can be done without boxing.
-  // We do need to signal errors if something won't fit, though, and that's
-  // a runtime check for each element.
-  using Base::element_type;
-  template <typename SourceArray_O>
-  requires (std::derived_from<SourceArray_O, AbstractSimpleVector_O>
-            && std::integral<typename leaf_type::simple_element_type>
-            && std::integral<typename SourceArray_O::simple_element_type>
-            && !std::same_as<SourceArray_O, leaf_type>)
-    void copy_n(gctools::smart_ptr<SourceArray_O> source,
-                size_t dest_start, size_t source_start, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-      auto elt = (*source)[source_start + i];
-      // clang can probably optimize this out when the source type always fits.
-      if (elt < std::numeric_limits<typename leaf_type::simple_element_type>::min()
-          || elt > std::numeric_limits<typename leaf_type::simple_element_type>::max())
-        TYPE_ERROR(Integer_O::create(elt), element_type());
-      else (*this)[dest_start + i] = elt;
-    }
-  }
   // Worst specific case: box and unbox,
   // but we can at least avoid virtual rowMajorAref.
+  // If the element types are integral we try to copy them without boxing,
+  // but this may need type checks for every element if the destination's
+  // integers are smaller than the source's.
   // We'd hit the specific expansion if SourceArray_O = leaf_type,
   // so we don't need to worry about aliasing.
+  using Base::element_type;
   template <typename SourceArray_O>
   requires (std::derived_from<SourceArray_O, AbstractSimpleVector_O>
             && !std::same_as<SourceArray_O, leaf_type>
@@ -565,11 +550,33 @@ public:
             && !std::same_as<SourceArray_O, AbstractSimpleVector_O>)
     void copy_n(gctools::smart_ptr<SourceArray_O> source,
                 size_t dest_start, size_t source_start, size_t n) {
-    // note: no std::transform since if the unary_op throws, the program is
-    // std::terminate'd. I think.
-    for (size_t i = 0; i < n; ++i) {
-      T_sp elt = SourceArray_O::to_object((*source)[source_start + i]);
-      (*this)[dest_start + i] = leaf_type::from_object(elt);
+    if constexpr(std::is_integral_v<typename leaf_type::simple_element_type>
+                 && std::is_integral_v<typename SourceArray_O::simple_element_type>) {
+      // Specialish case so we can copy integers without boxing.
+      // if constexpr is because constraint normalization is kind of dumb,
+      // making it difficult to keep the templates unambiguous.
+      for (size_t i = 0; i < n; ++i) {
+        auto elt = (*source)[source_start + i];
+        // clang can probably optimize this test out when the source type
+        // always fits
+        if (elt < std::numeric_limits<typename leaf_type::simple_element_type>::min()
+            || elt > std::numeric_limits<typename leaf_type::simple_element_type>::max()) {
+          if constexpr(std::is_base_of_v<SimpleString_O, leaf_type>)
+            // very special case to get an actual lisp character into the
+            // type error. (plus there's no Integer_O::create for claspCharacter
+            // as i write this, since it's char32_t)
+            TYPE_ERROR(clasp_make_character(elt), element_type());
+          else
+            TYPE_ERROR(Integer_O::create(elt), element_type());
+        } else (*this)[dest_start + i] = elt;
+      }
+    } else {
+      // note: no std::transform since if the unary_op throws, the program is
+      // std::terminate'd. I think.
+      for (size_t i = 0; i < n; ++i) {
+        T_sp elt = SourceArray_O::to_object((*source)[source_start + i]);
+        (*this)[dest_start + i] = leaf_type::from_object(elt);
+      }
     }
   }
   // default specialization when we know source is simple but nothing else
@@ -735,27 +742,24 @@ public:
   using Base::element_type;
   template <typename SourceArray_O>
   requires (std::derived_from<SourceArray_O, AbstractSimpleVector_O>
-            && std::integral<typename SourceArray_O::simple_element_type>
-            && !std::same_as<SourceArray_O, leaf_type>)
-    void copy_n(gctools::smart_ptr<SourceArray_O> source,
-                size_t dest_start, size_t source_start, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-      auto elt = (*source)[source_start + i];
-      if (elt < std::numeric_limits<typename leaf_type::simple_element_type>::min()
-          || elt > std::numeric_limits<typename leaf_type::simple_element_type>::max())
-        TYPE_ERROR(Integer_O::create(elt), element_type());
-      else (*this)[dest_start + i] = elt;
-    }
-  }
-  template <typename SourceArray_O>
-  requires (std::derived_from<SourceArray_O, AbstractSimpleVector_O>
             && !std::same_as<SourceArray_O, leaf_type>
             && !std::same_as<SourceArray_O, AbstractSimpleVector_O>)
   void copy_n(gctools::smart_ptr<SourceArray_O> source,
               size_t dest_start, size_t source_start, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-      T_sp elt = SourceArray_O::to_object((*source)[source_start + i]);
-      (*this)[dest_start + i] = leaf_type::from_object(elt);
+    if constexpr(std::is_integral_v<typename SourceArray_O::simple_element_type>) {
+      static_assert(std::is_integral_v<typename leaf_type::simple_element_type>);
+      for (size_t i = 0; i < n; ++i) {
+        auto elt = (*source)[source_start + i];
+        if (elt < std::numeric_limits<typename leaf_type::simple_element_type>::min()
+            || elt > std::numeric_limits<typename leaf_type::simple_element_type>::max())
+          TYPE_ERROR(Integer_O::create(elt), element_type());
+        else (*this)[dest_start + i] = elt;
+      }
+    } else {
+      for (size_t i = 0; i < n; ++i) {
+        T_sp elt = SourceArray_O::to_object((*source)[source_start + i]);
+        (*this)[dest_start + i] = leaf_type::from_object(elt);
+      }
     }
   }
   template <>
