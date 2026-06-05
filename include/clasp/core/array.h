@@ -239,14 +239,14 @@ public: // Functions here
       notVectorError(this->asSmartPtr());
     size_t_pair p = sequenceStartEnd(core::_sym_setf_subseq, this->length(), start, end);
     Array_sp newVec = gc::As<Array_sp>(new_subseq);
-    return this->unsafe_setf_subseq(p.start, p.end, newVec);
+    this->copy_nd(newVec, p.start, 0, p.end - p.start);
+    return newVec;
   }
   void fillInitialContents(T_sp initialContents);
   virtual void sxhash_equalp(HashGenerator& hg) const override;
   // --------------------------------------------------
-  // Ranged operations with explicit limits
+  // Unsafe ranged operations with explicit limits
   virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
-  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) = 0;
   virtual void unsafe_fillArrayWithElt(T_sp initial_element, size_t start, size_t end) = 0;
   // copy_n (below) but dispatching on the dest.
   // does not fully dispatch on the source's element type, but at least handles
@@ -351,7 +351,6 @@ public:
   virtual T_sp vectorPush(T_sp newElement) final;
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) override;
   virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
-  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
 };
 }; // namespace core
 
@@ -616,12 +615,6 @@ public:
                size_t dest_start, size_t source_start, size_t n) final {
     copy_n(source, dest_start, source_start, n);
   }
-
-  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
-    BOUNDS_ASSERT(start <= end && end <= this->length());
-    copy_n(newSubseq, 0, start, end - start);
-    return newSubseq;
-  }
 };
 }; // namespace core
 
@@ -794,12 +787,6 @@ public:
 
   void copy_nd(Array_sp source, size_t dest_start, size_t source_start, size_t n) final {
     copy_n(source, dest_start, source_start, n);
-  }
-
-  Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp other) override {
-    BOUNDS_ASSERT(0 <= start && start < end && end <= this->length());
-    copy_n(other, 0, start, end - start);
-    return other;
   }
 };
 }; // namespace core

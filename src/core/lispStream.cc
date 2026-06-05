@@ -1885,7 +1885,7 @@ T_mv AnsiStream_O::read_line() {
         if (extended_buffer->arrayTotalSize() < base_buffer->length())
           extended_buffer->resize(base_buffer->length());
         // copy in the base buffer, then release the base buffer
-        extended_buffer->unsafe_setf_subseq(0, base_buffer->length(), base_buffer->asSmartPtr());
+        extended_buffer->copy_n(base_buffer, 0, 0, base_buffer->length());
         extended_buffer->fillPointerSet(base_buffer->length());
         _lisp->put_Str8Ns_buffer_string(base_buffer);
       }
@@ -2727,8 +2727,7 @@ claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
 // pays a boxing (clasp_make_character) plus a virtual vectorPushExtend with a
 // fill-pointer/realloc check. Here we (1) update the output cursor over the
 // appended range exactly as the per-char path would, and (2) append the
-// content in one shot with a single geometric growth and the type-safe subseq
-// copy used elsewhere for string buffers (see read_line / unsafe_setf_subseq),
+// content in one shot with a single geometric growth and copy_n,
 // which preserves base/extended conversion and narrowing-error behavior.
 void StringOutputStream_O::write_string(String_sp data, cl_index start, cl_index end) {
   if (start >= end)

@@ -331,9 +331,6 @@ void MDArray_O::set_data(Array_sp a) { this->_Data = a; }
 Array_sp MDArray_O::unsafe_subseq(size_t start, size_t iend) const {
   return this->_Data->unsafe_subseq(start + this->_DisplacedIndexOffset, iend + this->_DisplacedIndexOffset);
 }
-Array_sp MDArray_O::unsafe_setf_subseq(size_t start, size_t iend, Array_sp new_subseq) {
-  return this->_Data->unsafe_setf_subseq(start + this->_DisplacedIndexOffset, iend + this->_DisplacedIndexOffset, new_subseq);
-}
 
 bool MDArray_O::equalp(T_sp other) const {
   if (&*other == this)

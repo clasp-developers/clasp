@@ -1327,7 +1327,7 @@ Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
 
 SimpleString_sp Str8Ns_O::asMinimalSimpleString() const {
   SimpleBaseString_sp str8 = SimpleBaseString_O::make(this->length());
-  str8->unsafe_setf_subseq(0, this->length(), this->asSmartPtr());
+  str8->copy_n(this->asSmartPtr(), 0, 0, this->length());
   return str8;
 }
 
@@ -1406,11 +1406,11 @@ std::string StrWNs_O::__repr__() const { return escaped_string(this->get_std_str
 SimpleString_sp StrWNs_O::asMinimalSimpleString() const {
   if (this->all_base_char_p()) {
     SimpleBaseString_sp str8 = SimpleBaseString_O::make(this->length());
-    str8->unsafe_setf_subseq(0, this->length(), this->asSmartPtr());
+    str8->copy_n(this->asSmartPtr(), 0, 0, this->length());
     return str8;
   } else {
     SimpleCharacterString_sp strw = SimpleCharacterString_O::make(this->length());
-    strw->unsafe_setf_subseq(0, this->length(), this->asSmartPtr());
+    strw->copy_n(this->asSmartPtr(), 0, 0, this->length());
     return strw;
   }
 }
