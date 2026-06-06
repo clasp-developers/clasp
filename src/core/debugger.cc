@@ -264,11 +264,9 @@ void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_
 bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryName, uintptr_t& start, uintptr_t& end,
                        uintptr_t& vtableStart, uintptr_t& vtableEnd) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
-  // Match libraries by basename (SONAME), not by requiring the recorded name to be a path-suffix
-  // of the loaded library. The recorded name can be an absolute path captured at snapshot-save
+  // Match libraries by basename. The recorded name can be an absolute path captured at snapshot-save
   // time; if the library is later loaded from a different directory (a relocated/bundled install,
-  // or the target's /usr/lib vs a build path) the old suffix test fails and snapshot load aborts.
-  // Comparing basenames makes snapshot load position-independent.
+  // or the target's /usr/lib vs a build path) we still want the library to be locatable here.
   auto base_name = [](const std::string& p) -> std::string {
     std::size_t slash = p.find_last_of('/');
     return slash == std::string::npos ? p : p.substr(slash + 1);
