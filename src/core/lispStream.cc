@@ -2723,6 +2723,89 @@ claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
   return c;
 }
 
+// Bulk write_string for string-output-streams. The default
+// AnsiStream_O::write_string writes one character at a time, and each char
+// pays a boxing (clasp_make_character) plus a virtual vectorPushExtend with a
+// fill-pointer/realloc check. Here we (1) update the output cursor over the
+// appended range exactly as the per-char path would, and (2) append the
+// content in one shot with a single geometric growth and the type-safe subseq
+// copy used elsewhere for string buffers (see read_line / unsafe_setf_subseq),
+// which preserves base/extended conversion and narrowing-error behavior.
+void StringOutputStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  if (start >= end)
+    return;
+  const cl_index count = end - start;
+  const cl_index oldFill = this->_contents->fillPointer();
+  const cl_index newFill = oldFill + count;
+  // Grow the destination once (geometric) so the copy needs no per-character
+  // reallocation or fill-pointer check. _contents is always an adjustable
+  // fill-pointer string (an MDArray) for a string-output-stream; resize keeps
+  // the fill pointer for fill-pointer arrays.
+  if (newFill > static_cast<cl_index>(this->_contents->arrayTotalSize())) {
+    cl_index newTotal = static_cast<cl_index>(this->_contents->arrayTotalSize()) * 2;
+    if (newTotal < newFill)
+      newTotal = newFill;
+    gc::As<MDArray_sp>(this->_contents)->resize(newTotal);
+  }
+  StreamCursor& cur = this->_output_cursor;
+  // Resolve the underlying simple vectors so element access is a non-virtual,
+  // typed indexing operation. Boehm GC is non-moving and the copy loop below
+  // performs no allocation, so these references stay valid throughout.
+  AbstractSimpleVector_sp ssv;
+  size_t s0, s1;
+  data->asAbstractSimpleVectorRange(ssv, s0, s1);
+  AbstractSimpleVector_sp dsv;
+  size_t d0, d1;
+  this->_contents->asAbstractSimpleVectorRange(dsv, d0, d1);
+  const cl_index srcOff = static_cast<cl_index>(s0) + start;
+  const cl_index dstOff = static_cast<cl_index>(d0) + oldFill;
+  bool fast = true;
+  if (gc::IsA<SimpleCharacterString_sp>(dsv)) {
+    SimpleCharacterString_O& dst = *gc::As_unsafe<SimpleCharacterString_sp>(dsv);
+    if (gc::IsA<SimpleCharacterString_sp>(ssv)) {
+      SimpleCharacterString_O& src = *gc::As_unsafe<SimpleCharacterString_sp>(ssv);
+      for (cl_index i = 0; i < count; ++i) {
+        claspCharacter c = src[srcOff + i];
+        dst[dstOff + i] = c;
+        cur.update(c);
+      }
+    } else if (gc::IsA<SimpleBaseString_sp>(ssv)) {
+      SimpleBaseString_O& src = *gc::As_unsafe<SimpleBaseString_sp>(ssv);
+      for (cl_index i = 0; i < count; ++i) {
+        claspCharacter c = src[srcOff + i]; // widen 8 -> 32 bits
+        dst[dstOff + i] = c;
+        cur.update(c);
+      }
+    } else
+      fast = false;
+  } else if (gc::IsA<SimpleBaseString_sp>(dsv) && gc::IsA<SimpleBaseString_sp>(ssv)) {
+    SimpleBaseString_O& dst = *gc::As_unsafe<SimpleBaseString_sp>(dsv);
+    SimpleBaseString_O& src = *gc::As_unsafe<SimpleBaseString_sp>(ssv);
+    for (cl_index i = 0; i < count; ++i) {
+      claspChar c = src[srcOff + i];
+      dst[dstOff + i] = c;
+      cur.update(c);
+    }
+  } else {
+    // Character source into a base destination may narrow; defer to the safe
+    // path which raises the proper type error for out-of-range characters.
+    fast = false;
+  }
+  if (fast) {
+    this->_contents->fillPointerSet(newFill);
+    return;
+  }
+  // Safe fallback: cursor updated identically to the per-char path, content
+  // copied with the tested type-checking subseq machinery.
+  for (cl_index i = start; i < end; ++i)
+    cur.update(clasp_as_claspCharacter(cl__char(data, i)));
+  Array_sp src = (start == 0 && static_cast<cl_index>(data->length()) == end)
+                     ? gc::As_unsafe<Array_sp>(data)
+                     : gc::As_unsafe<Array_sp>(data->unsafe_subseq(start, end));
+  this->_contents->unsafe_setf_subseq(oldFill, newFill, src);
+  this->_contents->fillPointerSet(newFill);
+}
+
 T_sp StringOutputStream_O::position() { return Integer_O::create((gc::Fixnum)_contents->fillPointer()); }
 
 void StringOutputStream_O::clear_output() {}

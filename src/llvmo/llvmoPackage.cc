@@ -54,6 +54,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/clbindLlvmExpose.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/code.h> // JITDataReadWriteMaybeExecute / JITDataReadExecute (Apple Silicon W^X)
 #include <clasp/llvmo/claspLinkPass.h>
 #include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
@@ -690,7 +691,16 @@ CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, 
   if (!found)
     SIMPLE_ERROR("Could not find pointer for name |{}|", name);
   core::T_O** tptr = (core::T_O**)ptr;
+  // `tptr` points into a JIT'd dylib's memory (e.g. the callback-lisp-function-N
+  // global created by make-callback). On Apple Silicon that memory is MAP_JIT and
+  // execute-protected for this thread under W^X, so a plain store faults with
+  // SIGBUS. Enable writing around the store, exactly like the other JIT-literal
+  // write sites (code.cc, loadltv.cc, compiler.cc, snapshotSaveLoad.cc). The
+  // window contains only this pointer store -- no allocation/GC/JIT. No-op off
+  // Apple Silicon.
+  JITDataReadWriteMaybeExecute();
   *tptr = value.raw_();
+  JITDataReadExecute();
   return value;
 }
 

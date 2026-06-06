@@ -2337,6 +2337,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         my_thread->finish_initialization_main_thread(nil);
         // Now we have NIL in 'nil' - use it to initialize a few things.
         _lisp->_Roots._AllObjectFiles.store(nil);
+        llvmo::clearObjectFileNameCounts(); // keep countObjectFileNames index in sync with the cleared list
         _lisp->_Roots._AllCodeBlocks.store(nil);
       }
 

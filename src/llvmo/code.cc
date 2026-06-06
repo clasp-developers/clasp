@@ -10,6 +10,8 @@
 #include <dlfcn.h>
 #include <iomanip>
 #include <cstdint>
+#include <mutex>
+#include <unordered_map>
 #include <clasp/core/foundation.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/debugger.h>
@@ -451,6 +453,7 @@ CL_LISPIFY_NAME(release_object_files);
 DOCGROUP(clasp);
 CL_DEFUN void release_object_files() {
   _lisp->_Roots._AllObjectFiles.store(nil<core::T_O>());
+  clearObjectFileNameCounts();
   core::clasp_write_string("ObjectFiles have been released\n");
 }
 
@@ -732,21 +735,42 @@ std::string CodeBlock_O::__repr__() const {
 
 void CodeBlock_O::describe() const { printf("%s:%d:%s entered\n", __FILE__, __LINE__, __FUNCTION__); }
 
+// Object-file names are uniquified at registration time
+// (ensureUniqueMemoryBufferName -> countObjectFileNames). The original
+// countObjectFileNames rescanned the whole _AllObjectFiles list with a memcmp
+// per call, which is O(N) per registration and therefore O(N^2) as JITted
+// modules accumulate -- a real scalability cost for long-running /
+// compilation-heavy processes (it was the #1 self-time function, ~15%, in a
+// profiled workload). We maintain an auxiliary name->count index updated at the
+// single registration site (recordObjectFileName) and reset whenever
+// _AllObjectFiles is cleared (clearObjectFileNameCounts), making the lookup
+// O(1). _AllObjectFiles is only ever appended to (registerObjectFile) or
+// bulk-cleared -- never individually pruned -- so the index stays in sync. The
+// map holds no GC pointers; a mutex guards it because registration can race.
+static std::mutex& objectFileNameCountsMutex() {
+  static std::mutex m;
+  return m;
+}
+static std::unordered_map<std::string, size_t>& objectFileNameCounts() {
+  static std::unordered_map<std::string, size_t> m;
+  return m;
+}
+
+void recordObjectFileName(const std::string& name) {
+  std::lock_guard<std::mutex> guard(objectFileNameCountsMutex());
+  ++objectFileNameCounts()[name];
+}
+
+void clearObjectFileNameCounts() {
+  std::lock_guard<std::mutex> guard(objectFileNameCountsMutex());
+  objectFileNameCounts().clear();
+}
+
 size_t countObjectFileNames(const std::string& name) {
   DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Lookup name %s\n", __FILE__, __LINE__, __FUNCTION__, name.c_str()));
-  size_t count = 0;
-  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
-  while (cur.consp()) {
-    ObjectFile_sp of = gc::As<ObjectFile_sp>(CONS_CAR(cur));
-    const char* codeNameStart = (const char*)of->_CodeName->_Data.data();
-    if (of->_CodeName->length() == name.size()) {
-      if (memcmp(codeNameStart, name.data(), name.size()) == 0) {
-        count++;
-      }
-    }
-    cur = CONS_CDR(cur);
-  }
-  return count;
+  std::lock_guard<std::mutex> guard(objectFileNameCountsMutex());
+  auto it = objectFileNameCounts().find(name);
+  return it == objectFileNameCounts().end() ? 0 : it->second;
 };
 
 CL_DEFUN core::T_sp llvm_sys__allObjectFileNames() {
