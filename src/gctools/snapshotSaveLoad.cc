@@ -1854,15 +1854,31 @@ void* snapshot_save_impl(void* data) {
         mangled_name.begin(), mangled_name.end(), [](unsigned char c) { return !std::isalnum(c); }, '_');
 
     std::cout << "Creating binary object from snapshot..." << std::endl << std::flush;
-    cmd = OBJCOPY_BINARY " --input-target binary --output-target elf64-x86-64"
-                         " --binary-architecture i386 " +
+    // objcopy's output target and binary architecture must match the build target;
+    // otherwise the binary-wrapped snapshot object is empty/rejected by the linker
+    // (e.g. on aarch64 the hardcoded x86-64/i386 values give "architecture i386 unknown").
+#if defined(__x86_64__)
+    const char* snapshot_objcopy_target = "elf64-x86-64";
+    const char* snapshot_objcopy_arch = "i386";
+#elif defined(__aarch64__)
+    const char* snapshot_objcopy_target = "elf64-littleaarch64";
+    const char* snapshot_objcopy_arch = "aarch64";
+#else
+#error "snapshot_save_impl: unsupported architecture for objcopy binary wrap"
+#endif
+    cmd = OBJCOPY_BINARY " --input-target binary --output-target " +
+          std::string(snapshot_objcopy_target) + " --binary-architecture " +
+          snapshot_objcopy_arch + " " +
           filename + " " + obj_filename + " --redefine-sym _binary_" + mangled_name +
           "_start=" CXX_MACRO_STRING(SNAPSHOT_START) " --redefine-sym _binary_" + mangled_name +
           "_end=" CXX_MACRO_STRING(SNAPSHOT_END) " --redefine-sym _binary_" + mangled_name +
           "_size=" CXX_MACRO_STRING(SNAPSHOT_SIZE);
-    if (system(cmd.c_str()) < 0) {
-      std::cerr << "Creation of binary object failed." << std::endl << std::flush;
-      return NULL;
+    if (int rc = system(cmd.c_str())) {
+      // system() returns -1 on fork failure and otherwise the program's exit
+      // status. If the program fails it will return a positive status.
+      // So 0 is the only result indicating success.
+      std::cerr << "Creation of binary object failed (rc=" << rc << "): " << cmd << std::endl << std::flush;
+      exit(1);
     }
 
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir + " -o" + snapshot_data->_FileName + " " + obj_filename +
@@ -1885,9 +1901,9 @@ void* snapshot_save_impl(void* data) {
     std::cout << "Link command:" << std::endl << std::flush;
     std::cout << cmd << std::endl << std::flush;
     std::cout << "Linking executable..." << std::endl << std::flush;
-    if (system(cmd.c_str()) < 0) {
-      std::cerr << "Linking of executable failed." << std::endl << std::flush;
-      return NULL;
+    if (int rc = system(cmd.c_str())) {
+      std::cerr << "Linking of executable failed (rc=" << rc << "): " << cmd << std::endl << std::flush;
+      exit(1);
     }
 
 #ifdef _TARGET_OS_LINUX
