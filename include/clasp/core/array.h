@@ -551,10 +551,16 @@ public:
     void copy_n(gctools::smart_ptr<SourceArray_O> source,
                 size_t dest_start, size_t source_start, size_t n) {
     if constexpr(std::is_integral_v<typename leaf_type::simple_element_type>
-                 && std::is_integral_v<typename SourceArray_O::simple_element_type>) {
+                 && std::is_integral_v<typename SourceArray_O::simple_element_type>
+                 // make sure not to copy strings into bytevectors or vice versa
+                 && ((std::is_base_of_v<SimpleString_O, leaf_type>
+                      && std::is_base_of_v<SimpleString_O, SourceArray_O>)
+                     || (!std::is_base_of_v<SimpleString_O, leaf_type>
+                         && !std::is_base_of_v<SimpleString_O, SourceArray_O>))) {
       // Specialish case so we can copy integers without boxing.
       // if constexpr is because constraint normalization is kind of dumb,
       // making it difficult to keep the templates unambiguous.
+      // actual copy loop
       for (size_t i = 0; i < n; ++i) {
         auto elt = (*source)[source_start + i];
         // clang can probably optimize this test out when the source type
@@ -746,7 +752,8 @@ public:
             && !std::same_as<SourceArray_O, AbstractSimpleVector_O>)
   void copy_n(gctools::smart_ptr<SourceArray_O> source,
               size_t dest_start, size_t source_start, size_t n) {
-    if constexpr(std::is_integral_v<typename SourceArray_O::simple_element_type>) {
+    if constexpr(std::is_integral_v<typename SourceArray_O::simple_element_type>
+                 && !std::is_base_of_v<SimpleString_O, SourceArray_O>) {
       static_assert(std::is_integral_v<typename leaf_type::simple_element_type>);
       for (size_t i = 0; i < n; ++i) {
         auto elt = (*source)[source_start + i];
