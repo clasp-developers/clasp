@@ -1874,9 +1874,9 @@ void* snapshot_save_impl(void* data) {
           "_end=" CXX_MACRO_STRING(SNAPSHOT_END) " --redefine-sym _binary_" + mangled_name +
           "_size=" CXX_MACRO_STRING(SNAPSHOT_SIZE);
     if (int rc = system(cmd.c_str())) {
-      // system() returns -1 on fork failure and a non-zero wait status when the
-      // command itself fails; the old `< 0` test missed the latter and fell through
-      // to exit(0), masking the failure from the build.
+      // system() returns -1 on fork failure and otherwise the program's exit
+      // status. If the program fails it will return a positive status.
+      // So 0 is the only result indicating success.
       std::cerr << "Creation of binary object failed (rc=" << rc << "): " << cmd << std::endl << std::flush;
       exit(1);
     }
