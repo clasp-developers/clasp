@@ -156,58 +156,28 @@ void Process_O::runInner(core::List_sp bindings) {
     runInner(CONS_CDR(bindings));
   } else {
     updatePhase(Running);
-    core::T_mv result_mv;
-#ifdef _TARGET_OS_DARWIN
-    // issue #1784: On macOS arm64 a C++ exception cannot be unwound across the
-    // JIT'd native cleavir frames in clasp's interrupt-dispatch path — libunwind
-    // derails before reaching the catch below, so a raw `throw AbortProcess()`
-    // from a delivered interrupt (e.g. mp:process-cancel) reaches std::terminate
-    // and aborts the whole process. clasp's own SJLJ non-local exit DOES cross
-    // those frames (it's how cl:throw/handler-case already unwind here). So on
-    // Darwin mp:abort-process / mp:exit-process do sjlj_throw to this process
-    // object as the catch tag instead of throwing; we establish the matching
-    // catch here. The thrower sets _Aborted/_AbortCondition (abort) or
-    // _ReturnValuesList (exit) before unwinding; completed_normally stays false
-    // unless apply0 returns without a non-local exit.
-    bool completed_normally = false;
-    result_mv = core::call_with_catch(this->asSmartPtr(), [&]() -> core::T_mv {
+    core::call_with_catch(INTERN_(mp, PERCENTprocess_exit_tag),
+                          [&]() -> core::T_mv {
       core::T_mv r = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
-      completed_normally = true;
+      // Grab the multiple values and put them in the _ReturnValuesList.
+      ql::list return_values;
+      int nv = r.number_of_values();
+      core::MultipleValues& mv = core::lisp_multipleValues();
+      if (nv > 0) {
+        core::T_sp result0 = r;
+        return_values << result0;
+        for (int i = 1; i < nv; ++i)
+          return_values << mv.valueGet(i, r.number_of_values());
+      }
+      _ReturnValuesList = return_values.result();
       return r;
     });
-    if (!completed_normally) {
-      // Reached via mp:abort-process or mp:exit-process; their state is set.
-      updatePhase(Exited);
-      return;
-    }
-#else
-    try {
-      result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
-    } catch (ExitProcess& e) {
-        // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
-        // and may have been set by mp:exit-process.
-      updatePhase(Exited);
-      return;
-    } catch (AbortProcess& e) {
-        // Exiting specially for some weird reason. Mark this as an abort.
-        // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
-        // but that might be a problem for the main thread.
-      _Aborted = true;
-      updatePhase(Exited);
-      return;
-    }
-#endif
     updatePhase(Exited);
-    ql::list return_values;
-    int nv = result_mv.number_of_values();
-    core::MultipleValues& mv = core::lisp_multipleValues();
-    if (nv > 0) {
-      core::T_sp result0 = result_mv;
-      return_values << result0;
-      for (int i = 1; i < nv; ++i)
-        return_values << mv.valueGet(i, result_mv.number_of_values());
-    }
-    _ReturnValuesList = return_values.result();
+    // if the catch exited abnormally,
+    // we came via mp:abort-process or mp:exit-process.
+    // Don't touch _ReturnValuesList - it's initialized to NIL just fine,
+    // and may have been set by mp:exit-process.
+    // mp:abort-process set _Aborted.
   }
 }
 
@@ -565,13 +535,7 @@ DOCGROUP(clasp)dx");
 CL_DEFUN void mp__exit_process(core::List_sp values) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   this_process->_ReturnValuesList = values;
-#ifdef _TARGET_OS_DARWIN
-  // issue #1784: SJLJ non-local exit instead of a C++ throw that can't unwind
-  // across JIT cleavir frames on macOS arm64. See Process_O::runInner.
-  core::sjlj_throw(this_process);
-#else
-  throw ExitProcess();
-#endif
+  core::sjlj_throw(INTERN_(mp, PERCENTprocess_exit_tag));
 };
 
 // See abort-process in mp.lisp
@@ -583,16 +547,9 @@ CL_DOCSTRING_LONG(
 DOCGROUP(clasp);
 CL_DEFUN void mp__PERCENTabort_process(core::T_sp maybe_condition) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
-  this_process->_AbortCondition = maybe_condition;
-#ifdef _TARGET_OS_DARWIN
-  // issue #1784: SJLJ non-local exit instead of a C++ throw that can't unwind
-  // across JIT cleavir frames on macOS arm64. Mark the abort ourselves (runInner's
-  // C++ catch does this on other platforms). See Process_O::runInner.
   this_process->_Aborted = true;
-  core::sjlj_throw(this_process);
-#else
-  throw AbortProcess();
-#endif
+  this_process->_AbortCondition = maybe_condition;
+  core::sjlj_throw(INTERN_(mp, PERCENTprocess_exit_tag));
 }
 
 CL_DOCSTRING(R"dx(Return the name of the mutex, as provided at creation. The mutex may be normal or recursive.)dx");
