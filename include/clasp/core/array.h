@@ -600,7 +600,7 @@ public:
       for (size_t i = 0; i < n; ++i)
         // virtual dispatch is required unless we want to hardcode
         // a test for each type of array, which no
-        (*this)[dest_start + i] = leaf_type::from_object(source->rowMajorAref(i));
+        (*this)[dest_start + i] = leaf_type::from_object(source->rowMajorAref(source_start + i));
   }
   // For MDArrays, get the underlying simple array of the source
   // and copy from that.
@@ -776,7 +776,7 @@ public:
       copy_n(gc::As_unsafe<leaf_smart_ptr_type>(source), dest_start, source_start, n);
     else
       for (size_t i = 0; i < n; ++i)
-        (*this)[dest_start + i] = leaf_type::from_object(source->rowMajorAref(i));
+        (*this)[dest_start + i] = leaf_type::from_object(source->rowMajorAref(source_start + i));
   }
   template <typename SourceArray_O>
   requires std::derived_from<SourceArray_O, MDArray_O>
