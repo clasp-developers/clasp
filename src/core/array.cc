@@ -331,9 +331,6 @@ void MDArray_O::set_data(Array_sp a) { this->_Data = a; }
 Array_sp MDArray_O::unsafe_subseq(size_t start, size_t iend) const {
   return this->_Data->unsafe_subseq(start + this->_DisplacedIndexOffset, iend + this->_DisplacedIndexOffset);
 }
-Array_sp MDArray_O::unsafe_setf_subseq(size_t start, size_t iend, Array_sp new_subseq) {
-  return this->_Data->unsafe_setf_subseq(start + this->_DisplacedIndexOffset, iend + this->_DisplacedIndexOffset, new_subseq);
-}
 
 bool MDArray_O::equalp(T_sp other) const {
   if (&*other == this)
@@ -528,32 +525,12 @@ CL_DOCSTRING(R"dx(copy_subarray)dx")
 DOCGROUP(clasp)
 CL_LAMBDA(dest destStart orig origStart len)
 CL_DEFUN
-void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len) {
-  // TODO: THIS NEEDS TO BE OPTIMIZED FOR DIFFERENT TYPES OF ARRAYS!!!!!!!
-  //       Currently this is very inefficient
-  size_t iLen = unbox_fixnum(len);
-  if (iLen == 0) return;
-  size_t iDestStart = unbox_fixnum(destStart);
-  size_t iOrigStart = unbox_fixnum(origStart);
-  if ((iLen + iDestStart) >= dest->arrayTotalSize())
-    iLen = dest->arrayTotalSize() - iDestStart;
-  if ((iLen + iOrigStart) >= orig->arrayTotalSize())
-    iLen = orig->arrayTotalSize() - iOrigStart;
-  if (iDestStart < iOrigStart) {
-    for (size_t i = 0; i < iLen; ++i) {
-      dest->rowMajorAset(iDestStart, orig->rowMajorAref(iOrigStart));
-      ++iDestStart;
-      ++iOrigStart;
-    }
-  } else {
-    iDestStart += iLen;
-    iOrigStart += iLen;
-    for (size_t i = 0; i < iLen; ++i) {
-      --iDestStart;
-      --iOrigStart;
-      dest->rowMajorAset(iDestStart, orig->rowMajorAref(iOrigStart));
-    }
-  }
+void core__copy_subarray(Array_sp dest, size_t destStart, Array_sp orig, size_t origStart, size_t len) {
+  if ((len + destStart) >= dest->arrayTotalSize())
+    len = dest->arrayTotalSize() - destStart;
+  if ((len + origStart) >= orig->arrayTotalSize())
+    len = orig->arrayTotalSize() - origStart;
+  dest->copy_nd(orig, destStart, origStart, len);
 }
 
 CL_LISPIFY_NAME("cl:aref"); // SETF symbol

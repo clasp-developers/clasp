@@ -27,6 +27,9 @@ THE SOFTWARE.
 /* -^- */
 
 #include <algorithm> // range algorithms
+#include <limits>    // numeric_limits for casting
+#include <type_traits> // is_integral etc.
+#include <concepts> // beware
 #include <clasp/core/array.fwd.h>
 #include <clasp/core/clasp_gmpxx.h>
 #include <clasp/core/object.h>
@@ -237,15 +240,20 @@ public: // Functions here
       notVectorError(this->asSmartPtr());
     size_t_pair p = sequenceStartEnd(core::_sym_setf_subseq, this->length(), start, end);
     Array_sp newVec = gc::As<Array_sp>(new_subseq);
-    return this->unsafe_setf_subseq(p.start, p.end, newVec);
+    this->copy_nd(newVec, p.start, 0, p.end - p.start);
+    return newVec;
   }
   void fillInitialContents(T_sp initialContents);
   virtual void sxhash_equalp(HashGenerator& hg) const override;
   // --------------------------------------------------
-  // Ranged operations with explicit limits
+  // Unsafe ranged operations with explicit limits
   virtual Array_sp unsafe_subseq(size_t start, size_t end) const = 0;
-  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) = 0;
   virtual void unsafe_fillArrayWithElt(T_sp initial_element, size_t start, size_t end) = 0;
+  // copy_n (below) but dispatching on the dest.
+  // does not fully dispatch on the source's element type, but at least handles
+  // the common case of dest and source having the same element type,
+  // and unwrapping MDArrays.
+  virtual void copy_nd(Array_sp source, size_t dest_start, size_t source_start, size_t len) = 0;
 };
 
 }; // namespace core
@@ -256,6 +264,7 @@ class MDArray_O : public Array_O {
   LISP_ABSTRACT_CLASS(core, CorePkg, MDArray_O, "mdarray", Array_O);
 
 public:
+  typedef AbstractSimpleVector_O simple_type;
   typedef size_t value_type; // this is container - needs value_type
   typedef gctools::GCArray_moveable<value_type> vector_type;
   struct Flags {
@@ -334,11 +343,7 @@ public:
   virtual std::string get_std_string() const override { notStringError(this->asSmartPtr()); }
   virtual std::string get_path_string() const override { notStringError(this->asSmartPtr()); }
   virtual vector<size_t> arrayDimensionsAsVector() const override {
-    vector<size_t> dims;
-    for (size_t i(0); i < this->_Dimensions.length(); ++i) {
-      dims.push_back(this->_Dimensions[i]);
-    }
-    return dims;
+    return vector<size_t>(_Dimensions.begin(), _Dimensions.end());
   }
   virtual void resize(size_t size, T_sp init_element = nil<T_O>(), bool initElementSupplied = false) = 0;
   virtual void unsafe_fillArrayWithElt(T_sp element, size_t start, size_t end) final {
@@ -347,7 +352,6 @@ public:
   virtual T_sp vectorPush(T_sp newElement) final;
   virtual Fixnum_sp vectorPushExtend(T_sp newElement, size_t extension = 0) override;
   virtual Array_sp unsafe_subseq(size_t start, size_t end) const override;
-  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) override;
 };
 }; // namespace core
 
@@ -426,9 +430,7 @@ public:
     end = this->length();
   }
   virtual vector<size_t> arrayDimensionsAsVector() const override {
-    vector<size_t> dims;
-    dims.push_back(this->length());
-    return dims;
+    return vector<size_t>(1, length());
   }
 };
 }; // namespace core
@@ -487,9 +489,8 @@ public:
   virtual size_t elementSizeInBytes() const override { return sizeof(value_type); };
   virtual void* rowMajorAddressOfElement_(size_t i) const override { return (void*)&(this->_Data[i]); };
   virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
-    for (size_t i(start); i < end; ++i) {
-      (*this)[i] = leaf_type::from_object(initialElement);
-    }
+    std::fill(begin() + start, begin() + end,
+              leaf_type::from_object(initialElement));
   };
   virtual Array_sp reverse() const final {
     auto result = leaf_type::make(this->length());
@@ -508,13 +509,124 @@ public:
     BOUNDS_ASSERT(start <= end && end <= this->length());
     return leaf_type::make(end - start, value_type(), true, end - start, (value_type*)this->rowMajorAddressOfElement_(start));
   }
-  virtual Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp newSubseq) final {
-    // TODO: Write specialized versions of this to speed it up
-    BOUNDS_ASSERT(start <= end && end <= this->length());
-    for (size_t i(start), ni(0); i < end; ++i, ++ni) {
-      (*this)[i] = leaf_type::from_object(newSubseq->rowMajorAref(ni));
+
+  // copy_n is the base function for copying data between arrays.
+  // If you pass it a source array of known leaf type it will copy without
+  // dispatching, and when possible without boxing.
+  // If you pass it an array of generic type it will do a lot of virtual dispatch
+  // and will box, except that the case of the underlying element type being
+  // identical between source and dest is dispatched on to not box.
+  template <typename SourceArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n);
+
+  // Best case: copying from an array with the same element type.
+  // This does raise the possibility of aliasing though, so watch out for that.
+  template <>
+  void copy_n(leaf_smart_ptr_type source,
+              size_t dest_start, size_t source_start, size_t n) {
+    if (dest_start <= source_start) {
+      std::copy(source->begin() + source_start,
+                source->begin() + source_start + n,
+                begin() + dest_start);
+    } else {
+      std::copy_backward(source->begin() + source_start,
+                         source->begin() + source_start + n,
+                         begin() + dest_start + n);
     }
-    return newSubseq;
+  }
+  // Worst specific case: box and unbox,
+  // but we can at least avoid virtual rowMajorAref.
+  // If the element types are integral we try to copy them without boxing,
+  // but this may need type checks for every element if the destination's
+  // integers are smaller than the source's.
+  // We'd hit the specific expansion if SourceArray_O = leaf_type,
+  // so we don't need to worry about aliasing.
+  using Base::element_type;
+  template <typename SourceArray_O>
+  requires (std::derived_from<SourceArray_O, AbstractSimpleVector_O>
+            && !std::same_as<SourceArray_O, leaf_type>
+            // needs its own specialization since we need virtual rowMajorAref
+            && !std::same_as<SourceArray_O, AbstractSimpleVector_O>)
+    void copy_n(gctools::smart_ptr<SourceArray_O> source,
+                size_t dest_start, size_t source_start, size_t n) {
+    if constexpr(std::is_integral_v<typename leaf_type::simple_element_type>
+                 && std::is_integral_v<typename SourceArray_O::simple_element_type>
+                 // make sure not to copy strings into bytevectors or vice versa
+                 && ((std::is_base_of_v<SimpleString_O, leaf_type>
+                      && std::is_base_of_v<SimpleString_O, SourceArray_O>)
+                     || (!std::is_base_of_v<SimpleString_O, leaf_type>
+                         && !std::is_base_of_v<SimpleString_O, SourceArray_O>))) {
+      // Specialish case so we can copy integers without boxing.
+      // if constexpr is because constraint normalization is kind of dumb,
+      // making it difficult to keep the templates unambiguous.
+      // actual copy loop
+      for (size_t i = 0; i < n; ++i) {
+        auto elt = (*source)[source_start + i];
+        // clang can probably optimize this test out when the source type
+        // always fits
+        if (elt < std::numeric_limits<typename leaf_type::simple_element_type>::min()
+            || elt > std::numeric_limits<typename leaf_type::simple_element_type>::max()) {
+          if constexpr(std::is_base_of_v<SimpleString_O, leaf_type>)
+            // very special case to get an actual lisp character into the
+            // type error. (plus there's no Integer_O::create for claspCharacter
+            // as i write this, since it's char32_t)
+            TYPE_ERROR(clasp_make_character(elt), element_type());
+          else
+            TYPE_ERROR(Integer_O::create(elt), element_type());
+        } else (*this)[dest_start + i] = elt;
+      }
+    } else {
+      // note: no std::transform since if the unary_op throws, the program is
+      // std::terminate'd. I think.
+      for (size_t i = 0; i < n; ++i) {
+        T_sp elt = SourceArray_O::to_object((*source)[source_start + i]);
+        (*this)[dest_start + i] = leaf_type::from_object(elt);
+      }
+    }
+  }
+  // default specialization when we know source is simple but nothing else
+  template <>
+  void copy_n(AbstractSimpleVector_sp source,
+              size_t dest_start, size_t source_start, size_t n) {
+    // Dynamic dispatch the common self case for speed, and also to avoid
+    // any aliasing problems.
+    if (source.isA<leaf_type>())
+      // KLUDGE: apparently the generic smart_ptr template does not define
+      // as_unsafe, so source.as_unsafe gets you a base_ptr, which does not
+      // fit the templates. WTF?
+      copy_n(gc::As_unsafe<leaf_smart_ptr_type>(source), dest_start, source_start, n);
+    else
+      for (size_t i = 0; i < n; ++i)
+        // virtual dispatch is required unless we want to hardcode
+        // a test for each type of array, which no
+        (*this)[dest_start + i] = leaf_type::from_object(source->rowMajorAref(source_start + i));
+  }
+  // For MDArrays, get the underlying simple array of the source
+  // and copy from that.
+  // This also covers MDArray_O itself with simple_type = AbstractSimpleVector_O
+  template <typename SourceArray_O>
+  requires std::derived_from<SourceArray_O, MDArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp sv;
+    size_t sstart, send;
+    source->asAbstractSimpleVectorRange(sv, sstart, send);
+    gctools::smart_ptr<typename SourceArray_O::simple_type> rsv = sv.as_unsafe<typename SourceArray_O::simple_type>();
+    copy_n(rsv, dest_start, source_start + sstart, n);
+  }
+  // default specialization when source array type is not known at all
+  template <>
+  void copy_n(Array_sp source, size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp sv;
+    size_t sstart, send;
+    source->asAbstractSimpleVectorRange(sv, sstart, send);
+    copy_n(sv, dest_start, source_start + sstart, n);
+  }
+
+  void copy_nd(Array_sp source,
+               size_t dest_start, size_t source_start, size_t n) final {
+    copy_n(source, dest_start, source_start, n);
   }
 };
 }; // namespace core
@@ -587,8 +699,7 @@ public:
   static T_sp to_object(value_type v) { return Integer_O::create(v); }
   virtual void unsafe_fillArrayWithElt(T_sp initialElement, size_t start, size_t end) override {
     // FIXME: Could be done more efficiently by writing whole words, but be careful about the ends.
-    for (size_t i = start; i < end; ++i)
-      (*this)[i] = from_object(initialElement);
+    std::fill(begin() + start, begin() + end, from_object(initialElement));
   }
   virtual size_t elementSizeInBytes() const override { bitVectorDoesntSupportError(); }
   virtual void* rowMajorAddressOfElement_(size_t i) const override { bitVectorDoesntSupportError(); }
@@ -610,15 +721,83 @@ public:
   Array_sp unsafe_subseq(size_t start, size_t end) const override {
     BOUNDS_ASSERT(0 <= start && start < end && end <= this->length());
     leaf_smart_ptr_type sbv = leaf_type::make(end - start);
-    for (size_t i(0), iEnd(end - start); i < iEnd; ++i)
-      (*sbv)[i] = (*this)[start + i];
+    std::copy(begin() + start, begin() + end, sbv->begin());
     return sbv;
   }
-  Array_sp unsafe_setf_subseq(size_t start, size_t end, Array_sp other) override {
-    BOUNDS_ASSERT(0 <= start && start < end && end <= this->length());
-    for (size_t i = start, ni = 0; i < end; ++i, ++ni)
-      (*this)[i] = from_object(other->rowMajorAref(ni));
-    return other;
+
+  // see definitions in template_SimpleVector::copy_n for more comments
+  template <typename SourceArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n);
+
+  template <>
+  void copy_n(leaf_smart_ptr_type source,
+              size_t dest_start, size_t source_start, size_t n) {
+    // TODO: Could be done much faster without boxing by copying whole bit
+    // array words and masking appropriately.
+    if (dest_start <= source_start) {
+      std::copy(source->begin() + source_start,
+                source->begin() + source_start + n,
+                begin() + dest_start);
+    } else {
+      std::copy_backward(source->begin() + source_start,
+                         source->begin() + source_start + n,
+                         begin() + dest_start + n);
+    }
+  }
+  using Base::element_type;
+  template <typename SourceArray_O>
+  requires (std::derived_from<SourceArray_O, AbstractSimpleVector_O>
+            && !std::same_as<SourceArray_O, leaf_type>
+            && !std::same_as<SourceArray_O, AbstractSimpleVector_O>)
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n) {
+    if constexpr(std::is_integral_v<typename SourceArray_O::simple_element_type>
+                 && !std::is_base_of_v<SimpleString_O, SourceArray_O>) {
+      static_assert(std::is_integral_v<typename leaf_type::simple_element_type>);
+      for (size_t i = 0; i < n; ++i) {
+        auto elt = (*source)[source_start + i];
+        if (elt < std::numeric_limits<typename leaf_type::simple_element_type>::min()
+            || elt > std::numeric_limits<typename leaf_type::simple_element_type>::max())
+          TYPE_ERROR(Integer_O::create(elt), element_type());
+        else (*this)[dest_start + i] = elt;
+      }
+    } else {
+      for (size_t i = 0; i < n; ++i) {
+        T_sp elt = SourceArray_O::to_object((*source)[source_start + i]);
+        (*this)[dest_start + i] = leaf_type::from_object(elt);
+      }
+    }
+  }
+  template <>
+  void copy_n(AbstractSimpleVector_sp source,
+              size_t dest_start, size_t source_start, size_t n) {
+    if (source.isA<leaf_type>())
+      copy_n(gc::As_unsafe<leaf_smart_ptr_type>(source), dest_start, source_start, n);
+    else
+      for (size_t i = 0; i < n; ++i)
+        (*this)[dest_start + i] = leaf_type::from_object(source->rowMajorAref(source_start + i));
+  }
+  template <typename SourceArray_O>
+  requires std::derived_from<SourceArray_O, MDArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp sv;
+    size_t sstart, send;
+    source->asAbstractSimpleVectorRange(sv, sstart, send);
+    gctools::smart_ptr<typename SourceArray_O::simple_type> rsv = sv.as_unsafe<typename SourceArray_O::simple_type>();
+    copy_n(rsv, dest_start, source_start + sstart, n);
+  }
+  template <>
+  void copy_n(Array_sp source, size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp sv;
+    size_t sstart, send;
+    source->asAbstractSimpleVectorRange(sv, sstart, send);
+    copy_n(sv, dest_start, source_start + sstart, n);
+  }
+
+  void copy_nd(Array_sp source, size_t dest_start, size_t source_start, size_t n) final {
+    copy_n(source, dest_start, source_start, n);
   }
 };
 }; // namespace core
@@ -708,8 +887,8 @@ public:
 
 public:
   void asAbstractSimpleVectorRange(AbstractSimpleVector_sp& sv, size_t& start, size_t& end) const final {
-    LIKELY_if(gc::IsA<gc::smart_ptr<simple_type>>(this->_Data)) {
-      sv = gc::As<AbstractSimpleVector_sp>(this->_Data);
+    if (this->_Data.template isA<simple_type>()) [[likely]] {
+      sv = gc::As_unsafe<gctools::smart_ptr<simple_type>>(this->_Data);
       start = this->_DisplacedIndexOffset;
       end = start + this->arrayTotalSize();
     }
@@ -751,6 +930,20 @@ public:
   CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final { (*this)[idx] = simple_type::from_object(value); }
   CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final { return simple_type::to_object((*this)[idx]); }
   bool equal(T_sp obj) const override { return this->eq(obj); };
+
+  template <typename SourceArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp dest;
+    size_t dstart, dend;
+    asAbstractSimpleVectorRange(dest, dstart, dend);
+    dest.as_unsafe<simple_type>()->copy_n(source, dest_start + dstart,
+                                          source_start, n);
+  }
+
+  void copy_nd(Array_sp source, size_t dest_start, size_t source_start, size_t n) final {
+    copy_n(source, dest_start, source_start, n);
+  }
 };
 }; // namespace core
 
@@ -881,6 +1074,19 @@ public:
     return make_fixnum(idx);
   }
 #pragma clang diagnostic pop
+  template <typename SourceArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp dest;
+    size_t dstart, dend;
+    asAbstractSimpleVectorRange(dest, dstart, dend);
+    dest.as_unsafe<simple_type>()->copy_n(source, dest_start + dstart,
+                                          source_start, n);
+  }
+  void copy_nd(Array_sp source,
+               size_t dest_start, size_t source_start, size_t n) final {
+    copy_n(source, dest_start, source_start, n);
+  }
 };
 }; // namespace core
 
@@ -959,6 +1165,20 @@ public:
   CL_METHOD_OVERLOAD virtual void rowMajorAset(size_t idx, T_sp value) final { (*this)[idx] = simple_type::from_object(value); }
   CL_METHOD_OVERLOAD virtual T_sp rowMajorAref(size_t idx) const final { return simple_type::to_object((*this)[idx]); }
   bool equal(T_sp obj) const override { return this->eq(obj); };
+
+  template <typename SourceArray_O>
+  void copy_n(gctools::smart_ptr<SourceArray_O> source,
+              size_t dest_start, size_t source_start, size_t n) {
+    AbstractSimpleVector_sp dest;
+    size_t dstart, dend;
+    asAbstractSimpleVectorRange(dest, dstart, dend);
+    dest.as_unsafe<simple_type>()->copy_n(source, dest_start + dstart,
+                                          source_start, n);
+  }
+  void copy_nd(Array_sp source,
+               size_t dest_start, size_t source_start, size_t n) final {
+    copy_n(source, dest_start, source_start, n);
+  }
 };
 }; // namespace core
 
@@ -998,7 +1218,7 @@ T_mv clasp_vectorStartEnd(Symbol_sp fn, T_sp thing, Fixnum_sp start, Fixnum_sp e
 
 namespace core {
 
-void core__copy_subarray(Array_sp dest, Fixnum_sp destStart, Array_sp orig, Fixnum_sp origStart, Fixnum_sp len);
+void core__copy_subarray(Array_sp dest, size_t destStart, Array_sp orig, size_t origStart, size_t len);
 
 T_sp core__rowMajorAset(T_sp, Array_sp, gc::Fixnum);
 T_sp cl__rowMajorAref(Array_sp, gc::Fixnum);
