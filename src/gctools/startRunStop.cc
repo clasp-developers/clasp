@@ -451,12 +451,7 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
 
 int run_clasp(gctools::ClaspInfo* claspInfo) {
   int exitCode;
-#if defined(USE_PRECISE_GC) && defined(_TARGET_OS_DARWIN)
-  // issue #1784 (sibling): on macOS arm64 save-lisp-and-die does an SJLJ non-local
-  // exit instead of `throw SaveLispAndDie` — a raw C++ throw derails across the deep
-  // native frames here and reaches std::terminate. Catch the SJLJ unwind via the
-  // shared tag and run snapshot_save on the stashed payload. completed_normally stays
-  // false iff _lisp->run() exited via that non-local save-lisp-and-die unwind.
+#if defined(USE_PRECISE_GC)
   bool completed_normally = false;
   core::call_with_catch(snapshotSaveLoad::save_lisp_and_die_catch_tag(), [&]() -> core::T_mv {
     exitCode = _lisp->run();
@@ -468,14 +463,7 @@ int run_clasp(gctools::ClaspInfo* claspInfo) {
     exitCode = 0;
   }
 #else
-  try {
-    exitCode = _lisp->run();
-  } catch (snapshotSaveLoad::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-    snapshotSaveLoad::snapshot_save(ee);
-#endif
-    exitCode = 0;
-  }
+  exitCode = _lisp->run();
 #endif
   return exitCode;
 };

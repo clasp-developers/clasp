@@ -64,9 +64,6 @@ bool global_InSnapshotLoad = false;
 size_t global_badge_count = 0;
 
 // --- SJLJ routing for save-lisp-and-die (see snapshotSaveLoad.h / #1784). ---
-// The catch tag is an interned keyword: EQ-stable and GC-rooted by the keyword
-// package. We look it up fresh each call rather than caching a T_sp in a plain
-// static, which a moving GC could leave stale.
 core::T_sp save_lisp_and_die_catch_tag() { return _lisp->internKeyword("%SAVE-LISP-AND-DIE"); }
 // The payload is a GC-free POD (std::string/bool/enum), so a heap copy is safe to
 // hold across the SJLJ unwind (which may run cleanups/GC).
