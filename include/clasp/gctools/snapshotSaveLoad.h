@@ -111,6 +111,14 @@ private:
 void snapshot_save(SaveLispAndDie& data);
 void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const std::string& filename);
 
+// SJLJ routing for save-lisp-and-die's non-local exit. The throw
+// side stashes the (GC-free) payload and sjlj_throws to this catch tag; run_clasp
+// establishes the matching catch via call_with_catch and runs snapshot_save on the
+// stashed payload.
+core::T_sp save_lisp_and_die_catch_tag();
+void set_pending_save_lisp_and_die(const SaveLispAndDie& data);
+SaveLispAndDie& pending_save_lisp_and_die();
+
 void clearLibraries();
 void encodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);
 void decodeEntryPointInLibrary(Fixup* fixup, uintptr_t* ptrptr);

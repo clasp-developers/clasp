@@ -63,6 +63,17 @@ namespace snapshotSaveLoad {
 bool global_InSnapshotLoad = false;
 size_t global_badge_count = 0;
 
+// --- SJLJ routing for save-lisp-and-die (see snapshotSaveLoad.h / #1784). ---
+core::T_sp save_lisp_and_die_catch_tag() { return _lisp->internKeyword("%SAVE-LISP-AND-DIE"); }
+// The payload is a GC-free POD (std::string/bool/enum), so a heap copy is safe to
+// hold across the SJLJ unwind (which may run cleanups/GC).
+static SaveLispAndDie* global_pendingSaveLispAndDie = nullptr;
+void set_pending_save_lisp_and_die(const SaveLispAndDie& data) {
+  delete global_pendingSaveLispAndDie;
+  global_pendingSaveLispAndDie = new SaveLispAndDie(data);
+}
+SaveLispAndDie& pending_save_lisp_and_die() { return *global_pendingSaveLispAndDie; }
+
 struct MaybeTimeStartup {
   std::chrono::time_point<std::chrono::steady_clock> start;
   std::string name;
