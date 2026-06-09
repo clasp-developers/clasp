@@ -200,8 +200,8 @@ void initializer_functions_invoke() {
 }
 
 // These functions are used to access a runtime module's literals vector.
-// The vector is a T_sp[]. This could possibly be done with some normal
-// CFFI accessor instead.
+// The vector is a T_sp[]. See also CODE-LITERAL in llvmo/code.cc,
+// which does the same but through the object file rather than a raw pointer.
 
 CL_DEFUN T_sp core__literals_vref(Pointer_sp lvec, size_t index) {
   return ((T_sp*)(lvec->ptr()))[index];

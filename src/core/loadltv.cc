@@ -946,16 +946,16 @@ struct loadltv {
     // bit paranoid, but beats the alternative (closure with
     // incompatible function that segfaults or worse when called).
     bool seen = false;
+    // lits[] is in write-protected JIT (MAP_JIT) memory on Apple Silicon;
+    // switch this thread to write mode just for the store.
+    llvmo::JITDataReadWriteMaybeExecute();
     for (size_t i = 0; i < nlits; ++i) {
       if (lits[i] == function.raw_()) {
-        // lits[] is in write-protected JIT (MAP_JIT) memory on Apple Silicon;
-        // switch this thread to write mode just for the store.
-        llvmo::JITDataReadWriteMaybeExecute();
         lits[i] = scf.raw_();
-        llvmo::JITDataReadExecute();
         seen = true;
       }
     }
+    llvmo::JITDataReadExecute();
     if (!seen)
       SIMPLE_ERROR("While loading native module: Could not find bytecode function {} in modules constants", _rep_(function));
   }
@@ -1151,15 +1151,21 @@ struct loadltv {
                    module_id);
     } else {
       T_O** lits = (T_O**)vlits;
-      for (size_t i = 0; i < nlits; ++i) {
-        // Read the literal in execute mode (reads are fine), then switch this
-        // thread to write mode only for the store: lits[] is in write-protected
-        // JIT (MAP_JIT) memory on Apple Silicon and a bare store faults (SIGBUS).
-        T_O* value = get_ltv(read_index()).raw_();
-        llvmo::JITDataReadWriteMaybeExecute();
-        lits[i] = value;
-        llvmo::JITDataReadExecute();
-      }
+      // lits is in write-protected JIT memory (MAP_JIT) on Apple Silicon, so we
+      // have to arrange things a bit for safety. We shouldn't do a simple loop of
+      // get_ltv read_index within JIT un-protection, since both those functions can
+      // signal errors and thereby execute arbitrary Lisp code.
+      // Instead we read all the T_O* into a temporary buffer (on the heap, since
+      // there may be a lot), and then copy those into lits while JIT-unprotected.
+      // This is probably faster than deprotecting and reprotecting for every literal.
+      T_O** tlits = (T_O**)calloc(nlits, sizeof(T_O*));
+      for (size_t i = 0; i < nlits; ++i) tlits[i] = get_ltv(read_index()).raw_();
+
+      llvmo::JITDataReadWriteMaybeExecute();
+      memcpy(lits, tlits, nlits * sizeof(T_O*));
+      llvmo::JITDataReadExecute();
+
+      free(tlits);
       /*
       uint16_t nfuns = read_u16();
       for (size_t j = 0; j < nfuns; ++j) {
