@@ -460,7 +460,8 @@ void ForeignData_O::PERCENTfree_foreign_object(void) { this->free_(); }
 ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
   size_t _size = unbox_fixnum(size);
   auto self = gctools::GC<ForeignData_O>::allocate();
-  self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, _size);
+  // foreign-alloc memory is permanent until explicit %foreign-free (CFFI/malloc contract); no GC finalizer.
+  self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::None, _size);
   return self;
 }
 
@@ -468,7 +469,7 @@ ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
 // ---------------------------------------------------------------------------
 ForeignData_sp allocate_foreign_data(uint64_t size) {
   auto self = gctools::GC<ForeignData_O>::allocate();
-  self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::DeleteOnDtor, size);
+  self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::None, size);
   return self;
 }
 
