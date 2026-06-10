@@ -28,6 +28,7 @@
 * Improve error messages for package name conflicts. Fixes #1722.
 * FASL loading is more resilient in the face of heavy file use and interruptions. Thanks @dg1sbg.
 * Writing non-base-chars into base strings by various means (e.g. `replace`) now signals an error instead of treating the low byte of the codepoint as a base char.
+* `ext:macroexpand-all` no longer allows macros to expand into tagbody tags.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used

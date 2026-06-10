@@ -78,7 +78,15 @@
           else
             collect (multiple-value-bind (sub ?) (ext:macroexpand-all thing nenv)
                       (setq expandedp (or expandedp ?))
-                      sub)
+                      ;; If the macro expanded to a tag, we need to
+                      ;; make sure it's not actually treated as a tag
+                      ;; by wrapping it in progn.
+                      ;; We don't do this unconditionally because
+                      ;; that would make the macroexpand-all output
+                      ;; a little uglier.
+                      (if (and ? (or (symbolp sub) (integerp sub)))
+                          `(progn ,sub)
+                          sub))
               into subs
           finally (return (values `(tagbody ,@subs) expandedp)))))
 
