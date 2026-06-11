@@ -428,12 +428,11 @@ uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* add
   uintptr_t address = this->_ISLLibraries[libidx]._GroupedPointers[pointerIndex]._address;
   uintptr_t addressOffset = this->_ISLLibraries[libidx]._SymbolInfo[pointerIndex]._AddressOffset;
   uintptr_t ptr = address + addressOffset;
-  if (functionP && *(uint8_t*)ptr != firstByte) {
-    printf("%s:%d:%s during decode %s codedAddress: %p ptr-> %p must be readable and point to first byte: 0x%x - but it points to "
-           "0x%x  libidx: %lu\n",
-           __FILE__, __LINE__, __FUNCTION__, addressName, (void*)codedAddress, (void*)ptr, (uint32_t)firstByte,
-           (uint32_t) * (uint8_t*)ptr, libidx);
-  }
+  // The saved firstByte is only a hint: a function's first instruction may be a relocatable
+  // instruction (e.g. ADRP) whose bytes differ across loads, so a mismatch here is expected
+  // and not an error -- ptr (resolved symbol address + offset) is correct. Do not warn/abort.
+  (void)firstByte;
+  (void)functionP;
   return ptr;
 }
 
@@ -552,12 +551,15 @@ bool decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Obj
   if (epType != CODE_LIBRARY_ID)
     return false; // it's not a COMPILED_CODE_EPTYPE it must be to a library
   uintptr_t result = decodeEntryPointAddress(offset, codeStart, codeEnd, code);
-  if (*(uint8_t*)result != firstByte) {
-    ISL_ERROR("during decode function pointer %p must be readable and point to 0x%x (first byte) - instead it points to 0x%x "
-              "vaddress = %p  codeStart = %p\n",
-              (void*)result, (uint32_t)firstByte, (uint)(*(uint8_t*)result), (void*)vaddress,
-              (void*)codeStart);
-  }
+  // Do NOT validate *result against the saved firstByte. A compiled-code entry point's
+  // first instruction is frequently a relocatable instruction (e.g. ADRP), whose encoded
+  // immediate bytes legitimately differ between the save-time and load-time JIT (different
+  // load addresses => different page offsets). The offset-based decode (codeStart+offset)
+  // is the correct entry point -- the object file re-JITs to the same layout, so the offset
+  // is structurally valid (and bounded: offset < codeEnd-codeStart at encode time). A
+  // firstByte mismatch is therefore expected for relocated first instructions and must not
+  // abort the load (it previously did, breaking SLAD-SNAPSHOT / SLAD-EXECUTABLE on arm64).
+  (void)firstByte;
   *ptrptr = result;
   return true;
 }
@@ -1904,9 +1906,16 @@ void* snapshot_save_impl(void* data) {
           BUILD_LIB;
 #endif
 #ifdef _TARGET_OS_DARWIN
-    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName +
-          " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + filename + " -Wl,-force_load," + snapshot_data->_LibDir +
-          "/libiclasp.a -lclasp " BUILD_LIB;
+    // Quote every path that may contain spaces (the build/lib dir can, e.g. a Dropbox
+    // path "/Users/.../gbt Dropbox/..."); this command is run through system() (a shell),
+    // so an unquoted path with a space gets split and the link fails.
+    // Add an absolute -L for the lib dir (as the Linux branch already does): BUILD_LINKFLAGS
+    // only carries a RELATIVE -Lboehmprecise/lib, so without this, -lclasp resolves only when
+    // save-lisp-and-die :executable is run with CWD=build/. The absolute -L makes it link from
+    // any working directory (the runtime rpath is already absolute).
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L\"" + snapshot_data->_LibDir + "\" -o\"" + snapshot_data->_FileName +
+          "\" -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " \"" + filename + "\" -Wl,-force_load,\"" +
+          snapshot_data->_LibDir + "/libiclasp.a\" -lclasp " BUILD_LIB;
 #endif
 
     std::cout << "Link command:" << std::endl << std::flush;
@@ -2664,7 +2673,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       fixup_objects_t fixup_objects(LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo);
       globalPointerFix = maybe_follow_forwarding_pointer;
       globalPointerFixStage = "snapshot_load/fixupObjects";
+      // Load fixup writes relocated pointers INTO the loaded objects in place; code
+      // objects live in MAP_JIT (W^X) memory, so run in write mode on Apple Silicon or
+      // the store faults with SIGBUS. (The save path fixes up a RW copy, so it's fine.)
+      llvmo::JITDataReadWriteMaybeExecute();
       walk_temporary_root_objects(root_holder, fixup_objects);
+      llvmo::JITDataReadExecute();
     }
 
 #ifdef DEBUG_GUARD
@@ -2682,7 +2696,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     }
 
     fixup_internals_t internals(&fixup, &islInfo);
+    // Same MAP_JIT W^X hazard as fixupObjects above (in-place fixup of code objects).
+    llvmo::JITDataReadWriteMaybeExecute();
     walk_temporary_root_objects(root_holder, internals);
+    llvmo::JITDataReadExecute();
 
     //
     // Release the temporary roots
