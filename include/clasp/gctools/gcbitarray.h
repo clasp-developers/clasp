@@ -248,6 +248,13 @@ public:
   public:
     typedef ptrdiff_t difference_type;
     typedef value_type value_type;
+    // Try to convince C++ that this is really a random access iterator.
+    // Due to reverse compatibility issues in C++ I don't understand, merely modeling
+    // the random_access_iterator concept does not appear to be enough to satisfy
+    // at least some standard library implementations.
+    // Anyway, we are random access but not contiguous (since that would be in memory).
+    typedef std::random_access_iterator_tag iterator_category;
+    typedef std::random_access_iterator_tag iterator_concept;
   public:
     // random access iterators must be default constructible.
     // I don't think the resulting object is required to be valid at all though.
@@ -330,6 +337,7 @@ public:
     bool operator>(const iterator& o) const { return o < *this; }
     bool operator>=(const iterator& o) const { return o <= *this; }
   }; // class iterator
+  static_assert(std::random_access_iterator<iterator>);
   class const_iterator { // a random access iterator that returns just bit units.
   private:
     const bit_array_word* word;
@@ -337,6 +345,8 @@ public:
   public:
     typedef ptrdiff_t difference_type;
     typedef value_type value_type;
+    typedef std::random_access_iterator_tag iterator_category;
+    typedef std::random_access_iterator_tag iterator_concept;
   public:
     const_iterator() {};
     const_iterator(GCBitUnitArray_moveable const& arr, size_t idx) noexcept
@@ -422,6 +432,7 @@ public:
     bool operator>(const const_iterator& o) const { return o < *this; }
     bool operator>=(const const_iterator& o) const { return o <= *this; }
   }; // class const_iterator
+  static_assert(std::random_access_iterator<iterator>);
   iterator begin() { return iterator(*this, 0); }
   iterator end() { return iterator(*this, _Length); }
   const_iterator begin() const { return const_iterator(*this, 0); }

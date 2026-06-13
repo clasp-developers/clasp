@@ -1897,7 +1897,7 @@ T_mv AnsiStream_O::read_line() {
         if (extended_buffer->arrayTotalSize() < base_buffer->length())
           extended_buffer->resize(base_buffer->length());
         // copy in the base buffer, then release the base buffer
-        extended_buffer->unsafe_setf_subseq(0, base_buffer->length(), base_buffer->asSmartPtr());
+        extended_buffer->copy_n(base_buffer, 0, 0, base_buffer->length());
         extended_buffer->fillPointerSet(base_buffer->length());
         _lisp->put_Str8Ns_buffer_string(base_buffer);
       }
@@ -2707,13 +2707,12 @@ CL_LAMBDA(s);
 CL_UNWIND_COOP(true);
 CL_DOCSTRING(R"dx(make_string_output_stream_from_string)dx");
 CL_DEFUN StringOutputStream_sp core__make_string_output_stream_from_string(T_sp s) {
-  StringOutputStream_sp strm = StringOutputStream_O::create();
-  bool stringp = cl__stringp(s);
-  unlikely_if(!stringp || !gc::As<Array_sp>(s)->arrayHasFillPointerP()) {
+  if (s.isA<StrNs_O>() && s.as<StrNs_O>()->arrayHasFillPointerP()) [[likely]] {
+    StringOutputStream_sp strm = StringOutputStream_O::create();
+    strm->_contents = s.as_unsafe<StrNs_O>();
+    return strm;
+  } else
     FEerror("~S is not a string with a fill-pointer.", 1, s.raw_());
-  }
-  strm->_contents = gc::As<String_sp>(s);
-  return strm;
 }
 
 void StringOutputStream_O::clear() {
@@ -2733,6 +2732,73 @@ claspCharacter StringOutputStream_O::write_char(claspCharacter c) {
   update_output_cursor(c);
   _contents->vectorPushExtend(clasp_make_character(c));
   return c;
+}
+
+// Bulk write_string for string-output-streams. The default
+// AnsiStream_O::write_string writes one character at a time, and each char
+// pays a boxing (clasp_make_character) plus a virtual vectorPushExtend with a
+// fill-pointer/realloc check. Here we (1) update the output cursor over the
+// appended range exactly as the per-char path would, and (2) append the
+// content in one shot with a single geometric growth and copy_n,
+// which preserves base/extended conversion and narrowing-error behavior.
+void StringOutputStream_O::write_string(String_sp data, cl_index start, cl_index end) {
+  if (start >= end)
+    return;
+  const cl_index count = end - start;
+  const cl_index oldFill = this->_contents->fillPointer();
+  const cl_index newFill = oldFill + count;
+  // Grow the destination once (geometric) so the copy needs no per-character
+  // reallocation or fill-pointer check. _contents is always an adjustable
+  // fill-pointer string (a StrNs_O) for a string-output-stream; resize keeps
+  // the fill pointer for fill-pointer arrays.
+  // Note that the C++ type of _contents is String_sp, because it's in the super
+  // shared with string input streams. Bit awkward.
+  if (newFill > static_cast<cl_index>(this->_contents->arrayTotalSize())) {
+    this->_contents.as_assert<StrNs_O>()->resize(newFill);
+  }
+  StreamCursor& cur = this->_output_cursor;
+  // copy data. We try to avoid boxing and dispatch as much as possible by
+  // using copy_n.
+  AbstractSimpleVector_sp svdata;
+  size_t svstart, svend;
+  data->asAbstractSimpleVectorRange(svdata, svstart, svend);
+  if (_contents.isA<Str8Ns_O>()) {
+    Str8Ns_sp contents = _contents.as_unsafe<Str8Ns_O>();
+    if (svdata.isA<SimpleCharacterString_O>()) {
+      SimpleCharacterString_sp rsvdata = svdata.as_unsafe<SimpleCharacterString_O>();
+      // Note that this could result in an error, if data has wide characters
+      // that don't fit in a base string!
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else if (svdata.isA<SimpleBaseString_O>()) {
+      SimpleBaseString_sp rsvdata = svdata.as_unsafe<SimpleBaseString_O>();
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else TYPE_ERROR(data, cl::_sym_string);
+  } else if (_contents.isA<StrWNs_O>()) {
+    StrWNs_sp contents = _contents.as_unsafe<StrWNs_O>();
+    if (svdata.isA<SimpleBaseString_O>()) {
+      SimpleBaseString_sp rsvdata = svdata.as_unsafe<SimpleBaseString_O>();
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else if (svdata.isA<SimpleCharacterString_O>()) {
+      SimpleCharacterString_sp rsvdata = svdata.as_unsafe<SimpleCharacterString_O>();
+      contents->copy_n(rsvdata, oldFill, start + svstart, count);
+      for (cl_index i = 0; i < count; ++i)
+        cur.update((*rsvdata)[svstart + i]);
+    } else TYPE_ERROR(data, cl::_sym_string);
+  } else {
+    // contents is a StrNs but not a Str8Ns or StrWNs.
+    // should be impossible but who knows. do it the dumbest available way.
+    _contents->copy_nd(svdata, oldFill, start + svstart, count);
+    for (cl_index i = 0; i < count; ++i)
+      cur.update(clasp_as_claspCharacter(svdata->rowMajorAref(start + svstart + i).as_unsafe<Character_O>()));
+  }
+
+  this->_contents->fillPointerSet(newFill);
 }
 
 T_sp StringOutputStream_O::position() { return Integer_O::create((gc::Fixnum)_contents->fillPointer()); }

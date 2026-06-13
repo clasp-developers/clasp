@@ -64,6 +64,17 @@ namespace snapshotSaveLoad {
 bool global_InSnapshotLoad = false;
 size_t global_badge_count = 0;
 
+// --- SJLJ routing for save-lisp-and-die (see snapshotSaveLoad.h / #1784). ---
+core::T_sp save_lisp_and_die_catch_tag() { return _lisp->internKeyword("%SAVE-LISP-AND-DIE"); }
+// The payload is a GC-free POD (std::string/bool/enum), so a heap copy is safe to
+// hold across the SJLJ unwind (which may run cleanups/GC).
+static SaveLispAndDie* global_pendingSaveLispAndDie = nullptr;
+void set_pending_save_lisp_and_die(const SaveLispAndDie& data) {
+  delete global_pendingSaveLispAndDie;
+  global_pendingSaveLispAndDie = new SaveLispAndDie(data);
+}
+SaveLispAndDie& pending_save_lisp_and_die() { return *global_pendingSaveLispAndDie; }
+
 struct MaybeTimeStartup {
   std::chrono::time_point<std::chrono::steady_clock> start;
   std::string name;
@@ -364,20 +375,19 @@ void SymbolLookup::addAllLibraries(FILE* fout) {
 
 namespace snapshotSaveLoad {
 
-void decodeRelocation_(uintptr_t codedAddress, uint8_t& firstByte, uintptr_t& libindex, uintptr_t& offset) {
+void decodeRelocation_(uintptr_t codedAddress, uintptr_t& libindex, uintptr_t& offset) {
   offset = (uintptr_t)codedAddress & (((uintptr_t)1 << 32) - 1);
   libindex = ((uintptr_t)codedAddress >> 32) & (uintptr_t)0xff;
-  firstByte = (uint8_t)(((uintptr_t)codedAddress >> 48) & 0xff);
 }
 
-uintptr_t encodeRelocation_(uint8_t firstByte, size_t libraryIndex, size_t relocationOrOffset) {
+uintptr_t encodeRelocation_(size_t libraryIndex, size_t relocationOrOffset) {
   if ((relocationOrOffset & (((uintptr_t)1 << 32) - 1)) != relocationOrOffset) {
     ISL_ERROR("relocationOrOffset %lu is too large", relocationOrOffset);
   }
   if (libraryIndex > 256) {
     ISL_ERROR("libraryIndex %lu is too large", libraryIndex);
   }
-  uintptr_t result = ((uintptr_t)1 << 56 | (uintptr_t)firstByte << 48) | (libraryIndex << 32) | relocationOrOffset;
+  uintptr_t result = ((uintptr_t)1 << 56) | (libraryIndex << 32) | relocationOrOffset;
   return result;
 }
 
@@ -408,22 +418,16 @@ void Fixup::registerFunctionPointer(size_t libraryIndex, uintptr_t* functionPtrP
 
 
 uintptr_t Fixup::fixedAddress(bool functionP, uintptr_t* ptrptr, const char* addressName) {
-  uint8_t firstByte;
   uintptr_t libidx;
   uintptr_t pointerIndex;
   if (virtualMethodP(ptrptr))
     return *ptrptr;
   uintptr_t codedAddress = *ptrptr;
-  decodeRelocation_(codedAddress, firstByte, libidx, pointerIndex);
+  decodeRelocation_(codedAddress, libidx, pointerIndex);
   uintptr_t address = this->_ISLLibraries[libidx]._GroupedPointers[pointerIndex]._address;
   uintptr_t addressOffset = this->_ISLLibraries[libidx]._SymbolInfo[pointerIndex]._AddressOffset;
   uintptr_t ptr = address + addressOffset;
-  if (functionP && *(uint8_t*)ptr != firstByte) {
-    printf("%s:%d:%s during decode %s codedAddress: %p ptr-> %p must be readable and point to first byte: 0x%x - but it points to "
-           "0x%x  libidx: %lu\n",
-           __FILE__, __LINE__, __FUNCTION__, addressName, (void*)codedAddress, (void*)ptr, (uint32_t)firstByte,
-           (uint32_t) * (uint8_t*)ptr, libidx);
-  }
+  (void)functionP;
   return ptr;
 }
 
@@ -461,13 +465,13 @@ size_t Fixup::ensureLibraryRegistered(uintptr_t address) {
   return idx;
 };
 
-uintptr_t encodeEntryPointValue(uint8_t firstByte, uint8_t epType, uintptr_t offset) {
-  uintptr_t result = encodeRelocation_(firstByte, epType, offset);
+uintptr_t encodeEntryPointValue(uint8_t epType, uintptr_t offset) {
+  uintptr_t result = encodeRelocation_(epType, offset);
   return result;
 }
 
-void decodeEntryPointValue(uintptr_t value, uint8_t& firstByte, uintptr_t& epType, uintptr_t& offset) {
-  decodeRelocation_(value, firstByte, epType, offset);
+void decodeEntryPointValue(uintptr_t value, uintptr_t& epType, uintptr_t& offset) {
+  decodeRelocation_(value, epType, offset);
 };
 
 uintptr_t decodeEntryPointAddress(uintptr_t offset, uintptr_t codeStart, uintptr_t codeEnd, core::T_sp code) {
@@ -520,34 +524,26 @@ bool encodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::Obj
   if (address < 65536) {
     printf("%s:%d:%s address @%p is %p and is small\n", __FILE__, __LINE__, __FUNCTION__, ptrptr, (void*)address);
   }
-  uint8_t firstByte = *(uint8_t*)address;
   uintptr_t codeStart = (uintptr_t)code->codeStart();
   uintptr_t codeEnd = (uintptr_t)code->codeEnd();
   if (address < codeStart || codeEnd <= address)
     return false;
   uintptr_t offset = encodeEntryPointOffset(address, codeStart, codeEnd, code);
-  uintptr_t result = encodeEntryPointValue(firstByte, CODE_LIBRARY_ID, offset);
+  uintptr_t result = encodeEntryPointValue(CODE_LIBRARY_ID, offset);
   *ptrptr = result;
   return true;
 }
 
 bool decodeEntryPointForCompiledCode(Fixup* fixup, uintptr_t* ptrptr, llvmo::ObjectFile_sp code) {
   uintptr_t vaddress = *ptrptr;
-  uint8_t firstByte;
   uintptr_t epType;
   uintptr_t offset;
   uintptr_t codeStart = code->codeStart();
   uintptr_t codeEnd = code->codeEnd();
-  decodeEntryPointValue(vaddress, firstByte, epType, offset);
+  decodeEntryPointValue(vaddress, epType, offset);
   if (epType != CODE_LIBRARY_ID)
     return false; // it's not a COMPILED_CODE_EPTYPE it must be to a library
   uintptr_t result = decodeEntryPointAddress(offset, codeStart, codeEnd, code);
-  if (*(uint8_t*)result != firstByte) {
-    ISL_ERROR("during decode function pointer %p must be readable and point to 0x%x (first byte) - instead it points to 0x%x "
-              "vaddress = %p  codeStart = %p\n",
-              (void*)result, (uint32_t)firstByte, (uint)(*(uint8_t*)result), (void*)vaddress,
-              (void*)codeStart);
-  }
   *ptrptr = result;
   return true;
 }
@@ -1558,9 +1554,7 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
           }
       // Now encode the relocation
           void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
-          uint8_t* uint8ptr = (uint8_t*)*addr;
-          uint8_t firstByte = *uint8ptr;
-          *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(firstByte, idx, groupPointerIdx);
+          *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(idx, groupPointerIdx);
         }
         core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size()));
         SaveSymbolCallback thing(curLib);
@@ -1876,15 +1870,31 @@ void* snapshot_save_impl(void* data) {
         mangled_name.begin(), mangled_name.end(), [](unsigned char c) { return !std::isalnum(c); }, '_');
 
     std::cout << "Creating binary object from snapshot..." << std::endl << std::flush;
-    cmd = OBJCOPY_BINARY " --input-target binary --output-target elf64-x86-64"
-                         " --binary-architecture i386 " +
+    // objcopy's output target and binary architecture must match the build target;
+    // otherwise the binary-wrapped snapshot object is empty/rejected by the linker
+    // (e.g. on aarch64 the hardcoded x86-64/i386 values give "architecture i386 unknown").
+#if defined(__x86_64__)
+    const char* snapshot_objcopy_target = "elf64-x86-64";
+    const char* snapshot_objcopy_arch = "i386";
+#elif defined(__aarch64__)
+    const char* snapshot_objcopy_target = "elf64-littleaarch64";
+    const char* snapshot_objcopy_arch = "aarch64";
+#else
+#error "snapshot_save_impl: unsupported architecture for objcopy binary wrap"
+#endif
+    cmd = OBJCOPY_BINARY " --input-target binary --output-target " +
+          std::string(snapshot_objcopy_target) + " --binary-architecture " +
+          snapshot_objcopy_arch + " " +
           filename + " " + obj_filename + " --redefine-sym _binary_" + mangled_name +
           "_start=" CXX_MACRO_STRING(SNAPSHOT_START) " --redefine-sym _binary_" + mangled_name +
           "_end=" CXX_MACRO_STRING(SNAPSHOT_END) " --redefine-sym _binary_" + mangled_name +
           "_size=" CXX_MACRO_STRING(SNAPSHOT_SIZE);
-    if (system(cmd.c_str()) < 0) {
-      std::cerr << "Creation of binary object failed." << std::endl << std::flush;
-      return NULL;
+    if (int rc = system(cmd.c_str())) {
+      // system() returns -1 on fork failure and otherwise the program's exit
+      // status. If the program fails it will return a positive status.
+      // So 0 is the only result indicating success.
+      std::cerr << "Creation of binary object failed (rc=" << rc << "): " << cmd << std::endl << std::flush;
+      exit(1);
     }
 
     cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir + " -o" + snapshot_data->_FileName + " " + obj_filename +
@@ -1899,17 +1909,24 @@ void* snapshot_save_impl(void* data) {
           BUILD_LIB;
 #endif
 #ifdef _TARGET_OS_DARWIN
-    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -o" + snapshot_data->_FileName +
-          " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + filename + " -Wl,-force_load," + snapshot_data->_LibDir +
-          "/libiclasp.a -lclasp " BUILD_LIB;
+    // Quote every path that may contain spaces (the build/lib dir can, e.g. a Dropbox
+    // path "/Users/.../gbt Dropbox/..."); this command is run through system() (a shell),
+    // so an unquoted path with a space gets split and the link fails.
+    // Add an absolute -L for the lib dir (as the Linux branch already does): BUILD_LINKFLAGS
+    // only carries a RELATIVE -Lboehmprecise/lib, so without this, -lclasp resolves only when
+    // save-lisp-and-die :executable is run with CWD=build/. The absolute -L makes it link from
+    // any working directory (the runtime rpath is already absolute).
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L\"" + snapshot_data->_LibDir + "\" -o\"" + snapshot_data->_FileName +
+          "\" -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " \"" + filename + "\" -Wl,-force_load,\"" +
+          snapshot_data->_LibDir + "/libiclasp.a\" -lclasp " BUILD_LIB;
 #endif
 
     std::cout << "Link command:" << std::endl << std::flush;
     std::cout << cmd << std::endl << std::flush;
     std::cout << "Linking executable..." << std::endl << std::flush;
-    if (system(cmd.c_str()) < 0) {
-      std::cerr << "Linking of executable failed." << std::endl << std::flush;
-      return NULL;
+    if (int rc = system(cmd.c_str())) {
+      std::cerr << "Linking of executable failed (rc=" << rc << "): " << cmd << std::endl << std::flush;
+      exit(1);
     }
 
 #ifdef _TARGET_OS_LINUX
@@ -2372,6 +2389,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         my_thread->finish_initialization_main_thread(nil);
         // Now we have NIL in 'nil' - use it to initialize a few things.
         _lisp->_Roots._AllObjectFiles.store(nil);
+        llvmo::clearObjectFileNameCounts(); // keep countObjectFileNames index in sync with the cleared list
         _lisp->_Roots._AllCodeBlocks.store(nil);
       }
 
@@ -2651,7 +2669,11 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
         //
         if (oldCodeClient->literalsSize() != 0 &&
             (newCodeDataStart <= newCodeLiteralsStart && newCodeLiteralsEnd <= newCodeDataEnd)) {
+          // newCodeLiteralsStart is in write-protected JIT (MAP_JIT) memory on
+          // Apple Silicon; switch this thread to write mode around the copy.
+          llvmo::JITDataReadWriteMaybeExecute();
           memcpy((void*)newCodeLiteralsStart, (void*)oldCodeClient->literalsStart(), newCodeClient->literalsSize());
+          llvmo::JITDataReadExecute();
         }
         //
         // Now set the forwarding pointer from the oldCode object to the newCodeClient
@@ -2685,7 +2707,12 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       fixup_objects_t fixup_objects(LoadOp, (gctools::clasp_ptr_t)islbuffer, &islInfo);
       globalPointerFix = maybe_follow_forwarding_pointer;
       globalPointerFixStage = "snapshot_load/fixupObjects";
+      // Load fixup writes relocated pointers INTO the loaded objects in place; code
+      // objects live in MAP_JIT (W^X) memory, so run in write mode on Apple Silicon or
+      // the store faults with SIGBUS. (The save path fixes up a RW copy, so it's fine.)
+      llvmo::JITDataReadWriteMaybeExecute();
       walk_temporary_root_objects(root_holder, fixup_objects);
+      llvmo::JITDataReadExecute();
     }
 
 #ifdef DEBUG_GUARD
@@ -2703,7 +2730,10 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     }
 
     fixup_internals_t internals(&fixup, &islInfo);
+    // Same MAP_JIT W^X hazard as fixupObjects above (in-place fixup of code objects).
+    llvmo::JITDataReadWriteMaybeExecute();
     walk_temporary_root_objects(root_holder, internals);
+    llvmo::JITDataReadExecute();
 
     //
     // Release the temporary roots

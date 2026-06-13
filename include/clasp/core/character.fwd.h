@@ -44,4 +44,8 @@ inline claspCharacter clasp_as_claspCharacter(Character_sp c) { return c.unsafe_
 
 claspCharacter char_upcase(claspCharacter);
 
+inline bool clasp_base_char_p(claspCharacter c) { return c <= 255; }
+
+inline bool clasp_base_char_p(Character_sp c) { return c.unsafe_character() >= 0 && c.unsafe_character() <= 255; }
+
 } // namespace core

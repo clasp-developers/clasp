@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include <clasp/core/hashTable.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/unwind.h> // call_with_catch (issue #1784 SLAD routing)
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
@@ -450,14 +451,20 @@ int startup_clasp(void** stackMarker, gctools::ClaspInfo* claspInfo, int* exitCo
 
 int run_clasp(gctools::ClaspInfo* claspInfo) {
   int exitCode;
-  try {
+#if defined(USE_PRECISE_GC)
+  bool completed_normally = false;
+  core::call_with_catch(snapshotSaveLoad::save_lisp_and_die_catch_tag(), [&]() -> core::T_mv {
     exitCode = _lisp->run();
-  } catch (snapshotSaveLoad::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-    snapshotSaveLoad::snapshot_save(ee);
-#endif
+    completed_normally = true;
+    return core::T_mv();
+  });
+  if (!completed_normally) {
+    snapshotSaveLoad::snapshot_save(snapshotSaveLoad::pending_save_lisp_and_die());
     exitCode = 0;
   }
+#else
+  exitCode = _lisp->run();
+#endif
   return exitCode;
 };
 

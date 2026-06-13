@@ -58,11 +58,11 @@ public:
   static value_type default_initial_element(void) { return '\0'; }
   static value_type from_object(T_sp obj) {
     if (obj.characterp()) {
-      return obj.unsafe_character();
-    } else if (obj.nilp()) {
-      return '\0';
+      auto c = obj.unsafe_character();
+      if (clasp_base_char_p(c))
+        return c;
     }
-    TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_character, cl::_sym_nil));
+    TYPE_ERROR(obj, cl::_sym_base_char);
   }
   static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
 
@@ -155,10 +155,8 @@ public:
   static value_type from_object(T_sp obj) {
     if (obj.characterp()) {
       return obj.unsafe_character();
-    } else if (obj.nilp()) {
-      return 0;
     }
-    TYPE_ERROR(obj, Cons_O::createList(cl::_sym_or, cl::_sym_character, cl::_sym_nil));
+    TYPE_ERROR(obj, cl::_sym_character);
   }
   static T_sp to_object(const value_type& v) { return clasp_make_character(v); };
 

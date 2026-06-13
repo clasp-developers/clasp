@@ -369,3 +369,19 @@ specified bits of INTEGER2 with the specified bits of INTEGER1."
     (if size
         `(%deposit-field ,newbyte ,size ,position ,integer)
         whole))))
+
+;;; Hooks called from C++ core_float_to_string_free in print/Float_O.cc
+;;; for NaN. When *print-readably* is true and a readable
+;;; representation is unavailable, signal print-not-readable per CLHS;
+;;; otherwise return a non-readable but informative string.
+
+(defun ext:float-nan-string (number)
+  (when *print-readably*
+    (error 'print-not-readable :object number))
+  (let ((type (cond ((typep number 'short-float)  "SHORT")
+                    ((typep number 'single-float) "SINGLE")
+                    ((typep number 'double-float) "DOUBLE")
+                    ((typep number 'long-float)   "LONG")
+                    (t                            "FLOAT"))))
+    (format nil "#<~a-FLOAT NaN>" type)))
+

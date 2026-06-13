@@ -157,33 +157,28 @@ void Process_O::runInner(core::List_sp bindings) {
     runInner(CONS_CDR(bindings));
   } else {
     updatePhase(Running);
-    core::T_mv result_mv;
-    try {
-      result_mv = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
-    } catch (ExitProcess& e) {
-        // Exiting specially. Don't touch _ReturnValuesList - it's initialized to NIL just fine,
-        // and may have been set by mp:exit-process.
-      updatePhase(Exited);
-      return;
-    } catch (AbortProcess& e) {
-        // Exiting specially for some weird reason. Mark this as an abort.
-        // NOTE: Should probably catch all attempts to exit, i.e. catch (...),
-        // but that might be a problem for the main thread.
-      _Aborted = true;
-      updatePhase(Exited);
-      return;
-    }
+    core::call_with_catch(INTERN_(mp, PERCENTprocess_exit_tag),
+                          [&]() -> core::T_mv {
+      core::T_mv r = core::core__apply0(core::coerce::calledFunctionDesignator(_Function), _Arguments);
+      // Grab the multiple values and put them in the _ReturnValuesList.
+      ql::list return_values;
+      int nv = r.number_of_values();
+      core::MultipleValues& mv = core::lisp_multipleValues();
+      if (nv > 0) {
+        core::T_sp result0 = r;
+        return_values << result0;
+        for (int i = 1; i < nv; ++i)
+          return_values << mv.valueGet(i, r.number_of_values());
+      }
+      _ReturnValuesList = return_values.result();
+      return r;
+    });
     updatePhase(Exited);
-    ql::list return_values;
-    int nv = result_mv.number_of_values();
-    core::MultipleValues& mv = core::lisp_multipleValues();
-    if (nv > 0) {
-      core::T_sp result0 = result_mv;
-      return_values << result0;
-      for (int i = 1; i < nv; ++i)
-        return_values << mv.valueGet(i, result_mv.number_of_values());
-    }
-    _ReturnValuesList = return_values.result();
+    // if the catch exited abnormally,
+    // we came via mp:abort-process or mp:exit-process.
+    // Don't touch _ReturnValuesList - it's initialized to NIL just fine,
+    // and may have been set by mp:exit-process.
+    // mp:abort-process set _Aborted.
   }
 }
 
@@ -546,7 +541,7 @@ DOCGROUP(clasp)dx");
 CL_DEFUN void mp__exit_process(core::List_sp values) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
   this_process->_ReturnValuesList = values;
-  throw ExitProcess();
+  core::sjlj_throw(INTERN_(mp, PERCENTprocess_exit_tag));
 };
 
 // See abort-process in mp.lisp
@@ -558,8 +553,9 @@ CL_DOCSTRING_LONG(
 DOCGROUP(clasp);
 CL_DEFUN void mp__PERCENTabort_process(core::T_sp maybe_condition) {
   Process_sp this_process = gc::As<Process_sp>(_sym_STARcurrent_processSTAR->symbolValue());
+  this_process->_Aborted = true;
   this_process->_AbortCondition = maybe_condition;
-  throw AbortProcess();
+  core::sjlj_throw(INTERN_(mp, PERCENTprocess_exit_tag));
 }
 
 CL_DOCSTRING(R"dx(Return the name of the mutex, as provided at creation. The mutex may be normal or recursive.)dx");
