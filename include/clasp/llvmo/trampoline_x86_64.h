@@ -3,7 +3,6 @@
 //
 // At init time: copy the code array, patch the 8-byte target address at the
 // known offset, then hand code+CIE+FDE to the arena's install_template().
-// No LLVM JIT compilation needed.
 
 #pragma once
 #include <cstdint>
@@ -18,7 +17,6 @@ namespace trampoline_x86_64 {
 // Bytecode trampoline (26 bytes)
 // Signature: (i64 pc, ptr closure, i64 nargs, ptr args) -> {ptr, i64}
 // Passes all args through; saves pc (%rdi) on stack for debugger visibility.
-// The sub $16 (not push) keeps 16-byte stack alignment for the callee.
 // Target address patched at offset 14 (8-byte immediate in movabs).
 // =========================================================================
 static constexpr uint8_t bytecode_code[] = {

@@ -79,10 +79,7 @@ bool sampling_profiler_save(const char* path);
 std::vector<SymbolicatedSample> sampling_profiler_symbolicated_samples();
 
 // Populate the calling thread's stack bounds for later frame-walking.
-// Must be called from a non-signal context. sampling_profiler_start
-// calls this automatically for the calling thread; other threads that
-// should be fully profiled need to call ext:profile-register-thread
-// (or this function) themselves once before being sampled.
+// Must be called from a non-signal context.
 void sampling_profiler_register_current_thread();
 
 // Register an executable memory range with the profiler's return-address

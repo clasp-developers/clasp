@@ -1168,9 +1168,8 @@ struct copy_objects_t {
       if (header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
         llvmo::ObjectFile_O* objectFile = (llvmo::ObjectFile_O*)clientStart;
         llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)clientStart;
-        // Defense-in-depth: transient arena-init scaffolding must never make
-        // it into the snapshot. Skip — matching the calculate_size_t pass.
         if (code->_TransientSkipSnapshot) {
+          SIMPLE_WARN("This should never be invoked - transient trampolines should never be in the snapshot - if this message is seen then something is wrong upstream");
           return;
         }
         ISLGeneralHeader_s islheader(code->frontSize() + code->literalsSize(), (gctools::Header_s*)header, false);
