@@ -65,6 +65,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/llvmo/trampolineWork.h>
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/unwind.h> // sizeof dynenvs
@@ -90,6 +91,7 @@ SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, min);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, max);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, and);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, or);
+
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -546,6 +548,8 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
 }; // namespace llvmo
 
 
+namespace llvmo {
+
 NEVER_OPTIMIZE
 gctools::return_type unknown_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
   return bytecode_call(pc, closure, nargs, args);
@@ -557,8 +561,8 @@ gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t 
 }
 };
 
+#if 0
 namespace llvmo {
-#include <trampoline.h>
 
 std::atomic<size_t> global_trampoline_counter;
 #ifdef CLASP_THREADS
@@ -642,6 +646,9 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
 #endif
 }
 }; // namespace llvmo
+#endif
+
+
 
 namespace llvmo {
 

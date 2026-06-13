@@ -26,6 +26,7 @@
 #include <clasp/llvmo/trampoline_aarch64.h>  // hardcoded AArch64 trampoline templates
 #include <clasp/llvmo/jit.h>                 // ClaspJIT_O full def (member access on ClaspJIT_sp)
 #include <clasp/llvmo/llvmoExpose.h>         // Module_sp, LLVMContext_sp
+#include <clasp/llvmo/llvmoPackage.h>         // Module_sp, LLVMContext_sp
 #include "clasp/llvmo/trampolineWork.h"
 
 // Bring core:: (Pointer_O, SimpleBaseString_O, T_sp, etc.) into scope for
@@ -58,15 +59,6 @@ namespace llvmo {
 
 std::atomic<size_t> global_trampoline_counter;
 
-
-
-JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname) {
-  ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
-  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  jit->addIRModule(jitDylib, module, tsc, startupID);
-  return jitDylib;
-}
 
 
 string escapeNameForLlvm(const string& inp) {
@@ -300,34 +292,6 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
   return Values(p, SimpleBaseString_O::make(mangled));
 }
 
-// Compile callbacks for FFI.
-CL_DEFUN JITDylib_sp jit_module_to_dylib(Module_sp module, const std::string& libname) { return loadModule(module, 0, libname); }
-
-CL_DEFUN core::Pointer_sp jit_lookup(JITDylib_sp dylib, const std::string& name) {
-  return llvm_sys__clasp_jit()->lookup(dylib, name);
-}
-
-// Access a T_sp in a variable.
-CL_DEFUN core::T_sp jit_lookup_t(JITDylib_sp dylib, const std::string& name) {
-  void* ptr;
-  bool found = llvm_sys__clasp_jit()->do_lookup(dylib, name, ptr);
-  if (!found)
-    SIMPLE_ERROR("Could not find pointer for name |{}|", name);
-  core::T_O** tptr = (core::T_O**)ptr;
-  T_sp ret((gctools::Tagged)(*tptr));
-  return ret;
-}
-
-CL_LISPIFY_NAME("llvmo:jit-lookup-t");
-CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, const std::string& name) {
-  void* ptr;
-  bool found = llvm_sys__clasp_jit()->do_lookup(dylib, name, ptr);
-  if (!found)
-    SIMPLE_ERROR("Could not find pointer for name |{}|", name);
-  core::T_O** tptr = (core::T_O**)ptr;
-  *tptr = value.raw_();
-  return value;
-}
 
 // Re-attach an arena trampoline to every BytecodeSimpleFun reachable from the
 // snapshot. Called after snapshot_load completes its fixup pass.

@@ -4392,4 +4392,12 @@ CL_DEFUN std::string llvm_sys__getDefaultTargetTriple() {
   return triple;
 }
 
+JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname) {
+  ClaspJIT_sp jit = llvm_sys__clasp_jit();
+  JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
+  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
+  jit->addIRModule(jitDylib, module, tsc, startupID);
+  return jitDylib;
+}
+
 }; // namespace llvmo

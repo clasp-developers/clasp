@@ -2528,9 +2528,6 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                   }
                 } clear_tls_guard;
                 {
-                  // Lock this code for now because multithreaded linking
-                  // has a race condition.  TODO: Fix race condition
-                  std::lock_guard<std::mutex> lk(g_materialize_lock);
                   if (!obj_claspJIT->force_materialize(jitdylib, objectId))
                     ISL_ERROR("Failed to materialize JITDylib objectId=%lu", objectId );
                 }
