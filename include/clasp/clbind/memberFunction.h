@@ -37,11 +37,11 @@ template <typename MethodPtrType, typename Policies> class WRAPPER_AlienVariadic
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies> : public core::SimpleFun_O {
+class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies> : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...), Policies> MyType;
   typedef RT (OT::*MethodType)(ARGS...);
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -50,7 +50,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_AlienVariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
+    : mptr(ptr), XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -96,11 +96,11 @@ public:
 namespace clbind {
 
 template <typename Policies, typename RT, typename OT, typename... ARGS>
-class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies> : public core::SimpleFun_O {
+class WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies> : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_AlienVariadicMethod<RT (OT::*)(ARGS...) const, Policies> MyType;
   typedef RT (OT::*MethodType)(ARGS...) const;
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -109,7 +109,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_AlienVariadicMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
+    : mptr(ptr), XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 

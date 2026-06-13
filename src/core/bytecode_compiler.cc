@@ -1678,7 +1678,7 @@ static void warn_ignorance(List_sp bindings) {
   }
 }
 
-static T_sp source_location_for(T_sp form, T_sp fallback) {
+static T_sp source_location_for(T_sp form, T_sp fallback = core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue()) {
   if (_sym_STARsourceLocationsSTAR->boundP()) {
     T_sp table = _sym_STARsourceLocationsSTAR->symbolValue();
     if (gc::IsA<HashTable_sp>(table))
@@ -2087,6 +2087,8 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
 
 // Compile the lambda expression in MODULE, returning the resulting CFUNCTION.
 CL_DEFUN Cfunction_sp compile_lambda(T_sp lambda_list, List_sp body, Lexenv_sp env, Module_sp module, T_sp source_info) {
+  DynamicScopeManager cspi(core::_sym_STARcurrentSourcePosInfoSTAR,
+                           source_info);
   List_sp declares = nil<T_O>();
   Label_sp begin = Label_O::make(), end = Label_O::make();
   gc::Nilable<String_sp> docstring;
@@ -3011,17 +3013,27 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   if (code_walking_p())
     form = eval::funcall(_sym_STARcodeWalkerSTAR->symbolValue(), form, env);
   // Record source location if we have it.
+  // (as in, we use default NIL so that we can tell if there's no
+  //  specific source info)
   T_sp source_location = source_location_for(form, nil<T_O>());
+  bool specific_sl = source_location.notnilp();
   Label_sp begin_label = Label_O::make();
   Label_sp end_label = Label_O::make();
   Context ncontext = context;
-  if (source_location.notnilp()) {
+  if (specific_sl) {
     ncontext = context.sub_source(source_location);
     begin_label->contextualize(ncontext);
     // We push the info BEFORE compiling the form so that the infos
     // are naturally sorted by their start position.
     context.push_debug_info(BytecodeDebugLocation_O::make(begin_label, end_label, source_location));
+  } else {
+    // We don't have specific source info, but we still want to
+    // communicate the best source info we can get to macroexpanders
+    // etc. even if we don't put it in the debug info.
+    source_location = context.source_info();
   }
+  DynamicScopeManager cspi(core::_sym_STARcurrentSourcePosInfoSTAR,
+                           source_location);
   // Compile
   if (gc::IsA<Symbol_sp>(form))
     compile_symbol(gc::As_unsafe<Symbol_sp>(form), env, ncontext);
@@ -3030,7 +3042,7 @@ void compile_form(T_sp form, Lexenv_sp env, const Context context) {
   else
     compile_literal(form, env, ncontext);
   // And finish off the source info.
-  if (source_location.notnilp()) {
+  if (specific_sl) {
     end_label->contextualize(ncontext);
   }
 }
@@ -3051,7 +3063,7 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
   T_sp lambda_list = oCadr(lambda_expression);
   T_sp body = oCddr(lambda_expression);
   return compile_lambda(lambda_list, body, env, module,
-                        source_location_for(lambda_expression, core::_sym_STARcurrentSourcePosInfoSTAR->symbolValue()));
+                        source_location_for(lambda_expression));
 }
 
 CL_LAMBDA(lambda-expression &optional env)

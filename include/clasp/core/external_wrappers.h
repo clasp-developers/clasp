@@ -39,11 +39,11 @@ namespace clbind {
 
 template <typename RT, typename OT, typename... ARGS, typename Policies>
 class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT>
-    : public core::SimpleFun_O {
+    : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...), Policies, OT> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...);
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -52,7 +52,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
+    : mptr(ptr), XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -99,11 +99,11 @@ public:
 namespace clbind {
 template <typename RT, typename OT, typename... ARGS, typename Policies>
 class WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT>
-    : public core::SimpleFun_O {
+    : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_IndirectMethod<RT (OT::ExternalType::*)(ARGS...) const, Policies, OT> MyType;
   typedef RT (OT::ExternalType::*MethodType)(ARGS...) const;
-  typedef SimpleFun_O TemplatedBase;
+  typedef XepSimpleFun_O TemplatedBase;
 
 public:
   MethodType mptr;
@@ -112,7 +112,7 @@ public:
   enum { NumParams = sizeof...(ARGS) + 1 };
 
   WRAPPER_IndirectMethod(MethodType ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
+    : mptr(ptr), XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   };
 
@@ -157,9 +157,9 @@ public:
 }; // namespace clbind
 
 namespace core {
-template <class D, class C> class WRAPPER_Getter : public SimpleFun_O {
+template <class D, class C> class WRAPPER_Getter : public XepSimpleFun_O {
 public:
-  typedef SimpleFun_O TemplatedBase;
+  typedef XepSimpleFun_O TemplatedBase;
   typedef WRAPPER_Getter<D, C> MyType;
 
 public:
@@ -169,7 +169,7 @@ public:
 
 public:
   WRAPPER_Getter(MemPtr ptr, core::FunctionDescription_sp fdesc, core::T_sp code)
-    : mptr(ptr), SimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
+    : mptr(ptr), XepSimpleFun_O(fdesc, code, core::XepStereotype<MyType>()) {
     this->validateCodePointer((void**)&this->mptr, sizeof(this->mptr));
   }
 

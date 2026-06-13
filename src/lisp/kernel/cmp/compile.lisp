@@ -69,3 +69,11 @@
            (setf (fdefinition name) function)
            (values name warnp failp))
           (t (values function warnp failp)))))
+
+(defun ext:compile-source (lambda-expression &optional source environment)
+  "Compile LAMBDA-EXPRESSION in ENVIRONMENT. If SOURCE is non-null it must be a source object returned from EXT:READ-SOURCE or EXT:AUGMENT-SOURCE, and is used to provide source locations for compiled code and error messages."
+  (cond (source
+         (check-type source hash-table)
+         (let ((*source-locations* source))
+           (compile-definition lambda-expression environment)))
+        (t (compile-definition lambda-expression environment))))

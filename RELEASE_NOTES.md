@@ -9,6 +9,7 @@
 * Arguments to bytecode functions are made available to debuggers.
 * `ext:deoptimize` can temporarily replace almost all native-compiled functions with a simpler bytecode version with better debuggability. `ext:reoptimize` restores the native version.
 * A style warning is signaled if the compiler assumes a symbol names a function and then sees it defined as a macro.
+* New interfaces for reading and evaluating code with tracked source locations: `ext:with-source-tracking`, `ext:stream-source-location`, `ext:read-source`, `ext:augment-source`, `ext:eval-source`, `ext:compile-source`.
 
 ## Changed
 * Use Khazern extended for CL:LOOP
@@ -24,12 +25,16 @@
 * Literal arrays with fill pointers are not dumped with excess elements.
 * `setf` of `apply` no longer has multiple evaluation problems.
 * Improve error messages for package name conflicts. Fixes #1722.
+* FASL loading is more resilient in the face of heavy file use and interruptions. Thanks @dg1sbg.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used
   for snapshot debugging. You can call `core:mangled-symbol-names` if the
   effect is still needed.
 * FASO and other compile-file output types, other than FASL. `compile-file` now always produces a FASL.
+
+## Optimized
+* FASL loading batches reads more, improving load times. Thanks @dg1sbg.
 
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 

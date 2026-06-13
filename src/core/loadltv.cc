@@ -30,6 +30,9 @@
 #include <virtualMachine.h>
 #undef DEFINE_BYTECODE_LTV_OPS
 
+// number of times to try I/O (e.g. open(2)) before giving up
+#define LTV_IO_ATTEMPTS 1000
+
 namespace core {
 
 #define BC_HEADER_SIZE 16
@@ -82,10 +85,54 @@ struct loadltv {
   size_t _next_index = 0;
   // native modules
   T_sp _JITDylib = nil<T_O>();
+  // Cache the last (debug-info path literal -> FileScope). Consecutive debug
+  // locations from the same source file share the same path literal, so this
+  // avoids a redundant string copy + locked hash intern (core__file_scope) per
+  // location during boot. eq-compared; falls back to the real call on a miss.
+  T_sp _lastDebugPath = nil<T_O>();
+  T_sp _lastDebugScope = nil<T_O>();
 
-  loadltv(Stream_sp stream) : _stream(stream) {}
+  // Read buffer. Doing an I/O operation is slow (both due to the general
+  // nature of things, and our own overhead), so we try to batch
+  // things into big reads as much as possible.
+  // The loader owns the stream for the whole load, so reading ahead is safe.
+  static constexpr size_t BUFSIZE = 65536;
+  std::vector<unsigned char> _buf;
+  size_t _bufpos = 0;
+  size_t _buflen = 0;
 
-  inline uint8_t read_u8() { return stream_read_byte(_stream).unsafe_fixnum(); }
+  loadltv(Stream_sp stream) : _stream(stream), _buf(BUFSIZE) {}
+
+  // Refill the buffer from the stream; returns the number of bytes now available.
+  size_t refill() {
+    _buflen = (size_t)stream_read_byte8(_stream, _buf.data(), BUFSIZE);
+    _bufpos = 0;
+    return _buflen;
+  }
+
+  // Copy n bytes of the (buffered) stream into dst.
+  inline void read_bytes(unsigned char* dst, size_t n) {
+    while (n > 0) {
+      if (_bufpos >= _buflen) {
+        if (refill() == 0)
+          SIMPLE_ERROR("Invalid FASL: unexpected end of stream");
+      }
+      size_t avail = _buflen - _bufpos;
+      size_t take = (n < avail) ? n : avail;
+      memcpy(dst, _buf.data() + _bufpos, take);
+      _bufpos += take;
+      dst += take;
+      n -= take;
+    }
+  }
+
+  inline uint8_t read_u8() {
+    if (_bufpos >= _buflen) {
+      if (refill() == 0)
+        SIMPLE_ERROR("Invalid FASL: unexpected end of stream");
+    }
+    return _buf[_bufpos++];
+  }
 
   inline int8_t read_s8() {
     uint8_t byte = read_u8();
@@ -99,7 +146,7 @@ struct loadltv {
 
   inline uint16_t read_u16() {
     unsigned char bytes[2];
-    stream_read_byte8(_stream, &bytes[0], 2);
+    read_bytes(&bytes[0], 2);
     uint16_t high = bytes[0];
     uint16_t low = bytes[1];
     return (high << 8) | low;
@@ -117,7 +164,7 @@ struct loadltv {
 
   inline uint32_t read_u32() {
     unsigned char bytes[4];
-    stream_read_byte8(_stream, &bytes[0], 4);
+    read_bytes(&bytes[0], 4);
     uint32_t b0 = bytes[0];
     uint32_t b1 = bytes[1];
     uint32_t b2 = bytes[2];
@@ -137,7 +184,7 @@ struct loadltv {
 
   inline uint64_t read_u64() {
     unsigned char bytes[8];
-    stream_read_byte8(_stream, &bytes[0], 8);
+    read_bytes(&bytes[0], 8);
     uint64_t b0 = bytes[0];
     uint64_t b1 = bytes[1];
     uint64_t b2 = bytes[2];
@@ -151,7 +198,7 @@ struct loadltv {
 
   inline __uint128_t read_u80() {
     unsigned char bytes[10];
-    stream_read_byte8(_stream, bytes, 10);
+    read_bytes(bytes, 10);
     return (__uint128_t{bytes[0]} << 72) | (__uint128_t{bytes[1]} << 64) | (__uint128_t{bytes[2]} << 56) |
            (__uint128_t{bytes[3]} << 48) | (__uint128_t{bytes[4]} << 40) | (__uint128_t{bytes[5]} << 32) |
            (__uint128_t{bytes[6]} << 24) | (__uint128_t{bytes[7]} << 16) | (__uint128_t{bytes[8]} << 8) |
@@ -160,7 +207,7 @@ struct loadltv {
 
   inline __uint128_t read_u128() {
     unsigned char bytes[16];
-    stream_read_byte8(_stream, bytes, 16);
+    read_bytes(bytes, 16);
     return (__uint128_t{bytes[0]} << 120) | (__uint128_t{bytes[1]} << 112) | (__uint128_t{bytes[2]} << 104) |
            (__uint128_t{bytes[3]} << 96) | (__uint128_t{bytes[4]} << 88) | (__uint128_t{bytes[5]} << 80) |
            (__uint128_t{bytes[6]} << 72) | (__uint128_t{bytes[7]} << 64) | (__uint128_t{bytes[8]} << 56) |
@@ -303,7 +350,7 @@ struct loadltv {
     SimpleBaseString_sp str = SimpleBaseString_O::makeSize(len);
     // careful, we're directly writing into the array data here
     unsigned char* data = (unsigned char*)(str->rowMajorAddressOfElement_(0));
-    stream_read_byte8(_stream, data, len);
+    read_bytes(data, len);
     set_ltv(str, next_index());
   }
 
@@ -350,7 +397,7 @@ struct loadltv {
   void op_utf8_string() {
     uint16_t blen = read_u16();
     unsigned char* bytes = (unsigned char*)malloc(blen);
-    stream_read_byte8(_stream, bytes, blen);
+    read_bytes(bytes, blen);
     SimpleCharacterString_sp buf = SimpleCharacterString_O::make(blen); // max
     size_t len = fill_utf8_string(buf, bytes, blen);
     free(bytes);
@@ -735,7 +782,8 @@ struct loadltv {
     size_t index = next_index();
     uint32_t len = read_u32();
     SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
-    cl__read_sequence(bytes, _stream, clasp_make_fixnum(0), nil<T_O>());
+    // Read the module bytecode straight into the vector through our buffer.
+    read_bytes((unsigned char*)bytes->rowMajorAddressOfElement_(0), len);
     set_ltv(BytecodeModule_O::make(bytes), index);
   }
 
@@ -967,8 +1015,14 @@ struct loadltv {
     Integer_sp end = Integer_O::create(read_u32());
     T_sp path = get_ltv(read_index());
     uint64_t line = read_u64(), column = read_u64(), filepos = read_u64();
-    T_mv sfi_mv = core__file_scope(path);
-    FileScope_sp sfi = gc::As<FileScope_sp>(sfi_mv);
+    FileScope_sp sfi;
+    if (path == _lastDebugPath && _lastDebugScope.notnilp()) {
+      sfi = _lastDebugScope.as_assert<FileScope_O>();
+    } else {
+      sfi = core__file_scope(path).as<FileScope_O>();
+      _lastDebugPath = path;
+      _lastDebugScope = sfi;
+    }
     SourcePosInfo_sp spi = SourcePosInfo_O::create(sfi->fileHandle(), filepos, line, column);
     return BytecodeDebugLocation_O::make(start, end, spi);
   }
@@ -1079,7 +1133,7 @@ struct loadltv {
     // We need to keep this unlinked object code around so that it can be
     // saved in snapshots for relocating, so we just malloc to dodge GC.
     unsigned char* mc = (unsigned char*)malloc(nmc);
-    stream_read_byte8(_stream, mc, nmc); // read in machine code
+    read_bytes(mc, nmc); // read in machine code
     // Now feed the machine code to the JIT.
     llvm::StringRef sbuffer((const char*)mc, nmc);
     llvm::StringRef name(uniqueName);
@@ -1288,7 +1342,7 @@ struct loadltv {
 
   void load() {
     uint8_t header[BC_HEADER_SIZE];
-    stream_read_byte8(_stream, header, BC_HEADER_SIZE);
+    read_bytes(header, BC_HEADER_SIZE);
     uint64_t ninsts = ltv_header_decode(header);
     for (size_t i = 0; i < ninsts; ++i)
       load_instruction();
@@ -1318,6 +1372,85 @@ struct ltv_MmapInfo {
   ltv_MmapInfo(uint8_t* mem, size_t len) : _Memory(mem), _Len(len) {};
 };
 
+// clasp's GC and thread-coordination signals can interrupt slow syscalls
+// (EINTR), and a heavily parallel build can momentarily run into file-descriptor
+// pressure (EMFILE/ENFILE). These helpers retry transient failures so the
+// linker is robust under load.
+// They generally return the same value as the underlying syscall, and set errno
+// in the same way.
+static bool ltv_transient_errno() {
+  return errno == EINTR || errno == EMFILE || errno == ENFILE || errno == EAGAIN;
+}
+
+static int ltv_retry_open(const char* path, int flags) {
+  int fd;
+  BEGIN_PARK {
+    for (int attempt = 0;; ++attempt) {
+      fd = ::open(path, flags);
+      if (fd >= 0 || !ltv_transient_errno() || attempt >= LTV_IO_ATTEMPTS)
+        break;
+      if (errno != EINTR)
+        usleep(1000); // brief backoff for fd-pressure (EMFILE/ENFILE/EAGAIN)
+    }
+  } END_PARK;
+  return fd;
+}
+
+static int ltv_retry_close(int fd) {
+  int r;
+  BEGIN_PARK {
+    do {
+      r = ::close(fd);
+    } while (r < 0 && errno == EINTR);
+  } END_PARK;
+  return r;
+}
+
+static int ltv_retry_munmap(void* addr, size_t len) {
+  // Linux does not document munmap as possibly failing with EINTR, but it seems
+  // to be possible deep in the source code, and this behavior has been observed.
+  int r;
+  BEGIN_PARK {
+    do {
+      r = ::munmap(addr, len);
+    } while (r < 0 && errno == EINTR);
+  } END_PARK;
+  return r;
+}
+
+static int ltv_retry_rename(const char* from, const char* to) {
+  int r;
+  BEGIN_PARK {
+    do {
+      r = ::rename(from, to);
+    } while (r < 0 && errno == EINTR);
+  } END_PARK;
+  return r;
+}
+
+// Write the whole buffer, retrying on EINTR and continuing after partial writes.
+// A bare write() may transfer fewer bytes than requested (or be interrupted).
+static bool ltv_write_all(int fd, const void* buf, size_t len) {
+  const uint8_t* p = static_cast<const uint8_t*>(buf);
+  bool ret = true;
+  BEGIN_PARK {
+    while (len > 0) {
+      ssize_t w = ::write(fd, p, len);
+      if (w < 0) {
+        if (errno == EINTR)
+          continue;
+        else { // some actually problematic error
+          ret = false;
+          break;
+        }
+      }
+      p += w;
+      len -= static_cast<size_t>(w);
+    }
+  } END_PARK;
+  return ret;
+}
+
 void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instruction_count, bool verbose) {
   String_sp filename = gc::As<String_sp>(cl__namestring(output));
   std::string sfilename = filename->get_std_string();
@@ -1325,7 +1458,17 @@ void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instr
   strncpy(bfilename, sfilename.c_str(), sfilename.size());
   bfilename[sfilename.size()] = '\0';
   strcat(bfilename, "XXXXXX");
-  int fout = mkstemp(bfilename);
+  int fout;
+  for (int attempt = 0;; ++attempt) {
+    // mkstemp() overwrites the "XXXXXX" template in place, so it must be
+    // restored before each retry.
+    strcpy(bfilename + sfilename.size(), "XXXXXX");
+    fout = mkstemp(bfilename);
+    if (fout >= 0 || !ltv_transient_errno() || attempt >= LTV_IO_ATTEMPTS)
+      break;
+    if (errno != EINTR)
+      usleep(1000);
+  }
   if (fout < 0) {
     SIMPLE_ERROR("Could not open temporary mkstemp file with {} as the template - error: {}", _rep_(filename), strerror(errno));
   }
@@ -1337,23 +1480,27 @@ void link_fasl_files(T_sp output, std::vector<ltv_MmapInfo>& mmaps, size_t instr
   // Write header
   uint8_t header[BC_HEADER_SIZE];
   ltv_header_encode(header, instruction_count);
-  write(fout, header, BC_HEADER_SIZE);
+  if (!ltv_write_all(fout, header, BC_HEADER_SIZE)) {
+    SIMPLE_ERROR("Could not write header to {} - error: {}", _rep_(filename), strerror(errno));
+  }
 
   for (auto mmap : mmaps) {
-    write(fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE);
-    int res = munmap(mmap._Memory, mmap._Len);
+    if (!ltv_write_all(fout, mmap._Memory + BC_HEADER_SIZE, mmap._Len - BC_HEADER_SIZE)) {
+      SIMPLE_ERROR("Could not write body to {} - error: {}", _rep_(filename), strerror(errno));
+    }
+    int res = ltv_retry_munmap(mmap._Memory, mmap._Len);
     if (res != 0) {
-      SIMPLE_ERROR("Could not munmap memory");
+      SIMPLE_ERROR("Could not munmap memory - error: {}", strerror(errno));
     }
   }
 
   if (verbose)
     clasp_write_string(fmt::format("Closing {}\n", _rep_(filename)));
-  close(fout);
-  int ren = rename(bfilename, sfilename.c_str());
+  ltv_retry_close(fout);
+  int ren = ltv_retry_rename(bfilename, sfilename.c_str());
   if (ren < 0) {
     std::string sbfilename(bfilename);
-    SIMPLE_ERROR("Could not rename {} to {}", sbfilename, sfilename.c_str());
+    SIMPLE_ERROR("Could not rename {} to {} - error: {}", sbfilename, sfilename.c_str(), strerror(errno));
   }
   if (verbose)
     clasp_write_string(fmt::format("Returning {}\n", _rep_(filename)));
@@ -1368,11 +1515,14 @@ CL_DEFUN void core__link_fasl_files(T_sp output, T_sp files, bool verbose) {
     SimpleVector_sp vfiles = files.as_unsafe<SimpleVector_O>();
     for (auto const& tfile : vfiles) {
       String_sp filename = cl__namestring(tfile).as<String_O>();
-      int fd = open(filename->get_std_string().c_str(), O_RDONLY);
+      int fd = ltv_retry_open(filename->get_std_string().c_str(), O_RDONLY);
+      if (fd < 0) {
+        SIMPLE_ERROR("Could not open {} because of {}", _rep_(filename), strerror(errno));
+      }
       off_t fsize = lseek(fd, 0, SEEK_END);
       lseek(fd, 0, SEEK_SET);
       uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-      close(fd);
+      ltv_retry_close(fd);
       if (memory == MAP_FAILED) {
         SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
       }
@@ -1383,11 +1533,14 @@ CL_DEFUN void core__link_fasl_files(T_sp output, T_sp files, bool verbose) {
     for (size_t ii = 0; files.notnilp(); ++ii) {
       String_sp filename = gc::As<String_sp>(cl__namestring(oCar(files)));
       files = oCdr(files);
-      int fd = open(filename->get_std_string().c_str(), O_RDONLY);
+      int fd = ltv_retry_open(filename->get_std_string().c_str(), O_RDONLY);
+      if (fd < 0) {
+        SIMPLE_ERROR("Could not open {} because of {}", _rep_(filename), strerror(errno));
+      }
       off_t fsize = lseek(fd, 0, SEEK_END);
       lseek(fd, 0, SEEK_SET);
       uint8_t* memory = (uint8_t*)mmap(NULL, fsize, PROT_READ, MAP_SHARED | MAP_FILE, fd, 0);
-      close(fd);
+      ltv_retry_close(fd);
       if (memory == MAP_FAILED) {
         SIMPLE_ERROR("Could not mmap {} because of {}", _rep_(filename), strerror(errno));
       }

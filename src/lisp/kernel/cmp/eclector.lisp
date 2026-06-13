@@ -1,5 +1,41 @@
 (in-package #:cmp)
 
+;;; general source tracking
+
+(defmacro ext:with-source-tracking
+    ((stream &key (pathname nil pathnamep) (lineno 0) (offset 0))
+     &body body)
+  "Evaluate BODY such that STREAM tracks source locations.
+EXT:STREAM-SOURCE-LOCATION can be used to get the current source location from the stream."
+  `(let ((*compile-file-source-debug-pathname*
+           ;; (pathname stream) will signal an error if stream is not
+           ;; associated with a file. We want an error, since if a
+           ;; string-stream or something was passed in, the user needs
+           ;; to specify their own pathname.
+           ;; Maybe the error should be more specific though? FIXME
+           ,(if pathnamep
+                `(pathname ,pathname)
+                `(truename ,stream)))
+         (*compile-file-file-scope*
+           (core:file-scope *compile-file-source-debug-pathname*))
+         (*compile-file-source-debug-lineno* ,lineno)
+         (*compile-file-source-debug-offset* ,offset))
+     ,@body))
+
+(defun ext:stream-source-location (stream)
+  "Get the current source location from STREAM. This can only be used within EXT:WITH-SOURCE-TRACKING."
+  (core:input-stream-source-pos-info
+   stream *compile-file-file-scope*
+   *compile-file-source-debug-lineno*
+   *compile-file-source-debug-offset*))
+
+;;; these two basically exist to keep uniform source-location- names
+(declaim (inline ext:source-location-lineno ext:source-location-column))
+(defun ext:source-location-lineno (spi)
+  (core:source-pos-info-lineno spi))
+(defun ext:source-location-column (spi)
+  (core:source-pos-info-column spi))
+
 ;;; So that non-cst-client can inherit behaviour
 (defclass clasp-eclector-client-mixin ()())
 
@@ -128,7 +164,7 @@
 
 (defmethod eclector.base:source-position
     ((client clasp-tracking-eclector-client) stream)
-  (compile-file-source-pos-info stream))
+  (ext:stream-source-location stream))
 
 (defmethod eclector.parse-result:make-expression-result
     ((client clasp-tracking-eclector-client) result children source)
@@ -282,3 +318,59 @@
   (let ((patcher (core:make-record-patcher (lambda (object)
                                              (patch-object client object seen-objects)))))
     (core:patch-object object patcher)))
+
+(defvar *source-client* (make-instance 'clasp-tracking-eclector-client))
+
+(defun ext:read-source (&optional
+                          input-stream-designator (eof-error-p t)
+                          eof-value recursive-p environment)
+  "READ with source tracking. Returns two values: the form read, and an object representing a source location map for that form. This object is not defined for users, but may be passed to EVAL-SOURCE or COMPILE-SOURCE to give the evaluator and/or compiled code source locations.
+If EOF-ERROR-P is NIL and the stream hits EOF, the first value will be ELF-VALUE and the second value is undefined."
+  (let ((eclector.reader:*client*
+          (if environment
+              (make-instance 'cmp::clasp-alternate-env-client
+                :environment *environment*)
+              *source-client*))
+        (*source-locations* (make-hash-table :test #'eq)))
+    (values (eclector.parse-result:read eclector.reader:*client*
+                                        (or input-stream-designator
+                                            *standard-input*)
+                                        eof-error-p eof-value)
+            *source-locations*)))
+
+(defun ext:eval-source (form &optional source environment)
+  "Evaluate FORM in ENVIRONMENT. If SOURCE is non-null it must be a source object returned from EXT:READ-SOURCE or EXT:AUGMENT-SOURCE, and is used to provide source locations for code and error messages."
+  (cond (source
+         (check-type source hash-table)
+         (let ((*source-locations* source))
+           (core:interpret form environment)))
+        (t (core:interpret form environment))))
+
+(defun ext:augment-source (new-form source
+                           &optional (default (ext:current-source-location)))
+  "Create a new source object (as returned by READ-SOURCE) for NEW-FORM, based on the mapping SOURCE which is presumably to some but not all subforms of NEW-FORM. Any subforms of NEW-FORM that are not present in the SOURCE mapping will be given DEFAULT as their source location if provided; DEFAULT must be a source location as returned by EXT:STREAM-SOURCE-LOCATION or EXT:CURRENT-SOURCE-LOCATION, and defaults to the latter."
+  ;; This function is basically like CST:RECONSTRUCT. It has this
+  ;; interface in case we ever go back to using something like CSTs.
+  ;; Imagine for example we've read a form and now want to wrap it in a
+  ;; lambda expression: `(lambda () ,form). If the SOURCE for FORM is a
+  ;; CST, passing this lambda expression and that CST would not work,
+  ;; because the compiler would refer to the CST rather than the form
+  ;; and choke on the non-lambda-expression it was given.
+  ;; SOURCE being a hash table, as it is, does not have this particular
+  ;; issue, but it's nice to be able to augment with a default.
+  (check-type source hash-table)
+  (let ((new-source (make-hash-table :test #'eq)))
+    ;; copy the old source map
+    (maphash (lambda (k v) (setf (gethash k new-source) v)) source)
+    ;; install defaults
+    (when default
+      (check-type default core:source-pos-info)
+      (labels ((default (subform)
+                 (unless (gethash subform new-source)
+                   (setf (gethash subform new-source) default)
+                   ;; cycle checking is handled by the above UNLESS
+                   (when (consp subform)
+                     (default (car subform))
+                     (default (cdr subform))))))
+        (default new-form)))
+    new-source))

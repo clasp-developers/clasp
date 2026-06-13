@@ -169,14 +169,14 @@ template <typename Sig, typename Pols, typename Pointer, typename T> class WRAPP
 
 namespace clbind {
 template <typename ConstructorPtrType, typename Policies, typename Pointer, typename ConstructType>
-class WRAPPER_Constructor_O : public core::SimpleFun_O {};
+class WRAPPER_Constructor_O : public core::XepSimpleFun_O {};
 
 template <typename... ARGS, typename Policies, typename Pointer, typename ConstructType>
 class WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType>
-    : public core::SimpleFun_O {
+    : public core::XepSimpleFun_O {
 public:
   typedef WRAPPER_Constructor_O<constructor<ARGS...>, Policies, Pointer, ConstructType> MyType;
-  typedef core::SimpleFun_O TemplatedBase;
+  typedef core::XepSimpleFun_O TemplatedBase;
   typedef Wrapper<ConstructType, Pointer> WrapperType;
 
 public:
@@ -184,7 +184,7 @@ public:
   virtual const char* describe() const { return "VariadicConstructorFunctor"; };
   enum { NumParams = sizeof...(ARGS) };
   WRAPPER_Constructor_O(core::FunctionDescription_sp fdesc)
-    : core::SimpleFun_O(fdesc, nil<core::T_O>(), core::XepStereotype<MyType>()){};
+    : core::XepSimpleFun_O(fdesc, nil<core::T_O>(), core::XepStereotype<MyType>()){};
   virtual size_t templatedSizeof() const { return sizeof(*this); };
 
   static inline LCC_RETURN entry_point_n(core::T_O* lcc_closure, size_t lcc_nargs,

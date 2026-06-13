@@ -68,11 +68,6 @@
 
 (defvar *compile-file-output-pathname* nil)
 
-(defun compile-file-source-pos-info (stream)
-  (core:input-stream-source-pos-info
-   stream *compile-file-file-scope*
-   *compile-file-source-debug-lineno* *compile-file-source-debug-offset*))
-
 (defun compile-file (input-file
                      &rest args
                      &key
