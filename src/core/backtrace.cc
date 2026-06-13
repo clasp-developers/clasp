@@ -469,17 +469,37 @@ static bool recover_args_from_trampoline_frame(void* bytecode_call_fbp,
   return true;
 }
 
+// Recover (nargs, args) from the bytecode frame's own VM-stack slots. These
+// are pushed by bytecode_call at fixed offsets below fp (see bytecode.cc):
+// nargs as a fixnum at fp - BYTECODE_FRAME_NARGS_OFFSET, the arg pointer at
+// fp - BYTECODE_FRAME_ARGS_OFFSET. Unlike the trampoline path, the closure is
+// not stored here, so this only yields the arguments. bfp is the VM frame
+// pointer for the bytecode frame. Used as a fallback when bytecode was invoked
+// directly from C++ (no trampoline frame to recover from).
+static bool recover_args_from_vm_frame(T_O** bfp, size_t& out_nargs, T_O**& out_args) {
+  if (!bfp) return false;
+  T_sp tnargs((gctools::Tagged) * (bfp - BYTECODE_FRAME_NARGS_OFFSET));
+  if (!tnargs.fixnump()) return false;
+  size_t nargs = tnargs.unsafe_fixnum();
+  if (nargs > 256) return false; // same sanity bound as the trampoline path
+  out_nargs = nargs;
+  out_args = (T_O**)*(bfp - BYTECODE_FRAME_ARGS_OFFSET);
+  return true;
+}
+
 static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp fun, void* bpc, T_O** bfp,
                                                            void* bytecode_call_fbp) {
   // We can get the closure easy if the function actually isn't one.
   T_sp closure = (fun->environmentSize() == 0) ? (T_sp)fun : nil<T_O>();
   List_sp bindings = bytecode_bindings_for_pc(fun->code(), bpc, bfp);
   T_sp spi = bytecode_spi_for_pc(fun->code(), bpc);
-  // Recover arguments from the parent trampoline frame's saved-arg area.
-  // The VM stack also has nargs/args at fp - BYTECODE_FRAME_NARGS_OFFSET /
-  // ARGS_OFFSET (pushed by bytecode_call for the chain walk), but the
-  // trampoline path also yields the closure and works uniformly for every
-  // bytecode_call C frame.
+  // Recover arguments. The parent trampoline frame's saved-arg area is the
+  // preferred source: it also yields the closure and works uniformly for every
+  // bytecode_call C frame reached through an arena trampoline. When bytecode is
+  // invoked directly from C++ (no trampoline frame), fall back to the nargs/args
+  // slots bytecode_call pushes onto the VM stack at fp - BYTECODE_FRAME_NARGS_OFFSET
+  // / ARGS_OFFSET. The VM-stack fallback can't recover the closure, so that stays
+  // whatever `fun` gave us.
   ql::list largs;
   bool args_available = false;
   T_sp tramp_closure;
@@ -487,11 +507,15 @@ static DebuggerFrame_sp make_bytecode_frame_from_function(BytecodeSimpleFun_sp f
   T_O** argptr = nullptr;
   if (recover_args_from_trampoline_frame(bytecode_call_fbp, tramp_closure, nargs, argptr)) {
     if (closure.nilp()) closure = tramp_closure;
+    args_available = true;
+  } else if (recover_args_from_vm_frame(bfp, nargs, argptr)) {
+    args_available = true;
+  }
+  if (args_available) {
     for (size_t i = 0; i < nargs; ++i) {
       T_sp temp((gctools::Tagged)argptr[i]);
       largs << temp;
     }
-    args_available = true;
   }
   return DebuggerFrame_O::make(fun->functionName(), Pointer_O::create(bpc), spi, fun->fdesc(),
                                closure, largs.cons(), args_available, bindings,
@@ -610,8 +634,8 @@ static DebuggerFrame_sp make_cxx_frame(size_t fi, void* ip, const char* cstring,
                                INTERN_(kw, c_PLUS__PLUS_), false);
 }
 
-// Arena-trampoline frame: the PC lives in an mmap'd arena slot, so there's
-// no ObjectFile and no DWARF. The side table gives us the trampoline's name.
+// Arena-trampoline frame: the PC lives in an mmap'd arena slot.
+// The side table gives us the trampoline's name.
 // The trampoline IR saves (closure, nargs, args) to its own stack frame at
 // fixed negative offsets from rbp; recover them here so the frame shows the
 // call's arguments alongside the function name.

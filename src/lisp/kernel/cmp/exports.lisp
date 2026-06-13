@@ -47,7 +47,6 @@
           +c++-stamp-max+
           %opaque-fn-prototype*%
           fn-prototype
-          *btb-compile-hook*
           *compile-print*
           *current-function*
           *current-function-name*
@@ -389,5 +388,5 @@
 (export '(clasp-eclector-client-mixin))
 
 ;;; bytecode
-(export '(*compile-file-native*))
+(export '(btb-compile *compile-native* *compile-file-native*))
 ) ; eval-when

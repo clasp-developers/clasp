@@ -78,7 +78,20 @@
           else
             collect (multiple-value-bind (sub ?) (ext:macroexpand-all thing nenv)
                       (setq expandedp (or expandedp ?))
-                      sub)
+                      ;; If the macro expanded to an atom we need to
+                      ;; make sure it's not actually treated as a tag
+                      ;; by wrapping it in progn.
+                      ;; If it expanded into a non-tag atom we want to
+                      ;; add a progn, because tagbody technically only
+                      ;; accepts compound forms, so if we left the
+                      ;; expansion in we could turn a valid form into
+                      ;; an invalid one.
+                      ;; We don't do this unconditionally because
+                      ;; that would make the macroexpand-all output
+                      ;; a little uglier.
+                      (if (and ? (atom sub))
+                          `(progn ,sub)
+                          sub))
               into subs
           finally (return (values `(tagbody ,@subs) expandedp)))))
 

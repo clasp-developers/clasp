@@ -14,7 +14,8 @@
 ## Changed
 * Use Khazern extended for CL:LOOP
 * :output-type parameter to compile-file is replaced by :native. :native t will build a fasl with both bytecode and native versions of code. If :native is not provided, it defaults to `cmp:*compile-file-native*`.
-* Build modes are changed: :faso, :bytecode-faso, :fasoll, :fasobc, :fasl build modes are removed. Only :bytecode and the new :native can be used. :default-native is a new build flag that can be used to control whether the built Clasp will native-compile files by default.
+* `compile` can similarly be set to compile natively or to leave functions as bytecode with the `cmp:*compile-native*` variable.
+* Build modes are changed: :faso, :bytecode-faso, :fasoll, :fasobc, :fasl build modes are removed. Only :bytecode and the new :native can be used. :default-native is a new build flag that can be used to control whether the built Clasp will native-compile files and functions by default (i.e. it controls the default values of `cmp:*compile-file-native*` and `cmp:*compile-native*`.
 * The build procedure is completely rewritten, building Clasp's Lisp code using another Lisp implementation instead of boostrapping from the C++ Clasp.
 
 ## Fixed
@@ -26,6 +27,8 @@
 * `setf` of `apply` no longer has multiple evaluation problems.
 * Improve error messages for package name conflicts. Fixes #1722.
 * FASL loading is more resilient in the face of heavy file use and interruptions. Thanks @dg1sbg.
+* Writing non-base-chars into base strings by various means (e.g. `replace`) now signals an error instead of treating the low byte of the codepoint as a base char.
+* `ext:macroexpand-all` no longer allows macros to expand into tagbody tags.
 
 ## Removed
 * `-z`/`--snapshot-symbols-save` command line option, occasionally used
@@ -35,6 +38,7 @@
 
 ## Optimized
 * FASL loading batches reads more, improving load times. Thanks @dg1sbg.
+* Array copying operations like `subseq` and `replace` cons less.
 
 # Version 2.7.0 (LLVM15-19) 2025-01-21
 

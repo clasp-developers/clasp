@@ -10,8 +10,7 @@
 ;;; It's a hole for real first-class environment support.
 (defvar *environment* nil)
 
-;;; To be bound to cmp:*btb-compile-hook*
-(defun compile-hook (definition environment)
+(defun cmp:btb-compile (definition environment)
   (declare (ignore environment))
   (handler-case (compile-function definition)
     (error (e)

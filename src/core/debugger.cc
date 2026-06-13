@@ -265,10 +265,18 @@ void executableTextSectionRange(gctools::clasp_ptr_t& start, gctools::clasp_ptr_
 bool library_with_name(const std::string& name, bool isExecutable, std::string& libraryName, uintptr_t& start, uintptr_t& end,
                        uintptr_t& vtableStart, uintptr_t& vtableEnd) {
   WITH_READ_LOCK(debugInfo()._OpenDynamicLibraryMutex);
+  // Match libraries by basename. The recorded name can be an absolute path captured at snapshot-save
+  // time; if the library is later loaded from a different directory (a relocated/bundled install,
+  // or the target's /usr/lib vs a build path) we still want the library to be locatable here.
+  auto base_name = [](const std::string& p) -> std::string {
+    std::size_t slash = p.find_last_of('/');
+    return slash == std::string::npos ? p : p.substr(slash + 1);
+  };
+  const std::string nameBase = base_name(name);
   for (auto entry : debugInfo()._OpenDynamicLibraryHandles) {
     std::string libName = entry.second->_Filename;
     if (ExecutableLibraryInfo* eli = dynamic_cast<ExecutableLibraryInfo*>(entry.second)) {
-      if (isExecutable || (name.size() <= libName.size() && name == libName.substr(libName.size() - name.size()))) {
+      if (isExecutable || base_name(libName) == nameBase) {
         libraryName = eli->_Filename;
         start = (uintptr_t)(eli->_TextStart);
         end = (uintptr_t)(eli->_TextEnd);
@@ -279,7 +287,7 @@ bool library_with_name(const std::string& name, bool isExecutable, std::string& 
         return true;
       }
     } else {
-      if (name.size() <= libName.size() && name == libName.substr(libName.size() - name.size())) {
+      if (base_name(libName) == nameBase) {
         if (isExecutable) {
           printf("%s:%d:%s THERE IS A PROBLEM - The library %s is being searched for as Executable but it is not\n", __FILE__,
                  __LINE__, __FUNCTION__, name.c_str());

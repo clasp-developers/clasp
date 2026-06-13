@@ -3736,4 +3736,9 @@ llvm::raw_pwrite_stream* llvm_stream(core::T_sp stream, llvm::SmallString<1024>&
 
 core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr);
 
+JITDylib_sp loadModule(Module_sp module, size_t startupID, const std::string& libname);
+
+
+
+
 }; // namespace llvmo

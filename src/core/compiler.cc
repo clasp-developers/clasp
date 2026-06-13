@@ -201,8 +201,8 @@ void initializer_functions_invoke() {
 }
 
 // These functions are used to access a runtime module's literals vector.
-// The vector is a T_sp[]. This could possibly be done with some normal
-// CFFI accessor instead.
+// The vector is a T_sp[]. See also CODE-LITERAL in llvmo/code.cc,
+// which does the same but through the object file rather than a raw pointer.
 
 CL_DEFUN T_sp core__literals_vref(Pointer_sp lvec, size_t index) {
   return ((T_sp*)(lvec->ptr()))[index];
@@ -211,7 +211,12 @@ CL_DEFUN T_sp core__literals_vref(Pointer_sp lvec, size_t index) {
 CL_LISPIFY_NAME("core:literals_vref");
 CL_DEFUN_SETF T_sp core__literals_vset(T_sp val, Pointer_sp lvec, size_t index)
 {
+  // The literals vector lives in JIT (MAP_JIT) memory, which on Apple Silicon
+  // is write-protected (execute mode) by default; we must switch this thread to
+  // write mode around the store or it faults with a SIGBUS (KERN_PROTECTION_FAILURE).
+  llvmo::JITDataReadWriteMaybeExecute();
   ((T_sp*)(lvec->ptr()))[index] = val;
+  llvmo::JITDataReadExecute();
   return val;
 }
 

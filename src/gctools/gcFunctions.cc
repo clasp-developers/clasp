@@ -13,6 +13,7 @@
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/fileSystem.h>
 #include <clasp/core/evaluator.h>
+#include <clasp/core/unwind.h> // sjlj_throw (issue #1784 SLAD routing)
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTableEq.h>
 #include <clasp/core/lispStream.h>
@@ -457,8 +458,11 @@ The following &KEY arguments are defined:
 DOCGROUP(clasp);
 CL_DEFUN void gctools__save_lisp_and_die(core::String_sp filename, bool executable, bool testMemory) {
 #ifdef USE_PRECISE_GC
-  throw(snapshotSaveLoad::SaveLispAndDie(filename->get_std_string(), executable,
-                                         globals_->_Bundle->_Directories->_LibDir, true, snapshotSaveLoad::ForwardingEnum::noStomp, testMemory ));
+  snapshotSaveLoad::SaveLispAndDie sld(filename->get_std_string(), executable,
+                                       globals_->_Bundle->_Directories->_LibDir, true,
+                                       snapshotSaveLoad::ForwardingEnum::noStomp, testMemory);
+  snapshotSaveLoad::set_pending_save_lisp_and_die(sld);
+  core::sjlj_throw(snapshotSaveLoad::save_lisp_and_die_catch_tag());
 #else
   SIMPLE_ERROR("save-lisp-and-die only works for precise GC");
 #endif
@@ -798,9 +802,11 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 
   bool default_native = false;
 #ifdef USE_DEFAULT_NATIVE
+  INTERN_(comp, STARcompile_nativeSTAR)->defparameter(_lisp->_true());
   INTERN_(comp, STARcompile_file_nativeSTAR)->defparameter(_lisp->_true());
   default_native = true;
 #else
+  INTERN_(comp, STARcompile_nativeSTAR)->defparameter(nil<core::T_O>());
   INTERN_(comp, STARcompile_file_nativeSTAR)->defparameter(nil<core::T_O>());
 #endif
   if (buildReport)

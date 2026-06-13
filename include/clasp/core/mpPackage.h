@@ -39,8 +39,6 @@ FORWARD(ConditionVariable);
 }; // namespace mp
 
 namespace mp {
-struct ExitProcess {};
-struct AbortProcess {};
 
 #ifdef CLASP_THREADS
 /*! Keep track of binding indices for symbols */

@@ -56,6 +56,7 @@ THE SOFTWARE.
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/intrinsics.h>
 #include <clasp/llvmo/claspLinkPass.h>
+#include <clasp/llvmo/code.h> // JITDataReadWriteMaybeExecute / JITDataReadExecute (W^X)
 #include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
 #include <clasp/core/pathname.h>
@@ -64,6 +65,7 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/llvmo/trampolineWork.h>
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/unwind.h> // sizeof dynenvs
@@ -89,6 +91,7 @@ SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, min);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, max);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, and);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, or);
+
 
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
@@ -545,6 +548,148 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
 }; // namespace llvmo
 
 
+namespace llvmo {
+
+NEVER_OPTIMIZE
+gctools::return_type unknown_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc, closure, nargs, args);
+}
+
+NEVER_OPTIMIZE
+gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
+  return bytecode_call(pc, closure, nargs, args);
+}
+};
+
+#if 0
+namespace llvmo {
+
+std::atomic<size_t> global_trampoline_counter;
+#ifdef CLASP_THREADS
+mp::Mutex* global_trampoline_mutex = NULL;
+#endif
+
+string escapeNameForLlvm(const string& inp) {
+  stringstream sout;
+  stringstream sin(inp);
+  char c;
+  while (1) {
+    sin.get(c);
+    if (!sin.good())
+      break;
+    switch (c) {
+    case '"':
+      sout << "_";
+      break;
+    default:
+      sout << c;
+    }
+  };
+  return sout.str();
+}
+
+CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
+  if (!global_options->_GenerateTrampolines
+      && !getenv("CLASP_ENABLE_TRAMPOLINES")) {
+      // If trampolines aren't enabled, don't compile one.
+    return Values(Pointer_O::create((void*)bytecode_call), SimpleBaseString_O::make("bytecode_call"));
+  }
+
+  // FIXME: race
+  if (global_trampoline_mutex == NULL) {
+    global_trampoline_mutex = new mp::Mutex(DISSASSM_NAMEWORD);
+  }
+  WITH_READ_WRITE_LOCK(*global_trampoline_mutex);
+  ClaspJIT_sp jit = llvm_sys__clasp_jit();
+  if (jit.nilp()) {
+    // If the JIT isn't ready then use the default trampoline
+    return Values(Pointer_O::create((void*)default_bytecode_trampoline), SimpleBaseString_O::make("default_bytecode_trampoline"));
+  }
+  if (tname.consp() && CONS_CAR(tname) == ::cl::_sym_lambda && CONS_CDR(tname).consp() && CONS_CAR(CONS_CDR(tname)).nilp()) {
+    return Values(Pointer_O::create((void*)lambda_nil), SimpleBaseString_O::make("lambda_nil"));
+  }
+
+  std::string name;
+  if (gc::IsA<core::Symbol_sp>(tname)) {
+    name = gc::As_unsafe<core::Symbol_sp>(tname)->fullName();
+  } else {
+    name = _rep_(tname);
+    // printf("%s:%d:%s trampoline name = |%s|\n", __FILE__, __LINE__, __FUNCTION__, name.c_str());
+    // fflush();
+    if (name[0] == '"' && name[name.size() - 1] == '"') {
+      if (name.size() < 3) { // matches ""
+        return Values(Pointer_O::create((void*)unknown_bytecode_trampoline),
+                      SimpleBaseString_O::make("unknown_bytecode_trampoline"));
+      }
+    }
+    name = name.substr(1, name.size() - 2); // Strip double quotes
+  }
+  name = escapeNameForLlvm(name) + "_bct" + std::to_string(global_trampoline_counter++);
+#if LLVM_VERSION_MAJOR < 21
+  LLVMContext_sp context = llvm_sys__thread_local_llvm_context();
+  std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
+  Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
+  JITDylib_sp jitDylib = loadModule(module, 0, "trampoline");
+  core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib, name);
+  return Values(bytecode_ptr, SimpleBaseString_O::make(name));
+#else
+  llvm::orc::ThreadSafeContext* tsc = ((llvm::orc::ThreadSafeContext*)gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue())->externalObject());
+  return tsc->withContextDo([&](llvm::LLVMContext *lc) {
+    auto context = gctools::GC<LLVMContext_O>::allocate();
+    context->_ptr = lc;
+    std::string trampoline = core::searchAndReplaceString(global_trampoline, "wrapper:name", name);
+    Module_sp module = llvm_sys__parseIRString(trampoline, context, "backtrace_trampoline");
+    JITDylib_sp jitDylib = loadModule(module, 0, "trampoline");
+    core::Pointer_sp bytecode_ptr = jit->lookup(jitDylib, name);
+    return Values(bytecode_ptr, SimpleBaseString_O::make(name));
+  });
+#endif
+}
+}; // namespace llvmo
+#endif
+
+
+
+namespace llvmo {
+
+// Compile callbacks for FFI.
+CL_DEFUN JITDylib_sp jit_module_to_dylib(Module_sp module, const std::string& libname) { return loadModule(module, 0, libname); }
+
+CL_DEFUN core::Pointer_sp jit_lookup(JITDylib_sp dylib, const std::string& name) {
+  return llvm_sys__clasp_jit()->lookup(dylib, name);
+}
+
+// Access a T_sp in a variable.
+CL_DEFUN core::T_sp jit_lookup_t(JITDylib_sp dylib, const std::string& name) {
+  void* ptr;
+  bool found = llvm_sys__clasp_jit()->do_lookup(dylib, name, ptr);
+  if (!found)
+    SIMPLE_ERROR("Could not find pointer for name |{}|", name);
+  core::T_O** tptr = (core::T_O**)ptr;
+  T_sp ret((gctools::Tagged)(*tptr));
+  return ret;
+}
+
+CL_LISPIFY_NAME("llvmo:jit-lookup-t");
+CL_DEFUN_SETF core::T_sp setf_jit_lookup_t(core::T_sp value, JITDylib_sp dylib, const std::string& name) {
+  void* ptr;
+  bool found = llvm_sys__clasp_jit()->do_lookup(dylib, name, ptr);
+  if (!found)
+    SIMPLE_ERROR("Could not find pointer for name |{}|", name);
+  core::T_O** tptr = (core::T_O**)ptr;
+  // The JIT'd global (e.g. an FFI callback's `callback-lisp-function-N`) lives in
+  // MAP_JIT memory, which on Apple Silicon is write-protected (execute mode) by
+  // default; switch this thread to write mode around the store or it faults with a
+  // SIGBUS (KERN_PROTECTION_FAILURE). This is the W^X store site that make-callback
+  // / %defcallback hits (the defcallback-native regression test); the other literal
+  // write sites are wrapped in compiler.cc / loadltv.cc.
+  JITDataReadWriteMaybeExecute();
+  *tptr = value.raw_();
+  JITDataReadExecute();
+  return value;
+}
+
+}; // namespace llvmo
 
 #ifdef USE_PRECISE_GC
 //
