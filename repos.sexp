@@ -80,7 +80,7 @@
   :directory "src/lisp/kernel/contrib/cffi/"
   :repository "https://github.com/cffi/cffi.git"
   :branch "master"
-  :commit "71fdf5d4864dd07a74534c953350041ceaa93f0e"
+  :commit "8e2928ee10d29b26e5a6048b2e784cc5f0a2da12"
   :pin 1)
  (:name :cl-bench
   :directory "dependencies/cl-bench/"
