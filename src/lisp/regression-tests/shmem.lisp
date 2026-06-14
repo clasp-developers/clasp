@@ -56,3 +56,27 @@
 (test-true shmem-pagesize
            (let ((p (clasp-posix:getpagesize)))
              (and (integerp p) (plusp p) (zerop (logand p (1- p))))))
+
+(test shmem-fork-ipc
+      (let ((name (%shm-name))
+            (size 4096)
+            (sentinel 7654321))
+        (unwind-protect
+             (let* ((m (clasp-posix:open-shared-memory name size :create t))
+                    (ptr (clasp-posix:mapping-pointer m)))
+               (clasp-ffi:%mem-set ptr :uint32 0 0)
+               (finish-output)
+               (finish-output *error-output*)
+               (multiple-value-bind (stream pid) (clasp-posix:fork nil)
+                 (declare (ignore stream))
+                 (cond
+                   ((zerop pid)
+                    (clasp-ffi:%mem-set ptr :uint32 sentinel 0)
+                    (core:cexit 0))
+                   (t
+                    (clasp-posix:wait)
+                    (prog1
+                        (clasp-ffi:%mem-ref ptr :uint32 0)
+                      (clasp-posix:close-shared-memory m))))))
+          (ignore-errors (clasp-posix:shm-unlink name))))
+      (7654321))
