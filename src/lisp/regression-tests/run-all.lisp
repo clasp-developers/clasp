@@ -23,6 +23,7 @@
     "array0"
     "tests01"
     "finalizers"
+    "shmem"
     "strings01"
     "cons01"
     "sequences01"
