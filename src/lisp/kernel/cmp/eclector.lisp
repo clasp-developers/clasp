@@ -304,7 +304,7 @@ EXT:STREAM-SOURCE-LOCATION can be used to get the current source location from t
 
 (init-clasp-as-eclector-reader)
 
-(defun patch-object (client value-old seen-objects)
+(defun patch-labeled-object (client value-old seen-objects)
   (multiple-value-bind (state object*)
       (eclector.reader:labeled-object-state client value-old)
     (case state
@@ -316,7 +316,7 @@ EXT:STREAM-SOURCE-LOCATION can be used to get the current source location from t
 
 (defmethod eclector.reader:fixup (client (object core:cxx-object) seen-objects)
   (let ((patcher (core:make-record-patcher (lambda (object)
-                                             (patch-object client object seen-objects)))))
+                                             (patch-labeled-object client object seen-objects)))))
     (core:patch-object object patcher)))
 
 (defvar *source-client* (make-instance 'clasp-tracking-eclector-client))
