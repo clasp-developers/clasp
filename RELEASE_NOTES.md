@@ -1,4 +1,4 @@
-# Version 2.8.0 (LLVM15-20, 22) Pending
+# Version 3.0.0 (LLVM15-20, 22) 2026-06-18
 
 ## Added
 * Support for LLVM20 and LLVM22. LLVM21 is excluded due to API incompatibility.
