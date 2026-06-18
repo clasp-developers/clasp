@@ -74,6 +74,7 @@
   :directory "extensions/cando/"
   :repository "https://github.com/cando-developers/cando.git"
   :branch "main"
+  :commit "1c59697bc985e76e573aa344a0fc3838c42f3a7d"
   :pin 0)
  (:name :cffi
   :extension :cando
@@ -133,6 +134,7 @@
   :directory "src/lisp/kernel/contrib/Cleavir/"
   :repository "https://github.com/s-expressionists/Cleavir.git"
   :branch "main"
+  :commit "933594679da2771f52c274b65202145e6650c3b2"
   :pin 0)
  (:name :closer-mop
   :directory "src/lisp/kernel/contrib/closer-mop/"
@@ -324,11 +326,13 @@
   :directory "extensions/seqan-clasp/"
   :repository "https://github.com/clasp-developers/seqan-clasp.git"
   :branch "main"
+  :commit "3970cef84b2045633d8d3fe9757a0c6d449fc345"
   :pin 0)
  (:name :shasht
   :directory "dependencies/shasht/"
   :repository "https://github.com/yitzchak/shasht.git"
   :branch "master"
+  :commit "fb9706e710ccc68b77f6afd98c270590d22c2a08"
   :pin 0)
  (:name :split-sequence
   :directory "src/lisp/kernel/contrib/split-sequence/"
