@@ -47,6 +47,18 @@
 #include <clasp/core/sampling_profiler.h>
 #include <clasp/llvmo/trampoline_arena.h>
 #include <elf.h>
+#endif
+#if defined(CLASP_APPLE_SILICON)
+#include <pthread.h>                  // pthread_jit_write_protect_np
+#include <libkern/OSCacheControl.h>   // sys_icache_invalidate
+#endif
+
+// macOS arm64 enforces W^X: MAP_ANONYMOUS pages cannot be PROT_EXEC and writable
+// at once unless mapped with MAP_JIT, after which writability is toggled per
+// thread via pthread_jit_write_protect_np. Linux/x86-64 has no such flag.
+#if !defined(MAP_JIT)
+#define MAP_JIT 0
+#endif
 
 // ============================================================================
 // GDB JIT interface — allows GDB to resolve trampoline frames with symbol
@@ -118,7 +130,13 @@ const TrampolineEntry* TrampolineSideTable::find(uintptr_t pc) const {
 // libgcc unwind-info registration. The pointer passed to __register_frame
 // must remain valid for the registration's lifetime — each arena slot holds
 // its own CIE+FDE inline, so that's automatic (slots are never freed).
+//
+// ELF/libgcc only. macOS ships libunwind, whose __register_frame takes a single
+// FDE and walks differently; our pcrel|sdata4 CIE/FDE blobs are composed for the
+// libgcc sequence-walk-until-terminator contract, so we skip registration there.
+#if defined(_TARGET_OS_LINUX)
 extern "C" void __register_frame(const void* begin);
+#endif
 
 ExecutableArena::ExecutableArena(const uint8_t* tramp_bytes, size_t tramp_size,
                                  const uint8_t* cie_bytes,   size_t cie_len,
@@ -151,7 +169,7 @@ uint8_t* ExecutableArena::allocate() {
   if (!_current_page || _current_offset + _slot_stride > _page_size) {
     void* p = mmap(nullptr, _page_size,
                    PROT_READ | PROT_WRITE | PROT_EXEC,
-                   MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                   MAP_PRIVATE | MAP_ANONYMOUS | MAP_JIT, -1, 0);
     if (p == MAP_FAILED) {
       perror("[trampoline-arena] mmap");
       abort();
@@ -164,11 +182,23 @@ uint8_t* ExecutableArena::allocate() {
   }
 
   uint8_t* slot = _current_page + _current_offset;
+#if defined(CLASP_APPLE_SILICON)
+  // Drop the per-thread W^X write-protect so this MAP_JIT page is writable,
+  // copy the template, re-enable execute protection, then flush the I-cache so
+  // the CPU sees the freshly written instructions.
+  pthread_jit_write_protect_np(false);
   std::memcpy(slot, _slot_template.data(), _slot_stride);
+  pthread_jit_write_protect_np(true);
+  sys_icache_invalidate(slot, _slot_stride);
+#else
+  std::memcpy(slot, _slot_template.data(), _slot_stride);
+#endif
+#if defined(_TARGET_OS_LINUX)
   // Register this slot's CIE+FDE with libgcc. The CIE starts at
   // slot + _tramp_size; the FDE follows; the 4B zero terminator after the
   // FDE stops libgcc's classify walk.
   __register_frame(slot + _tramp_size);
+#endif
   _current_offset += _slot_stride;
   return slot;
 }
@@ -190,12 +220,15 @@ namespace {
 
 // Forward declarations for GDB JIT ELF builder (defined below, after the
 // arena instances, so that they sit next to the perf_map code they parallel).
+// The GDB JIT ELF image is ELF-only; on non-Linux targets it's omitted.
+#if defined(_TARGET_OS_LINUX)
 static std::pair<char*, size_t>
 build_gdb_jit_elf(uintptr_t code_addr, size_t code_size,
                   uintptr_t eh_frame_addr,
                   const uint8_t* eh_frame_bytes, size_t eh_frame_size,
                   const std::string& name);
 static void gdb_jit_register(const char* elf_buf, size_t elf_size);
+#endif
 
 class TrampolineArenaInstance {
 public:
@@ -250,13 +283,15 @@ public:
     // distances that are constant within the slot layout).
     _side_table->append(TrampolineEntry{slot, (uint32_t)_tramp_size, name});
     perf_map_append(slot, _tramp_size, name);
-    // Build minimal ELF and register with GDB JIT interface
+#if defined(_TARGET_OS_LINUX)
+    // Build minimal ELF and register with GDB JIT interface (ELF/libgcc only).
     size_t ef_size = _arena->eh_frame_size();
     auto [elf_buf, elf_sz] = build_gdb_jit_elf(
         (uintptr_t)slot, _tramp_size,
         (uintptr_t)(slot + _tramp_size), slot + _tramp_size, ef_size,
         name);
     gdb_jit_register(elf_buf, elf_sz);
+#endif
     int n = _debug_count.fetch_add(1);
     if (n < 3) {
       fprintf(stderr, "[trampoline-arena] %s compile #%d '%s' -> %p\n",
@@ -310,6 +345,7 @@ std::mutex            g_perf_map_lock;
 //   [after symtab]:     strtab content       (1 + name.size() + 1)
 //   [after strtab]:     eh_frame content     (CIE + FDE + terminator)
 
+#if defined(_TARGET_OS_LINUX)
 static std::pair<char*, size_t>
 build_gdb_jit_elf(uintptr_t code_addr, size_t code_size,
                   uintptr_t eh_frame_addr,
@@ -439,6 +475,8 @@ static void gdb_jit_register(const char* elf_buf, size_t elf_size) {
   __jit_debug_descriptor.action_flag    = JIT_REGISTER_FN;
   __jit_debug_register_code();
 }
+
+#endif
 
 }  // anonymous namespace
 
