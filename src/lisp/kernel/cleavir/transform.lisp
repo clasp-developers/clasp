@@ -40,10 +40,6 @@
   (ctype:values-conjoin *clasp-system*
                         (bir:ctype datum) (bir:asserted-type datum)))
 
-(defun arg-subtypep (arg ctype)
-  (ctype:subtypep (ctype:primary (asserted-ctype arg) *clasp-system*)
-                  ctype *clasp-system*))
-
 (defun lambda->birfun (module lambda-expression)
   (let (;; FIXME: We should be harsher with errors here,
         ;; since deftransforms are part of the compiler, and not the
@@ -121,7 +117,7 @@
     ((system clasp) key (call bir:mv-call))
   (let ((transforms (gethash key *bir-transformers*)))
     (if transforms
-        (loop with argstype = (bir:ctype (second (bir:inputs call)))
+        (loop with argstype = (asserted-ctype (second (bir:inputs call)))
               for (transform . vtype) in transforms
               when (ctype:values-subtypep argstype vtype *clasp-system*)
                 do (with-transform-declining
