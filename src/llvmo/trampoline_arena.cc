@@ -46,7 +46,9 @@
 #include <clasp/core/pointer.h>
 #include <clasp/core/sampling_profiler.h>
 #include <clasp/llvmo/trampoline_arena.h>
+#if defined(_TARGET_OS_LINUX)
 #include <elf.h>
+#endif
 
 // ============================================================================
 // GDB JIT interface — allows GDB to resolve trampoline frames with symbol
