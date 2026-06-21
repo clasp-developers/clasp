@@ -599,8 +599,11 @@ ClaspJIT_O::ClaspJIT_O() {
 #if LLVM_VERSION_MAJOR < 22
           .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES, const Triple& TT) {
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-            ObjLinkingLayer->addPlugin(
-                std::make_unique<EHFrameRegistrationPlugin>(ES, std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
+            // issue #1782: see the LLVM>=22 branch below — EHFrameRegistrationPlugin deletes __compact_unwind on MachO,
+            // which is the only unwind info for arm64-darwin native code. Only register it for non-MachO (ELF).
+            if (!TT.isOSBinFormatMachO())
+              ObjLinkingLayer->addPlugin(
+                  std::make_unique<EHFrameRegistrationPlugin>(ES, std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
             // GDB registrar isn't working at the moment
             if (!getenv("CLASP_NO_GDB_JIT")) {
@@ -617,7 +620,14 @@ ClaspJIT_O::ClaspJIT_O() {
 #else
           .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES) {
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
-            ObjLinkingLayer->addPlugin(ExitOnErr(orc::EHFrameRegistrationPlugin::Create(ES)));
+            // issue #1782: On MachO (Apple) native code unwinds via compact-unwind/__unwind_info, NOT eh-frame
+            // (clasp's arm64-darwin objects carry no __eh_frame). EHFrameRegistrationPlugin's MachO path inserts a
+            // front PrePrune pass that DELETES the __LD,__compact_unwind section before CompactUnwindManager can
+            // synthesize __TEXT,__unwind_info, so native frames end up with no runtime unwind info and a C++ throw
+            // cannot unwind across them (mp:abort aborts). Only register it for non-MachO (ELF .eh_frame); on MachO
+            // the default platform's UnwindInfoRegistrationPlugin handles compact-unwind correctly.
+            if (!ES.getTargetTriple().isOSBinFormatMachO())
+              ObjLinkingLayer->addPlugin(ExitOnErr(orc::EHFrameRegistrationPlugin::Create(ES)));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
             if (!getenv("CLASP_NO_GDB_JIT")) {
               Error TargetSymErr = Error::success();
