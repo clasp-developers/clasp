@@ -374,6 +374,21 @@ Optimizations are available for any of:
 
 (deftransform-type-predicate compiled-function-p compiled-function)
 
+;;; on clasp, eq of fixnums and singles and characters is ok
+;;; (i.e. is eql)
+;;; And of course pointers are tagged differently from fixnums and
+;;; characters, so raw comparison can't have any false positives.
+;;; Doubles and longs and bignums are boxed.
+;;; FIXME: conditionalize on compiler parameters?
+(deftransform eql (((x (or fixnum short-float single-float character
+                           (not number)))
+                    (y t)))
+  '(eq x y))
+(deftransform eql (((x t)
+                    (y (or fixnum short-float single-float character
+                           (not number)))))
+  '(eq x y))
+
 (deftransform equal (((x number) (y t))) '(eql x y))
 (deftransform equal (((x t) (y number))) '(eql x y))
 (deftransform equalp (((x number) (y number))) '(= x y))
