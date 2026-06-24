@@ -387,7 +387,7 @@
   :commit "df07d50bbc71c32a6ca62ce062f66e11011945e9"
   :pin 1)
  (:name :trivial-package-local-nicknames
-  :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames"
+  :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames/"
   :repository "https://github.com/phoe/trivial-package-local-nicknames.git"
   :branch "master"
   :commit "8a4d09c1c5cb2b5349aecbd796164433df7a6cc5"
