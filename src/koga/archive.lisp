@@ -32,8 +32,8 @@
                   (run-program (format nil "git archive --output=~a --format=tar --prefix=~a~a ~a"
                                        temp-path prefix directory
                                        (if tag
-                                           (or (getf source :branch)
-                                               (getf source :commit))
+                                           (or (getf source :commit)
+                                               (getf source :branch))
                                            "HEAD"))
                                :directory directory)
                   (run-program (format nil "tar --concatenate --file ~a ~a"
