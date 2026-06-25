@@ -449,6 +449,20 @@ Optimizations are available for any of:
 
 (deftransform-type-predicate random-state-p random-state)
 
+(macrolet ((def (comparator yes no)
+             `(deftransform ,comparator (((a1 real) (a2 real)) :argstype args)
+                (with-transformer-types (a1 a2) args
+                  (let ((interval1 (type-approximate-interval a1 *clasp-system*))
+                        (interval2 (type-approximate-interval a2 *clasp-system*)))
+                    (cond ((,yes interval1 interval2) 't)
+                          ((,no interval1 interval2) 'nil)
+                          (t (decline-transform "unable to fold by intervals"))))))))
+  (def core:two-arg-=  interval-=  interval-/=)
+  (def core:two-arg-<  interval-<  interval->=)
+  (def core:two-arg-<= interval-<= interval->)
+  (def core:two-arg->  interval->  interval-<=)
+  (def core:two-arg->= interval->= interval-<))
+
 (macrolet ((define-two-arg-f (name)
              `(progn
                 (deftransform ,name (((a1 single-float) (a2 double-float)))
