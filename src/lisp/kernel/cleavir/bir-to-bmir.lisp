@@ -187,6 +187,8 @@
 (deftransform-f error (constantly 'type-error) (constantly t)
   (4 2) t (eql type-error) (eql :expected-type) t (eql :datum) t)
 
+(deftransform eq eq t t)
+
 (deftransform core:to-single-float core::double-to-single double-float)
 (deftransform core:to-single-float core::fixnum-to-single fixnum)
 (deftransform core:to-double-float core::single-to-double single-float)

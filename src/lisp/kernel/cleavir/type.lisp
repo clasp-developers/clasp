@@ -214,6 +214,24 @@
             (values nil nil)))
       (values nil nil)))
 
+;;; Reduce a type to a single interval. This is general worse than the original
+;;; type, e.g. (or (integer 0 4) (integer 12 19)) would become (integer 0 19),
+;;; but single intervals are way easier to work with.
+(defun type-approximate-interval (type sys)
+  (cond ((ctype:rangep type sys)
+         (range->interval type sys))
+        ((ctype:disjunctionp type sys)
+         (reduce #'interval-merge
+                 (loop for st in (ctype:disjunction-ctypes type sys)
+                       collect (type-approximate-interval st sys))
+                 :initial-value (make-empty-interval)))
+        ((ctype:conjunctionp type sys)
+         (reduce #'interval-intersect
+                 (loop for st in (ctype:conjunction-ctypes type sys)
+                       collect (type-approximate-interval st sys))
+                 :initial-value (make-unbounded-interval)))
+        (t (make-unbounded-interval)))) ; unknown
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (4) TYPES AND CLASSES
@@ -382,6 +400,20 @@
 
 (define-deriver random-state-p (object)
   (derive-type-predicate object 'random-state *clasp-system*))
+
+(macrolet ((def (comparator yes no)
+             `(define-deriver ,comparator (num1 num2)
+                (sv (let* ((sys *clasp-system*)
+                           (interval1 (type-approximate-interval num1 sys))
+                           (interval2 (type-approximate-interval num2 sys)))
+                      (cond ((,yes interval1 interval2) (ctype:member sys t))
+                            ((,no interval1 interval2) (ctype:member sys nil))
+                            (t (ctype:member sys t nil))))))))
+  (def core:two-arg-=  interval-=  interval-/=)
+  (def core:two-arg-<  interval-<  interval->=)
+  (def core:two-arg-<= interval-<= interval->)
+  (def core:two-arg->  interval->  interval-<=)
+  (def core:two-arg->= interval->= interval-<))
 
 (defun contagion (ty1 ty2)
   (ecase ty1

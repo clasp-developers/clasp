@@ -1,3 +1,8 @@
+# Version 3.1.0 (LLVM15-20, 22) Pending
+
+## Optimized
+* Comparisons (`eq`, `<`, etc.) are optimized out based on type information.
+
 # Version 3.0.1 (LLVM15-20, 22) 2026-06-24
 
 ## Fixed
