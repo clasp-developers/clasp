@@ -374,11 +374,47 @@ Optimizations are available for any of:
 
 (deftransform-type-predicate compiled-function-p compiled-function)
 
-(deftransform equal (((x number) (y t))) '(eql x y))
-(deftransform equal (((x t) (y number))) '(eql x y))
+;;; If the types of the arguments are disjoint, EQ (and EQL) are false.
+;;; (This is not generally true of EQUAL and EQUALP; consider e.g.
+;;;  the type (EQL "foo") compared to a distinct string "foo")
+(deftransform eq (((x t) (y t)) :argstype args)
+  (with-transformer-types (x y) args
+    (if (ctype:disjointp x y *clasp-system*)
+        'nil
+        (decline-transform "types not disjoint"))))
+
+(deftransform eql (((x t) (y t)) :argstype args)
+  (with-transformer-types (x y) args
+    (if (ctype:disjointp x y *clasp-system*)
+        'nil
+        (decline-transform "types not disjoint"))))
+;;; on clasp, eq of fixnums and singles and characters is ok
+;;; (i.e. is eql)
+;;; And of course pointers are tagged differently from fixnums and
+;;; characters, so raw comparison can't have any false positives.
+;;; Doubles and longs and bignums are boxed.
+;;; FIXME: conditionalize on compiler parameters?
+(deftransform eql (((x (or fixnum short-float single-float (not number)))
+                    (y t)))
+  '(eq x y))
+(deftransform eql (((x t)
+                    (y (or fixnum short-float single-float (not number)))))
+  '(eq x y))
+
+(deftransform equal (((x (not (or cons string bit-vector pathname
+                                  number character)))
+                      (y t)))
+  '(eq x y))
+(deftransform equal (((x t) (y (not (or cons string bit-vector pathname
+                                        number character)))))
+  '(eq x y))
+(deftransform equal (((x (not (or cons string bit-vector pathname))) (y t)))
+  '(eql x y))
+(deftransform equal (((x t) (y (not (or cons string bit-vector pathname)))))
+  '(eql x y))
 (deftransform equalp (((x number) (y number))) '(= x y))
 
-(deftransform equal (((x character) (y character))) '(char= x y))
+(deftransform equal (((x character) (y character))) '(eq x y))
 (deftransform equalp (((x character) (y character))) '(char-equal x y))
 
 #+(or) ; string= is actually slower atm due to keyword etc processing
@@ -412,6 +448,20 @@ Optimizations are available for any of:
 (deftransform-type-predicate core:fixnump fixnum)
 
 (deftransform-type-predicate random-state-p random-state)
+
+(macrolet ((def (comparator yes no)
+             `(deftransform ,comparator (((a1 real) (a2 real)) :argstype args)
+                (with-transformer-types (a1 a2) args
+                  (let ((interval1 (type-approximate-interval a1 *clasp-system*))
+                        (interval2 (type-approximate-interval a2 *clasp-system*)))
+                    (cond ((,yes interval1 interval2) 't)
+                          ((,no interval1 interval2) 'nil)
+                          (t (decline-transform "unable to fold by intervals"))))))))
+  (def core:two-arg-=  interval-=  interval-/=)
+  (def core:two-arg-<  interval-<  interval->=)
+  (def core:two-arg-<= interval-<= interval->)
+  (def core:two-arg->  interval->  interval-<=)
+  (def core:two-arg->= interval->= interval-<))
 
 (macrolet ((define-two-arg-f (name)
              `(progn

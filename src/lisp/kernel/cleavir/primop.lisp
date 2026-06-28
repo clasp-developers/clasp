@@ -112,6 +112,12 @@
 (defvprimop-intrinsic core::etypecase-error ((:object) :object :object)
   "cc_etypecase_error")
 
+(defvprimop (eq :flags (:flushable))
+    ((:boolean) :object :object) (inst)
+  (assert (= 2 (length (bir:inputs inst))))
+  (cmp:irc-icmp-eq
+   (in (first (bir:inputs inst))) (in (second (bir:inputs inst)))))
+
 (macrolet ((def-float-compare (sfname dfname op reversep)
              `(progn
                 (deftprimop ,sfname (:single-float :single-float)
