@@ -1,3 +1,14 @@
+# Version 3.1.0 (LLVM15-20, 22) Pending
+
+## Optimized
+* Comparisons (`eq`, `<`, etc.) are optimized out based on type information.
+
+# Version 3.0.1 (LLVM15-20, 22) 2026-06-24
+
+## Fixed
+* Fixes the archive tarball which was broken for 3.0.0. Thanks @fosskers for noticing.
+* Archive mechanism now properly uses the pinned commits rather than git branches.
+
 # Version 3.0.0 (LLVM15-20, 22) 2026-06-18
 
 ## Added

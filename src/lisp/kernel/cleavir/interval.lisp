@@ -5,6 +5,9 @@
   (low nil :type (or null real (cons real null)))
   (high nil :type (or null real (cons real null))))
 
+(defun make-unbounded-interval () (make-interval nil nil))
+(defun make-empty-interval () (make-interval '(0) '(0)))
+
 (defun bound-parts (finite-bound)
   (if (consp finite-bound)
       (values (car finite-bound) t)
@@ -21,6 +24,27 @@
     (let ((r (funcall unop b)))
       (if bxp (list r) r))))
 
+(defun empty-interval-p (interval)
+  (let ((low (interval-low interval)) (high (interval-high interval)))
+    (and low high
+         (multiple-value-bind (low lxp) (bound-parts low)
+           (multiple-value-bind (high hxp) (bound-parts high)
+             (or (> low high) (and (= low high) (or lxp hxp))))))))
+
+(defun intervals-disjoint-p (i1 i2)
+  (let ((i1l (interval-low i1)) (i2l (interval-low i2))
+        (i1h (interval-high i1)) (i2h (interval-high i2)))
+    (or (and i1h i2l
+             (multiple-value-bind (i1high i1hxp) (bound-parts i1h)
+               (multiple-value-bind (i2low i2lxp) (bound-parts i2l)
+                 (or (< i1high i2low)
+                     (and (= i1high i2low) (or i1hxp i2lxp))))))
+        (and i2h i1l
+             (multiple-value-bind (i2high i2hxp) (bound-parts i2h)
+               (multiple-value-bind (i1low i1lxp) (bound-parts i1l)
+                 (or (< i2high i1low)
+                     (and (= i2high i1low) (or i2hxp i1lxp)))))))))
+
 (defun interval+ (i1 i2)
   (make-interval
    (let ((l1 (interval-low i1)) (l2 (interval-low i2)))
@@ -34,6 +58,27 @@
      (if high (finite-bound-unop #'- high) nil))
    (let ((low (interval-low interval)))
      (if low (finite-bound-unop #'- low) nil))))
+
+(defun interval-= (i1 i2)
+  (let ((i1l (interval-low i1)) (i2l (interval-low i2))
+        (i1h (interval-high i1)) (i2h (interval-high i2)))
+    (and (realp i1l) (realp i2l) (realp i1h) (realp i2h)
+         (= i1l i2l i1h i2h))))
+(defun interval-/= (i1 i2) (intervals-disjoint-p i1 i2))
+
+(defun interval-< (i1 i2)
+  (let ((i1h (interval-high i1)) (i2l (interval-low i2)))
+    (and i1h i2l
+         (multiple-value-bind (i1high i1hxp) (bound-parts i1h)
+           (multiple-value-bind (i2low i2lxp) (bound-parts i2l)
+             (or (< i1high i2low)
+                 (and (= i1high i2low) (or i1hxp i2lxp))))))))
+(defun interval-<= (i1 i2)
+  (let ((i1h (interval-high i1)) (i2l (interval-low i2)))
+    (and i1h i2l (<= (bound-parts i1h) (bound-parts i2l)))))
+
+(defun interval-> (i1 i2) (interval-< i2 i1))
+(defun interval->= (i1 i2) (interval-<= i2 i1))
 
 ;; Return -1 if the number is below the interval, 1 if above, 0 if in the interval.
 (defun interval-num-compare (interval num)
@@ -64,16 +109,34 @@
 (defun interval-merge (i1 i2)
   ;; Return the smallest interval including both input intervals.
   ;; If the inputs do not intersect, this will not be a strict join.
+  (labels ((lbmin (b1 b2)
+             (cond ((not b1) b1)
+                   ((not b2) b2)
+                   (t (multiple-value-bind (b1 xp1) (bound-parts b1)
+                        (multiple-value-bind (b2 xp2) (bound-parts b2)
+                          (if (and xp1 xp2) (list (min b1 b2)) (min b1 b2)))))))
+           (hbmax (b1 b2)
+             (cond ((not b1) b1)
+                   ((not b2) b2)
+                   (t (multiple-value-bind (b1 xp1) (bound-parts b1)
+                        (multiple-value-bind (b2 xp2) (bound-parts b2)
+                          (if (and xp1 xp2) (list (max b1 b2)) (max b1 b2))))))))
+    (make-interval (lbmin (interval-low i1) (interval-low i2))
+                   (hbmax (interval-high i1) (interval-high i2)))))
+
+(defun interval-intersect (i1 i2)
+  ;; Return the smallest interval included by both input intervals.
+  ;; If the inputs do not intersect, this will be empty.
   (labels ((fb< (b1 b2)
              (multiple-value-bind (b1 xp1) (bound-parts b1)
                (multiple-value-bind (b2 xp2) (bound-parts b2)
                  (or (< b1 b2) (and (= b1 b2) xp1 (not xp2))))))
-           (lbmin (b1 b2)
-             (if (and b2 (or (not b1) (fb< b1 b2))) b1 b2))
-           (hbmax (b1 b2)
-             (if (and b1 (or (not b2) (fb< b1 b2))) b2 b1)))
-    (make-interval (lbmin (interval-low i1) (interval-low i2))
-                   (hbmax (interval-high i1) (interval-high i2)))))
+           (lbmax (b1 b2)
+             (if (and b2 (or (not b1) (fb< b1 b2))) b2 b1))
+           (hbmin (b1 b2)
+             (if (and b1 (or (not b2) (fb< b1 b2))) b1 b2)))
+    (make-interval (lbmax (interval-low i1) (interval-low i2))
+                   (hbmin (interval-high i1) (interval-high i2)))))
 
 ;; Multiply a positive interval by any interval.
 (defun interval*-1-pos (i1 i2)
