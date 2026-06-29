@@ -319,6 +319,14 @@ Optimizations are available for any of:
                                                     :datum v
                                                     :expected-type ',ctype))))))
 
+(defun constant-type (client type)
+  (if (ctype:member-p client type)
+      (let ((members (ctype:member-members client type)))
+        (if (= (length members) 1)
+            (values (first members) t)
+            (values nil nil)))
+      (values nil nil)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (4) TYPES AND CLASSES
@@ -332,39 +340,36 @@ Optimizations are available for any of:
   (with-transformer-types (object tspec &optional env) args
     (declare (ignore env))
     (let ((sys *clasp-system*))
-      (if (and (ctype:member-p sys tspec)
-               (= (length (ctype:member-members sys tspec)) 1))
-          (let* ((tspec (first (ctype:member-members sys tspec)))
-                 (type (env:parse-type-specifier tspec nil sys)))
-            (cond ((ctype:subtypep object type sys) 't)
-                  ((ctype:disjointp object type sys) 'nil)
-                  (t
-                   (decline-transform "TODO")
-                   #+(or)
+      (multiple-value-bind (tspec valid) (constant-type sys tspec)
+        (if valid
+            (let ((type (env:parse-type-specifier tspec nil sys)))
+              (cond ((ctype:subtypep object type sys) 't)
+                    ((ctype:disjointp object type sys) 'nil)
+                    (t
+                     (decline-transform "TODO")
+                     #+(or)
                    (maybe-expand-typep type 'object))))
-          (decline-transform "non-constant type specifier")))))
+            (decline-transform "non-constant type specifier"))))))
 
 (deftransform core::%the-single (((tspec t) (value t)) :argstype args)
   (with-transformer-types (tspec value) args
     (declare (ignore value))
     (let ((sys *clasp-system*))
-      (if (and (ctype:member-p sys tspec)
-               (= (length (ctype:member-members sys tspec)) 1))
-          (let ((tspec (first (ctype:member-members sys tspec))))
-            `(the (values ,tspec &rest nil) value))
-          ;; the-single is only used internally, so a failure here is weird
-          (decline-transform "BUG: non-constant type specifier")))))
+      (multiple-value-bind (tspec valid) (constant-type sys tspec)
+        (if valid
+            `(the (values ,tspec &rest nil) value)
+            ;; the-single is only used internally, so a failure here is weird
+            (decline-transform "BUG: non-constant type specifier"))))))
 (deftransform core::%the-single-return
     (((tspec t) (value t) (return t)) :argstype args)
   (with-transformer-types (tspec value return) args
     (declare (ignore value return))
     (let ((sys *clasp-system*))
-      (if (and (ctype:member-p sys tspec)
-               (= (length (ctype:member-members sys tspec)) 1))
-          (let ((tspec (first (ctype:member-members sys tspec))))
-            `(progn (the (values ,tspec &rest nil) value) return))
-          ;; the-single is only used internally, so a failure here is weird
-          (decline-transform "BUG: non-constant type specifier")))))
+      (multiple-value-bind (tspec valid) (constant-type sys tspec)
+        (if valid
+            `(progn (the (values ,tspec &rest nil) value) return)
+            ;; the-single is only used internally, so a failure here is weird
+            (decline-transform "BUG: non-constant type specifier"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -650,22 +655,22 @@ Optimizations are available for any of:
     (declare (ignore dimensions displaced-index-offset
                      initial-element initial-contents))
     (let* ((sys *clasp-system*) (null (ctype:member sys nil)))
-      (if (and (ctype:member-p sys element-type)
-               (= (length (ctype:member-members sys element-type)) 1)
-               (ctype:subtypep adjustable null sys)
-               (ctype:subtypep fill-pointer null sys)
-               (ctype:subtypep displaced-to null sys)
-               (not diosp)
-               ;; Handle these later. TODO. For efficiency,
-               ;; this will probably mean inlining lambdas with &key.
-               ;; Or replacing the make-array with a reqargs-only function,
-               ;; more likely.
-               (and (null iesp) (null icsp)))
-          (let* ((uaet (upgraded-array-element-type
-                        (first (ctype:member-members sys element-type))))
-                 (make-sv (cmp::uaet-info uaet)))
-            `(,make-sv dimensions nil nil))
-          (decline-transform "making a complex array")))))
+      (multiple-value-bind (element-type valid)
+          (constant-type sys element-type)
+        (if (and valid
+                 (ctype:subtypep adjustable null sys)
+                 (ctype:subtypep fill-pointer null sys)
+                 (ctype:subtypep displaced-to null sys)
+                 (not diosp)
+                 ;; Handle these later. TODO. For efficiency,
+                 ;; this will probably mean inlining lambdas with &key.
+                 ;; Or replacing the make-array with a reqargs-only function,
+                 ;; more likely.
+                 (and (null iesp) (null icsp)))
+            (let* ((uaet (upgraded-array-element-type element-type))
+                   (make-sv (cmp::uaet-info uaet)))
+              `(,make-sv dimensions nil nil))
+            (decline-transform "making a complex array"))))))
 
 (deftransform aref (((arr vector) (index t))) '(row-major-aref arr index))
 (deftransform (setf aref) (((val t) (arr vector) (index t)))
