@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <llvm/Support/raw_ostream.h>
 #include "llvm/Support/InitLLVM.h"
 #include "llvm/InitializePasses.h"
+#include "llvm/Support/MemoryBuffer.h"
 #if 0
 #undef NDEBUG
 #include "llvm/Support/Debug.h"
@@ -58,13 +59,13 @@ THE SOFTWARE.
 #include <clasp/llvmo/code.h> // JITDataReadWriteMaybeExecute / JITDataReadExecute (W^X)
 #include <clasp/core/bytecode.h>
 #include <clasp/core/instance.h>
-#include <clasp/core/funcallableInstance.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unixfsys.h>
 #include <clasp/core/lispStream.h>
+#include <clasp/llvmo/trampolineWork.h>
 #include <clasp/core/array.h>
 #include <clasp/core/wrappers.h>
 #include <clasp/core/unwind.h> // sizeof dynenvs
@@ -91,19 +92,10 @@ SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, max);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, and);
 SYMBOL_SHADOW_EXPORT_SC_(LlvmoPkg, or);
 
+
 void redirect_llvm_interface_addSymbol() {
   //	llvm_interface::addSymbol = &addSymbolAsGlobal;
 }
-
-JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname) {
-  ClaspJIT_sp jit = llvm_sys__clasp_jit();
-  JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
-  //  printf("%s:%d:%s jit = %p  jitDylib = %p\n", __FILE__, __LINE__, __FUNCTION__, jit.raw_(), jitDylib.raw_() );
-  ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  jit->addIRModule(jitDylib, module, tsc, startupID);
-  return jitDylib;
-}
-
 DOCGROUP(clasp);
 CL_DEFUN core::SimpleBaseString_sp llvm_sys__mangleSymbolName(core::String_sp name) {
   ASSERT(cl__stringp(name));
@@ -553,19 +545,10 @@ void LlvmoExposer_O::expose(core::LispPtr lisp, core::Exposer_O::WhatToExpose wh
   }
 }
 
-/*!
-   Install a trampoline that spills registers onto the stack
-
-   The bytecode trampoline passes a PC.
-*/
-
 }; // namespace llvmo
 
-extern "C" {
-NEVER_OPTIMIZE
-gctools::return_type default_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
-  return bytecode_call(pc, closure, nargs, args);
-}
+
+namespace llvmo {
 
 NEVER_OPTIMIZE
 gctools::return_type unknown_bytecode_trampoline(unsigned char* pc, core::T_O* closure, uint64_t nargs, core::T_O** args) {
@@ -578,8 +561,8 @@ gctools::return_type lambda_nil(unsigned char* pc, core::T_O* closure, uint64_t 
 }
 };
 
+#if 0
 namespace llvmo {
-#include <trampoline.h>
 
 std::atomic<size_t> global_trampoline_counter;
 #ifdef CLASP_THREADS
@@ -663,6 +646,9 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
 #endif
 }
 }; // namespace llvmo
+#endif
+
+
 
 namespace llvmo {
 

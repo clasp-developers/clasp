@@ -1,6 +1,7 @@
 #pragma once
+
 /*
-    File: clasp_gmpxx.h
+    File: trampolineWork.h
 */
 
 /*
@@ -26,19 +27,17 @@ THE SOFTWARE.
 */
 /* -^- */
 
-/* Define a C++ GMP wrapper */
+#include <clasp/core/common.h>
 
-/* One one of the clusters I was building on (I'm going to guess the arm64)
-   I got a lot of these warnings so I'm adding this #pragma to silence them
-*/
-#ifdef __aarch64__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-literal-operator"
-#endif
-#include <gmpxx.h>
+namespace llvmo {
 
-#ifdef __arch64__
-#pragma clang diagnostic pop
-#endif
 
-typedef mpz_class Bignum;
+core::Pointer_mv cmp__compile_trampoline(core::T_sp name);
+
+// Per-generic-function trampoline. Returns the address of an arena slot that
+// tail-calls GFBytecodeEntryPoint::entry_point_n. Each GF gets a unique
+// address so flame charts and backtraces show its name instead of all GFs
+// sharing the static entry_point_n symbol.
+core::Pointer_sp cmp__compile_gf_trampoline(core::T_sp name);
+
+}; // namespace llvmo

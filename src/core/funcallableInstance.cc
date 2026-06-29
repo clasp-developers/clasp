@@ -44,6 +44,11 @@ THE SOFTWARE.
 #include <clasp/core/primitives.h>
 #include <clasp/core/singleDispatchMethod.h>
 #include <clasp/llvmo/intrinsics.h>
+#include <clasp/llvmo/trampoline_arena.h>
+#include <clasp/llvmo/trampolineWork.h> // cmp__compile_gf_trampoline
+#include <clasp/llvmo/llvmoPackage.h>
+#include <clasp/core/bytecode.h>
+#include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/core/funcallableInstance.h>
 #include <clasp/core/wrappers.h>
 #include <tuple>
@@ -482,6 +487,16 @@ public:
   }
 };
 
+// Exported pointer to GFBytecodeEntryPoint::entry_point_n so llvmoPackage.cc
+// can embed this address in the generic-function arena trampoline template
+// (the struct itself is local to this translation unit). Static-initialized
+// before any GF dispatcher is created, so the value is stable by the time
+// the arena init reads it.
+extern "C" {
+gctools::return_type (*g_gf_dispatch_entry_point_n)(T_O*, size_t, T_O**) =
+    &GFBytecodeEntryPoint::entry_point_n;
+}
+
 GFBytecodeSimpleFun_O::GFBytecodeSimpleFun_O(FunctionDescription_sp fdesc, unsigned int entryPcN, SimpleVector_byte8_t_sp bytecode,
                                              SimpleVector_sp literals, Function_sp generic_function, size_t specialized_length)
   : SimpleFun_O(fdesc, nil<T_O>(), XepStereotype<GFBytecodeEntryPoint>(specialized_length)),
@@ -501,6 +516,21 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   SimpleVector_sp literals = gc::As<SimpleVector_sp>(mv.third(compiled.number_of_values()));
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);
+
+  // Replace _EntryPoints[0] (initially set by XepStereotype to the static
+  // entry_point_n, which all GFs would share) with a per-GF arena trampoline
+  // so flame charts / perf-PID.map show the specific GF name. The trampoline
+  // tail-calls the same entry_point_n so dispatch semantics are unchanged.
+  Pointer_sp gf_tramp = llvmo::cmp__compile_gf_trampoline(name);
+  obj->_EntryPoints._EntryPoints[0] = (ClaspXepAnonymousFunction)gf_tramp->ptr();
+
+  // Register on the global list so the post-snapshot-load pass can walk
+  // every GFBytecodeSimpleFun and re-attach an arena trampoline. Atomic
+  // CAS-push to be safe under concurrent dispatch compilation.
+  T_sp old = _lisp->_Roots._AllGFBytecodeFuns.load(std::memory_order_relaxed);
+  Cons_sp newc = Cons_O::create(obj, old);
+  while (!_lisp->_Roots._AllGFBytecodeFuns.compare_exchange_weak(old, newc, std::memory_order_relaxed))
+    newc->setCdr(old);
   return obj;
 }
 
@@ -522,6 +552,24 @@ std::string GFBytecodeSimpleFun_O::__repr__() const {
 }
 
 void GFBytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) {
+  // _EntryPoints[0] points at a per-GF arena trampoline (set by make()).
+  // The arena slot's address won't survive a restart, so on save substitute
+  // the static GFBytecodeEntryPoint::entry_point_n forwarder address — that's
+  // a libclasp symbol the encoder can serialize. The post-load regen pass
+  // (arena_post_load_regenerate_trampolines) walks _AllGFBytecodeFuns and
+  // re-installs a fresh per-GF arena trampoline.
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp
+      && llvmo::arena_owns_pc((uintptr_t)this->_EntryPoints._EntryPoints[0].load(std::memory_order_relaxed))) {
+    this->_EntryPoints._EntryPoints[0].store(
+        (ClaspXepAnonymousFunction)g_gf_dispatch_entry_point_n, std::memory_order_relaxed);
+  }
+  // _Trampoline isn't actually invoked at runtime for GFBytecodeSimpleFun
+  // (dispatch goes through entry_point_n via _EntryPoints[0]), but keep the
+  // substitution as defense-in-depth in case anything ever reads the field.
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp
+      && llvmo::arena_owns_pc((uintptr_t)this->_Trampoline)) {
+    this->_Trampoline = (BytecodeTrampolineFunction)bytecode_call;
+  }
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline);
   this->Base::fixupInternalsForSnapshotSaveLoad(fixup);
 }

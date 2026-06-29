@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <clasp/core/wrappers.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/trampoline_arena.h>
 
 namespace core {
 
@@ -86,8 +87,13 @@ bool SimpleFun_O::dladdrablep(std::set<void*>& uniques) {
     for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii) {
       void* address = (void*)this->_EntryPoints._EntryPoints[ii].load(std::memory_order_relaxed);
       if (!uniques.contains(address)) {
-        Dl_info info;
         uniques.insert(address);
+        // Entry points that land in an arena trampoline slot are not
+        // backed by any loaded image, so dladdr necessarily fails on
+        // them. The arena's side table keeps their names, which is the
+        // symbolic-attainability this check is really about — accept.
+        if (llvmo::arena_owns_pc((uintptr_t)address)) continue;
+        Dl_info info;
         if (dladdr(address, &info) == 0)
           return false;
       }
@@ -153,6 +159,24 @@ void BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fi
   // function pointers installed, and that they're properly relative
   // to the native ObjectFile.
   T_sp code = entryPoint()->_Code;
+  // Arena trampolines live in mmap'd pages whose addresses won't exist after
+  // a restart, so they can't be encoded as a stable library/code reference.
+  // Substitute the default bytecode_call (a libclasp symbol the encoder can
+  // handle) before the standard fixup runs; the post-load pass in llvmo
+  // (arena_post_load_regenerate_trampolines) re-attaches a fresh arena
+  // trampoline if the user is running with the arena backend.
+  if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp
+      && llvmo::arena_owns_pc((uintptr_t)this->_Trampoline)) {
+    static std::atomic<size_t> s_subbed{0};
+    size_t n = s_subbed.fetch_add(1) + 1;
+    if (n <= 3 || (n % 10000) == 0) {
+      fprintf(stderr,
+              "[trampoline-arena] save-side substitute #%zu '%s' was %p -> bytecode_call\n",
+              n, _rep_(this->functionName()).c_str(), (void*)this->_Trampoline);
+      fflush(stderr);
+    }
+    this->_Trampoline = (BytecodeTrampolineFunction)bytecode_call;
+  }
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline, code);
   for (size_t ii = 0; ii < ClaspXepFunction::Entries; ++ii)
     this->fixupOneCodePointer(fixup, (void**)&this->_EntryPoints._EntryPoints[ii], code);

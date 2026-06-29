@@ -135,5 +135,10 @@
           stream-source-location with-source-tracking
           read-source augment-source eval-source compile-source
           ;; Misc
-          printing-char-p))
+          printing-char-p
+          register-command-line-option
+          unregister-command-line-option
+          print-extension-command-line-help
+          process-extension-command-line-arguments
+          with-flame-profile))
 ) ; eval-when

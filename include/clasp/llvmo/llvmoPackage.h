@@ -65,9 +65,8 @@ bool llvm_sys__load_bc(core::Pathname_sp filename, bool verbose, bool print, cor
 
 ClaspJIT_sp llvm_sys__clasp_jit();
 
+
 void initialize_llvm();
 void initialize_ClaspJIT();
-
-core::Pointer_mv cmp__compile_trampoline(core::T_sp name);
 
 }; // namespace llvmo

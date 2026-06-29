@@ -1,5 +1,6 @@
 (k:sources :libclasp
            #~"dummy.cc"
+           #~"sampling_profiler.cc"
            #~"mpPackage.cc"
            #~"nativeVector.cc"
            #~"evaluator.cc"
@@ -109,6 +110,3 @@
            #~"hwinfo.cc"
            #~"clasp_ffi_package.cc"
            #~"fli.cc")
-
-(k:sources :trampoline
-           #~"trampoline/trampoline.cc")
