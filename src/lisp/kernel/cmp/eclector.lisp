@@ -329,7 +329,7 @@ If EOF-ERROR-P is NIL and the stream hits EOF, the first value will be ELF-VALUE
   (let ((eclector.reader:*client*
           (if environment
               (make-instance 'cmp::clasp-alternate-env-client
-                :environment *environment*)
+                :environment environment)
               *source-client*))
         (*source-locations* (make-hash-table :test #'eq)))
     (values (eclector.parse-result:read eclector.reader:*client*
