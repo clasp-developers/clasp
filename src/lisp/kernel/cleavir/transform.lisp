@@ -364,6 +364,14 @@ Optimizations are available for any of:
                     (t (decline-transform "unimplemented"))))
             (decline-transform "non-constant type specifier"))))))
 
+(deftransform core:coerce-to-function (((object function))) 'object)
+(deftransform core:coerce-to-function (((object function-name)))
+  '(fdefinition object))
+(deftransform core:coerce-to-function (((object lambda-expression)))
+  '(eval object))
+
+(deftransform core::coerce-to-list (((x list))) 'x)
+
 (deftransform core::%the-single (((tspec t) (value t)) :argstype args)
   (with-transformer-types (tspec value) args
     (declare (ignore value))
@@ -555,6 +563,10 @@ Optimizations are available for any of:
 (deftransform float (((v double-float) (proto double-float))) 'v)
 (deftransform float ((v (proto double-float))) '(core:to-double-float v))
 (deftransform core:to-double-float (((v double-float))) 'v)
+#+short-float
+(deftransform core:to-short-float (((v short-float))) 'v)
+#+long-float
+(deftransform core:to-long-float (((v long-float))) 'v)
 
 ;;;
 
@@ -618,6 +630,8 @@ Optimizations are available for any of:
 (deftransform standard-char-p (((object standard-char))) 't)
 (deftransform standard-char-p (((object (and character (not standard-char)))))
   'nil)
+
+(deftransform character (((object character))) 'object)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
