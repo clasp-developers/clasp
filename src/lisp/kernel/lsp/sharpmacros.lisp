@@ -133,4 +133,5 @@
 (sharpmacros-enhance *readtable*)
 (sharpmacros-enhance (symbol-value 'core:+standard-readtable+))
 
-(defvar +native-readtable+ (copy-readtable core:+standard-readtable+))
+(defvar +native-readtable+
+  (copy-readtable (symbol-value 'core:+standard-readtable+)))
