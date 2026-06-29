@@ -515,13 +515,16 @@
                     ;; type, it is returned, and otherwise a type-error
                     ;; is signaled. Nonetheless, if we reach here with a
                     ;; constant type, it's either undefined or does not
-                    ;; have a coercion defined (e.g. INTEGER), which would
-                    ;; be a weird thing to do. So we signal a style-warning.
-                    ;; FIXME: We should differentiate "not defined" and
-                    ;; "no coercion behavior", though.
-                    ;; And maybe "can't figure it out at compile time but
-                    ;; will at runtime".
-                    (cmp:warn-cannot-coerce nil type) ; FIXME
+                    ;; have a coercion defined (e.g. INTEGER).
+                    ;; Code like that can sometimes be generated, e.g.
+                    ;; Khazern is quite fond of (coerce whatever 'real),
+                    ;; and we don't want to warn about that. What we really
+                    ;; want to warn about is a type unknown to the compiler,
+                    ;; maybe, and definitely cases where coerce cannot succeed.
+                    ;; The latter however relies on type inference, e.g.
+                    ;; coercing to REAL when the value is inferred to not be
+                    ;; a number. So no warning here. FIXME, do in transforms.
+                    ;;(cmp:warn-cannot-coerce nil type) ; FIXME
                     whole)))))))))
 ) ; eval-when
 
