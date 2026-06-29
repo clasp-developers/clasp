@@ -1400,6 +1400,12 @@ if not possible."
   ;; One easy case: types are equal
   (when (eq t1 t2)
     (return-from subtypep (values t t)))
+  ;; another easy and common case: everything is a subtype of T,
+  ;; and NIL is a subtype of everything. This is required for conformance
+  ;; reasons, and practicality, even if the below code fails
+  ;; (as it does for example on nontrivial cons types).
+  (when (or (eq t1 nil) (eq t2 't))
+    (return-from subtypep (values t t)))
   ;; Another easy case: types are classes.
   (when (and (clos::classp t1) (clos::classp t2))
     (return-from subtypep (values (subclassp t1 t2) t)))
