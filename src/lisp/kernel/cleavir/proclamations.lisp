@@ -33,7 +33,9 @@
 (deftype declaration-specifier () '(cons symbol))
 
 (deftype type-specifier ()
-  '(or symbol (cons symbol) class))
+  ;; could be (cons symbol) but our subtypep chokes, and this type is
+  ;; necessarily imprecise anyway
+  '(or symbol cons class))
 
 (deftype maybe (type) `(or null ,type))
 
