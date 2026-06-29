@@ -351,6 +351,19 @@ Optimizations are available for any of:
                    (maybe-expand-typep type 'object))))
             (decline-transform "non-constant type specifier"))))))
 
+(deftransform coerce (((object t) (tspec t)) :argstype args)
+  (with-transformer-types (object tspec) args
+    (let ((sys *clasp-system*))
+      (multiple-value-bind (tspec validp) (constant-type sys tspec)
+        (if validp
+            (let ((type (env:parse-type-specifier tspec nil sys)))
+              (cond ((ctype:subtypep object type sys) 'object)
+                    ;; here's where we could warn on invalid coerce, but
+                    ;; we don't want to do that every meta-evaluate run
+                    ;; TODO/FIXME
+                    (t (decline-transform "unimplemented"))))
+            (decline-transform "non-constant type specifier"))))))
+
 (deftransform core::%the-single (((tspec t) (value t)) :argstype args)
   (with-transformer-types (tspec value) args
     (declare (ignore value))
