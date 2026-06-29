@@ -477,8 +477,7 @@
         (case head
           ((t) (da 'object))
           ((character base-char) (da `(character object)))
-          ;; make sure we don't convert other floats
-          ((float) (da `(if (floatp object) object (float object))))
+          ((float) (da `(float object)))
           #+short-float
           ((short-float) (da `(core:to-short-float object)))
           ((#-short-float short-float single-float)
