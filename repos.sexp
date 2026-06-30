@@ -43,9 +43,8 @@
  (:name :alexandria
   :directory "src/lisp/kernel/contrib/alexandria/"
   :repository "https://github.com/Bike/alexandria.git"
-  :branch "lambda-list-fix"
-  :commit "eb2a170a07899bfcb51b023d05687b5c4aacaae6"
-  :pin 1)
+  :branch "master"
+  :pin 0)
  (:name :anaphora
   :extension :cando
   :directory "src/lisp/kernel/contrib/anaphora/"
@@ -198,13 +197,13 @@
   :directory "src/lisp/kernel/contrib/Ecclesia/"
   :repository "https://github.com/s-expressionists/Ecclesia.git"
   :branch "main"
-  :commit "c66d4d57843396b35bac257128a401c1ddb954a1"
+  :commit "3b3f78800ae959dd902f61f2c42ef6439ac5188c"
   :pin 1)
  (:name :eclector
   :directory "src/lisp/kernel/contrib/Eclector/"
   :repository "https://github.com/s-expressionists/Eclector.git"
   :branch "master"
-  :commit "b2b22cdf7f011a805959d761c571029e1223380f"
+  :commit "f30dacd2f9bce393529958315da4c632aee5e46b"
   :pin 1)
  (:name :esrap
   :directory "src/lisp/kernel/contrib/esrap/"
@@ -287,8 +286,7 @@
   :directory "src/lisp/kernel/contrib/Maclina/"
   :repository "https://github.com/s-expressionists/Maclina.git"
   :branch "main"
-  :commit "d92e9254b45da4e508503b984f02403c6fb6677a"
-  :pin 1)
+  :pin 0)
  (:name :mgl-pax
   :extension :cando
   :directory "src/lisp/kernel/contrib/mgl-pax/"
