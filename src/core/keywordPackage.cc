@@ -36,6 +36,9 @@ THE SOFTWARE.
 
 namespace kw {
 
+SYMBOL_EXPORT_SC_(KeywordPkg, significand_size);
+SYMBOL_EXPORT_SC_(KeywordPkg, exponent_size);
+SYMBOL_EXPORT_SC_(KeywordPkg, implementation_type);
 SYMBOL_EXPORT_SC_(KeywordPkg, FullDebug);
 SYMBOL_EXPORT_SC_(KeywordPkg, LineTablesOnly);
 SYMBOL_EXPORT_SC_(KeywordPkg, UnsignedByte);

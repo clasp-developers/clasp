@@ -20,6 +20,7 @@ template <uint16_t ExponentWidth, uint16_t SignificandWidth> struct float_traits
                                             std::conditional_t<storage_width <= 32, uint32_t,
                                                                std::conditional_t<storage_width <= 64, uint64_t, __uint128_t>>>>;
   static constexpr uint_t hidden_bit = has_hidden_bit ? uint_t{1} << (significand_width - 1) : uint_t{0};
+  static constexpr uint_t non_hidden_bit = (!has_hidden_bit) ? uint_t{1} << (significand_width - 1) : uint_t{0};
   static constexpr uint16_t exponent_shift = storage_width - sign_width - exponent_width;
   static constexpr uint16_t sign_shift = storage_width - sign_width;
   static constexpr uint_t significand_mask = (uint_t{1} << (significand_width + ((has_hidden_bit) ? -1 : 0))) - uint_t{1};
@@ -78,7 +79,7 @@ template <typename Float> struct float_convert {
         q.significand = q.significand << shift;
         q.exponent = 1 - Traits::exponent_bias - shift;
       }
-    } else if (q.significand == 0) {
+    } else if (q.significand == Traits::non_hidden_bit) {
       q.category = category::infinity;
     } else if (q.significand & Traits::nan_type_mask) {
       q.category = category::quiet_nan;
@@ -99,7 +100,7 @@ template <typename Float> struct float_convert {
 
     switch (q.category) {
     case category::infinity:
-      b |= Traits::exponent_mask;
+      b |= Traits::exponent_mask | Traits::non_hidden_bit;
       break;
     case category::quiet_nan:
       b |= Traits::exponent_mask | Traits::nan_type_mask | (q.significand & Traits::payload_mask);
@@ -149,7 +150,7 @@ template <typename Float> struct float_convert {
         if (exponent > Traits::max_exponent) {
           feraiseexcept(FE_OVERFLOW);
           // Return +/- infinity if traps masked.
-          return b | Traits::exponent_mask;
+          return b | Traits::exponent_mask | Traits::non_hidden_bit;
         }
 
         if (std::bit_width(significand) < Traits::significand_width) {

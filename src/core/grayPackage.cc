@@ -65,15 +65,7 @@ SYMBOL_EXPORT_SC_(GrayPkg, stream_write_byte);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_write_char);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_write_sequence);
 SYMBOL_EXPORT_SC_(GrayPkg, stream_write_string);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, close);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, input_stream_p);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, open_stream_p);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, output_stream_p);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, pathname);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, stream_element_type);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, stream_external_format);
 SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, streamp);
-SYMBOL_SHADOW_EXPORT_SC_(GrayPkg, truename);
 
 void initialize_grayPackage() {
   list<string> lnicknames;
