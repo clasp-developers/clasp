@@ -9,7 +9,6 @@
     ("EOT"    . #.(code-char 4))
     ("ENQ"    . #.(code-char 5))
     ("ACK"    . #.(code-char 6))
-    ("BELL"   . #.(code-char 7))
     ("BEL"    . #.(code-char 7))
     ("BS"     . #.(code-char 8))
     ("HT"     . #.(code-char 9))
