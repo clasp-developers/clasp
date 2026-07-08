@@ -151,6 +151,7 @@ private:
   static void weak_shim(gctools::WeakPointer* weak, Fixer&& fix) {
     std::optional<core::T_sp> v = weak->value_no_lock();
     if (v) {
+#ifdef USE_BOEHM
       core::T_O* raw = v->raw_();
       fix(&raw);
       // Store it back in the weak pointer - this is needed for when the
@@ -158,6 +159,9 @@ private:
       // alter pointers.
       // Do not change the pointer outside of image save/load.
       weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
+#else
+      fix((core::T_O**)&weak->_value);
+#endif
     }
   }
 
@@ -165,12 +169,19 @@ private:
   static void eph_shim(gctools::Ephemeron* eph, Fixer&& fix) {
     auto kv = eph->get_no_lock();
     if (!kv.key.deletedp()) {
+#ifdef USE_BOEHM
       core::T_O* rkey = kv.key.raw_();
       core::T_O* rval = kv.value.raw_();
       fix(&rkey); fix(&rval);
       // See comment on weak pointers above.
       eph->reinit_no_lock(core::T_sp((gctools::Tagged)rkey),
                           core::T_sp((gctools::Tagged)rval));
+#else
+      // FIXME: do we need the deletedp check before this? I don't think so?
+      // Resolve once things are stable with MMTk
+      fix((core::T_O**)&eph->_key);
+      fix((core::T_O**)&eph->_value);
+#endif
     }
   }
 
