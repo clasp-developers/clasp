@@ -158,6 +158,15 @@ void clasp_dealloc(char* buffer) {
 namespace gctools {
 
 bool is_memory_readable(const void* address, size_t bytes) {
+  return true;
+  // The below tests memory readability by doing several syscalls; write(2) returns
+  // EFAULT if the memory is not writable by the process, i.e. we'd segfault if we
+  // tried it. Performing this test is _extremely_ expensive compared to everything
+  // else we do to test object validity, so only enable this if you're desperate.
+  // A better test would probably be to install a segfault handler temporarily and
+  // write into memory ourselves (like *address = 0). That would avoid the pipe and
+  // write, but you'd still need to mess around with signals.
+  /*
   int fd[2];
   int ret = pipe(fd);
   if (ret == -1) {
@@ -177,6 +186,7 @@ bool is_memory_readable(const void* address, size_t bytes) {
     // Memory is readable
     return true;
   }
+*/
 }
 
 }; // namespace gctools
