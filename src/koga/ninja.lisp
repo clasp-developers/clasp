@@ -879,7 +879,10 @@
                                                 (build-name "generated" :gc :boehm)
                                                 (make-source "analyzer.stub" :variant-lib))
                          :sif analyzer-sif
-                         :outputs (list (build-name "analyze")))
+                         :outputs (if ext
+                                      (list (build-name "analyze") analyzer-sif)
+                                      (list (build-name "analyze")))
+                         )
       (when ext
         (ninja:write-build output-stream :diff-sif
                            :clasp (wrap-with-env configuration (make-source "iclasp" :variant))
