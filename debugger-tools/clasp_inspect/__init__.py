@@ -591,6 +591,8 @@ class SimpleCharacterString_O(Array_O):
         return self._String
     def __repr__(self):
         return "%s[%s]" % (self._className,self._String)
+    def __str__(self):
+        return "\"%s\"" % self._String
 
 class SimpleBaseString_O(Array_O):
     def __init__(self,debugger,tptr):
