@@ -1,3 +1,4 @@
+(in-package #:clasp-tests)
 
 ;;; Stack bounds sanity checks.
 ;;; Verify that the stack pointer used for GC lies within the thread's
