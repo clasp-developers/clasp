@@ -8,6 +8,7 @@
 ## Fixed
 * Fixes the archive tarball which was broken for 3.0.0. Thanks @fosskers for noticing.
 * Archive mechanism now properly uses the pinned commits rather than git branches.
+* Bad warning call in Khazern [#1803].
 
 # Version 3.0.0 (LLVM15-20, 22) 2026-06-18
 
@@ -459,3 +460,4 @@ conversations with him.
 [#1392]: https://github.com/clasp-developers/clasp/issues/1392
 [#1398]: https://github.com/clasp-developers/clasp/issues/1398
 [#1404]: https://github.com/clasp-developers/clasp/issues/1404
+[#1803]: https://github.com/clasp-developers/clasp/issues/1803
