@@ -260,7 +260,7 @@
   :directory "src/lisp/kernel/contrib/Khazern/"
   :repository "https://github.com/s-expressionists/Khazern.git"
   :branch "master"
-  :commit "b926748b4c7df7401914e1dedb31989dfc3123f2"
+  :commit "9f52a3ccbf90c886859d3c709b0f754065af3476"
   :pin 1)
  (:name :let-plus
   :extension :cando
