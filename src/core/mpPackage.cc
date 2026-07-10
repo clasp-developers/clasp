@@ -488,7 +488,9 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   if (process->phase() == Nascent)
     ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process));
   if (process->phase() != Exited) {
-    pthread_join(process->_TheThread._value, NULL);
+    BEGIN_PARK {
+      pthread_join(process->_TheThread._value, NULL);
+    } END_PARK;
   }
   if (process->_Aborted)
     ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process, kw::_sym_original_condition,
