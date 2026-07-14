@@ -175,7 +175,7 @@
     (symbol (cross-clasp:find-compiler-class spec))
     ((cons (eql eql) (cons (cons (eql quote) (cons t null)) null))
      (intern-eql-specializer (second (second spec))))
-    ((cons (eql eql) (cons (not (or cons symbol)) null)) ; (eql [self-evaluating])
+    ((cons (eql eql) (cons (or keyword null (eql t) (not (or cons symbol))) null)) ; (eql [self-evaluating])
      (intern-eql-specializer (second spec)))
     ((cons (eql eql) (cons t null))
      (error "Can't handle evaluated EQL specializer: ~a" spec))))

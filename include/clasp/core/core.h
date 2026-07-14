@@ -51,24 +51,31 @@ namespace core {
 #ifdef USE_SHORT_FLOAT
 #define CLASP_SHORT_FLOAT
 #define CLASP_SHORT_FLOAT_BINARY16
+#define SYM_SHORT_FLOAT_IMPL cl::_sym_short_float
 typedef _Float16 short_float_t;
 #else
+#define SYM_SHORT_FLOAT_IMPL cl::_sym_single_float
 typedef float short_float_t;
 #endif
 
+#define SYM_SINGLE_FLOAT_IMPL cl::_sym_single_float
 typedef float single_float_t;
 
+#define SYM_DOUBLE_FLOAT_IMPL cl::_sym_double_float
 typedef double double_float_t;
 
 #if defined(USE_LONG_FLOAT) && LDBL_MANT_DIG == 64
 #define CLASP_LONG_FLOAT
 #define CLASP_LONG_FLOAT_BINARY80
+#define SYM_LONG_FLOAT_IMPL cl::_sym_long_float
 typedef long double long_float_t;
 #elif defined(USE_LONG_FLOAT) && LDBL_MANT_DIG == 113
 #define CLASP_LONG_FLOAT
 #define CLASP_LONG_FLOAT_BINARY128
+#define SYM_LONG_FLOAT_IMPL cl::_sym_long_float
 typedef long double long_float_t;
 #else
+#define SYM_LONG_FLOAT_IMPL cl::_sym_double_float
 typedef double long_float_t;
 #endif
 };

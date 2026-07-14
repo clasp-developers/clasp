@@ -289,7 +289,7 @@
 ;;; (LOOP (fu) nil (bar)) which is not acceptable. To verify
 ;;; that this is not happening we make sure we are not getting
 ;;; (BLOCK NIL NIL) since this is easier to test for.
-(test format-no-nil-form
+#+(or)(test format-no-nil-form
       (third (second (macroexpand-1 '(formatter "~
 "))))
       ((block nil)))

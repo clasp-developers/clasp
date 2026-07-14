@@ -10,6 +10,9 @@
 ;;;;    See file '../Copyright' for full details.
 ;;;;        The CLOS IO library.
 
+#+building-clasp
+(ext:add-implementation-package '("GRAY") "CL")
+
 (in-package "GRAY")
 
 (unexport '(%close
@@ -35,11 +38,7 @@
 ;;;
 ;;; This is the generic function interface for CLOS streams.
 ;;;
-;;; The following is a port of SBCL's implementation of Gray Streams. Minor
-;;; caveats with respect to the proposal are that we rather keep CLOSE,
-;;; STREAM-ELEMENT-TYPE, INPUT-STREAM-P, OUTPUT-STREAM-P and OPEN-STREAM-P
-;;; these as normal functions that call the user extensible EXT:STREAM-{CLOSE,
-;;; ELT-TYPE, INPUT-P, OUTPUT-P, OPEN-P}.
+;;; The following is a port of SBCL's implementation of Gray Streams.
 ;;;
 
 (defgeneric stream-advance-to-column (stream column)
@@ -145,7 +144,6 @@ truename."))
   (:documentation "Return the stream line length or NIL."))
 
 (defgeneric stream-listen (stream)
-  #+sb-doc
   (:documentation
    "This is used by LISTEN. It returns true or false. The default method uses
   STREAM-READ-CHAR-NO-HANG and STREAM-UNREAD-CHAR. Most streams should
@@ -282,7 +280,6 @@ truename."))
   will be read, or NIL if that is not meaningful for this stream.
   The first line is numbered 1. The default method returns NIL."))
 
-
 ;;;
 ;;; Our class hierarchy looks like the one from Gray streams
 ;;;
@@ -334,7 +331,6 @@ truename."))
     (fundamental-output-stream fundamental-binary-stream)
   ())
 
-
 ;;;
 ;;; The following methods constitute default implementations.
 ;;;
@@ -349,15 +345,13 @@ truename."))
 (defmethod stream-advance-to-column ((stream ansi-stream) column)
   (%stream-advance-to-column stream column))
 
-(defmethod stream-advance-to-column ((stream fundamental-character-output-stream)
-				     column)
+(defmethod stream-advance-to-column ((stream fundamental-character-output-stream) column)
   (let ((current-column (stream-line-column stream)))
     (when current-column
       (let ((fill (floor (- column current-column))))
 	(dotimes (i fill)
 	  (stream-write-char stream #\Space)))
       t)))
-
 
 ;; CLEAR-INPUT
 
@@ -890,52 +884,32 @@ truename."))
 
 ;;; Setup
 
-(core:defconstant-equal +conflicting-symbols+
-  '(cl:close
-    cl:stream-element-type
-    cl:stream-external-format
-    cl:input-stream-p
-    cl:open-stream-p
-    cl:output-stream-p
-    cl:streamp
-    cl:pathname
-    cl:truename))
+(defun redefine-cl-functions ())
 
-(defun redefine-cl-functions ()
-  "Some functions in CL package are expected to be generic. We make them so."
-  (provide '#:gray-streams)
-  (let ((lockedcl (ext:package-locked-p "COMMON-LISP")))
-    (ext:unlock-package "COMMON-LISP")
-    (loop with gray-package = (find-package "GRAY")
-          finally (when lockedcl (ext:lock-package "COMMON-LISP"))
-          for cl-symbol in '#.+conflicting-symbols+
-          for gray-symbol = (find-symbol (symbol-name cl-symbol) gray-package)
-          unless (typep (fdefinition cl-symbol) 'generic-function)
-            do (setf (fdefinition cl-symbol)
-                     (fdefinition gray-symbol))
-               (when (fboundp `(setf ,gray-symbol))
-                 (setf (fdefinition `(setf ,cl-symbol))
-                       (fdefinition `(setf ,gray-symbol))))
-               (unintern gray-symbol gray-package)
-               (import cl-symbol gray-package)
-               (export cl-symbol gray-package))
-    nil))
+(provide '#:gray-streams)
 
 (pushnew :gray-streams-module *features*)
 
-(defun gray-streams-module-provider (name)
-  (when (string= name '#:gray-streams)
-    (redefine-cl-functions)
-    t))
+(unless (typep (fdefinition 'cl:streamp) 'generic-function)
+  (setf (fdefinition 'cl:streamp) (fdefinition 'gray:streamp))
+  (unintern 'gray:streamp "GRAY")
+  (import 'cl:streamp "GRAY")
+  (export 'cl:streamp "GRAY"))
 
-(pushnew 'gray-streams-module-provider ext:*module-provider-functions*)
-
-(export '(fundamental-stream
-          fundamental-input-stream
-          fundamental-output-stream
-          fundamental-character-stream
+(export '(close
+          fundamental-binary-input-stream
+          fundamental-binary-output-stream
           fundamental-binary-stream
           fundamental-character-input-stream
           fundamental-character-output-stream
-          fundamental-binary-input-stream
-          fundamental-binary-output-stream))
+          fundamental-character-stream
+          fundamental-input-stream
+          fundamental-output-stream
+          fundamental-stream
+          input-stream-p
+          open-stream-p
+          output-stream-p
+          pathname
+          stream-element-type
+          stream-external-format
+          truename))

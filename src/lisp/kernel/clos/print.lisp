@@ -5,7 +5,7 @@
 (defmethod print-object (object stream)
   (core::write-ugly-object object stream))
 
-(defmacro print-unreadable-object ((object stream &key type identity) &body body)
+#+(or)(defmacro print-unreadable-object ((object stream &key type identity) &body body)
   ;; this function is defined later in iolib.lisp.
   `(core::%print-unreadable-object ,object ,stream ,type ,identity
                                    ,(when body

@@ -83,7 +83,8 @@ until FORM returns a non-NIL value.  Returns NIL. DATUM and ARGs designate the
            (assert-failure ',test-form ',places (list ,@places)
                            ;; If DATUM is provided, it must be for a
                            ;; condition; NIL is not acceptable.
-                           ,(if datump datum nil) ,@arguments))))
+                           ,(invistra:maybe-expand-formatter incless-intrinsic:*client* datum)
+                           ,@arguments))))
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defun accumulate-cases (cases list-is-atom-p)

@@ -12,25 +12,50 @@
             (push (read-from-string "1.111") result))))
       ((1.111s0 1.111f0 1.111d0 1.111l0)))
 
-(test read-2
-      (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
-        (with-output-to-string (*standard-output*)
-          (let ((*read-default-float-format* 'single-float)
-                (*print-readably* nil))
-            (print (read-from-string (format nil "12~40,2f" most-positive-single-float))))))
-      ("
-#.ext:single-float-positive-infinity "))
+(defun print-infinity (value)
+  (string-trim '(#\space #\newline #\tab #\return)
+               (with-output-to-string (*standard-output*)
+                 (let ((*read-default-float-format* (type-of value))
+                       (*print-readably* t))
+                   (ext:with-float-traps-masked
+                       (:invalid :overflow :underflow :divide-by-zero)
+                     (print (read-from-string (format nil "~,,1f" value))))))))
 
-(test-true read-3
-           (ext:with-float-traps-masked (:invalid :overflow :underflow :divide-by-zero)
-             (string-equal
-              (concatenate 'string (string #\Newline)
-                           "#.ext:double-float-positive-infinity ")
-              (with-output-to-string (*standard-output*)
-                (let ((*read-default-float-format* 'double-float)
-                      (*print-readably* nil))
-                  (print (read-from-string (format nil "12~308,2f" most-positive-double-float))))))))
+#+short-float
+(test-true read-2-short
+  (string-equal "#.ext:short-float-positive-infinity"
+                (print-infinity most-positive-short-float)))
 
+(test-true read-2-single
+  (string-equal "#.ext:single-float-positive-infinity"
+                (print-infinity most-positive-single-float)))
+
+(test-true read-2-double
+  (string-equal "#.ext:double-float-positive-infinity"
+                (print-infinity most-positive-double-float)))
+
+#+long-float
+(test-true read-2-long
+  (string-equal "#.ext:long-float-positive-infinity"
+                (print-infinity most-positive-long-float)))
+
+#+short-float
+(test-true read-3-short
+  (string-equal "#.ext:short-float-negative-infinity"
+                (print-infinity most-negative-short-float)))
+
+(test-true read-3-single
+  (string-equal "#.ext:single-float-negative-infinity"
+                (print-infinity most-negative-single-float)))
+
+(test-true read-3-double
+  (string-equal "#.ext:double-float-negative-infinity"
+                (print-infinity most-negative-double-float)))
+
+#+long-float
+(test-true read-4-long
+  (string-equal "#.ext:long-float-negative-infinity"
+                (print-infinity most-negative-long-float)))
 
 ;;; Reader-errors
 

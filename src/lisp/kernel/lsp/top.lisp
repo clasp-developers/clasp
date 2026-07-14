@@ -59,284 +59,284 @@
 ;;; A command is a list (commands function nature short-help long-help).
 (defconstant-equal tpl-commands
   '(("Top level commands"
-     ((:cf :compile-file) tpl-compile-command :string
-      ":cf		Compile file"
-      ":compile-file &string &rest files		[Top level command]~@
-	:cf &string &rest files				[Abbreviation]~@
-	~@
-	Compile files.  With no arguments, uses values from latest :cf~@
-	command.  File extensions are optional.~%")
+     ((:compile-file :cf) tpl-compile-command :string
+      "Compile file"
+      ":compile-file &string &rest files		[Top level command]
+:cf &string &rest files				[Abbreviation]
+
+Compile files.  With no arguments, uses values from latest :cf
+command.  File extensions are optional.~%")
      ((:exit :eof) quit :eval
-      ":exit or ^D	Exit Lisp"
-      ":exit &eval &optional (status 0)		[Top level command]~@
-	~@
-	Exit Lisp without further confirmation.~%")
-     ((:ld :load) tpl-load-command :string
-      ":ld		Load file"
-      ":load &string &rest files			[Top level command]~@
-	:ld &string &rest files				[Abbreviation]~@
-	~@
-	Load files.  With no arguments, uses values from latest :ld~@
-	or :cf command. File extensions are optional.~%")
+      "Exit Lisp"
+      ":exit &eval &optional (status 0)		[Top level command]
+
+Exit Lisp without further confirmation.~%")
+     ((:load :ld) tpl-load-command :string
+      "Load file"
+      ":load &string &rest files			[Top level command]
+:ld &string &rest files				[Abbreviation]
+
+Load files.  With no arguments, uses values from latest :ld
+or :cf command. File extensions are optional.~%")
      ((:step) tpl-step-command nil
-      ":step		Single step form"
-      ":step form					[Top level command]~@
-	~@
-	Evaluate form in single step mode.  While stepping, a new break~@
-	level is invoked before every evaluation.  Extra commands are~@
-	available at this time to control stepping and form evaluation.~%")
-     ((:pwd :print-working-directory) tpl-default-pathname-defaults-command nil
-      ":pwd	Print the current value of *default-pathname-defaults*"
+      "Single step form"
+      ":step form					[Top level command]
+
+Evaluate form in single step mode.  While stepping, a new break
+level is invoked before every evaluation.  Extra commands are
+available at this time to control stepping and form evaluation.~%")
+     ((:pwd) tpl-default-pathname-defaults-command nil
+      "Print the current value of *default-pathname-defaults*"
       "See also: :cd.~%")
-     ((:cd :change-default-pathname-defaults) tpl-change-default-pathname-defaults-dir-command :string
-      ":cd	Change the current value of *default-pathname-defaults*"
+     ((:cd) tpl-change-default-pathname-defaults-dir-command :string
+      "Change the current value of *default-pathname-defaults*"
       "See also: :dpd.~%")
      #+threads
-     ((:s :switch) tpl-switch-command nil
-      ":s(witch)       Switch to next process to debug"
-      ":switch process                                 [Break command]~@
-        :s processs                                     [Abbreviation]~@
-        ~@
-        Switch to next process in need to debugger attention. Argument~@
-        process, when provided, must be an integer indicating the rank~@
-        of the process in the debugger waiting list.~%")
+     ((:switch :s) tpl-switch-command nil
+      "Switch to next process to debug"
+      ":switch process                                 [Break command]
+:s processs                                     [Abbreviation]
+
+Switch to next process in need to debugger attention. Argument
+process, when provided, must be an integer indicating the rank
+of the process in the debugger waiting list.~%")
      #+threads
-     ((:br :break) tpl-interrupt-command nil
-      ":br(eak)        Stop a given process"
-      ":break process                                  [Break command]~@
-        :br processs                                    [Abbreviation]~@
-        ~@
-        Interrupt a given process. Argument process, must be provided and
-        it must be an integer indicating the rank~@
-        of the process in the debugger waiting list (:waiting).~%")
+     ((:break :br) tpl-interrupt-command nil
+      "Stop a given process"
+      ":break process                                  [Break command]
+:br processs                                    [Abbreviation]
+
+Interrupt a given process. Argument process, must be provided and
+        it must be an integer indicating the rank
+of the process in the debugger waiting list (:waiting).~%")
      #+threads
-     ((:w :waiting) tpl-waiting-command nil
-      ":w(aiting)      Display list of active toplevels"
-      ":waiting                                        [Break command]~@
-        :w                                              [Abbreviation]~@
-        ~@
-        Display list of active toplevels, including open debug sessions.~%")
+     ((:waiting :w) tpl-waiting-command nil
+      "Display list of active toplevels"
+      ":waiting                                        [Break command]
+:w                                              [Abbreviation]
+
+Display list of active toplevels, including open debug sessions.~%")
      )
     ("Help commands"
      ((:apropos) tpl-apropos-command nil
-      ":apropos	Apropos"
-      ":apropos string &optional package		[Top level command]~@
-	~@
-	Finds all available symbols whose print names contain string.~@
-	If a non NIL package is specified, only symbols in that package are considered.~@
-	~%")
-     ((:doc document) tpl-document-command nil
-      ":doc(ument)	Document"
-      ":document symbol				[Top level command]~@
-	~@
-	Displays documentation about function, print names contain string.~%")
-     ((? :h :help) tpl-help-command nil
-      ":h(elp) or ?    Help.  Type \":help help\" for more information"
-      ":help &optional topic                           [Top level command]~@
-        :h &optional topic                              [Abbreviation]~@
-        ~@
-        Print information on specified topic.  With no arguments, print~@
-        quick summary of top level commands.~@
-        ~@
-        Help information for top level commands follows the documentation~@
-        style found in \"Common Lisp, the Language\"; and, in general, the~@
-        commands themselves follow the conventions of Common Lisp functions,~@
-        with the exception that arguments are normally not evaluated.~@
-        Those commands that do evaluate their arguments are indicated by the~@
-        keyword &eval in their description.  A third class of commands~@
-        treat their arguments as whitespace-separated, case-sensitive~@
-        strings, requiring double quotes only when necessary.  This style~@
-        of argument processing is indicated by the keyword &string.~@
-        For example, the :load command accepts a list of file names:
-        ~@
-        :load &string &rest files                       [Top level Command]~@
-        ~@
-        whereas :exit, which requires an optional evaluated argument, is~@
-        ~@
-        :exit &eval &optional status                    [Top level Command]~%")
+      "Apropos"
+      ":apropos string &optional package		[Top level command]
+
+Finds all available symbols whose print names contain string.
+If a non NIL package is specified, only symbols in that package are considered.
+~%")
+     ((:document :doc) tpl-document-command nil
+      "Document"
+      ":document symbol				[Top level command]
+
+Displays documentation about function, print names contain string.~%")
+     ((:help :h ?) tpl-help-command nil
+      "Help.  Type \":help help\" for more information"
+      ":help &optional topic                           [Top level command]
+:h &optional topic                              [Abbreviation]
+
+Print information on specified topic.  With no arguments, print
+quick summary of top level commands.
+
+Help information for top level commands follows the documentation
+style found in \"Common Lisp, the Language\"; and, in general, the
+commands themselves follow the conventions of Common Lisp functions,
+with the exception that arguments are normally not evaluated.
+Those commands that do evaluate their arguments are indicated by the
+keyword &eval in their description.  A third class of commands
+treat their arguments as whitespace-separated, case-sensitive
+strings, requiring double quotes only when necessary.  This style
+of argument processing is indicated by the keyword &string.
+For example, the :load command accepts a list of file names:
+
+:load &string &rest files                       [Top level Command]
+
+whereas :exit, which requires an optional evaluated argument, is
+
+:exit &eval &optional status                    [Top level Command]~%")
      )))
 
 (defparameter *tpl-commands* tpl-commands)
 
 (defconstant-equal break-commands
     '("Break commands"
-      ((:q :quit) tpl-quit-command nil
-       ":q(uit)		Return to some previous break level"
-       ":quit &optional n				[Break command]~@
-	:q &optional n					[Abbreviation]~@
-	~@
-	Without argument, return to top level;~@
-	otherwise return to break level n.~%")
+      ((:quit :q) tpl-quit-command nil
+       "Return to some previous break level"
+       ":quit &optional n				[Break command]
+:q &optional n					[Abbreviation]
+
+Without argument, return to top level;
+otherwise return to break level n.~%")
       ((:pop) (tpl-pop-command) :constant
-       ":pop		Pop to previous break level"
-       ":pop						[Break command]~@
-	~@
-	Pop to previous break level, or if already in top level,~@
-	exit Lisp after confirmation.~%")
-      ((:c :continue) continue nil
-       ":c(ontinue)	Continue execution"
-       ":continue					[Break command]~@
-	:c						[Abbreviation]~@
-	~@
-	Continue execution.  Return from current break level to the caller.~@
-	This command is only available when the break level is continuable~@
-	(i.e., the CONTINUE restart is available).~%")
-      ((:b :backtrace) tpl-backtrace nil
-       ":b(acktrace)	Print backtrace"
-       ":backtrace &optional count			[Break command]~@
-	:b &optional count				[Abbreviation]~@
-	~@
-	Show function call history.  Only those functions called since~@
-	the previous break level are shown.  In addition, functions compiled~@
-	in-line or explicitly hidden are not displayed.  If a count is~@
-        provided, only up to that many frames are displayed.~@
-	See also: :function, :previous, :next.~%")
-      ((:r :restarts) tpl-restarts nil
-       ":r(estarts)   Print available restarts"
-       ":restarts                                       [Break command]~@
-        :r                                              [Abbreviation]~@
-        Display the list of available restarts again. A restart can be~@
-        invoked by using the :rN command, where N is the displayed~@
-        numerical identifier for that restart.~%")
-      ((:f :frame) tpl-print-current nil
-       ":f(rame)	Show current frame"
-       ":frame					[Break command]~@
-	:f						[Abbreviation]~@
-	~@
-	Show current frame.  The current frame is the implicit focus~@
-	of attention for several other commands.~@
-	~@
-	See also: :backtrace, :next, previous, :disassemble, :variables.~%")
-      ((:u :up) tpl-previous nil
-       ":u(p)	Go to previous frame"
-       ":up &optional (n 1)			[Break command]~@
-	:u &optional (n 1)				[Abbreviation]~@
-	~@
-	Move to the nth previous visible frame in the backtrace.~@
- 	It becomes the new current frame.~@
-	~@
-	See also: :backtrace, :frame, :go, :next.~%")
-      ((:d :down) tpl-next nil
-       ":d(own)		Go to next frame"
-       ":down &optional (n 1)				[Break command]~@
-	:d &optional (n 1)				[Abbreviation]~@
-	~@
-	Move to the nth next visible frame in the backtrace.  It becomes~@
-	the new current frame.~@
-	~@
-	See also: :backtrace, :frame, :go, :previous.~%")
-      ((:g :go) tpl-go nil
-       ":g(o)		Go to frame"
-       ":go &optional (n 1)				[Break command]~@
-	:g &optional (n 1)				[Abbreviation]~@
-	~@
-	Move to the i-th frame.~@
-	See also: :backtrace, :frame, :next, :previous.~%")
+       "Pop to previous break level"
+       ":pop						[Break command]
+
+Pop to previous break level, or if already in top level,
+exit Lisp after confirmation.~%")
+      ((:continue :c) continue nil
+       "Continue execution"
+       ":continue					[Break command]
+:c						[Abbreviation]
+
+Continue execution.  Return from current break level to the caller.
+This command is only available when the break level is continuable
+(i.e., the CONTINUE restart is available).~%")
+      ((:backtrace :b) tpl-backtrace nil
+       "Print backtrace"
+       ":backtrace &optional count			[Break command]
+:b &optional count				[Abbreviation]
+
+Show function call history.  Only those functions called since
+the previous break level are shown.  In addition, functions compiled
+in-line or explicitly hidden are not displayed.  If a count is
+provided, only up to that many frames are displayed.
+See also: :function, :previous, :next.~%")
+      ((:restarts :r) tpl-restarts nil
+       "Print available restarts"
+       ":restarts                                       [Break command]
+:r                                              [Abbreviation]
+Display the list of available restarts again. A restart can be
+invoked by using the :rN command, where N is the displayed
+numerical identifier for that restart.~%")
+      ((:frame :f) tpl-print-current nil
+       "Show current frame"
+       ":frame					[Break command]
+:f						[Abbreviation]
+
+Show current frame.  The current frame is the implicit focus
+of attention for several other commands.
+
+See also: :backtrace, :next, previous, :disassemble, :variables.~%")
+      ((:up :u) tpl-previous nil
+       "Go to previous frame"
+       ":up &optional (n 1)			[Break command]
+:u &optional (n 1)				[Abbreviation]
+
+Move to the nth previous visible frame in the backtrace.
+It becomes the new current frame.
+
+See also: :backtrace, :frame, :go, :next.~%")
+      ((:down :d) tpl-next nil
+       "Go to next frame"
+       ":down &optional (n 1)				[Break command]
+:d &optional (n 1)				[Abbreviation]
+
+Move to the nth next visible frame in the backtrace.  It becomes
+the new current frame.
+
+See also: :backtrace, :frame, :go, :previous.~%")
+      ((:go :g) tpl-go nil
+       "Go to frame"
+       ":go &optional (n 1)				[Break command]
+:g &optional (n 1)				[Abbreviation]
+
+Move to the i-th frame.
+See also: :backtrace, :frame, :next, :previous.~%")
       #+(or)
-      ((:fs :forward-search) tpl-forward-search :string
-       ":fs             Search forward for function"
-       ":forward-search &string substring		[Break command]~@
-	:fs &string substring				[Abbreviation]~@
-	~@
-	Search forward in the backtrace for function containing substring.~@
-	The match is case insensitive.~@
-	~@
-	See also: :backtrace, :function, :next.~%")
+      ((:forward-search :fs) tpl-forward-search :string
+       "Search forward for function"
+       ":forward-search &string substring		[Break command]
+:fs &string substring				[Abbreviation]
+
+Search forward in the backtrace for function containing substring.
+The match is case insensitive.
+
+See also: :backtrace, :function, :next.~%")
       #+(or)
-      ((:bs :backward-search) tpl-backward-search :string
-       ":bs             Search backward for function"
-       ":backward-search &string substring		[Break command]~@
-	:bs &string substring				[Abbreviation]~@
-	~@
-	Search backward in the backtrace for function containing substring.~@
-	The match is case insensitive.~@
-	~@
-	See also: :backtrace, :function, :previous.~%")
+      ((:backward-search :bs) tpl-backward-search :string
+       "Search backward for function"
+       ":backward-search &string substring		[Break command]
+:bs &string substring				[Abbreviation]
+
+Search backward in the backtrace for function containing substring.
+The match is case insensitive.
+
+See also: :backtrace, :function, :previous.~%")
       ((:disassemble) tpl-disassemble-command nil
-       ":disassemble	Disassemble current function"
-       ":disassemble					[Break command]~@
-	:disassemble					[Abbreviation]~@
-	~@
-	Disassemble the current frame's function, if possible.~%")
-      ((:le :lambda-expression) tpl-lambda-expression-command nil
-       ":l(ambda-)e(expression)	Show lisp code for current function"
-       ":lambda-expression				[Break command]~@
-	:le						[Abbreviation]~@
-	~@
-	Show the lisp code of the current frame's function.~@
-        Only works for interpreted functions.~%")
-      ((:v :variables) tpl-variables-command nil
-       ":v(ariables)	Show local variables, functions, blocks, and tags"
-       ":variables &optional no-values			[Break command]~@
-	:v &optional no-values				[Abbreviation]~@
-	~@
-	Show lexical variables, functions, block names, and tags local~@
-	to the current function.  The current function must be interpreted.~@
-	The values of local variables and functions are also shown,~@
-	unless the argument is non-null.~%")
+       "Disassemble current function"
+       ":disassemble					[Break command]
+:disassemble					[Abbreviation]
+
+Disassemble the current frame's function, if possible.~%")
+      ((:lambda-expression :le) tpl-lambda-expression-command nil
+       "Show lisp code for current function"
+       ":lambda-expression				[Break command]
+:le						[Abbreviation]
+
+Show the lisp code of the current frame's function.
+Only works for interpreted functions.~%")
+      ((:variables :v) tpl-variables-command nil
+       "Show local variables, functions, blocks, and tags"
+       ":variables &optional no-values			[Break command]
+:v &optional no-values				[Abbreviation]
+
+Show lexical variables, functions, block names, and tags local
+to the current function.  The current function must be interpreted.
+The values of local variables and functions are also shown,
+unless the argument is non-null.~%")
       ((:hide) tpl-hide nil
-       ":hide		Hide function"
-       ":hide function					[Break command]~@
-	~@
-	Hide function.  A hidden function is not displayed in a backtrace.~@
-	~@
-	See also: :backtrace, :unhide, :hide-package.~%")
+       "Hide function"
+       ":hide function					[Break command]
+
+Hide function.  A hidden function is not displayed in a backtrace.
+
+See also: :backtrace, :unhide, :hide-package.~%")
       ((:unhide) tpl-unhide nil
-       ":unhide		Unhide function"
-       ":unhide function				[Break command]~@
-	~@
-	Unhide function.  The specified function will be displayed in future~@
-	backtraces, unless its home package is also hidden.~@
-	~@
-	See also: :backtrace, :hide, :unhide-package.~%")
-      ((:hp :hide-package) tpl-hide-package nil
-       ":hp		Hide package"
-       ":hide-package package				[Break command]~@
-	:hp package					[Abbreviation]~@
-	~@
-	Hide package.  Functions in a hidden package are not displayed~@
-	in a backtrace.~@
-	~@
-	See also: :backtrace, :unhide-package.~%")
-      ((:unhp :unhide-package) tpl-unhide-package nil
-       ":unhp		Unhide package"
-       ":unhide-package package				[Break command]~@
-	:unhp package					[Abbreviation]~@
-	~@
-	Unhide package.  Functions in the specified package will be displayed~@
-	in future backtraces, unless they are individually hidden.~@
-	~@
-	See also: :backtrace, :hide-package, :hide, :unhide.~%")
+       "Unhide function"
+       ":unhide function				[Break command]
+
+Unhide function.  The specified function will be displayed in future
+backtraces, unless its home package is also hidden.
+
+See also: :backtrace, :hide, :unhide-package.~%")
+      ((:hide-package :hp) tpl-hide-package nil
+       "Hide package"
+       ":hide-package package				[Break command]
+:hp package					[Abbreviation]
+
+Hide package.  Functions in a hidden package are not displayed
+in a backtrace.
+
+See also: :backtrace, :unhide-package.~%")
+      ((:unhide-package :unhp) tpl-unhide-package nil
+       "Unhide package"
+       ":unhide-package package				[Break command]
+:unhp package					[Abbreviation]
+
+Unhide package.  Functions in the specified package will be displayed
+in future backtraces, unless they are individually hidden.
+
+See also: :backtrace, :hide-package, :hide, :unhide.~%")
       ((:unhide-all) tpl-unhide-all nil
-       ":unhide-all     Unhide all variables and packages"
-       ":unhide-all					[Break command]~@
-	~@
-	Unhide all variables and packages.  All functions will be displayed~@
-	in future backtraces.~@
-	~@
-	See also: :hide, :unhide, :hide-package, :unhide-package.~%")
-      ((:m :message) tpl-print-message nil
-       ":m(essage)      Show error message"
-       ":message					[Break command]~@
-	:m						[Abbreviation]~@
-	~@
-	Show current error message.~%")
-      ((:hs :help-stack) tpl-help-stack-command nil
-       ":hs             Help stack"
-       ":help-stack                                     [Break command]~@
-        :hs                                             [Abbreviation]~@
-        ~@
-        Lists the functions to access backtrace information more directly.~%")
-      ((:i :inspect) tpl-inspect-command nil
-       ":i(nspect)      Inspect value of local variable"
-       ":inspect var-name                               [Break command]~@
-        :i var-name                                     [Abbreviation]~@
-        ~@
-        Inspect value of local variable named by var-name. Argument~@
-        var-name can be a string or a symbol whose name string will~@
-        then be used regardless of of the symbol's package.~@
-        ~@
-        See also: :variables.~%")
+       "Unhide all variables and packages"
+       ":unhide-all					[Break command]
+
+Unhide all variables and packages.  All functions will be displayed
+in future backtraces.
+
+See also: :hide, :unhide, :hide-package, :unhide-package.~%")
+      ((:message :m) tpl-print-message nil
+       "Show error message"
+       ":message					[Break command]
+:m						[Abbreviation]
+
+Show current error message.~%")
+      ((:help-stack :hs) tpl-help-stack-command nil
+       "Help stack"
+       ":help-stack                                     [Break command]
+:hs                                             [Abbreviation]
+
+Lists the functions to access backtrace information more directly.~%")
+      ((:inspect :i) tpl-inspect-command nil
+       "Inspect value of local variable"
+       ":inspect var-name                               [Break command]
+:i var-name                                     [Abbreviation]
+
+Inspect value of local variable named by var-name. Argument
+var-name can be a string or a symbol whose name string will
+then be used regardless of of the symbol's package.
+
+See also: :variables.~%")
   ))
 
 (defun top-level (&key set-package (noprint (core:noprint-p)))
@@ -410,12 +410,11 @@ The top-level loop of Clasp. It is called by default when Clasp is invoked."
 #+threads
 (defun show-process-list (&optional (process-list (mp:all-processes)))
   (loop with current = mp:*current-process*
-	for rank from 1
-	for process in process-list
-	do (format t (if (eq process current)
-			 "~%  >~D: ~s"
-		       "~%   ~D: ~s")
-		   rank process)))
+	      for rank from 1
+	      for process in process-list
+	      do (format t "~%  ~:[ ~;>~]~D: ~s"
+                   (eq process current)
+		               rank process)))
 
 #+threads
 (defun query-process (&optional (process-list (mp:all-processes)))
@@ -832,28 +831,49 @@ Use special code 0 to cancel this operation.")
   (dolist (file *tpl-last-compile*) (compile-file file))
   (setq *tpl-last-load* *tpl-last-compile*))
 
+(defun write-descriptions (stream commands)
+  (loop with labels = (loop for group in commands
+                            collect (loop for command in (cdr group)
+                                          collect (format nil "~{~#[~;~a~;~a or ~a~:;~@{~a~#[~;, or ~:;, ~]~}~]~}"
+
+                                                          (mapcar (lambda (name)
+                                                                    (if (eq name :eof)
+                                                                        "^D"
+                                                                        (write-to-string name
+                                                                                         :readably t
+                                                                                         :escape nil
+                                                                                         :case :downcase)))
+                                                                  (car command)))))
+        with width = (+ 4
+                        (loop for group in labels
+                              maximize (loop for label in group
+                                             maximize (length label))))
+        for group in commands
+        for label-group in labels
+        do (format t "~%~A:~%" (car group))
+           (loop for command in (cdr group)
+                 for label in label-group
+                 do (format stream "~a~vt~a~%"
+                            label  width (fourth command)))))
+
 (defun tpl-help-command (&optional topic)
   (cond ((null topic)
-	 (dolist (commands *tpl-commands*)
-	   (format t "~%~A:~%" (car commands))
-	   (dolist (c (cdr commands))
-	     (when (fourth c)
-	       (format t "~A.~%" (fourth c))))))
-	((or (stringp topic) (symbolp topic))
-	 (let (c)
-	   (setq topic (intern (string topic) (find-package 'keyword)))
-	   (dolist (commands *tpl-commands*)
-	     (when (setq c (assoc topic (cdr commands) :test #'member))
-	       (return)))
-	   (cond ((null (fifth c))
-		  (format t "No such help topic: ~s~%"
-			  (string topic)))
-		 (t
-		  (terpri)
-		  (format t (fifth c))
-		  (terpri)))))
-	(t
-	 (format t "Not a valid help topic: ~s~%" topic)))
+         (write-descriptions t *tpl-commands*))
+	      ((or (stringp topic) (symbolp topic))
+	       (let (c)
+	         (setq topic (intern (string topic) (find-package 'keyword)))
+	         (dolist (commands *tpl-commands*)
+	           (when (setq c (assoc topic (cdr commands) :test #'member))
+	             (return)))
+	         (cond ((null (fifth c))
+		              (format t "No such help topic: ~s~%"
+			                    (string topic)))
+		             (t
+		              (terpri)
+		              (write-line t (fifth c))
+		              (terpri)))))
+	      (t
+	       (format t "Not a valid help topic: ~s~%" topic)))
   (values))
 
 (defun tpl-help-stack-command ()
@@ -866,30 +886,27 @@ Use special code 0 to cancel this operation.")
 See the CLASP-DEBUG package for more information about FRAME objects.")
   (values))
 
-(defun compute-restart-commands (condition &key display)
-  (let ((restarts (compute-restarts condition))
-	(restart-commands (list "Restart commands")))
-    (when display
-      (format display
-              (if restarts
-                  "~&Available restarts:~&(use :r1 to invoke restart 1, etc.)~2%"
-                  "~&No restarts available.~%")))
-    (loop for restart in restarts
-       and i from 1
-       do (let ((user-command (format nil "r~D" i))
-		(name (format nil "~@[(~A)~]" (restart-name restart)))
-		(helpstring (princ-to-string restart)))
-	    (push (list
-		   (list (intern (string-upcase user-command) :keyword))
-		   restart :restart
-		   (format nil ":~A~16T~A~24T~A" user-command helpstring name)
-		   (format nil ":~A~48T~A~& ~&~A~A" (string-downcase user-command)
-                           "[Restart command]" name helpstring))
-		  restart-commands)
-	    (when display
-	      (format display "~D. ~A ~A~%" i name restart))))
-    (when display (terpri display))
-    (nreverse restart-commands)))
+(defun write-restart-banner (stream restart-commands)
+  (if restart-commands
+      (write-descriptions stream (list restart-commands))
+      (format stream "~2&No restarts available."))
+  (terpri))
+
+(defun compute-restart-commands (condition)
+  (loop with restarts = (compute-restarts condition)
+        for restart in restarts
+        for i from 1
+        for user-command = (format nil "r~D" i)
+		    for name = (format nil "~@[(~A)~]" (restart-name restart))
+  	    for helpstring = (princ-to-string restart)
+	      when (eq i 1)
+          collect "Restart commands"
+        collect (list (list (intern (string-upcase user-command) :keyword))
+		                  restart :restart
+		                  (format nil "~A~24T~A" helpstring name)
+		                  (format nil ":~A~48T[Restart command]~& ~&~A~A"
+                              (string-downcase user-command)
+                              name helpstring))))
 
 (defun update-debug-commands (restart-commands)
   (let ((commands (copy-list *tpl-commands*)))
@@ -902,18 +919,10 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
 
 (defun tpl-restarts ()
   ;; Make sure this displays consistently with compute-restart-commands.
-  (let ((restart-commands (cdr (assoc "Restart commands" *tpl-commands*
-                                      :test #'string=))))
-    (format t (if restart-commands
-                  "~&Available restarts:~&(use :r1 to invoke restart 1, etc.)~2%"
-                  "~&No restarts available.~%"))
-    (loop for command in restart-commands
-          for restart = (second command)
-          for i from 1
-          do (format t "~d. ~@[(~a)~] ~a~%"
-                     i (restart-name restart) restart)))
-  (terpri)
-  (values))
+  (let ((restart-commands (assoc "Restart commands" *tpl-commands*
+                                      :test #'string=)))
+    (write-restart-banner t restart-commands)
+    (values)))
 
 (defparameter *default-debugger-maximum-depth* 16)
 
@@ -969,14 +978,14 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
            (*terminal-io* *debug-io*)
            (*query-io* *debug-io*)
            ;;(*tpl-prompt-hook* "[dbg] ")
-	   (*print-readably* nil)
+	         (*print-readably* nil)
            (*print-pretty* nil)
            (*print-circle* t)
            (*print-length* 16)
            (*readtable* (or *break-readtable* *readtable*))
-	   (*break-condition* condition)
+	         (*break-condition* condition)
            (*break-message* (format nil "~&Condition of type: ~A~%~A~%"
-				    (type-of condition)
+				                            (type-of condition)
                                     (princ-condition-to-string condition)))
            (*break-level* (1+ *break-level*))
            (break-level *break-level*)
@@ -1005,10 +1014,10 @@ See the CLASP-DEBUG package for more information about FRAME objects.")
 	;; Here we show a list of restarts and invoke the toplevel with
 	;; an extended set of commands which includes invoking the associated
 	;; restarts.
-	(let* ((restart-commands (compute-restart-commands
-                                  condition :display *error-output*))
+	(let* ((restart-commands (compute-restart-commands condition))
 	       (debug-commands
-		 (update-debug-commands restart-commands)))
+		       (update-debug-commands restart-commands)))
+    (write-restart-banner *error-output* restart-commands)
           (clasp-debug:with-stack (*break-base*)
             (let ((*break-frame* (clasp-debug:visible *break-base*)))
               (tpl :commands debug-commands))))))))

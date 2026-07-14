@@ -77,99 +77,6 @@ object's representation."
         (values (read stream eof-error-p eof-value)
                 (file-position stream)))))
 
-;;; This function does what write-to-string does to a symbol name,
-;;; when printer escaping is off.
-;;; It's over five times as far as write-to-string.
-(defun printcasify (symbol-name readtable-case print-case)
-  (let ((result (copy-seq symbol-name))
-        (len (length symbol-name)))
-    (case readtable-case
-      ((:preserve) result)
-      ((:invert)
-       (dotimes (i len result)
-         (let ((c (aref result i)))
-           (setf (aref result i)
-                 (cond ((upper-case-p c)
-                        (char-downcase c))
-                       ((lower-case-p c)
-                        (char-upcase c))
-                       (t c))))))
-      ((:upcase)
-       (let ((capitalize t))
-         (dotimes (i len result)
-           (let ((c (aref result i)))
-             (setf (aref result i)
-                   (if (and (upper-case-p c)
-                            (or (eq print-case :downcase)
-                                (and (eq print-case :capitalize)
-                                     (not capitalize))))
-                       (char-downcase c)
-                       c)
-                   capitalize (not (alphanumericp c)))))))
-      ((:downcase)
-       (let ((capitalize t))
-         (dotimes (i len result)
-           (let ((c (aref result i)))
-             (setf (aref result i)
-                   (if (and (lower-case-p c)
-                            (or (eq print-case :downcase)
-                                (and (eq print-case :capitalize)
-                                     capitalize)))
-                       (char-downcase c)
-                       c)
-                   capitalize (not (alphanumericp c))))))))))
-
-(defun stringify (object)
-  (when (and (not *print-escape*) (not *print-readably*) (not *print-pretty*))
-    (cond
-      ((symbolp object)
-       (return-from stringify
-         (printcasify (symbol-name object)
-                      (readtable-case *readtable*)
-                      *print-case*)))
-      ((stringp object) (return-from stringify (copy-seq object)))
-      ((characterp object) (return-from stringify (string object)))))
-  ;; By not making a fresh stream every time, we save some time.
-  (let ((stream (core:thread-local-write-to-string-output-stream)))
-    (write-object object stream)
-    (core:get-thread-local-write-to-string-output-stream-string stream)))
-
-(defun write-to-string (object &key ((:escape *print-escape*) *print-escape*)
-                                 ((:radix *print-radix*) *print-radix*)
-                                 ((:base *print-base*) *print-base*)
-                                 ((:circle *print-circle*) *print-circle*)
-                                 ((:pretty *print-pretty*) *print-pretty*)
-                                 ((:level *print-level*) *print-level*)
-                                 ((:length *print-length*) *print-length*)
-                                 ((:case *print-case*) *print-case*)
-                                 ((:array *print-array*) *print-array*)
-                                 ((:gensym *print-gensym*) *print-gensym*)
-                                 ((:readably *print-readably*) *print-readably*)
-                                 ((:right-margin *print-right-margin*)
-                                  *print-right-margin*)
-                                 ((:miser-width *print-miser-width*)
-                                  *print-miser-width*)
-                                 ((:lines *print-lines*) *print-lines*)
-                                 ((:pprint-dispatch *print-pprint-dispatch*)
-                                  *print-pprint-dispatch*))
-  "Returns as a string the printed representation of OBJECT in the specified
-mode.  See the variable docs of *PRINT-...* for the mode."
-  (stringify object))
-
-(defun prin1-to-string (object)
-  "Args: (object)
-PRIN1s OBJECT to a new string and returns the result.  Equivalent to
- (WRITE-TO-STRING OBJECT :ESCAPE T)."
-  (let ((*print-escape* t))
-    (stringify object)))
-
-(defun princ-to-string (object)
-  "Args: (object)
-PRINCs OBJECT to a new string and returns the result.  Equivalent to
- (WRITE-TO-STRING OBJECT :ESCAPE NIL :READABLY NIL)."
-  (let ((*print-escape* nil) (*print-readably* nil))
-    (stringify object)))
-
 (defmacro with-open-file ((stream . filespec) &rest body)
   "Syntax: (with-open-file (var filespec-form {options}*) {decl}* {form}*)
 Opens the specified file using OPTIONs, and evaluates FORMs with VAR bound to
@@ -183,28 +90,30 @@ OPEN for the options."
          (MULTIPLE-VALUE-PROG1 (PROGN ,@b) (WHEN ,stream (CLOSE ,stream)))
          (WHEN ,stream (CLOSE ,stream :ABORT T))))))
 
-(defun y-or-n-p (&optional string &rest args)
-  "Args: (&optional format-string &rest args)
+(defun y-or-n-p (&optional control &rest args)
+  "Args: (&optional format-control &rest args)
 Asks the user a Y-or-N question.  Does FRESH-LINE, prints a message as if
-FORMAT-STRING and ARGs were given to FORMAT, and then prints \"(Y or N)\" is
-printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
+CONTROL and ARGs were given to FORMAT, and then prints \"(Y or N)\" is
+printed.  If CONTROL is NIL, however, no prompt will appear."
   (do ((reply))
       (nil)
-    (when string (format *query-io* "~&~?  (Y or N) " string args))
+    (when control
+      (format *query-io* "~&~?  (Y or N) " control args))
     (setq reply (read *query-io*))
     (cond ((string-equal (symbol-name reply) "Y")
            (return-from y-or-n-p t))
           ((string-equal (symbol-name reply) "N")
            (return-from y-or-n-p nil)))))
 
-(defun yes-or-no-p (&optional string &rest args)
-  "Args: (&optional format-string &rest args)
+(defun yes-or-no-p (&optional control &rest args)
+  "Args: (&optional format-control &rest args)
 Asks the user an YES-or-NO question.  Does FRESH-LINE, prints a message as if
-FORMAT-STRING and ARGs were given to FORMAT, and then prints \"(Y or N)\" is
-printed.  If FORMAT-STRING is NIL, however, no prompt will appear."
+CONTROL and ARGs were given to FORMAT, and then prints \"(Y or N)\" is
+printed.  If CONTROL is NIL, however, no prompt will appear."
   (do ((reply))
       (nil)
-    (when string (format *query-io* "~&~?  (Yes or No) " string args))
+    (when control
+      (format *query-io* "~&~?  (Yes or No) " control args))
     (setq reply (read *query-io*))
     (cond ((string-equal (symbol-name reply) "YES")
            (return-from yes-or-no-p t))
@@ -291,98 +200,55 @@ is not given, ends the recording."
 
 ;(provide 'iolib)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-(defvar +io-syntax-progv-list+
-  (list
-   '(
-     *print-pprint-dispatch* #|  See end of pprint.lisp  |#
-     *print-array*
-     *print-base*
-     *print-case*
-     *print-circle*
-     *print-escape*
-     *print-gensym*
-     *print-length*
-     *print-level*
-     *print-lines*
-     *print-miser-width*
-     *print-pretty*
-     *print-radix*
-     *print-readably*
-     *print-right-margin*
-     *read-base*
-     *read-default-float-format*
-     *read-eval*
-     *read-suppress*
-     *readtable*
-     *package*
-     si::*sharp-eq-context*
-     si::*circle-counter*)               ;
-   nil                                   ;;  *pprint-dispatch-table*
-   t                                     ;;  *print-array*
-   10                                    ;;  *print-base*
-   :upcase                               ;;  *print-case*
-   nil                                   ;;  *print-circle*
-   t                                     ;;  *print-escape*
-   t                                     ;;  *print-gensym*
-   nil                                   ;;  *print-length*
-   nil                                   ;;  *print-level*
-   nil                                   ;;  *print-lines*
-   nil                                   ;;  *print-miser-width*
-   nil                                   ;;  *print-pretty*
-   nil                                   ;;  *print-radix*
-   t                                     ;;  *print-readably*
-   nil                                   ;;  *print-right-margin*
-   10                                    ;;  *read-base*
-   'single-float ;;  *read-default-float-format*
-   t             ;;  *read-eval*
-   nil           ;;  *read-suppress*
-   *readtable*   ;;  *readtable*
-   (find-package :CL-USER)               ;;  *package*
-   nil                                   ;;  si::*sharp-eq-context*
-   nil                                   ;;  si::*circle-counter*
-   ))
-) ; eval-when
-
 (defmacro with-standard-io-syntax (&body body)
   "Syntax: ({forms}*)
 The forms of the body are executed in a print environment that corresponds to
 the one defined in the ANSI standard. *print-base* is 10, *print-array* is t,
 *package* is \"CL-USER\", etc."
-  (with-clean-symbols (%progv-list)
-    `(let ((%progv-list +io-syntax-progv-list+))
-       (progv (car %progv-list)
-	   (cdr %progv-list)
-	 ,@body))))
-
-(defun print-unreadable-object-contents (object stream type identity body)
-  (when type
-    (write (type-of object) :stream stream :circle nil
-                            :level nil :length nil)
-    (write-char #\space stream))
-  (when body
-    (funcall body))
-  (when identity
-    (when (or body (not type))
-      (write-char #\space stream))
-    (write-char #\@ stream)
-    (core:write-addr object stream)))
-
-;;; The guts of print-unreadable-object, inspired by SBCL.
-;;; pprint-logical-block isn't available yet, so this function
-;;; will be redefined later in pprint.lisp once the pretty
-;;; printer is available.
-(defun %print-unreadable-object (object stream type identity body)
-  (cond (*print-readably*
-         (error 'print-not-readable :object object))
-        (t
-         (let ((stream (cond ((null stream)
-                              *standard-output*)
-                             ((eq t stream)
-                              *terminal-io*)
-                             (t
-                              stream))))
-           (write-string "#<" stream)
-           (print-unreadable-object-contents object stream type identity body)
-           (write-char #\> stream))))
-  nil)
+  `(progv '(*print-pprint-dispatch*
+            *print-array*
+            *print-base*
+            *print-case*
+            *print-circle*
+            *print-escape*
+            *print-gensym*
+            *print-length*
+            *print-level*
+            *print-lines*
+            *print-miser-width*
+            *print-pretty*
+            *print-radix*
+            *print-readably*
+            *print-right-margin*
+            *read-base*
+            *read-default-float-format*
+            *read-eval*
+            *read-suppress*
+            *readtable*
+            *package*
+            si::*sharp-eq-context*
+            si::*circle-counter*)
+       (list inravina-intrinsic::*standard-pprint-dispatch* ;;  *pprint-dispatch-table*
+             t                                              ;;  *print-array*
+             10                                             ;;  *print-base*
+             :upcase                                        ;;  *print-case*
+             nil                                            ;;  *print-circle*
+             t                                              ;;  *print-escape*
+             t                                              ;;  *print-gensym*
+             nil                                            ;;  *print-length*
+             nil                                            ;;  *print-level*
+             nil                                            ;;  *print-lines*
+             nil                                            ;;  *print-miser-width*
+             nil                                            ;;  *print-pretty*
+             nil                                            ;;  *print-radix*
+             t                                              ;;  *print-readably*
+             nil                                            ;;  *print-right-margin*
+             10                                             ;;  *read-base*
+             'single-float                                  ;;  *read-default-float-format*
+             t                                              ;;  *read-eval*
+             nil                                            ;;  *read-suppress*
+             (symbol-value 'core::+standard-readtable+)     ;;  *readtable*
+             (find-package :CL-USER)                        ;;  *package*
+             nil                                            ;;  si::*sharp-eq-context*
+             nil)                                           ;;  si::*circle-counter*
+	   ,@body))
