@@ -1924,7 +1924,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
       abort();
     }
   }
-  pid_t child_PID = my_thread->safe_fork();
+  pid_t child_PID = my_thread->safe_fork(/*will_exec=*/true);
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child

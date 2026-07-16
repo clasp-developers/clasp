@@ -215,18 +215,46 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   gctools::stw_register_thread();
 }
 
-pid_t ThreadLocalState::safe_fork() {
+pid_t ThreadLocalState::safe_fork(bool will_exec) {
   // Wrap fork in code that turns guards off and on
   this->_VM.disable_guards();
+#ifdef USE_MMTK
+  // MMTk runs its collector on dedicated GC worker threads. fork() only clones
+  // the calling thread, so without help the child would inherit an MMTk heap
+  // with no live workers and hang on its first collection. Park the workers
+  // (this blocks until their native threads exit) before forking, then respawn
+  // them in BOTH the parent and the child. No MMTk-heap allocation is allowed
+  // between fork() and mmtk_clasp_after_fork().
+  //
+  // When will_exec is true the child execs immediately and never touches the
+  // MMTk heap, and the parent has nothing to recover, so skip the dance
+  // entirely and let the workers keep running across the fork.
+  const bool mmtk_fork = !will_exec;
+  if (mmtk_fork)
+    mmtk_clasp_prepare_to_fork();
+#endif
   pid_t result = fork();
   if (result == -1) {
     // error
+#ifdef USE_MMTK
+    // No fork happened; bring the parent's workers back up.
+    if (mmtk_fork)
+      mmtk_clasp_after_fork(this);
+#endif
     printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno);
   } else if (result == 0) {
     // child
+#ifdef USE_MMTK
+    if (mmtk_fork)
+      mmtk_clasp_after_fork(this);
+#endif
     this->_VM.enable_guards();
   } else {
     // parent
+#ifdef USE_MMTK
+    if (mmtk_fork)
+      mmtk_clasp_after_fork(this);
+#endif
     this->_VM.enable_guards();
   }
   return result;

@@ -9,9 +9,16 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <clasp/gctools/stw.h> // assert_safe_to_allocate (temporary diagnostic)
+
 namespace gctools {
 
 inline void* mmtk_alloc_raw(size_t size, MMTkClaspAllocSemantics semantics) {
+  // DIAGNOSTIC (temporary): every GC allocation funnels through here (all
+  // do_*_allocation helpers below call mmtk_alloc_raw), so this catches any
+  // thread that allocates after telling the collector it is stopped. Remove
+  // once the stop-the-world protocol is trusted.
+  assert_safe_to_allocate();
   return mmtk_clasp_alloc(my_thread_low_level->_mmtk_mutator, size, CLASP_ALIGNMENT, semantics);
 }
 

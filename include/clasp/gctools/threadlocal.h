@@ -279,7 +279,10 @@ public:
   ThreadLocalState();
   void initialize_thread(mp::Process_sp process);
 
-  pid_t safe_fork();
+  // Fork this process. When will_exec is true the child is expected to exec()
+  // immediately, so the MMTk GC worker threads are left untouched (parking and
+  // respawning them would be wasted work discarded by the exec).
+  pid_t safe_fork(bool will_exec = false);
 
   void dynEnvStackTest(core::T_sp val) const;
   void dynEnvStackSet(core::T_sp val) {

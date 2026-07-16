@@ -68,6 +68,14 @@ void end_gcless_shared();
 // This is the slow path called from gc_yield below.
 void gc_yield_slow();
 
+// DIAGNOSTIC (temporary): abort if the calling thread tries to allocate while
+// it has promised the collector it is stopped -- i.e. while it is in a
+// Parked/GCless state, or inside a call_with_stopped_world() closure. Both are
+// GC-safety-contract violations (see the header comment above) and lead to
+// heap corruption. Called from the MMTk allocation choke point. The check uses
+// only thread-local state, so it is race-free and has no false positives.
+void assert_safe_to_allocate();
+
 extern std::atomic<bool> world_stopped;
 
 // Check if the GC has stop the world to stop, and stop if so.

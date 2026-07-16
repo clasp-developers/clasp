@@ -8,8 +8,40 @@
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
+#include <cstdio>
+#include <cstdlib>
 
 namespace gctools {
+
+// DIAGNOSTIC (temporary): nesting depth of call_with_stopped_world() regions on
+// this thread. Nonzero means this thread stopped the world itself and its
+// closure must not touch GC memory. Thread-local, so reading it is race-free.
+static thread_local unsigned tl_stopped_world_depth = 0;
+
+void assert_safe_to_allocate() {
+  // A thread in a Parked/GCless state has told the collector it is stopped, so
+  // allocating here means the world isn't actually stopped -> heap corruption.
+  if (my_thread && my_thread->gclessp()) {
+    fprintf(stderr,
+            "%s:%d GC-SAFETY VIOLATION: thread my_thread=%p allocated while in a "
+            "GC-safe (Parked/GCless) state. The collector believes this thread "
+            "is stopped. Aborting so the backtrace points at the bad allocation.\n",
+            __FILE__, __LINE__, (void*)my_thread);
+    fflush(stderr);
+    abort();
+  }
+  // A thread running inside call_with_stopped_world() stopped the world itself;
+  // its closure promised not to touch GC memory.
+  if (tl_stopped_world_depth != 0) {
+    fprintf(stderr,
+            "%s:%d GC-SAFETY VIOLATION: thread my_thread=%p allocated inside a "
+            "call_with_stopped_world() region (depth=%u). The closure must not "
+            "touch GC-managed memory. Aborting for a backtrace.\n",
+            __FILE__, __LINE__, (void*)my_thread, tl_stopped_world_depth);
+    fflush(stderr);
+    abort();
+  }
+}
 
 // Number of mutator threads currently in a running (non-GC-safe) state.
 // clasp_stop_the_world() waits for this to reach 0.
@@ -65,6 +97,7 @@ void stw_mutator_stop() {
   // Same as begin_gcless_shared but used by call_with_stopped_world callers
   // that are registered mutators and need to remove themselves from the count
   // before calling clasp_stop_the_world().
+  tl_stopped_world_depth++; // DIAGNOSTIC: entering a stopped-world region
   begin_gcless_shared();
 }
 
@@ -72,6 +105,7 @@ void stw_mutator_resume() {
   // Re-add the mutator after clasp_resume_the_world(). Does NOT wait for
   // world_stopped because the caller just cleared it.
   running_count.fetch_add(1, std::memory_order_acq_rel);
+  tl_stopped_world_depth--; // DIAGNOSTIC: leaving a stopped-world region
 }
 
 void begin_gcless() {

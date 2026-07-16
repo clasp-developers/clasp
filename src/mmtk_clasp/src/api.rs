@@ -74,6 +74,27 @@ pub extern "C" fn mmtk_clasp_initialize_collection(tls: VMThread) {
     memory_manager::initialize_collection(mmtk(), tls);
 }
 
+/// Prepare for a `fork()`. Stops the MMTk GC worker threads and blocks until
+/// their underlying native threads have exited, so the process is safe to fork.
+/// After `fork()` returns, `mmtk_clasp_after_fork` must be called in BOTH the
+/// parent and the child. The VM must not allocate on the MMTk heap between this
+/// call and `mmtk_clasp_after_fork`.
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_prepare_to_fork() {
+    // Asynchronously request the workers to save context and exit...
+    mmtk().prepare_to_fork();
+    // ...then wait for their native threads to actually terminate.
+    crate::collection::join_all_gc_worker_threads();
+}
+
+/// Re-spawn the MMTk GC worker threads after a `fork()`. Must be called in both
+/// the parent and the child once `fork()` returns (paired with a preceding
+/// `mmtk_clasp_prepare_to_fork`).
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_after_fork(tls: VMThread) {
+    mmtk().after_fork(tls);
+}
+
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_bind_mutator(tls: VMMutatorThread) -> *mut Mutator<ClaspVM> {
     let mutator = Box::into_raw(memory_manager::bind_mutator(mmtk(), tls));

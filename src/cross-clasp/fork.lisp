@@ -133,7 +133,10 @@
                       (lambda () (progn ,@body))))
 
 (defun fork-worker (function &rest arguments)
-  (loop while (> *running-job-count* *max-running*)
+  ;; Block until there is a free slot before forking, so that at most
+  ;; *MAX-RUNNING* (= the requested job count) children run concurrently.
+  ;; Note >= : we must drop below the cap before adding another worker.
+  (loop while (>= *running-job-count* *max-running*)
         do (display-job (wait-on-children *jobs*))
            (decf *running-job-count*))
   (apply #'%fork-worker *jobs* *next-job-index* function arguments)
