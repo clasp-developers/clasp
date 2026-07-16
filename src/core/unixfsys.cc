@@ -228,7 +228,7 @@ CL_DEFUN T_mv core__fork(bool bReturnStream) {
       abort();
     }
   }
-  pid_t child_PID = my_thread->safe_fork();
+  pid_t child_PID = my_thread->safe_fork(/*will_exec=*/true);
   if (child_PID >= 0) {
     if (child_PID == 0) {
       // Child
