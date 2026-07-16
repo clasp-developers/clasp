@@ -40,7 +40,7 @@ struct ThreadLocalStateLowLevel {
   void* _ControlStackTop;
   void* _ControlStackBottom;
   // Saved stack pointer when this thread last entered a GC-safe state.
-  // Valid only while the thread is GC-safe (gclessp() == true).
+  // Valid only while the thread is GC-safe (gcsafep() == true).
   void* _ControlStackPointer = nullptr;
   bool _DisableInterrupts;
   AllocationProfiler _Allocations;

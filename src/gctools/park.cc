@@ -8,12 +8,12 @@ namespace gctools {
 void begin_park() {
   handle_all_queued_interrupts();
   my_thread->block();
-  begin_gcless_shared();
+  begin_gcsafe_shared();
 }
 
 void end_park() {
   // Blocks here if the world is currently stopped.
-  end_gcless_shared();
+  end_gcsafe_shared();
   my_thread->unblock();
 }
 
