@@ -79,9 +79,14 @@ void begin_gcsafe() {
   begin_gcsafe_shared();
 }
 
-void end_gcsafe_shared() {
+static void wait_for_world_resumption() {
   std::unique_lock<std::mutex> lock(stw_mutex);
   world_resumed_cv.wait(lock, [] { return !world_stopped.load(std::memory_order_acq_rel); });
+
+}
+
+void end_gcsafe_shared() {
+  wait_for_world_resumption();
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
@@ -125,11 +130,11 @@ void clasp_resume_the_world() {
   gctools::world_resumed_cv.notify_all();
 }
 
-// Park this mutator for GC (used by MMTk's block_for_gc).
+// GC-safe this mutator for GC (used by MMTk's block_for_gc).
 void clasp_pause_thread_for_gc() {
   // Wait until the GC has actually set world_stopped=true before parking.
   // Without this, if block_for_gc is called before stop_all_mutators sets
-  // world_stopped, end_gcsafe_shared returns immediately (world_stopped=false),
+  // world_stopped, end_gcsafe_shared returns immediately (world_stopped=false)
   // running_count goes back up, and clasp_stop_the_world waits forever.
   {
     std::unique_lock<std::mutex> lock(gctools::stw_mutex);
@@ -137,9 +142,17 @@ void clasp_pause_thread_for_gc() {
       return gctools::world_stopped.load(std::memory_order_acq_rel);
     });
   }
-  gctools::begin_gcsafe();
-  // end_gcsafe blocks until world_stopped becomes false.
-  gctools::end_gcsafe();
+  if (!my_thread || !my_thread->gcsafep()) {
+    gctools::begin_gcsafe();
+    // end_gcsafe waits for world resumption.
+    gctools::end_gcsafe();
+  } else {
+    // We may already be gc-safe, for example because we are GCing during an
+    // allocation. In that case we don't want to mess with that, but we still
+    // need to block.
+    // Not sure the !my_thread is necessary, but this is slow path anyway.
+    gctools::wait_for_world_resumption();
+  }
 }
 
 } // extern "C"

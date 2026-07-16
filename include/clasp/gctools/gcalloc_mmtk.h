@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include "stw.h"
 
 namespace gctools {
 
@@ -26,12 +27,14 @@ inline void mmtk_post_alloc(void* alloc_start, size_t size, MMTkClaspAllocSemant
 template <typename Stage, typename Cons>
 inline ConsHeader_s* do_cons_allocation(size_t size) {
   RAIIDisableInterrupts disable_interrupts;
+  begin_gcsafe();
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
   mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
+  end_gcsafe();
   my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
   return header;
 }
@@ -46,6 +49,7 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
   true_size += tail_size;
 #endif
+  begin_gcsafe();
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
   mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
@@ -57,6 +61,7 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 #else
   new (header) Header_s(the_header);
 #endif
+  end_gcsafe();
   return header;
 }
 
@@ -70,6 +75,7 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
   true_size += tail_size;
 #endif
+  begin_gcsafe();
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
   mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
@@ -81,6 +87,7 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
 #else
   new (header) Header_s(the_header);
 #endif
+  end_gcsafe();
   return header;
 }
 
@@ -92,6 +99,7 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
   size_t tail_size = ((rand() % 8) + 1) * Alignment();
   true_size += tail_size;
 #endif
+  begin_gcsafe();
   void* alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_NON_MOVING);
   mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_NON_MOVING);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
@@ -102,6 +110,7 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #else
   new (header) Header_s(the_header);
 #endif
+  end_gcsafe();
   return header;
 }
 
