@@ -70,7 +70,7 @@ void gc_yield_slow();
 
 extern std::atomic<bool> world_stopped;
 
-// Check if the GC has stop the world to stop, and stop if so.
+// Check if the GC has asked the world to stop, and stop if so.
 // This is called extremely frequently at safepoints, like the top of bytecode
 // functions, so ideally it will be fast.
 inline void gc_yield() {
