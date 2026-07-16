@@ -30,6 +30,14 @@ extern bool mmtk_clasp_set_dynamic_heap_size(MMTkClaspBuilder builder, size_t mi
 extern void mmtk_clasp_init(MMTkClaspBuilder builder);
 extern void mmtk_clasp_initialize_collection(void* tls);
 
+// Fork support. Call mmtk_clasp_prepare_to_fork() in the parent before fork();
+// it stops the GC worker threads and blocks until they have exited. Call
+// mmtk_clasp_after_fork() in BOTH the parent and the child once fork() returns,
+// to respawn the workers. Do not allocate on the MMTk heap between fork() and
+// mmtk_clasp_after_fork().
+extern void mmtk_clasp_prepare_to_fork(void);
+extern void mmtk_clasp_after_fork(void* tls);
+
 // Per-thread mutator lifecycle
 extern MMTkClaspMutator mmtk_clasp_bind_mutator(void* tls);
 extern void mmtk_clasp_destroy_mutator(MMTkClaspMutator mutator);
