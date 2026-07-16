@@ -211,7 +211,7 @@
          :initarg :jobs
          :initform nil
          :type (or null integer)
-         :documentation "The number of concurrent jobs during image compilation.")
+         :documentation "The number of concurrent jobs during image compilation. NIL (the default) means Koga will guess from your CPU characteristics. 0 is special-cased: no forking will be done as all.")
    (address-sanitizer :accessor address-sanitizer
                       :initarg :address-sanitizer
                       :initform nil
