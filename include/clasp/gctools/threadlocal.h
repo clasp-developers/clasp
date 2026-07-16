@@ -233,7 +233,7 @@ struct ThreadLocalState {
   std::atomic<core::Cons_sp> _PendingInterruptsTail;
   sigset_t _PendingSignals;
   std::atomic<bool> _PendingSignalsP;
-  enum class GCState { Running, GCless, Parked }; // see stw.h
+  enum class GCState { Running, GCsafe, Parked }; // see stw.h
   std::atomic<GCState> _GCState;
   List_sp _BufferStr8NsPool;
   List_sp _BufferStrWNsPool;
@@ -326,9 +326,9 @@ public:
   }
   core::T_sp dequeue_interrupt();
   inline void block() { _GCState.store(GCState::Parked, std::memory_order_release); }
-  inline void gcless() { _GCState.store(GCState::GCless, std::memory_order_release); }
+  inline void gcsafe() { _GCState.store(GCState::GCsafe, std::memory_order_release); }
   inline void unblock() { _GCState.store(GCState::Running, std::memory_order_release); }
-  inline bool gclessp() const { return _GCState.load(std::memory_order_acquire) != GCState::Running; }
+  inline bool gcsafep() const { return _GCState.load(std::memory_order_acquire) != GCState::Running; }
   inline bool blockingp() const { return _GCState.load(std::memory_order_acquire) == GCState::Parked; }
 
   // Call a function on the addresses of objects directly accessible from the

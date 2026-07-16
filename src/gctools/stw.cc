@@ -38,9 +38,9 @@ void stw_register_thread() {
 }
 
 void stw_unregister_thread() {
-  // If the thread is currently paused, begin_gcless already decremented
+  // If the thread is currently paused, begin_gcsafe already decremented
   // the count; don't double-decrement.
-  if (my_thread && my_thread->gclessp())
+  if (my_thread && my_thread->gcsafep())
     return;
   int prev = running_count.fetch_sub(1, std::memory_order_acq_rel);
   if (prev == 1) {
@@ -48,7 +48,7 @@ void stw_unregister_thread() {
   }
 }
 
-void begin_gcless_shared() {
+void begin_gcsafe_shared() {
   // Save the current stack pointer before decrementing running_count.
   // The acq_rel fence on fetch_sub below ensures the GC thread sees this
   // store after observing running_count == 0.
@@ -62,10 +62,10 @@ void begin_gcless_shared() {
 }
 
 void stw_mutator_stop() {
-  // Same as begin_gcless_shared but used by call_with_stopped_world callers
+  // Same as begin_gcsafe_shared but used by call_with_stopped_world callers
   // that are registered mutators and need to remove themselves from the count
   // before calling clasp_stop_the_world().
-  begin_gcless_shared();
+  begin_gcsafe_shared();
 }
 
 void stw_mutator_resume() {
@@ -74,19 +74,19 @@ void stw_mutator_resume() {
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
-void begin_gcless() {
-  my_thread->gcless();
-  begin_gcless_shared();
+void begin_gcsafe() {
+  my_thread->gcsafe();
+  begin_gcsafe_shared();
 }
 
-void end_gcless_shared() {
+void end_gcsafe_shared() {
   std::unique_lock<std::mutex> lock(stw_mutex);
   world_resumed_cv.wait(lock, [] { return !world_stopped.load(std::memory_order_acq_rel); });
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
-void end_gcless() {
-  end_gcless_shared();
+void end_gcsafe() {
+  end_gcsafe_shared();
   my_thread->unblock();
 }
 
@@ -94,8 +94,8 @@ void end_gcless() {
 void gc_yield_slow() {
   // Don't need to wait on world_stopping_cv, since in gc_yield we already
   // checked that world_stopped is true.
-  begin_gcless();
-  end_gcless();
+  begin_gcsafe();
+  end_gcsafe();
 }
 
 } // namespace gctools
@@ -112,7 +112,7 @@ void clasp_stop_the_world() {
   // using stw_mutator_stop.
   gctools::world_stopped.store(true, std::memory_order_acq_rel);
   // Notify before taking stw_mutex so threads waiting in clasp_pause_thread_for_gc
-  // can wake, see world_stopped=true, and call begin_gcless() to decrement running_count.
+  // can wake, see world_stopped=true, and call begin_gcsafe() to decrement running_count.
   gctools::world_stopping_cv.notify_all();
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
   gctools::all_parked_cv.wait(lock, [] {
@@ -129,7 +129,7 @@ void clasp_resume_the_world() {
 void clasp_pause_thread_for_gc() {
   // Wait until the GC has actually set world_stopped=true before parking.
   // Without this, if block_for_gc is called before stop_all_mutators sets
-  // world_stopped, end_gcless_shared returns immediately (world_stopped=false),
+  // world_stopped, end_gcsafe_shared returns immediately (world_stopped=false),
   // running_count goes back up, and clasp_stop_the_world waits forever.
   {
     std::unique_lock<std::mutex> lock(gctools::stw_mutex);
@@ -137,9 +137,9 @@ void clasp_pause_thread_for_gc() {
       return gctools::world_stopped.load(std::memory_order_acq_rel);
     });
   }
-  gctools::begin_gcless();
-  // end_gcless blocks until world_stopped becomes false.
-  gctools::end_gcless();
+  gctools::begin_gcsafe();
+  // end_gcsafe blocks until world_stopped becomes false.
+  gctools::end_gcsafe();
 }
 
 } // extern "C"

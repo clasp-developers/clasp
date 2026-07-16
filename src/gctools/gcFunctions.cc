@@ -953,11 +953,11 @@ CL_DEFUN void gctools__dump_stamp_info(size_t unshifted_stamp) {
 // Used in regression tests
 CL_DOCSTRING(R"dx(Return this thread's stack top, current stack pointer, and bottom. The stack pointer is immediately stale. This function for testing purposes only.)dx");
 CL_DEFUN core::T_mv gctools__stw_stack_bounds() {
-  gctools::begin_gcless();
+  gctools::begin_gcsafe();
   void* sp = my_thread_low_level->_ControlStackPointer;
   void* bottom = my_thread_low_level->_ControlStackBottom;
   void* top = my_thread_low_level->_ControlStackTop;
-  gctools::end_gcless();
+  gctools::end_gcsafe();
   return Values(core::Integer_O::create((uintptr_t)top),
                 core::Integer_O::create((uintptr_t)sp),
                 core::Integer_O::create((uintptr_t)bottom));
