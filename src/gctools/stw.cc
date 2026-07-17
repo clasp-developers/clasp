@@ -115,17 +115,16 @@ void clasp_stop_the_world() {
   // Callers that ARE registered mutators (e.g. Boehm's call_with_stopped_world)
   // must remove themselves from running_count before calling this,
   // using stw_mutator_stop.
-  gctools::world_stopped.store(true, std::memory_order_acq_rel);
-  // Notify before taking stw_mutex so threads waiting in clasp_pause_thread_for_gc
-  // can wake, see world_stopped=true, and call begin_gcsafe() to decrement running_count.
-  gctools::world_stopping_cv.notify_all();
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
+  gctools::world_stopped.store(true, std::memory_order_acq_rel);
+  gctools::world_stopping_cv.notify_all();
   gctools::all_parked_cv.wait(lock, [] {
     return gctools::running_count.load(std::memory_order_acq_rel) == 0;
   });
 }
 
 void clasp_resume_the_world() {
+  std::unique_lock<std::mutex> lock(gctools::stw_mutex);
   gctools::world_stopped.store(false, std::memory_order_acq_rel);
   gctools::world_resumed_cv.notify_all();
 }
@@ -142,16 +141,16 @@ void clasp_pause_thread_for_gc() {
       return gctools::world_stopped.load(std::memory_order_acq_rel);
     });
   }
-  if (!my_thread || !my_thread->gcsafep()) {
-    gctools::begin_gcsafe();
-    // end_gcsafe waits for world resumption.
-    gctools::end_gcsafe();
-  } else {
+  if (!my_thread || my_thread->gcsafep()) {
     // We may already be gc-safe, for example because we are GCing during an
     // allocation. In that case we don't want to mess with that, but we still
     // need to block.
     // Not sure the !my_thread is necessary, but this is slow path anyway.
     gctools::wait_for_world_resumption();
+  } else {
+    gctools::begin_gcsafe();
+    // end_gcsafe waits for world resumption.
+    gctools::end_gcsafe();
   }
 }
 
