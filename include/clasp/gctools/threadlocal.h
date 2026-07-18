@@ -344,7 +344,7 @@ public:
     walk((gctools::Tagged*)&_BufferStrWNsPool);
     walk((gctools::Tagged*)&_BFormatStringOutputStream);
     walk((gctools::Tagged*)&_WriteToStringOutputStream);
-    // multiple values shouldn't be needed since we only GC at safe points
+    _MultipleValues.walkValues(walk);
     walk((gctools::Tagged*)&_DynEnvStackBottom);
     //walk((gctools::Tagged*)&_UnwindDest);
   }
