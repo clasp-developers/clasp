@@ -27,6 +27,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <utility>
+#include <concepts> // invocable
 
 namespace core {
 
@@ -107,8 +108,12 @@ public: // Functions here
 
   void valueSet(int i, T_sp val) { this->_Values[i] = val.raw_(); }
 
-  /*! Return a Cons of elements 1 up to but not including iend */
-  //  List_sp asCons(int iend) const;
+  // Call something on all the multiple value fields. Used for GC scanning.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkValues(Walker&& walk) {
+    for (size_t i = 0; i < _Size; ++i)
+      walk((gctools::Tagged*)&_Values[i]);
+  }
 };
 #pragma GCC visibility pop
 }; // namespace core
