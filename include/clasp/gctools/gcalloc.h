@@ -104,6 +104,7 @@ template <class T> struct RootClassAllocator {
     Header_s* base = do_uncollectable_allocation(the_header, size);
     T* obj = HeaderPtrToGeneralPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
+    do_post_alloc(base, size, /*non_moving=*/ true);
     gctools::tagged_pointer<T> tagged_obj(obj);
     return tagged_obj;
   }
@@ -122,16 +123,19 @@ template <class Stage, class Cons> struct ConsAllocator {
     ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
+    do_post_alloc(header, cons_size, false, sizeof(ConsHeader_s));
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
-    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(sizeof(ConsHeader_s) + sizeof(Cons)));
+    size_t cons_size = AlignUp(sizeof(ConsHeader_s) + sizeof(Cons));
+    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(cons_size);
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(car, cdr);
+    do_post_alloc( header, cons_size, false, sizeof(ConsHeader_s));
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 #endif
@@ -200,6 +204,7 @@ private:
     Header_s* base = raw_allocate<Stage, Policy>(the_header, size);
     OT* ptr = HeaderPtrToGeneralPtr<OT>(base);
     new (ptr) OT(std::forward<ARGS>(args)...);
+    do_post_alloc(base, /*size=*/size, Policy==unmanaged); // publish
     return OT_sp(ptr);
   }
 
@@ -218,6 +223,7 @@ public:
     size_t sizeWithHeader = sizeof(Header_s) + (snapshot_save_load_init->_clientEnd - snapshot_save_load_init->_clientStart);
     Header_s* base = raw_allocate(snapshot_save_load_init->_headStart->_badge_stamp_wtag_mtag, sizeWithHeader);
     OT_sp sp = initialize_snapshot_object<OT>(base, snapshot_save_load_init);
+    do_post_alloc( base, sizeWithHeader, false, sizeof(Header_s));
     // No initializer
     finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
@@ -386,6 +392,7 @@ public:
     size_t size = sizeof_container_with_header<container_type>(num);
     Header_s* base = do_general_allocation(the_header, size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<container_type>(base);
+    do_post_alloc( base, size, /*non_moving=*/false ); // This may be a problem because there is no initialization of container
     return gctools::tagged_pointer<container_type>(myAddress);
   }
 

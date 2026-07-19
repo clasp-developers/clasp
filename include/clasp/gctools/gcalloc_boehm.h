@@ -141,4 +141,14 @@ inline void do_register_destructor_finalizer(void* baseptr) {
 }
 
 inline void do_free(void* ptr) { GC_FREE(ptr); }
+
+// Boehm discovers live objects during the mark phase; there is no "publish"
+// step at allocation time. This is an empty inline function, so the compiler
+// emits *nothing* at the call site — zero overhead.
+inline void do_post_alloc(void* /*base*/, size_t /*size*/, bool /*non_moving*/,
+                          size_t /*header_size*/ = sizeof(Header_s)) {}
+
+
+
+
 }; // namespace gctools

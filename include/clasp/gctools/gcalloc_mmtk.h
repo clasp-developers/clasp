@@ -42,12 +42,6 @@ inline void* mmtk_alloc_raw(size_t size, MMTkClaspAllocSemantics semantics) {
   return mmtk_clasp_alloc(my_thread_low_level->_mmtk_mutator, size, CLASP_ALIGNMENT, semantics);
 }
 
-inline void mmtk_post_alloc(void* alloc_start, size_t size, MMTkClaspAllocSemantics semantics,
-                             size_t header_size = sizeof(Header_s)) {
-  void* client = reinterpret_cast<char*>(alloc_start) + header_size;
-  mmtk_clasp_post_alloc(my_thread_low_level->_mmtk_mutator, client, size, semantics);
-}
-
 // --- Cons allocation ---
 
 template <typename Stage, typename Cons>
@@ -55,7 +49,6 @@ inline ConsHeader_s* do_cons_allocation(size_t size) {
   RAIIDisableInterrupts disable_interrupts;
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
@@ -75,7 +68,6 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 #endif
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
@@ -99,7 +91,6 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
 #endif
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
@@ -120,7 +111,6 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
   true_size += tail_size;
 #endif
   void* alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_NON_MOVING);
-  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_NON_MOVING);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
@@ -155,5 +145,18 @@ template <class OT>
 inline void do_register_destructor_finalizer(void* baseptr) {
   (void)baseptr;
 }
+
+
+// Publish a fully-constructed object to MMTk: sets the valid-object bit and
+// per-object metadata so the collector will scan it (and, under moving Immix,
+// copy/forward it). MUST be called only AFTER the object is fully initialized.
+inline void do_post_alloc(void* base, size_t size, bool non_moving,
+                          size_t header_size = sizeof(Header_s)) {
+  void* client = reinterpret_cast<char*>(base) + header_size;
+  mmtk_clasp_post_alloc(my_thread_low_level->_mmtk_mutator, client, size,
+                        non_moving ? MMTK_CLASP_ALLOC_NON_MOVING
+                        : MMTK_CLASP_ALLOC_DEFAULT);
+}
+
 
 }; // namespace gctools
