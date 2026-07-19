@@ -96,10 +96,12 @@ void end_gcsafe() {
 }
 
 // see gc_yield
+
 void gc_yield_slow() {
   // Don't need to wait on world_stopping_cv, since in gc_yield we already
   // checked that world_stopped is true.
   begin_gcsafe();
+  // end_gcsafe() waits for the world to resume
   end_gcsafe();
 }
 

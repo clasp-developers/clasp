@@ -101,11 +101,9 @@ template <class T> struct RootClassAllocator {
 
   template <class... ARGS>
   static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    begin_gcsafe();
     Header_s* base = do_uncollectable_allocation(the_header, size);
     T* obj = HeaderPtrToGeneralPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
-    end_gcsafe();
     gctools::tagged_pointer<T> tagged_obj(obj);
     return tagged_obj;
   }
@@ -120,12 +118,10 @@ template <class Stage, class Cons> struct ConsAllocator {
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
-    begin_gcsafe();
     size_t cons_size = AlignUp(sizeof(Cons) + sizeof(ConsHeader_s));
     ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
-    end_gcsafe();
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
   }
 
@@ -210,10 +206,8 @@ private:
 public:
   template <typename Stage, typename... ARGS>
   static OT_sp allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    begin_gcsafe();
     OT_sp sp =
       allocate_in_appropriate_pool_kind<Stage, GCInfo<OT>::Policy>(the_header, size, std::forward<ARGS>(args)...);
-    end_gcsafe();
     initializeIfNeeded(sp);
     finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
@@ -232,9 +226,7 @@ public:
 
   template <typename... ARGS>
   static OT_sp static_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    begin_gcsafe();
     OT_sp sp = allocate_in_appropriate_pool_kind<RuntimeStage, unmanaged>(the_header, size, std::forward<ARGS>(args)...);
-    end_gcsafe();
     initializeIfNeeded(sp);
     finalizeIfNeeded(sp);
     return sp;
@@ -242,10 +234,8 @@ public:
 
   static OT_sp copy_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, const OT& that) {
     // Copied objects must be allocated in the appropriate pool
-    begin_gcsafe();
     OT_sp sp =
       allocate_in_appropriate_pool_kind<RuntimeStage, GCInfo<OT>::Policy>(the_header, size, that);
-    end_gcsafe();
     // Copied objects are not initialized.
     // Copied objects are finalized if necessary
     finalizeIfNeeded(sp);

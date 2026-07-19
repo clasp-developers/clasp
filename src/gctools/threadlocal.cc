@@ -484,6 +484,10 @@ void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   this->_PendingInterruptsTail.store(intqueue, std::memory_order_release);
 };
 
+bool thread_local_gcsafep(ThreadLocalState* athread)
+{
+  return athread->gcsafep();
+}
 }; // namespace core
 
 uint32_t my_thread_random() { return my_thread->random(); }

@@ -9,9 +9,36 @@
 #include <cstdlib>
 #include <cstring>
 
+namespace core {
+struct ThreadLocalState;
+bool thread_local_gcsafep(ThreadLocalState* athread);
+};
+
 namespace gctools {
 
+
 inline void* mmtk_alloc_raw(size_t size, MMTkClaspAllocSemantics semantics) {
+  // A thread must be GC-UNSAFE (Running) to allocate. If it's gc-safe here, some
+  // caller wrapped this allocation in begin_gcsafe()/end_gcsafe() (or is
+  // allocating inside another gc-safe region). That's the bug: a gc-safe thread
+  // has told the collector "I'm stopped, collect now" — but it's about to run
+  // MMTk's allocator, so a collection can start while it's inside the allocator.
+  if (my_thread && thread_local_gcsafep(my_thread)) {
+    fprintf(stderr,
+            "%s:%d GC-SAFETY VIOLATION: thread %p entered the allocator while "
+            "GC-safe. Allocation must run with the thread Running (GC-unsafe). "
+            "Look for a begin_gcsafe()/end_gcsafe() wrapping this allocation. "
+            "Aborting for a backtrace.\n",
+            __FILE__, __LINE__, (void*)my_thread);
+    fflush(stderr);
+    abort();
+  }
+
+  // If we are supposed to yield to the GC then do so here
+  gctools::gc_yield();
+
+  // Do the allocation and if it is out of memory and needs to GC it will park me and wait for all
+  // other threads to park and then do the GC and free up memory and return.
   return mmtk_clasp_alloc(my_thread_low_level->_mmtk_mutator, size, CLASP_ALIGNMENT, semantics);
 }
 

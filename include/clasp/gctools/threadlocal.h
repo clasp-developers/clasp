@@ -373,6 +373,8 @@ public:
   ~ThreadLocalState();
 };
 
+bool thread_local_gcsafep(ThreadLocalState* athread);
+
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
 void thread_local_invoke_and_clear_cleanup();
 
