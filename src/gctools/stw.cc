@@ -141,17 +141,9 @@ void clasp_pause_thread_for_gc() {
       return gctools::world_stopped.load(std::memory_order_acq_rel);
     });
   }
-  if (!my_thread || my_thread->gcsafep()) {
-    // We may already be gc-safe, for example because we are GCing during an
-    // allocation. In that case we don't want to mess with that, but we still
-    // need to block.
-    // Not sure the !my_thread is necessary, but this is slow path anyway.
-    gctools::wait_for_world_resumption();
-  } else {
-    gctools::begin_gcsafe();
-    // end_gcsafe waits for world resumption.
-    gctools::end_gcsafe();
-  }
+  gctools::begin_gcsafe();
+  // end_gcsafe waits for world resumption.
+  gctools::end_gcsafe();
 }
 
 } // extern "C"
