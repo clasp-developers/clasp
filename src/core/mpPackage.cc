@@ -185,6 +185,7 @@ __attribute__((noinline))
 void Process_O::run() {
   core::ThreadLocalState thread_local_state;
   my_thread = &thread_local_state;
+  gc_yield();
   my_thread_low_level = &thread_local_state._LowLevel;
   my_thread->startUpVM();
   my_thread->initialize_thread(this->asSmartPtr());
