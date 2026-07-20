@@ -34,12 +34,6 @@ static std::condition_variable world_stopping_cv;
 std::atomic<bool> world_stopped{false};
 
 void stw_register_thread() {
-  // Do not come online as a running (counted) mutator while a stop-the-world is
-  // in progress: a thread created mid-GC would otherwise be a Running thread
-  // during marking. Wait for the world to be running, then count ourselves.
-  // (Mirror of end_gcsafe_shared's resumption wait.)
-  std::unique_lock<std::mutex> lock(stw_mutex);
-  world_resumed_cv.wait(lock, [] { return !world_stopped.load(std::memory_order_acquire); });
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 

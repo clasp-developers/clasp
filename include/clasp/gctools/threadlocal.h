@@ -296,6 +296,9 @@ public:
 
   void startUpVM();
 
+#ifdef USE_MMTK
+  void bind_mmtk_mutator();
+#endif
   inline void enqueue_signal(int signo) {
     // Called from signal handlers.
     sigaddset(&_PendingSignals, signo); // sigaddset is AS-safe
@@ -364,8 +367,13 @@ public:
   // hardened systems.
   template <std::invocable<gctools::Tagged*> Walker>
   void walkControlStack(Walker&& walk) {
-    for (const void** ptr = (const void**)_LowLevel._ControlStackPointer;
-         ptr < (const void**)_LowLevel._ControlStackBottom; ++ptr) {
+    const void** ptr    = (const void**)_LowLevel._ControlStackPointer;
+    const void** bottom = (const void**)_LowLevel._ControlStackBottom;
+    // A mutator that hasn't reached a gc-safe point yet (e.g. freshly bound,
+    // before begin_gcsafe_shared saved a real SP) has no valid scan range and no
+    // roots on its control stack. Don't scan it.
+    if (!ptr || ptr >= bottom) return;
+    for (; ptr < bottom; ++ptr) {
       walk((gctools::Tagged*)ptr);
     }
   }

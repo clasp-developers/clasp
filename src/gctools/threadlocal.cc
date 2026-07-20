@@ -123,7 +123,7 @@ ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
 
 ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel() {
 #ifdef USE_MMTK
-  mmtk_clasp_destroy_mutator(_mmtk_mutator);
+  if (_mmtk_mutator) mmtk_clasp_destroy_mutator(_mmtk_mutator);
 #endif
 };
 
@@ -188,6 +188,15 @@ VirtualMachine::~VirtualMachine() {
     gctools::GC<T_O>::freeRoots(this->_stackBottom);
 }
 
+#ifdef USE_MMTK
+void ThreadLocalState::bind_mmtk_mutator() {
+  // Empty scan range until the thread first parks (begin_gcsafe_shared sets the
+  // real pointer). Keeps the conservative scanner from dereferencing null.
+  _LowLevel._ControlStackPointer = _LowLevel._ControlStackBottom;
+  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+}
+#endif
+
 // For main thread initialization - it happens too early and _Nil is undefined
 // So this partially sets up the ThreadLocalState and the system must invoke
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
@@ -210,7 +219,13 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
 #ifdef USE_MMTK
-  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+  // A freshly-bound mutator can be scanned by the GC before it ever reaches a
+  // gc-safe point (which is what sets _ControlStackPointer). Start with an empty
+  // scan range (Pointer == Bottom) so the conservative scanner reads nothing
+  // instead of dereferencing null. begin_gcsafe_shared() sets the real pointer
+  // when the thread first parks. A brand-new thread has no roots yet, so an
+  // empty scan is correct here.
+  bind_mmtk_mutator();
 #endif
   gctools::stw_register_thread();
 }
@@ -307,7 +322,13 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
 #ifdef USE_MMTK
-  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+  // A freshly-bound mutator can be scanned by the GC before it ever reaches a
+  // gc-safe point (which is what sets _ControlStackPointer). Start with an empty
+  // scan range (Pointer == Bottom) so the conservative scanner reads nothing
+  // instead of dereferencing null. begin_gcsafe_shared() sets the real pointer
+  // when the thread first parks. A brand-new thread has no roots yet, so an
+  // empty scan is correct here.
+  bind_mmtk_mutator();
 #endif
   gctools::stw_register_thread();
 }
@@ -448,7 +469,20 @@ core::T_sp ThreadLocalState::dequeue_interrupt() {
 
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
-ThreadLocalState::~ThreadLocalState() { gctools::stw_unregister_thread(); }
+ThreadLocalState::~ThreadLocalState()
+{
+#ifdef USE_MMTK
+  // Leave MMTk's scan set BEFORE leaving the STW count. Otherwise there is a
+  // window where this thread is uncounted (stop_the_world won't wait for it)
+  // yet still in MUTATORS (scannable), and a GC would scan it while it runs
+  // teardown with a stale _ControlStackPointer.
+  // No GC-heap allocation is allowed after this point.
+  _LowLevel._ControlStackPointer = _LowLevel._ControlStackBottom; // empty conservative range
+  mmtk_clasp_destroy_mutator(_LowLevel._mmtk_mutator);
+  _LowLevel._mmtk_mutator = nullptr;   // don't double-free in ~ThreadLocalStateLowLevel
+#endif
+  gctools::stw_unregister_thread();
+}
 
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup) {
   CleanupFunctionNode* node = new CleanupFunctionNode(cleanup, my_thread->_CleanupFunctions);
