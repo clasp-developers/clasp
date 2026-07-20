@@ -81,7 +81,7 @@ void begin_gcsafe() {
 
 static void wait_for_world_resumption() {
   std::unique_lock<std::mutex> lock(stw_mutex);
-  world_resumed_cv.wait(lock, [] { return !world_stopped.load(std::memory_order_acq_rel); });
+  world_resumed_cv.wait(lock, [] { return !world_stopped.load(std::memory_order_acquire); });
 
 }
 
@@ -116,16 +116,16 @@ void clasp_stop_the_world() {
   // must remove themselves from running_count before calling this,
   // using stw_mutator_stop.
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
-  gctools::world_stopped.store(true, std::memory_order_acq_rel);
+  gctools::world_stopped.store(true, std::memory_order_release);
   gctools::world_stopping_cv.notify_all();
   gctools::all_parked_cv.wait(lock, [] {
-    return gctools::running_count.load(std::memory_order_acq_rel) == 0;
+    return gctools::running_count.load(std::memory_order_acquire) == 0;
   });
 }
 
 void clasp_resume_the_world() {
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
-  gctools::world_stopped.store(false, std::memory_order_acq_rel);
+  gctools::world_stopped.store(false, std::memory_order_release);
   gctools::world_resumed_cv.notify_all();
 }
 
@@ -138,7 +138,7 @@ void clasp_pause_thread_for_gc() {
   {
     std::unique_lock<std::mutex> lock(gctools::stw_mutex);
     gctools::world_stopping_cv.wait(lock, [] {
-      return gctools::world_stopped.load(std::memory_order_acq_rel);
+      return gctools::world_stopped.load(std::memory_order_acquire);
     });
   }
   gctools::begin_gcsafe();
