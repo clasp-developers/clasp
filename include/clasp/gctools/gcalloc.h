@@ -392,7 +392,8 @@ public:
     size_t size = sizeof_container_with_header<container_type>(num);
     Header_s* base = do_general_allocation(the_header, size);
     container_pointer myAddress = HeaderPtrToGeneralPtr<container_type>(base);
-    do_post_alloc( base, size, /*non_moving=*/false ); // This may be a problem because there is no initialization of container
+    new (myAddress) container_type(num,0);
+    do_post_alloc( base, size, /*non_moving=*/false );
     return gctools::tagged_pointer<container_type>(myAddress);
   }
 
