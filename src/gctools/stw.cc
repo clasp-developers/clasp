@@ -33,33 +33,38 @@ static std::condition_variable world_resumed_cv;
 static std::condition_variable world_stopping_cv;
 std::atomic<bool> world_stopped{false};
 
-void stw_register_thread() {
+void gc_yield_slow_thread(core::ThreadLocalState*);
+
+void stw_register_thread(core::ThreadLocalState* thread) {
   running_count.fetch_add(1, std::memory_order_acq_rel);
+  // Now that we're registered, yield in case a GC is underway.
+  if (world_stopped.load(std::memory_order_relaxed))
+    gc_yield_slow_thread(thread);
 }
 
-void stw_unregister_thread() {
-  // If the thread is currently paused, begin_gcsafe already decremented
-  // the count; don't double-decrement.
-  if (my_thread && my_thread->gcsafep())
-    return;
+void stw_unregister_thread(core::ThreadLocalState* thread) {
+  (void)thread;
   int prev = running_count.fetch_sub(1, std::memory_order_acq_rel);
   if (prev == 1) {
     all_parked_cv.notify_all();
   }
 }
 
-void begin_gcsafe_shared() {
+void begin_gcsafe_shared_thread(core::ThreadLocalState* thread) {
   // Save the current stack pointer before decrementing running_count.
   // The acq_rel fence on fetch_sub below ensures the GC thread sees this
   // store after observing running_count == 0.
-  if (my_thread_low_level) {
-    my_thread_low_level->_ControlStackPointer = __builtin_frame_address(0);
-  }
+  thread->_LowLevel._ControlStackPointer = __builtin_frame_address(0);
   int prev = running_count.fetch_sub(1, std::memory_order_acq_rel);
   if (prev == 1) {
+    // It is possible for this to go off during GC if thread is newly created
+    // and about to wait within stw_register_thread. That should be harmless
+    // to lose since nothing is waiting on it during GC.
     all_parked_cv.notify_all();
   }
 }
+
+void begin_gcsafe_shared() { begin_gcsafe_shared_thread(my_thread); }
 
 void stw_mutator_stop() {
   // Same as begin_gcsafe_shared but used by call_with_stopped_world callers
@@ -74,10 +79,12 @@ void stw_mutator_resume() {
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
-void begin_gcsafe() {
-  my_thread->gcsafe();
-  begin_gcsafe_shared();
+void begin_gcsafe_thread(core::ThreadLocalState* thread) {
+  thread->gcsafe();
+  begin_gcsafe_shared_thread(thread);
 }
+
+void begin_gcsafe() { begin_gcsafe_thread(my_thread); }
 
 static void wait_for_world_resumption() {
   std::unique_lock<std::mutex> lock(stw_mutex);
@@ -90,18 +97,22 @@ void end_gcsafe_shared() {
   running_count.fetch_add(1, std::memory_order_acq_rel);
 }
 
-void end_gcsafe() {
+void end_gcsafe_thread(core::ThreadLocalState* thread) {
   end_gcsafe_shared();
-  my_thread->unblock();
+  thread->unblock();
 }
 
+void end_gcsafe() { end_gcsafe_thread(my_thread); }
+
 // see gc_yield
-void gc_yield_slow() {
+void gc_yield_slow_thread(core::ThreadLocalState* thread) {
   // Don't need to wait on world_stopping_cv, since in gc_yield we already
   // checked that world_stopped is true.
-  begin_gcsafe();
-  end_gcsafe();
+  begin_gcsafe_thread(thread);
+  end_gcsafe_thread(thread);
 }
+
+void gc_yield_slow() { gc_yield_slow_thread(my_thread); }
 
 } // namespace gctools
 

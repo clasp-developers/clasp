@@ -33,16 +33,21 @@
 // until clasp_resume_the_world() is called, so threads leaving a GC-safe
 // region do not race ahead of a running collector.
 
+// Unfortunately necessary forward declaration.
+namespace core {
+class ThreadLocalState;
+}
+
 namespace gctools {
 
 // Called from ThreadLocalState constructor: register this thread as a running
 // mutator so clasp_stop_the_world() knows to wait for it.
-void stw_register_thread();
+void stw_register_thread(core::ThreadLocalState*);
 
 // Called from ThreadLocalState destructor: remove this thread.  If the thread
 // is currently parked the count was already decremented by begin_park_internal
 // and this is a no-op.
-void stw_unregister_thread();
+void stw_unregister_thread(core::ThreadLocalState*);
 
 // Enter GC-safe state. Sets thread's GCState and does begin_gcsafe_shared().
 void begin_gcsafe();
@@ -61,7 +66,7 @@ void stw_mutator_resume();
 void end_gcsafe();
 
 // Leave GC-safe state.  If the world is currently stopped, blocks until
-// clasp_resume_the_world() is called. Called by end_park().
+// clasp_resume_the_world() is called. Called by end_park() and ~ThreadLocalState.
 void end_gcsafe_shared();
 
 // Check if the GC has asked the world to stop, and stop if so.

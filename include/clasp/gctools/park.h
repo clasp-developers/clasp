@@ -18,8 +18,8 @@
  * Make sure you don't do anything GC-y (like allocate!) and are prepared to be
  * interrupted by signals whenever. Ideally do as little as possible inside,
  * like your single syscall.
- * It is okay to longjmp/whatever out of the block. The signal handler unparks
- * the thread before running user code.
+ * Make sure you unpark. If you longjmp you need to ensure that you unpark first.
+ * The signal handler unparks the thread before running user code.
  * See clasp_musleep for an example of usage.
  * They're macros because they might need to end up calling some kinda
  * call_without_gc(void (*)(void*), void*) eventually.

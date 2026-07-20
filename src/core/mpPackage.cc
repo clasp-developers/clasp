@@ -42,7 +42,6 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/lispList.h>
 #include <clasp/gctools/interrupt.h>
-#include <clasp/gctools/stw.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/unwind.h>
 #include <clasp/core/sampling_profiler.h>
@@ -188,16 +187,6 @@ void Process_O::run() {
   core::ThreadLocalState thread_local_state;
   my_thread = &thread_local_state;
   my_thread_low_level = &thread_local_state._LowLevel;
-
-  // It's possible, if unlikely, that a GC could have started while
-  // we were setting up above, before the GC knew it had to wait for us.
-  // If so we have to wait for it to finish.
-  // (Any subsequent GCs will know they have to wait for us after
-  //  the stw_register_thread in the ThreadLocalState constructor.)
-  gctools::gc_yield();
-  // At this point we can use the GC (allocate objects, etc.)
-  // so we can do the part of thread setup that requires allocation.
-
   my_thread->startUpVM();
   my_thread->initialize_thread(this->asSmartPtr());
   //  my_thread->create_sigaltstack();

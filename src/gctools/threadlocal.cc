@@ -121,12 +121,6 @@ ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
   _ControlStackBottom = (void*)((char*)stackaddr + stacksize);
 };
 
-ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel() {
-#ifdef USE_MMTK
-  mmtk_clasp_destroy_mutator(_mmtk_mutator);
-#endif
-};
-
 }; // namespace gctools
 namespace core {
 
@@ -209,10 +203,14 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+  gctools::stw_register_thread(this);
 #ifdef USE_MMTK
+  // Note that stw_register_thread blocked if the world was stopped, so at
+  // this point the world is not stopped. MMTk demands that the set of mutators
+  // not change during a stop, and bind_mutator adds a mutator.
   _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
 #endif
-  gctools::stw_register_thread();
+
 }
 
 pid_t ThreadLocalState::safe_fork(bool will_exec) {
@@ -306,10 +304,10 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+  gctools::stw_register_thread(this);
 #ifdef USE_MMTK
   _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
 #endif
-  gctools::stw_register_thread();
 }
 
 static void dumpDynEnvStack(T_sp stack) {
@@ -448,7 +446,29 @@ core::T_sp ThreadLocalState::dequeue_interrupt() {
 
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
-ThreadLocalState::~ThreadLocalState() { gctools::stw_unregister_thread(); }
+ThreadLocalState::~ThreadLocalState() {
+  // In general we can't destroy mutators during a pause - in MMTk for example
+  // it's explicitly undefined behavior (see ActivePlan::mutators).
+  // So when destroying a thread we need to wake it if it's parked/gcsafe,
+  // which will block until any stop-the-world pause is over,
+  // and then not have any safepoints from there to the end of this destructor
+  // to ensure that there are no more pauses.
+  // FIXME: Ideally this would be isolated in stw.h/cc somehow, but we need to
+  // mmtk_clasp_destroy_mutator, and we don't want to do that in stw.h/cc.
+  // Possibly some other ActivePlan::mutators implementation would be more
+  // amenable to this.
+  if (gcsafep()) // also covers parked/blockingp
+    gctools::end_gcsafe();
+#ifdef USE_MMTK
+  // Make sure the mutator is destroyed before unregistering.
+  // Destroying the mutator removes it from the set of threads MMTk scans
+  // (as per our ActivePlan::mutators implementation, at least),
+  // but we won't tell MMTk that all mutators are stopped until (at least)
+  // we unregister ourselves below.
+  mmtk_clasp_destroy_mutator(_LowLevel._mmtk_mutator);
+#endif
+  gctools::stw_unregister_thread(this);
+}
 
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup) {
   CleanupFunctionNode* node = new CleanupFunctionNode(cleanup, my_thread->_CleanupFunctions);
