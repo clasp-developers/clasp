@@ -42,7 +42,6 @@ __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
   // Build and initialise the MMTk instance.
   MMTkClaspBuilder builder = mmtk_clasp_create_builder();
   mmtk_clasp_set_option(builder, "plan", "Immix");
-  mmtk_clasp_set_option(builder, "threads", "1");
   mmtk_clasp_set_dynamic_heap_size(builder, (size_t)256 * 1024 * 1024,
                                    (size_t)4 * 1024 * 1024 * 1024);
   mmtk_clasp_init(builder);
