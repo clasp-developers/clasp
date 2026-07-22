@@ -38,7 +38,7 @@ public:
       printf("%s:%d CONS in cons_scan client=%p\n(it's not a CONS or any of fwd car=%p "
            "cdr=%p\n",
              __FILE__, __LINE__, (void*)client, client->car().raw_(), client->cdr().raw_());
-      abort();
+      truly_abort();
     }
   }
   
