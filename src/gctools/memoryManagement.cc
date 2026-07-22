@@ -277,7 +277,7 @@ bool ConsHeader_s::isValidConsObject() const volatile {
     printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if (!is_memory_readable((void*)this, 8))
+  if (!is_memory_readable((void*)this, sizeof(ConsHeader_s)))
     return false;
 #ifdef USE_BOEHM
   void* gcBase;
@@ -302,7 +302,7 @@ bool Header_s::isValidGeneralObject() const volatile {
     printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  if (!is_memory_readable((void*)this, 8))
+  if (!is_memory_readable((void*)this, sizeof(Header_s)))
     return false;
 #ifdef USE_BOEHM
   void* gcBase;
