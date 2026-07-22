@@ -318,29 +318,29 @@ bool Header_s::isValidGeneralObject() const volatile {
 #endif
   if (this->_badge_stamp_wtag_mtag.invalidP())
     goto bad;
-  if (this->_badge_stamp_wtag_mtag.stampP()) {
+  if (!this->_badge_stamp_wtag_mtag.stampP())
+    goto bad;
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max))
-      goto bad; // wasMTAG
+  if ((uintptr_t)this->_badge_stamp_wtag_mtag.stamp_()
+      > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max))
+    goto bad; // wasMTAG
 #endif          // USE_PRECISE_GC
 #ifdef DEBUG_GUARD
-    if (this->_guard != GUARD1)
-      goto bad;
-    if (this->_guard2 != GUARD2)
-      goto bad;
+  if (this->_guard != GUARD1)
+    goto bad;
+  if (this->_guard2 != GUARD2)
+    goto bad;
 #endif
-    if (!(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value)))
-      goto bad;
+  if (!(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value)))
+    goto bad;
 #ifdef DEBUG_GUARD
-    for (unsigned char *cp = ((unsigned char*)(this) + this->_tail_start),
-                       *cpEnd((unsigned char*)(this) + this->_tail_start + this->_tail_size);
-         cp < cpEnd; ++cp) {
-      if (*cp != 0xcc)
-        goto bad;
-    }
-#endif
+  for (unsigned char *cp = ((unsigned char*)(this) + this->_tail_start),
+         *cpEnd((unsigned char*)(this) + this->_tail_start + this->_tail_size);
+       cp < cpEnd; ++cp) {
+    if (*cp != 0xcc)
+      goto bad;
   }
+#endif
   return true;
 bad:
   // printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this,
