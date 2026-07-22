@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <stack>
 #include <utility> // pair
+#include <cstdint> // UINTPTR_MAX
 #include <unistd.h>
 #include <fcntl.h>
 #include <clasp/core/foundation.h>
@@ -47,6 +48,7 @@ THE SOFTWARE.
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/gctools/memoryManagement.h>
+#include <clasp/gctools/interrupt.h> // detect_fault
 #include <clasp/gctools/roots.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/llvmoExpose.h>
@@ -158,35 +160,24 @@ void clasp_dealloc(char* buffer) {
 namespace gctools {
 
 bool is_memory_readable(const void* address, size_t bytes) {
-  return true;
-  // The below tests memory readability by doing several syscalls; write(2) returns
-  // EFAULT if the memory is not writable by the process, i.e. we'd segfault if we
-  // tried it. Performing this test is _extremely_ expensive compared to everything
-  // else we do to test object validity, so only enable this if you're desperate.
-  // A better test would probably be to install a segfault handler temporarily and
-  // write into memory ourselves (like *address = 0). That would avoid the pipe and
-  // write, but you'd still need to mess around with signals.
-  /*
-  int fd[2];
-  int ret = pipe(fd);
-  if (ret == -1) {
-    printf("%s:%d:%s Error creating pipe\n", __FILE__, __LINE__, __FUNCTION__);
-    wait_for_user_signal("Error creating pipe in is_memory_readable");
-  }
-
-  // Try to write to an unwritable file descriptor
-  ret = write(fd[1], address, bytes);
-  close(fd[0]);
-  close(fd[1]);
-
-  if (ret == -1 && errno == EFAULT) {
-    // Memory is not readable
-    return false;
-  } else {
-    // Memory is readable
-    return true;
-  }
-*/
+  address_range range;
+  range.low = (uintptr_t)address;
+  range.high = (uintptr_t)address + bytes;
+  if (range.high < range.low)
+    // This can happen if ADDRESS is absurdly high, e.g. address = UINTPTR_MAX-8
+    // and bytes = 8. That makes the addition wrap around.
+    // I am actually seeing this for some reason, dunno why.
+    // But it ought to work, so:
+    range.high = UINTPTR_MAX;
+  return !detect_fault(1, &range,
+                       [&] () {
+                         for (size_t i = 0; i < bytes; ++i) {
+                           // volatile to try to actually force a load here
+                           // the load will trigger a fault if the address
+                           // does not point at our memory
+                           volatile char x = ((char*)address)[i];
+                         }
+                       });
 }
 
 }; // namespace gctools
@@ -268,15 +259,28 @@ void BaseHeader_s::validate() const {
   }
 }
 
-bool ConsHeader_s::isValidConsObject() const {
+// Did you know member functions can be marked volatile? Neither did I, before.
+// We call this function on all kinds of pointers from god knows where to things
+// that aren't actually ConsHeader_s's and have never been. In particular, it's
+// possible for them to be pointers to outside actual memory, in which case
+// accessing any of that memory through fields will segfault.
+// is_memory_readable checks for that using dark magic, but we need to be sure
+// that it's checked before any accesses, and so the compiler must be made not
+// to reorder any of the accesses to "this".
+// Marking the function volatile ensures this. The alternative is a
+// [[clang::optnone]] attribute, which does work, but inhibits other optimizations
+// that we may want.
+// volatile does unfortunately entail some duplicate volatile functions in the
+// classes. FIXME: Come C++23 we can use deducing this to avoid that.
+bool ConsHeader_s::isValidConsObject() const volatile {
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  void* gcBase;
   if (!is_memory_readable((void*)this, 8))
-    goto bad;
+    return false;
 #ifdef USE_BOEHM
+  void* gcBase;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
     goto bad;
@@ -291,15 +295,17 @@ bad:
   return false;
 }
 
-bool Header_s::isValidGeneralObject() const {
+// See apology above isValidConsObject
+bool Header_s::isValidGeneralObject() const volatile {
+  // See apologia in ConsHeader_s
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
-  void* gcBase;
   if (!is_memory_readable((void*)this, 8))
-    goto bad;
+    return false;
 #ifdef USE_BOEHM
+  void* gcBase;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
     goto bad;

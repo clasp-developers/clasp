@@ -431,17 +431,20 @@ public:
 
   public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
-    bool invalidP() const {
+    bool invalidP() const volatile {
       tagged_stamp_t val = (this->_value & general_mtag_mask);
       return !(val == general_mtag || val == fwd_mtag);
     };
     bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
+    bool stampP() const volatile { return (_value & general_mtag_mask) == general_mtag; };
     bool generalObjectP() const { return stampP() && !consObjectP(); };
-    bool consObjectP() const { return stamp_wtag() == STAMPWTAG_CONS; }
+    bool consObjectP() const volatile { return stamp_wtag() == STAMPWTAG_CONS; }
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
     /*! No sanity checking done - this function assumes kindP == true */
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
+    GCStampEnum stamp_wtag() const volatile { return (GCStampEnum)(_value >> general_mtag_shift); };
     GCStampEnum stamp_() const { return (GCStampEnum)(this->_value >> (wtag_width + general_mtag_shift)); };
+    GCStampEnum stamp_() const volatile { return (GCStampEnum)(_value >> (wtag_width + general_mtag_shift)); }
     /*! No sanity checking done - this function assumes fwdP == true */
     void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
@@ -585,7 +588,7 @@ public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
-  bool isValidConsObject() const;
+  bool isValidConsObject() const volatile;
 };
 
 class Header_s : public BaseHeader_s {
@@ -608,7 +611,7 @@ public:
 #endif
 
 public:
-  bool isValidGeneralObject() const;
+  bool isValidGeneralObject() const volatile;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE

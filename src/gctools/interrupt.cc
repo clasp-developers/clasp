@@ -382,10 +382,41 @@ void handle_ill(int signo, siginfo_t* info, void* context) {
 }
 #endif
 
+static thread_local struct {
+  sigjmp_buf* ret = nullptr;
+  size_t ninterest = 0;
+  address_range interest[max_fault_detection_ranges];
+} fault_detection; // global variable used only in this file
+
+void begin_fault_detection(size_t nranges, const address_range* ranges,
+                           sigjmp_buf* ret) {
+  for (size_t i = 0; i < nranges; ++i)
+    fault_detection.interest[i] = ranges[i];
+  fault_detection.ret = ret;
+  fault_detection.ninterest = nranges;
+}
+
+void end_fault_detection() {
+  fault_detection.ninterest = 0;
+  fault_detection.ret = nullptr;
+}
+
 void handle_segv(int signo, siginfo_t* info, void* context) {
   (void)context; // unused
-  if (my_thread)
-    core::eval::funcall(ext::_sym_segmentation_violation, core::Integer_O::create((uintptr_t)(info->si_addr)));
+  uintptr_t addr = (uintptr_t)info->si_addr;
+  // Detect faults we've been asked to detect.
+  if (fault_detection.ninterest > 0) {
+    /*
+    for (size_t i = 0; i < fault_detection.ninterest; ++i) {
+      if (fault_detection.interest[i].low <= addr
+          && addr < fault_detection.interest[i].high)
+        siglongjmp(*(fault_detection.ret), 1);
+    }
+*/
+    siglongjmp(*(fault_detection.ret), 1);
+  }
+  if (my_thread && !my_thread->gcsafep())
+    core::eval::funcall(ext::_sym_segmentation_violation, core::Integer_O::create(addr));
   else default_raise(signo);
 }
 
