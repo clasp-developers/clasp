@@ -23,15 +23,19 @@ void walkThreadRoots(ThreadWalkCallback&& callback,
   tls->walkVMStack(callback);
   tls->walkControlStack([&](Tagged* tp) {
     // The control stack we have to walk conservatively.
+    // We skip any stack allocated objects because they will sometimes be
+    // referred to past their sell-by date because the C++ compiler is inscrutable
+    // and anyway we don't need to scan them, since all of their fields will be
+    // on the stack to scan directly.
     switch(ptag(*tp)) {
     case general_tag: {
       Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(untag_object((void*)*tp));
-      if (header->isValidGeneralObject())
+      if (is_heap_memory((void*)*tp) && header->isValidGeneralObject())
         callback(tp);
     } break;
     case cons_tag: {
       ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr(untag_object((void*)*tp));
-      if (header->isValidConsObject())
+      if (is_heap_memory((void*)*tp) && header->isValidConsObject())
         callback(tp);
     } break;
     default: callback(tp);

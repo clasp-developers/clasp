@@ -180,6 +180,21 @@ bool is_memory_readable(const void* address, size_t bytes) {
                        });
 }
 
+bool is_heap_memory(const void* address) {
+  // check easy stuff first
+  if ((uintptr_t)address < 0x1000) return false;
+  // can happen if we took a null (0) pointer and subtracted sizeof(Header_s)
+  if ((uintptr_t)address > UINTPTR_MAX - 0x1000) return false;
+  // otherwise ask the GC about its heap
+#if defined(USE_BOEHM)
+  return !!GC_base(const_cast<void*>(address));
+#elif defined(USE_MMTK)
+  return mmtk_clasp_is_in_mmtk_spaces(address);
+#else
+  return true; // beware
+#endif
+}
+
 }; // namespace gctools
 
 extern "C" {

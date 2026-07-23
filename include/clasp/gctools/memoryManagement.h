@@ -1136,6 +1136,7 @@ size_t objectSize(BaseHeader_s* header);
 void traceablep(std::unordered_map<Tagged, bool>&);
 
 bool is_memory_readable(const void* address, size_t bytes = 8);
+bool is_heap_memory(const void* address);
 
 // Stuff for ROOM
 // This struct holds info about a given class for ROOM, specifically
