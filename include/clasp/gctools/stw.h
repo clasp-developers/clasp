@@ -49,25 +49,34 @@ void stw_register_thread(core::ThreadLocalState*);
 // and this is a no-op.
 void stw_unregister_thread(core::ThreadLocalState*);
 
-// Enter GC-safe state. Sets thread's GCState and does begin_gcsafe_shared().
-void begin_gcsafe();
+// Enter GC-safe state.
+// Sets thread's GCState and does begin_gcsafe_shared().
+// The TLS must be my_thread, but it is provided as an argument so that my_thread
+// only needs to be accessed once.
+// The second argument is a stack pointer which must be prior to the current stack
+// pointer. Nothing more recent than this pointer is scannable so it must not
+// refer to live objects.
+void begin_gcsafe(core::ThreadLocalState*, void*);
 
 // Enter GC-safe state without altering thread's GCState. Called by begin_park().
-void begin_gcsafe_shared();
+void begin_gcsafe_shared(core::ThreadLocalState*, void*);
 
 // For use by call_with_stopped_world(): remove/re-add the
 // calling registered mutator from the running count around a stop/resume pair.
 // Unlike begin_gcsafe_shared(), stw_mutator_resume() does NOT wait for
 // world_stopped to clear (the caller is the one who cleared it).
-void stw_mutator_stop();
+// The void* is a stack pointer to not allow scanning past.
+void stw_mutator_stop(void*);
 void stw_mutator_resume();
 
 // Leave GC-safe state. Sets thread's GCState and does end_gcsafe_shared().
-void end_gcsafe();
+void end_gcsafe(core::ThreadLocalState*);
 
 // Leave GC-safe state.  If the world is currently stopped, blocks until
 // clasp_resume_the_world() is called. Called by end_park() and ~ThreadLocalState.
-void end_gcsafe_shared();
+// Returns the stack pointer that was passed to begin_gcsafe_shared, which is used
+// for temporary unparking (call_unparked).
+void* end_gcsafe_shared(core::ThreadLocalState*);
 
 // Check if the GC has asked the world to stop, and stop if so.
 // This is the slow path called from gc_yield below.
@@ -106,7 +115,7 @@ namespace gctools {
 template <std::invocable<> F>
 requires (!std::same_as<void, std::invoke_result_t<F>>)
 decltype(auto) call_with_stopped_world(F f) {
-  stw_mutator_stop();
+  stw_mutator_stop(__builtin_frame_address(0));
   clasp_stop_the_world();
   decltype(auto) result = f();
   clasp_resume_the_world();
@@ -117,10 +126,29 @@ decltype(auto) call_with_stopped_world(F f) {
 template <std::invocable<> F>
 requires std::same_as<void, std::invoke_result_t<F>>
 void call_with_stopped_world(F f) {
-  stw_mutator_stop();
+  stw_mutator_stop(__builtin_frame_address(0));
   clasp_stop_the_world();
   f();
   clasp_resume_the_world();
   stw_mutator_resume();
+}
+
+// Do some stuff in a GC-safe but not parked state, from a mutator.
+template <std::invocable<> F>
+requires (!std::same_as<void, std::invoke_result_t<F>>)
+decltype(auto) call_gcsafe(F f) {
+  core::ThreadLocalState* me = my_thread;
+  begin_gcsafe(me, __builtin_frame_address(0));
+  decltype(auto) result = f();
+  end_gcsafe(me);
+  return result;
+};
+template <std::invocable<> F>
+requires std::same_as<void, std::invoke_result_t<F>>
+void call_gcsafe(F f) {
+  core::ThreadLocalState* me = my_thread;
+  begin_gcsafe(me, __builtin_frame_address(0));
+  f();
+  end_gcsafe(me);
 }
 }; // namespace gctools

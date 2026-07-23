@@ -458,7 +458,7 @@ ThreadLocalState::~ThreadLocalState() {
   // Possibly some other ActivePlan::mutators implementation would be more
   // amenable to this.
   if (gcsafep()) // also covers parked/blockingp
-    gctools::end_gcsafe();
+    gctools::end_gcsafe(this);
 #ifdef USE_MMTK
   // Make sure the mutator is destroyed before unregistering.
   // Destroying the mutator removes it from the set of threads MMTk scans

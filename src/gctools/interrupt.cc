@@ -179,15 +179,13 @@ void default_raise(int signum) {
 }
 
 // Enqueue a signal unless we're in a blocking call - in that case handle it now.
-// If we are in a blocking call, do end_park() begin_park() to make sure things
+// If we are in a blocking call, call_unparked() to make sure things
 // are OK with GC - in particular do not resume running Lisp code while the
 // collector has the world stopped.
 static void enqueue_or_handle_signal(int signo) {
   if (my_thread) {
     if (my_thread->blockingp()) {
-      end_park();
-      handle_signal_now(signo);
-      begin_park();
+      call_unparked([&]() { handle_signal_now(signo); });
     } else
       my_thread->enqueue_signal(signo);
   } else default_raise(signo);
@@ -248,11 +246,11 @@ void handle_SIGCONT(int sig) {
     if (my_thread->blockingp() && !interrupts_disabled_p()) {
       // Disable (most) async interrupts and wait for the world to be unstopped
       // before we call user code.
-      end_park();
-      handle_queued_interrupts();
-      handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
-      // Nothing jumped out of here, so we're back to blocking.
-      begin_park();
+      call_unparked([&]() {
+        handle_queued_interrupts();
+        handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
+      });
+      // Nothing jumped out of there, so we're back to blocking.
     } else my_thread->enqueue_signal(sig);
   } // default handler will do nothing, so skip default_raise
 }

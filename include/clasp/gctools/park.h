@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+
 // This file is included in some very early places (e.g. mpPackage.fwd.h)
 // so make sure it includes very little.
 
@@ -19,16 +21,35 @@
  * interrupted by signals whenever. Ideally do as little as possible inside,
  * like your single syscall.
  * Make sure you unpark. If you longjmp you need to ensure that you unpark first.
- * The signal handler unparks the thread before running user code.
+ * The signal handler unparksthe thread before running user code.
  * See clasp_musleep for an example of usage.
  * They're macros because they might need to end up calling some kinda
  * call_without_gc(void (*)(void*), void*) eventually.
  */
-#define BEGIN_PARK gctools::begin_park(); do
+#define BEGIN_PARK gctools::begin_park(__builtin_frame_address(0)); do
 #define END_PARK while (false); gctools::end_park()
 
 namespace gctools {
-  // Implementation details, defined in park.cc. See above note about including.
-  void begin_park();
-  void end_park();
+// Implementation details, defined in park.cc. See above note about including.
+void begin_park(void*);
+void end_park();
+void* end_park_temporarily();
+
+// While parked, temporarily unpark (blocking if needed) to call a thunk.
+// This is used in interrupt.cc for wakeups.
+template <std::invocable<> F>
+requires (!std::same_as<void, std::invoke_result_t<F>>)
+decltype(auto) call_unparked(F f) {
+  void* old = end_park_temporarily();
+  decltype(auto) result = f();
+  begin_park(old);
+  return result;
+}
+template <std::invocable<> F>
+requires std::same_as<void, std::invoke_result_t<F>>
+void call_unparked(F f) {
+  void* old = end_park_temporarily();
+  f();
+  begin_park(old);
+}
 };
