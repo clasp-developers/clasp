@@ -118,8 +118,8 @@ extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callbac
                              mmtk_clasp_scan_weak(static_cast<void*>(&weak->_value));
                            },
                            [&](gctools::Ephemeron* eph) {
-                             scan(reinterpret_cast<core::T_O**>(&eph->_key));
-                             scan(reinterpret_cast<core::T_O**>(&eph->_value));
+                             mmtk_clasp_scan_ephemeron(reinterpret_cast<void*>(&eph->_key),
+                                                       reinterpret_cast<void*>(&eph->_value));
                            });
   }
 }

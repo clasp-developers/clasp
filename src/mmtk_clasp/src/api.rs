@@ -5,6 +5,8 @@ use crate::mmtk;
 use crate::ClaspVM;
 use crate::SINGLETON;
 use crate::scanning::WEAK_POINTERS;
+use crate::scanning::Ephemeron;
+use crate::scanning::EPHEMERONS;
 use crate::ClaspVMSlot;
 use libc::c_char;
 use mmtk::memory_manager;
@@ -145,6 +147,16 @@ pub extern "C" fn mmtk_clasp_scan_weak(
     weak_slot: *mut c_void,
 ) {
     WEAK_POINTERS.lock().unwrap().push(unsafe { ClaspVMSlot::from_address(Address::from_usize(weak_slot as usize)) });
+}
+
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_scan_ephemeron(
+    key_slot: *mut c_void,
+    value_slot: *mut c_void,
+) {
+    let eph = Ephemeron { key: unsafe { ClaspVMSlot::from_address(Address::from_usize(key_slot as usize)) },
+                          value: unsafe { ClaspVMSlot::from_address(Address::from_usize(value_slot as usize)) }};
+    EPHEMERONS.lock().unwrap().push(eph);
 }
 
 #[no_mangle]
