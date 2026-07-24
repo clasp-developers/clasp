@@ -155,11 +155,11 @@
       (1))
 #-use-boehm ; on boehm key-or-value tables are effectively strong.
 (test weak-key-or-value-weakness
-      (let ((table (make-hash-table :weakness :key-or)))
+      (let ((table (make-hash-table :weakness :key-or-value)))
         (setf (gethash (list nil) table) :value
               (gethash :key table) (list nil)
               (gethash (list nil) table) (list nil)
-              (gethash :key table) :value)
+              (gethash :key2 table) :value)
         (gctools:garbage-collect)
         (hash-table-count table))
       (3))

@@ -200,7 +200,7 @@ CL_DEFUN T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_si
   else if (weakness == kw::_sym_key_or_value)
     mapping = WeakKeyOrValueMapping_O::make(isize);
   else
-    SIMPLE_ERROR("Only :weakness :key :value (weak-key or weak-value hash tables) are currently supported");
+    SIMPLE_ERROR("Only :weakness :key :value :key-and-value :key-or-value are currently supported");
   
   // clamped by the constructor.
   double rehash_threshold = clasp_to_double(orehash_threshold);
