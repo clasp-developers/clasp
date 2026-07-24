@@ -85,6 +85,89 @@ fn report_pinning_roots(roots: Vec<ObjectReference>, factory: &mut impl RootsWor
     }
 }
 
+fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
+                      tracer_context: impl ObjectTracerContext<ClaspVM>,
+) -> bool {
+    let mut trace_again = false;
+    // Process ephemerons
+    let mut ephs = EPHEMERONS.lock().unwrap();
+    tracer_context.with_tracer(worker, |tracer| {
+        let mut resolve = |eph: &mut Ephemeron| {
+            // This ephemeron has a live key, so forward the value
+            // and note that there may be new live objects to trace.
+            // If load() returns None it's immediate or something
+            // so we don't need to do anything.
+            if let Some(val) = eph.value.load() {
+                tracer.trace_object(val);
+                trace_again = true;
+                eph.value.store(val.get_forwarded_object().unwrap_or(val));
+            }
+        };
+        // Iterate over EPHEMERONS, retaining only those whose keys are not
+        // known to be alive. Any ephemerons with live keys add to a new trace
+        // and forward objects before they are removed from EPHEMERONS.
+        ephs.retain_mut(|eph| {
+            match eph.key.load_value() {
+                // deleted - make sure the value is deleted as well.
+                Unbound => {
+                    eph.value.delete();
+                    false
+                }
+                // immediate - alive forever, therefore value is too
+                Immediate => {
+                    resolve(eph);
+                    false
+                }
+                Object(key) => {
+                    if key.is_reachable() {
+                        // forward key if we need to
+                        eph.key.store(key.get_forwarded_object().unwrap_or(key));
+                        // set up to trace value
+                        resolve(eph);
+                        false
+                    } else {
+                        // key does not seem to be reachable, but tracing
+                        // another ephemeron's value may make it reachable,
+                        // so delay.
+                        true
+                    }
+                }
+            }
+        });
+    });
+    // We've now run through all the ephemerons. If any of them added new
+    // values to trace, any seemingly dead ephemeron keys may now be
+    // found to be alive,
+    // so leave the ephemerons in EPHEMERONS and run another trace.
+    if !trace_again {
+        // Otherwise, there is no longer any way for ephemeron keys to turn up
+        // alive, so we're done with ephemerons. Their keys are all dead
+        // so delete their keys and values, and clear EPHEMERONS.
+        for dead in ephs.drain(..) {
+            dead.key.delete();
+            dead.value.delete();
+        }
+    }
+    trace_again
+}
+
+fn process_weak_ptrs() {
+    let mut weaks = WEAK_POINTERS.lock().unwrap();
+    for weak_slot in weaks.drain(..) {
+        // If the referent is deleted or an immediate we don't care about it.
+        // during scanning we shouldn't even collect them, but just in case.
+        if let Some(obj) = weak_slot.load() {
+            if obj.is_reachable() {
+                // object is reachable, so forward the ref if need be
+                weak_slot.store(obj.get_forwarded_object().unwrap_or(obj));
+            } else {
+                // object is dead so splat the pointer
+                weak_slot.delete();
+            }
+        }
+    }
+}
+
 pub struct VMScanning;
 
 impl Scanning<ClaspVM> for VMScanning {
@@ -168,81 +251,8 @@ impl Scanning<ClaspVM> for VMScanning {
     fn process_weak_refs(worker: &mut GCWorker<ClaspVM>,
                          tracer_context: impl ObjectTracerContext<ClaspVM>,
     ) -> bool {
-        let mut trace_again = false;
-        // Process ephemerons
-        let mut ephs = EPHEMERONS.lock().unwrap();
-        tracer_context.with_tracer(worker, |tracer| {
-            let mut resolve = |eph: &mut Ephemeron| {
-                // This ephemeron has a live key, so forward the value
-                // and note that there may be new live objects to trace.
-                // If load() returns None it's immediate or something
-                // so we don't need to do anything.
-                if let Some(val) = eph.value.load() {
-                    tracer.trace_object(val);
-                    trace_again = true;
-                    eph.value.store(val.get_forwarded_object().unwrap_or(val));
-                }
-            };
-            // Iterate over EPHEMERONS, retaining only those whose keys are not
-            // known to be alive. Any ephemerons with live keys add to a new trace
-            // and forward objects before they are removed from EPHEMERONS.
-            ephs.retain_mut(|eph| {
-                match eph.key.load_value() {
-                    // deleted - make sure the value is deleted as well.
-                    Unbound => {
-                        eph.value.delete();
-                        false
-                    }
-                    // immediate - alive forever, therefore value is too
-                    Immediate => {
-                        resolve(eph);
-                        false
-                    }
-                    Object(key) => {
-                        if key.is_reachable() {
-                            // forward key if we need to
-                            eph.key.store(key.get_forwarded_object().unwrap_or(key));
-                            // set up to trace value
-                            resolve(eph);
-                            false
-                        } else {
-                            // key does not seem to be reachable, but tracing
-                            // another ephemeron's value may make it reachable,
-                            // so delay.
-                            true
-                        }
-                    }
-                }
-            });
-        });
-        // We've now run through all the ephemerons. If any of them added new
-        // values to trace, any seemingly dead ephemeron keys may now be
-        // found to be alive,
-        // so leave the ephemerons in EPHEMERONS and run another trace.
-        if trace_again == true { return true; }
-        // Otherwise, there is no longer any way for ephemeron keys to turn up
-        // alive, so we're done with ephemerons. Their keys are all dead
-        // so delete their keys and values, and clear EPHEMERONS.
-        for dead in ephs.drain(..) {
-            dead.key.delete();
-            dead.value.delete();
-        }
-
-        // Process weak pointers
-        let mut weaks = WEAK_POINTERS.lock().unwrap();
-        for weak_slot in weaks.drain(..) {
-            // If the referent is deleted or an immediate we don't care about it.
-            // during scanning we shouldn't even collect them, but just in case.
-            if let Some(obj) = weak_slot.load() {
-                if obj.is_reachable() {
-                    // object is reachable, so forward the ref if need be
-                    weak_slot.store(obj.get_forwarded_object().unwrap_or(obj));
-                } else {
-                    // object is dead so splat the pointer
-                    weak_slot.delete();
-                }
-            }
-        }
+        if process_ephemerons(worker, tracer_context) { return true; }
+        process_weak_ptrs();
         false
     }
 }
