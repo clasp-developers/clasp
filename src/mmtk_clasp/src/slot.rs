@@ -15,6 +15,11 @@ const PTR_MASK: usize = !TAG_MASK;
 const GENERAL_TAG: usize = 0b001;
 const CONS_TAG: usize = 0b011;
 
+// Also from configure-memory.h:
+//   UNBOUND_TAG = 0x7
+//   DELETED_UNBOUND_BYTE = 0x18 | UNBOUND_TAG
+const TAGGED_DELETED: usize = 0x1f;
+
 /// An MMTk slot holding a Clasp tagged pointer.
 ///
 /// `load` strips the tag to yield an ObjectReference; `store` preserves the original
@@ -29,6 +34,12 @@ unsafe impl Send for ClaspVMSlot {}
 impl ClaspVMSlot {
     pub fn from_address(address: Address) -> Self {
         ClaspVMSlot { slot: address.to_mut_ptr::<AtomicUsize>() }
+    }
+    
+    // Replace the value with the deleted marker (tag_deleted()).
+    // Used for weak references and ephemerons.
+    pub fn delete(&self) {
+        unsafe { (*self.slot).store(TAGGED_DELETED, Ordering::Relaxed) };
     }
 }
 

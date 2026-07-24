@@ -4,6 +4,8 @@ use crate::active_plan::{register_mutator, unregister_mutator};
 use crate::mmtk;
 use crate::ClaspVM;
 use crate::SINGLETON;
+use crate::scanning::WEAK_POINTERS;
+use crate::ClaspVMSlot;
 use libc::c_char;
 use mmtk::memory_manager;
 use mmtk::scheduler::GCWorker;
@@ -13,6 +15,7 @@ use mmtk::AllocationSemantics;
 use mmtk::MMTKBuilder;
 use mmtk::Mutator;
 use std::ffi::CStr;
+use std::ffi::c_void;
 
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_create_builder() -> *mut MMTKBuilder {
@@ -135,6 +138,13 @@ pub extern "C" fn mmtk_clasp_post_alloc(
         semantics = AllocationSemantics::Los;
     }
     memory_manager::post_alloc::<ClaspVM>(unsafe { &mut *mutator }, object, bytes, semantics)
+}
+
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_scan_weak(
+    weak_slot: *mut c_void,
+) {
+    WEAK_POINTERS.lock().unwrap().push(unsafe { ClaspVMSlot::from_address(Address::from_usize(weak_slot as usize)) });
 }
 
 #[no_mangle]

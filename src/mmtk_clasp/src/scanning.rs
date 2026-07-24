@@ -3,11 +3,14 @@ use std::ffi::c_void;
 use crate::ClaspVM;
 use crate::ClaspVMSlot;
 use mmtk::scheduler::EDGES_WORK_BUFFER_SIZE;
+use mmtk::scheduler::GCWorker;
 use mmtk::util::opaque_pointer::*;
 use mmtk::util::{Address, ObjectReference};
 use mmtk::vm::RootsWorkFactory;
 use mmtk::vm::Scanning;
+use mmtk::vm::slot::Slot;
 use mmtk::vm::SlotVisitor;
+use mmtk::vm::ObjectTracerContext;
 use mmtk::Mutator;
 use mmtk::MutatorContext;
 
@@ -46,6 +49,12 @@ unsafe extern "C" fn conservative_root_cb(client_ptr: *mut c_void, data: *mut c_
         roots.push(obj);
     }
 }
+
+// Vec of WeakPointer (the C++ class) that need processing.
+// This is added to during scanning and emptied by process_weak_refs.
+// The mutex is because multiple scan workers may need to add to it.
+pub(crate) static WEAK_POINTERS: std::sync::Mutex<Vec<ClaspVMSlot>>
+    = std::sync::Mutex::new(Vec::new());
 
 fn report_precise_roots(slots: Vec<ClaspVMSlot>, factory: &mut impl RootsWorkFactory<ClaspVMSlot>) {
     for chunk in slots.chunks(EDGES_WORK_BUFFER_SIZE) {
@@ -138,4 +147,29 @@ impl Scanning<ClaspVM> for VMScanning {
     }
 
     fn prepare_for_roots_re_scanning() {}
+
+    fn process_weak_refs(_worker: &mut GCWorker<ClaspVM>,
+                         _tracer_context: impl ObjectTracerContext<ClaspVM>,
+    ) -> bool {
+        // Process weak pointers
+        let mut weaks = WEAK_POINTERS.lock().unwrap();
+        for weak_slot in weaks.drain(..) {
+            match weak_slot.load() {
+                // deleted or an immediate - we don't care about this
+                // during scanning we shouldn't even collect these,
+                // but just in case.
+                None => {},
+                Some(obj) => {
+                    if obj.is_reachable() {
+                        // object is reachable, so forward the ref if need be
+                        weak_slot.store(obj.get_forwarded_object().unwrap_or(obj));
+                    } else {
+                        // object is dead so splat the pointer
+                        weak_slot.delete();
+                    }
+                }
+            }
+        }
+        false
+    }
 }

@@ -76,6 +76,9 @@ extern void* mmtk_clasp_last_heap_address(void);
 typedef void (*ClaspPreciseRootCallback)(void* slot, void* data);
 typedef void (*ClaspConservativeRootCallback)(void* client_ptr, void* data);
 
+// While scanning, register a weak pointer so MMTk can resolve it later.
+extern void mmtk_clasp_scan_weak(void*);
+
 // Scan the pointer fields of an object, calling callback(slot_addr, data) for each.
 extern void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data);
 

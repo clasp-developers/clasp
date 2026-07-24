@@ -112,8 +112,15 @@ extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callbac
   if (near->_badge_stamp_wtag_mtag.consObjectP()) {
     gctools::scan::cons(static_cast<core::Cons_O*>(client), scan);
   } else {
-    gctools::scan::general_pointers(static_cast<core::General_O*>(client),
-                                    scan);
+    gctools::scan::general(static_cast<core::General_O*>(client),
+                           scan,
+                           [&](gctools::WeakPointer* weak) {
+                             mmtk_clasp_scan_weak(static_cast<void*>(&weak->_value));
+                           },
+                           [&](gctools::Ephemeron* eph) {
+                             scan(reinterpret_cast<core::T_O**>(&eph->_key));
+                             scan(reinterpret_cast<core::T_O**>(&eph->_value));
+                           });
   }
 }
 

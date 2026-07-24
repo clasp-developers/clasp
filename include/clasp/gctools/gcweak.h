@@ -88,7 +88,9 @@ public:
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*);
 private:
   friend class scan;
+public: // FIXME
   core::T_sp _value;
+private:
 #ifdef USE_BOEHM
   // flag needed to disambiguate fixnum 0 from splatted pointer
   bool _splattablep = false;
@@ -150,6 +152,7 @@ public:
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup);
 private:
   friend class scan; // needs to access _key+_value quite directly
+public: // FIXME
 #ifdef USE_BOEHM
   GC_hidden_pointer _key;
 #else // FIXME for other GCs!
