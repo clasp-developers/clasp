@@ -747,6 +747,19 @@ Optimizations are available for any of:
 (deftransform-type-predicate vectorp vector)
 (deftransform vectorp (((o array))) '(eql (array-rank o) 1))
 
+;;; FIXME: these should just be inline definitions maybe
+;;; and ideally work with multiple indices.
+;;; Also they won't usually come up right now because there are compiler macros
+;;; on these functions to turn them into AREF.
+(deftransform bit (((arr (simple-array bit (*))) (index t))
+                   :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform bit (((arr (array bit (*))) (index t)))
+  `(row-major-aref arr index))
+(deftransform sbit (((arr (simple-array bit (*))) (index t))
+                    :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+
 (deftransform-type-predicate bit-vector-p bit-vector)
 (deftransform-type-predicate simple-bit-vector-p simple-bit-vector)
 
@@ -762,6 +775,25 @@ Optimizations are available for any of:
 (deftransform string (((x string))) '(progn x))
 
 (deftransform-type-predicate stringp string)
+
+;;; FIXME: should be inline definitions
+(deftransform char (((arr (simple-array base-char (*))) (index t))
+                   :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform char (((arr (array base-char (*))) (index t)))
+  `(row-major-aref arr index))
+(deftransform schar (((arr (simple-array base-char (*))) (index t))
+                    :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+
+(deftransform char (((arr (simple-array character (*))) (index t))
+                   :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform char (((arr (array character (*))) (index t)))
+  `(row-major-aref arr index))
+(deftransform schar (((arr (simple-array character (*))) (index t))
+                    :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
