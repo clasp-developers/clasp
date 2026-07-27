@@ -612,6 +612,12 @@ CL_DEFUN_SETF T_sp setf_gethash(T_sp value, T_sp key, HashTable_sp hash_table, T
   return hash_table->hash_table_setf_gethash(key, value);
 }
 
+CL_LAMBDA(new-value key hash-table);
+DOCGROUP(clasp);
+CL_DEFUN T_sp core__puthash(T_sp value, T_sp key, HashTable_sp hash_table) {
+  return hash_table->hash_table_setf_gethash(key, value);
+}
+
 void HashTable_O::rehash_no_lock(bool expandTable) {
   DEBUG_HASH_TABLE1({ core::clasp_write_string(fmt::format("{}:{} rehash_no_lock\n", __FILE__, __LINE__)); });
   ASSERTF(!Number_O::zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
