@@ -258,10 +258,13 @@
 ;;; When both dividend and divisor are positive, MOD and REM coincide,
 ;;; as do FLOOR and TRUNCATE.
 (deftransform truncate core::fixnum-truncate
-  fixnum (integer 1 #.most-positive-fixnum))
-(deftransform truncate core::fixnum-truncate
   ;; -2 because most-negative-fixnum/-1 would overflow
-  fixnum (integer #.most-negative-fixnum -2))
+  fixnum (or (integer #.most-negative-fixnum -2)
+           (integer 1 #.most-positive-fixnum)))
+;; division by -1 is ok as long as most-negative-fixnum is excluded
+(deftransform truncate core::fixnum-truncate
+  (integer #.(1+ most-negative-fixnum) #.most-positive-fixnum)
+  (and fixnum (not (eql 0))))
 (deftransform floor core::fixnum-truncate
   (integer 0 #.most-positive-fixnum) (integer 1 #.most-positive-fixnum))
 (deftransform mod core::fixnum-rem
