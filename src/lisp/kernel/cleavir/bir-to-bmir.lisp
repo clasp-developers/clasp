@@ -220,9 +220,26 @@
 (deftransform core:two-arg->  core::two-arg-fixnum->  fixnum fixnum)
 (deftransform core:two-arg->= core::two-arg-fixnum->= fixnum fixnum)
 
+(deftransform truncate core::sf-truncate
+  (single-float #.(float most-negative-fixnum 1f0)
+                #.(float most-positive-fixnum 1f0))
+  single-float)
+(deftransform truncate core::df-truncate
+  (double-float #.(float most-negative-fixnum 1d0)
+                #.(float most-positive-fixnum 1d0))
+  double-float)
+(deftransform floor core::sf-truncate
+  (single-float 0f0 #.(float most-positive-fixnum 1f0))
+  single-float)
+(deftransform floor core::df-truncate
+  (double-float 0d0 #.(float most-positive-fixnum 1d0))
+  double-float)
+
 (deftransform ftruncate core::sf-ftruncate single-float single-float)
 (deftransform ftruncate core::df-ftruncate double-float double-float)
-;; TODO: One-arg form
+
+(deftransform ffloor core::sf-ftruncate (single-float 0f0) (single-float 0f0))
+(deftransform ffloor core::df-ftruncate (double-float 0d0) (double-float 0d0))
 
 (macrolet ((define-floatf (name sf-primop df-primop)
              `(progn

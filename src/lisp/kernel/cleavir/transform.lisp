@@ -541,6 +541,47 @@ Optimizations are available for any of:
 (deftransform plusp (((n double-float))) '(> n 0d0))
 (deftransform minusp (((n double-float))) '(< n 0d0))
 
+(deftransform floor (((x integer))) '(values x 0))
+(deftransform ceiling (((x integer))) '(values x 0))
+(deftransform truncate (((x integer))) '(values x 0))
+(deftransform round (((x integer))) '(values x 0))
+
+;;; use two-arg forms for floats, since it's general
+;;; see bir-to-bmir+primop for how they're inlined away
+(macrolet ((truncate1 (type)
+             (let ((one (coerce 1 type)))
+               `(progn
+                  ;; CLHS default divisor is integer 1, but it would just be
+                  ;; coerced to a float anyway, and floats are easier to use.
+                  (deftransform floor (((x ,type))) '(floor x ,one))
+                  (deftransform ceiling (((x ,type))) '(ceiling x ,one))
+                  (deftransform truncate (((x ,type))) '(truncate x ,one))
+                  (deftransform round (((x ,type))) '(round x ,one))
+                  (deftransform ffloor (((x ,type))) '(ffloor x ,one))
+                  (deftransform fceiling (((x ,type))) '(fceiling x ,one))
+                  (deftransform ftruncate (((x ,type))) '(ftruncate x ,one))
+                  (deftransform fround (((x ,type))) '(fround x ,one))))))
+  #+short-float (truncate1 short-float)
+  (truncate1 single-float)
+  (truncate1 double-float)
+  #+long-float (truncate1 long-float))
+
+(macrolet ((truncate-fint (type)
+             (let ((one (coerce 1 type)))
+               `(progn
+                  (deftransform floor (((dividend ,type) (divisor rational)))
+                    '(floor dividend (float divisor ,one)))
+                  (deftransform ceiling (((dividend ,type) (divisor rational)))
+                    '(ceiling dividend (float divisor ,one)))
+                  (deftransform truncate (((dividend ,type) (divisor rational)))
+                    '(truncate dividend (float divisor ,one)))
+                  (deftransform ceiling (((dividend ,type) (divisor rational)))
+                    '(round dividend (float divisor ,one)))))))
+  #+short-float (truncate-fint short-float)
+  (truncate-fint single-float)
+  (truncate-fint double-float)
+  #+long-float (truncate-fint long-float))
+
 (macrolet ((define-irratf (name)
              `(deftransform ,name (((arg rational)))
                 '(,name (core:to-single-float arg))))
