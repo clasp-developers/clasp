@@ -237,9 +237,12 @@
 
 (deftransform ftruncate core::sf-ftruncate single-float single-float)
 (deftransform ftruncate core::df-ftruncate double-float double-float)
-
-(deftransform ffloor core::sf-ftruncate (single-float 0f0) (single-float 0f0))
-(deftransform ffloor core::df-ftruncate (double-float 0d0) (double-float 0d0))
+(deftransform ffloor core::sf-ffloor single-float single-float)
+(deftransform ffloor core::df-ffloor double-float double-float)
+(deftransform fceiling core::sf-fceil single-float single-float)
+(deftransform fceiling core::df-fceil double-float double-float)
+(deftransform fround core::sf-froundeven single-float single-float)
+(deftransform fround core::df-froundeven double-float double-float)
 
 (macrolet ((define-floatf (name sf-primop df-primop)
              `(progn
