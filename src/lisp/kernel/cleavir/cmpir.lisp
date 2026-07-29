@@ -202,6 +202,7 @@ local-function - the lcl function that all of the xep functions call."
     fixed-indices))
 
 (defun ensure-opaque-or-pointee-type-matches (ptr type)
+  (declare (ignorable ptr type))
   #+(or llvm15 llvm16 llvm17)
   (unless (llvm-sys:is-opaque-or-pointee-type-matches (llvm-sys:get-type ptr) type)
     (error "irc-typed-gep is-opaque-or-pointee-type-matches failed for type -> ~a value -> ~a (llvm-sys:get-type value) -> ~a"
