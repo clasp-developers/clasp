@@ -61,13 +61,22 @@
 (defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
 (defmethod vrtype->llvm ((vrtype (eql :boolean))) cmp:%i1%)
 (defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
-;; These all pretty much have to match element-type->llvm-type in cmp/cmpintrinsics.
+;; These all pretty much have to match element-type->llvm-type in cmpintrinsics.
 (defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
 (defmethod vrtype->llvm ((vrtype (eql :double-float))) cmp:%double%)
 (defmethod vrtype->llvm ((vrtype (eql :base-char))) cmp:%i8%)
 (defmethod vrtype->llvm ((vrtype (eql :character))) cmp:%i32%)
 (defmethod vrtype->llvm ((vrtype (eql :fixnum))) cmp:%fixnum%)
 (defmethod vrtype->llvm ((vrtype (eql :utfixnum))) cmp:%fixnum%)
+
+(defmethod vrtype->llvm ((vrtype (eql :ub8))) cmp:%i8%)
+(defmethod vrtype->llvm ((vrtype (eql :ub16))) cmp:%i16%)
+(defmethod vrtype->llvm ((vrtype (eql :ub32))) cmp:%i32%)
+(defmethod vrtype->llvm ((vrtype (eql :ub64))) cmp:%i64%)
+(defmethod vrtype->llvm ((vrtype (eql :sb8))) cmp:%i8%)
+(defmethod vrtype->llvm ((vrtype (eql :sb16))) cmp:%i16%)
+(defmethod vrtype->llvm ((vrtype (eql :sb32))) cmp:%i32%)
+(defmethod vrtype->llvm ((vrtype (eql :sb64))) cmp:%i64%)
 
 (defun bind-variable (var)
   (if (bir:immutablep var)

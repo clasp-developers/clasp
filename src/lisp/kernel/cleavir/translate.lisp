@@ -1271,11 +1271,52 @@ function-or-placeholder - the llvm function or a placeholder for
 (defmethod cast-one ((from (eql :base-char)) (to (eql :character)) value)
   (cmp:irc-zext value cmp:%i32%))
 (defmethod cast-one ((from (eql :character)) (to (eql :base-char)) value)
-  (cmp:irc-trunc value cmp:%i8%))
+  (cmp:irc-trunc value cmp:%i8% :is-nuw t))
+
+(macrolet ((fix (vrt llvm unsignedp)
+             `(progn
+                (defmethod cast-one ((from (eql ,vrt)) (to (eql :object)) value)
+                  ;; tag-fixnum does inttoptr which zexts, but if we have a
+                  ;; signed byte, we need to sext
+                  (cmp:irc-tag-fixnum ,(if unsignedp 'value '(cmp:irc-sext value))))
+                (defmethod cast-one ((from (eql :object)) (to (eql ,vrt)) value)
+                  (cmp:irc-untag-fixnum value ,llvm))
+                (defmethod cast-one ((from (eql ,vrt)) (to (eql :utfixnum)) value)
+                  (,(if unsignedp 'cmp:irc-zext 'cmp:irc-sext) value cmp:%fixnum%))
+
+                (defmethod cast-one ((from (eql :utfixnum)) (to (eql ,vrt)) value)
+                  (cmp:irc-trunc value ,llvm "cast" ,unsignedp t))
+                (defmethod cast-one ((from (eql ,vrt)) (to (eql :fixnum)) value)
+                  (cmp:irc-shl (,(if unsignedp 'cmp:irc-zext 'cmp:irc-sext)
+                                value cmp:%fixnum%)
+                               cmp:+fixnum-shift+ :nuw t :nsw t))
+                (defmethod cast-one ((from (eql :fixnum)) (to (eql ,vrt)) value)
+                  (cmp:irc-trunc
+                   (cmp:irc-ashr value cmp:+fixnum-shift+ :exact t) ,llvm "cast"
+                   ,unsignedp t))))
+           (def (unsigned signed llvm)
+             `(progn (fix ,unsigned ,llvm t) (fix ,signed ,llvm nil))))
+  (def :ub8 :sb8 cmp:%i8%)
+  (def :ub16 :sb16 cmp:%i16%)
+  (def :ub32 :sb32 cmp:%i32%))
+
+(defmethod cast-one ((from (eql :ub64)) (to (eql :object)) value)
+  (%intrinsic-call "to_object_uint64" (list value)))
+(defmethod cast-one ((from (eql :object)) (to (eql :ub64)) value)
+  (%intrinsic-call "from_object_uint64" (list value)))
+(defmethod cast-one ((from (eql :sb64)) (to (eql :object)) value)
+  (%intrinsic-call "to_object_int64" (list value)))
+(defmethod cast-one ((from (eql :object)) (to (eql :sb64)) value)
+  (%intrinsic-call "from_object_int64" (list value)))
 
 (defmethod cast-one ((from (eql :fixnum)) (to (eql :object)) value)
   (cmp:irc-int-to-ptr value cmp:%t*%))
 (defmethod cast-one ((from (eql :object)) (to (eql :fixnum)) value)
+  ;; TODO: in newer LLVM, this (and most of our ptrtoint probably) should be
+  ;; replaced by bitcast to a byte type, which we should be using instead of
+  ;; integer types (whoof). This may allow LLVM to do more optimizations? as
+  ;; it can drop provenance info. Maybe not byte types but definitely we should
+  ;; let LLVM know we're not going to treat it as an address, if possible.
   (cmp:irc-ptr-to-int value cmp:%fixnum%))
 
 (defmethod cast-one ((from (eql :utfixnum)) (to (eql :fixnum)) value)

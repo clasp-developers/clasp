@@ -397,6 +397,11 @@
     ((double-float) :double-float)
     ((base-char) :base-char)
     ((character) :character)
+    ((ext:byte8) :ub8) ((ext:integer8) :sb8)
+    ((ext:byte16) :ub16) ((ext:integer16) :sb16)
+    ((ext:byte32) :ub32) ((ext:integer32) :sb32)
+    ((ext:byte64) :ub64) ((ext:integer64) :sb64)
+    ((fixnum) :utfixnum)
     ((bit) :utfixnum))) ;; see KLUDGE in vref
 
 (cleavir-primop-info:defprimop core:vref 2 :value :flushable)

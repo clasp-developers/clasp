@@ -367,17 +367,25 @@ local-function - the lcl function that all of the xep functions call."
 
 (defun irc-untag-fixnum (t* fixnum-type &optional (label "fixnum"))
   "Given a T* fixnum llvm::Value, returns a Value of the given type
-representing the fixnum with the tag shaved off."
-  (irc-ashr (irc-ptr-to-int t* fixnum-type) +fixnum-shift+
-            :exact t ; fixnum tag is zero.
-            :label label))
+representing the fixnum with the tag shaved off. The type must be of size %fixnum% or less."
+  ;; note: we have to shift with a full fixnum type.
+  ;; consider e.g. -128. With the fixnum tag this is ...10000000 00
+  ;; so the low byte is entirely zero. ptrtoint truncates down to this zero byte
+  ;; before the shift.
+  (let ((v (irc-ashr (irc-ptr-to-int t* %fixnum%) +fixnum-shift+
+                     :exact t ; fixnum tag is zero.
+                     :label label)))
+    (if (llvm-sys:type-equal fixnum-type %fixnum%)
+        v
+        (irc-trunc v fixnum-type label nil t))))
 
 (defun irc-tag-fixnum (int &optional (label "fixnum"))
   "Given an llvm::Value of integer type, returns a T* value
 representing a tagged fixnum."
   ;; :NSW T tells LLVM that the bits shifted out will match the sign bit,
   ;; which is true for fixnums.
-  ;; NOTE: It's okay if the int is short (e.g. a bit) as inttoptr zexts.
+  ;; NOTE: It's okay if the int is short (e.g. a bit) as inttoptr zexts,
+  ;; but that's only valid if it's unsigned!
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 

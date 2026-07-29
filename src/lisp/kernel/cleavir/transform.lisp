@@ -755,34 +755,48 @@ Optimizations are available for any of:
       ;; Note that this LENGTH is on a known simple-vector, so it will be inlined.
       `(core:check-bound ,array (length ,array) ,index)
       index))
-(defmacro define-vector-transforms (element-type)
-  `(progn
-     (deftransform aref (((arr (simple-array ,element-type (*))) (index t))
-                         :policy policy)
-       (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
-     (deftransform (setf aref) (((val t)
-                                 (arr (simple-array ,element-type (*)))
-                                 (index t))
-                                :policy policy)
-       (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
-             (list 'the (list 'values ',element-type '&rest 'nil) 'val)))
-     (deftransform row-major-aref (((arr (simple-array ,element-type (*))) (index t))
-                                   :policy policy)
-       (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
-     (deftransform (setf row-major-aref) (((val t)
-                                           (arr (simple-array ,element-type (*)))
-                                           (index t))
-                                          :policy policy)
-       (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
-             (list 'the (list 'values ',element-type '&rest 'nil) 'val)))))
-;;; These are the ones we have underlying primops for at the moment.
-;;; Doesn't seem to be worth it otherwise.
-(define-vector-transforms t)
-(define-vector-transforms single-float)
-(define-vector-transforms double-float)
-(define-vector-transforms base-char)
-(define-vector-transforms character)
-(define-vector-transforms bit)
+
+(deftransform aref (((arr (simple-array * (*))) (index t)) :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform row-major-aref (((arr (simple-array * (*))) (index t))
+                              :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+
+;;; transform setfs into (setf vref) if we have an element type. This enables the
+;;; bir-to-bmir lowering into primops, with the THE ensuring the type is enough.
+;;; We could transform without knowing the element type, but then we wouldn't have
+;;; that THE, which would be imperfect.
+;;; FIXME: Better would be having reverse type inference, i.e. having the compiler
+;;; go "ok, this setf vref call gets a (simple-array foo), clearly the new value
+;;  must be a foo" and inserting type checks that way.
+(macrolet ((define-vector-transforms (element-type)
+             `(progn
+                (deftransform (setf aref) (((val t)
+                                            (arr (simple-array ,element-type (*)))
+                                            (index t))
+                                           :policy policy)
+                  (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
+                        ;; note: &rest nil is ok since val isn't the actual
+                        ;; callee argument it's a parameter of the lambda we're
+                        ;; replacing (SETF AREF) with.
+                        (list 'the (list 'values ',element-type '&rest 'nil) 'val)))
+                (deftransform (setf row-major-aref) (((val t)
+                                                      (arr (simple-array ,element-type (*)))
+                                                      (index t))
+                                                     :policy policy)
+                  (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
+                        (list 'the (list 'values ',element-type '&rest 'nil) 'val))))))
+  (define-vector-transforms t)
+  (define-vector-transforms single-float)
+  (define-vector-transforms double-float)
+  (define-vector-transforms base-char)
+  (define-vector-transforms character)
+  (define-vector-transforms ext:byte64) (define-vector-transforms ext:integer64)
+  (define-vector-transforms ext:byte32) (define-vector-transforms ext:integer32)
+  (define-vector-transforms ext:byte16) (define-vector-transforms ext:integer16)
+  (define-vector-transforms ext:byte8) (define-vector-transforms ext:integer8)
+  (define-vector-transforms fixnum)
+  (define-vector-transforms bit))
 
 (deftransform array-rank (((arr (array * (*))))) 1)
 (deftransform array-dimension (((arr (simple-array * (*))) (dimension (eql 0))))

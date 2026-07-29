@@ -336,20 +336,25 @@
   t fixnum t)
 ;; These are unsafe - make sure we only use core:vref when we don't need a
 ;; (further) bounds check.
-(defmacro define-vector-transforms (element-type)
-  `(progn
-     (deftransform core:vref (core:vref ,element-type)
-       (simple-array ,element-type (*)) fixnum)
-     (deftransform (setf core:vref) (core::vset ,element-type)
-       ;; FIXME: we should probably check the new value's type?
-       ;; ditto for atomic aref below.
-       t (simple-array ,element-type (*)) fixnum)))
-(define-vector-transforms t)
-(define-vector-transforms single-float)
-(define-vector-transforms double-float)
-(define-vector-transforms base-char)
-(define-vector-transforms character)
-(define-vector-transforms bit)
+(macrolet ((define-vector-transforms (element-type)
+             `(progn
+                (deftransform core:vref (core:vref ,element-type)
+                  (simple-array ,element-type (*)) fixnum)
+                (deftransform (setf core:vref) (core::vset ,element-type)
+                  ;; FIXME: we should probably check the new value's type?
+                  ;; ditto for atomic aref below.
+                  t (simple-array ,element-type (*)) fixnum))))
+  (define-vector-transforms t)
+  (define-vector-transforms single-float)
+  (define-vector-transforms double-float)
+  (define-vector-transforms base-char)
+  (define-vector-transforms character)
+  (define-vector-transforms ext:byte64) (define-vector-transforms ext:integer64)
+  (define-vector-transforms ext:byte32) (define-vector-transforms ext:integer32)
+  (define-vector-transforms ext:byte16) (define-vector-transforms ext:integer16)
+  (define-vector-transforms ext:byte8) (define-vector-transforms ext:integer8)
+  (define-vector-transforms fixnum)
+  (define-vector-transforms bit))
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 
@@ -393,6 +398,7 @@
 (defun atomic-aset-test (return-type new-type order-type array-type
                          &rest index-types)
   (declare (ignore return-type new-type index-types))
+  ;; FIXME: check new-type
   (atomic-aref-test* array-type order-type
                      clasp-cleavir:*clasp-system*))
 
