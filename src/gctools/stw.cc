@@ -64,19 +64,6 @@ void begin_gcsafe_shared(core::ThreadLocalState* thread, void* sp) {
   }
 }
 
-void stw_mutator_stop(void* sp) {
-  // Same as begin_gcsafe_shared but used by call_with_stopped_world callers
-  // that are registered mutators and need to remove themselves from the count
-  // before calling clasp_stop_the_world().
-  begin_gcsafe_shared(my_thread, sp);
-}
-
-void stw_mutator_resume() {
-  // Re-add the mutator after clasp_resume_the_world(). Does NOT wait for
-  // world_stopped because the caller just cleared it.
-  running_count.fetch_add(1, std::memory_order_acq_rel);
-}
-
 void begin_gcsafe(core::ThreadLocalState* thread, void* sp) {
   thread->gcsafe();
   begin_gcsafe_shared(thread, sp);

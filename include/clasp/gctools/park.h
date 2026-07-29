@@ -21,19 +21,34 @@
  * interrupted by signals whenever. Ideally do as little as possible inside,
  * like your single syscall.
  * Make sure you unpark. If you longjmp you need to ensure that you unpark first.
- * The signal handler unparksthe thread before running user code.
+ * The signal handler unparks the thread before running user code.
  * See clasp_musleep for an example of usage.
- * They're macros because they might need to end up calling some kinda
- * call_without_gc(void (*)(void*), void*) eventually.
  */
-#define BEGIN_PARK gctools::begin_park(__builtin_frame_address(0)); do
-#define END_PARK while (false); gctools::end_park()
+#define BEGIN_PARK gctools::call_parked([&]()
+#define END_PARK );
 
 namespace gctools {
 // Implementation details, defined in park.cc. See above note about including.
-void begin_park(void*);
-void end_park();
+int begin_park(void*);
+void end_park(int);
 void* end_park_temporarily();
+
+template <std::invocable<> F>
+requires (!std::same_as<void, std::invoke_result_t<F>>)
+decltype(auto) call_parked(F f) {
+  int oldstate = begin_park(__builtin_frame_address(0));
+  decltype(auto) result = f();
+  end_park(oldstate);
+  return result;
+}
+
+template <std::invocable<> F>
+requires (std::same_as<void, std::invoke_result_t<F>>)
+void call_parked(F f) {
+  int oldstate = begin_park(__builtin_frame_address(0));
+  f();
+  end_park(oldstate);
+}
 
 // While parked, temporarily unpark (blocking if needed) to call a thunk.
 // This is used in interrupt.cc for wakeups.

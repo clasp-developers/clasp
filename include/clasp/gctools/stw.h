@@ -25,8 +25,8 @@
 //
 // clasp_stop_the_world() blocks until every registered mutator thread is in a
 // GC-safe state.  The caller is NOT assumed to be a registered mutator (MMTk
-// GC worker threads are not).  Registered mutator callers must remove
-// themselves via stw_mutator_stop() before calling and stw_mutator_resume()
+// GC worker threads are not). Registered mutator callers must remove
+// themselves via begin_gcsafe() before calling and end_gcsafe()
 // after clasp_resume_the_world().
 //
 // end_park() checks whether the world is currently stopped and if so blocks
@@ -60,14 +60,6 @@ void begin_gcsafe(core::ThreadLocalState*, void*);
 
 // Enter GC-safe state without altering thread's GCState. Called by begin_park().
 void begin_gcsafe_shared(core::ThreadLocalState*, void*);
-
-// For use by call_with_stopped_world(): remove/re-add the
-// calling registered mutator from the running count around a stop/resume pair.
-// Unlike begin_gcsafe_shared(), stw_mutator_resume() does NOT wait for
-// world_stopped to clear (the caller is the one who cleared it).
-// The void* is a stack pointer to not allow scanning past.
-void stw_mutator_stop(void*);
-void stw_mutator_resume();
 
 // Leave GC-safe state. Sets thread's GCState and does end_gcsafe_shared().
 void end_gcsafe(core::ThreadLocalState*);
@@ -115,22 +107,24 @@ namespace gctools {
 template <std::invocable<> F>
 requires (!std::same_as<void, std::invoke_result_t<F>>)
 decltype(auto) call_with_stopped_world(F f) {
-  stw_mutator_stop(__builtin_frame_address(0));
+  core::ThreadLocalState* me = my_thread;
+  begin_gcsafe(me, __builtin_frame_address(0));
   clasp_stop_the_world();
   decltype(auto) result = f();
   clasp_resume_the_world();
-  stw_mutator_resume();
+  end_gcsafe(me);
   return result;
 }
 // special version for F returning void since "void result;" doesn't work.
 template <std::invocable<> F>
 requires std::same_as<void, std::invoke_result_t<F>>
 void call_with_stopped_world(F f) {
-  stw_mutator_stop(__builtin_frame_address(0));
+  core::ThreadLocalState* me = my_thread;
+  begin_gcsafe(me, __builtin_frame_address(0));
   clasp_stop_the_world();
   f();
   clasp_resume_the_world();
-  stw_mutator_resume();
+  end_gcsafe(me);
 }
 
 // Do some stuff in a GC-safe but not parked state, from a mutator.
