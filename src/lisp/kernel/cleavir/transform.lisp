@@ -545,6 +545,11 @@ Optimizations are available for any of:
 (deftransform ceiling (((x integer))) '(values x 0))
 (deftransform truncate (((x integer))) '(values x 0))
 (deftransform round (((x integer))) '(values x 0))
+;; unlikely but who knows?
+(deftransform floor (((x integer) (y (eql 1)))) '(values x 0))
+(deftransform ceiling (((x integer) (y (eql 1)))) '(values x 0))
+(deftransform truncate (((x integer) (y (eql 1)))) '(values x 0))
+(deftransform round (((x integer) (y (eql 1)))) '(values x 0))
 
 ;;; use two-arg forms for floats, since it's general
 ;;; see bir-to-bmir+primop for how they're inlined away
