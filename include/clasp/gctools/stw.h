@@ -84,6 +84,9 @@ inline void gc_yield() {
     gc_yield_slow();
 }
 
+// Wait for any GC to finish so we can do call_with_stopped_world.
+void wait_for_gc_finished();
+
 } // namespace gctools
 
 // Extern "C" so the Rust MMTk binding and plain C code can call these.
@@ -99,7 +102,6 @@ void clasp_resume_the_world();
 // Pause the calling mutator and wait until the world is resumed.
 // Used by MMTk's block_for_gc callback.
 void clasp_pause_thread_for_gc();
-
 } // extern "C"
 
 namespace gctools {
@@ -109,6 +111,7 @@ requires (!std::same_as<void, std::invoke_result_t<F>>)
 decltype(auto) call_with_stopped_world(F f) {
   core::ThreadLocalState* me = my_thread;
   begin_gcsafe(me, __builtin_frame_address(0));
+  wait_for_gc_finished();
   clasp_stop_the_world();
   decltype(auto) result = f();
   clasp_resume_the_world();
@@ -121,6 +124,7 @@ requires std::same_as<void, std::invoke_result_t<F>>
 void call_with_stopped_world(F f) {
   core::ThreadLocalState* me = my_thread;
   begin_gcsafe(me, __builtin_frame_address(0));
+  wait_for_gc_finished();
   clasp_stop_the_world();
   f();
   clasp_resume_the_world();

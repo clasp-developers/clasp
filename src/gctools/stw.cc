@@ -33,6 +33,12 @@ static std::condition_variable world_resumed_cv;
 static std::condition_variable world_stopping_cv;
 std::atomic<bool> world_stopped{false};
 
+// Yet another guard on stopping. This one is to make sure that GC doesn't run
+// while a mutator thread has stopped the world for its own purposes (e.g. ROOM),
+// and vice versa.
+enum class StopType { Running, MutatorStop, GCStop };
+std::atomic<StopType> stop_type{StopType::Running};
+
 void gc_yield_slow_thread(core::ThreadLocalState*);
 
 void stw_register_thread(core::ThreadLocalState* thread) {
@@ -96,6 +102,41 @@ void gc_yield_slow_thread(core::ThreadLocalState* thread) {
 
 void gc_yield_slow() { gc_yield_slow_thread(my_thread); }
 
+// Block until all mutators have gotten out of a mutator stop
+// (for call_with_stopped_world)
+void wait_for_mutator_running() {
+  StopType mystop;
+  bool swapped;
+  do {
+    // Wait until the world is really running, in case another mutator is in ROOM
+    // or the like. Alternately another thread could be racing with us here in
+    // clasp_pause_thread_for_gc (I think? Not 100% clear on MMTk
+    // synchronization) in which who cares.
+    stop_type.wait(StopType::MutatorStop, std::memory_order_acquire);
+    // Now try to plug GCStop into the variable.
+    mystop = StopType::Running;
+    swapped = stop_type.compare_exchange_weak(mystop, StopType::GCStop,
+                                              std::memory_order_acq_rel);
+    // A successful swap, or another thread beating us to it, are both
+    // acceptable outcomes.
+  } while (!swapped && mystop != StopType::GCStop);
+  // Notify anyone else that's waiting on stop_type.
+  stop_type.notify_all();
+}
+
+// Wait for any GC to finish so we can do call_with_stopped_world.
+void wait_for_gc_finished() {
+  StopType mystop;
+  bool swapped;
+  do {
+    stop_type.wait(StopType::GCStop, std::memory_order_acquire);
+    mystop = StopType::Running;
+    swapped = stop_type.compare_exchange_weak(mystop, StopType::MutatorStop,
+                                              std::memory_order_acq_rel);
+  } while (!swapped && mystop != StopType::MutatorStop);
+  stop_type.notify_all();
+}
+
 } // namespace gctools
 
 extern "C" {
@@ -120,10 +161,14 @@ void clasp_resume_the_world() {
   std::unique_lock<std::mutex> lock(gctools::stw_mutex);
   gctools::world_stopped.store(false, std::memory_order_release);
   gctools::world_resumed_cv.notify_all();
+  // This was set by call_with_stopped_world or pause_thread_for_gc.
+  gctools::stop_type.store(gctools::StopType::Running, std::memory_order_release);
+  gctools::stop_type.notify_all();
 }
 
 // GC-safe this mutator for GC (used by MMTk's block_for_gc).
 void clasp_pause_thread_for_gc() {
+  gctools::wait_for_mutator_running();
   // Wait until the GC has actually set world_stopped=true before parking.
   // Without this, if block_for_gc is called before stop_all_mutators sets
   // world_stopped, end_gcsafe_shared returns immediately (world_stopped=false)
