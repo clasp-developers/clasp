@@ -149,7 +149,7 @@
         (setf (gethash (list nil) table) :value
               (gethash :key table) (list nil)
               (gethash (list nil) table) (list nil)
-              (gethash :key table) :value)
+              (gethash :key2 table) :value)
         (gctools:garbage-collect)
         (hash-table-count table))
       (1))
