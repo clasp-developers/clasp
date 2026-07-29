@@ -541,6 +541,52 @@ Optimizations are available for any of:
 (deftransform plusp (((n double-float))) '(> n 0d0))
 (deftransform minusp (((n double-float))) '(< n 0d0))
 
+(deftransform floor (((x integer))) '(values x 0))
+(deftransform ceiling (((x integer))) '(values x 0))
+(deftransform truncate (((x integer))) '(values x 0))
+(deftransform round (((x integer))) '(values x 0))
+;; unlikely but who knows?
+(deftransform floor (((x integer) (y (eql 1)))) '(values x 0))
+(deftransform ceiling (((x integer) (y (eql 1)))) '(values x 0))
+(deftransform truncate (((x integer) (y (eql 1)))) '(values x 0))
+(deftransform round (((x integer) (y (eql 1)))) '(values x 0))
+
+;;; use two-arg forms for floats, since it's general
+;;; see bir-to-bmir+primop for how they're inlined away
+(macrolet ((truncate1 (type)
+             (let ((one (coerce 1 type)))
+               `(progn
+                  ;; CLHS default divisor is integer 1, but it would just be
+                  ;; coerced to a float anyway, and floats are easier to use.
+                  (deftransform floor (((x ,type))) '(floor x ,one))
+                  (deftransform ceiling (((x ,type))) '(ceiling x ,one))
+                  (deftransform truncate (((x ,type))) '(truncate x ,one))
+                  (deftransform round (((x ,type))) '(round x ,one))
+                  (deftransform ffloor (((x ,type))) '(ffloor x ,one))
+                  (deftransform fceiling (((x ,type))) '(fceiling x ,one))
+                  (deftransform ftruncate (((x ,type))) '(ftruncate x ,one))
+                  (deftransform fround (((x ,type))) '(fround x ,one))))))
+  #+short-float (truncate1 short-float)
+  (truncate1 single-float)
+  (truncate1 double-float)
+  #+long-float (truncate1 long-float))
+
+(macrolet ((truncate-fint (type)
+             (let ((one (coerce 1 type)))
+               `(progn
+                  (deftransform floor (((dividend ,type) (divisor rational)))
+                    '(floor dividend (float divisor ,one)))
+                  (deftransform ceiling (((dividend ,type) (divisor rational)))
+                    '(ceiling dividend (float divisor ,one)))
+                  (deftransform truncate (((dividend ,type) (divisor rational)))
+                    '(truncate dividend (float divisor ,one)))
+                  (deftransform ceiling (((dividend ,type) (divisor rational)))
+                    '(round dividend (float divisor ,one)))))))
+  #+short-float (truncate-fint short-float)
+  (truncate-fint single-float)
+  (truncate-fint double-float)
+  #+long-float (truncate-fint long-float))
+
 (macrolet ((define-irratf (name)
              `(deftransform ,name (((arg rational)))
                 '(,name (core:to-single-float arg))))
@@ -709,34 +755,48 @@ Optimizations are available for any of:
       ;; Note that this LENGTH is on a known simple-vector, so it will be inlined.
       `(core:check-bound ,array (length ,array) ,index)
       index))
-(defmacro define-vector-transforms (element-type)
-  `(progn
-     (deftransform aref (((arr (simple-array ,element-type (*))) (index t))
-                         :policy policy)
-       (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
-     (deftransform (setf aref) (((val t)
-                                 (arr (simple-array ,element-type (*)))
-                                 (index t))
-                                :policy policy)
-       (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
-             (list 'the (list 'values ',element-type '&rest 'nil) 'val)))
-     (deftransform row-major-aref (((arr (simple-array ,element-type (*))) (index t))
-                                   :policy policy)
-       (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
-     (deftransform (setf row-major-aref) (((val t)
-                                           (arr (simple-array ,element-type (*)))
-                                           (index t))
-                                          :policy policy)
-       (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
-             (list 'the (list 'values ',element-type '&rest 'nil) 'val)))))
-;;; These are the ones we have underlying primops for at the moment.
-;;; Doesn't seem to be worth it otherwise.
-(define-vector-transforms t)
-(define-vector-transforms single-float)
-(define-vector-transforms double-float)
-(define-vector-transforms base-char)
-(define-vector-transforms character)
-(define-vector-transforms bit)
+
+(deftransform aref (((arr (simple-array * (*))) (index t)) :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform row-major-aref (((arr (simple-array * (*))) (index t))
+                              :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+
+;;; transform setfs into (setf vref) if we have an element type. This enables the
+;;; bir-to-bmir lowering into primops, with the THE ensuring the type is enough.
+;;; We could transform without knowing the element type, but then we wouldn't have
+;;; that THE, which would be imperfect.
+;;; FIXME: Better would be having reverse type inference, i.e. having the compiler
+;;; go "ok, this setf vref call gets a (simple-array foo), clearly the new value
+;;  must be a foo" and inserting type checks that way.
+(macrolet ((define-vector-transforms (element-type)
+             `(progn
+                (deftransform (setf aref) (((val t)
+                                            (arr (simple-array ,element-type (*)))
+                                            (index t))
+                                           :policy policy)
+                  (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
+                        ;; note: &rest nil is ok since val isn't the actual
+                        ;; callee argument it's a parameter of the lambda we're
+                        ;; replacing (SETF AREF) with.
+                        (list 'the (list 'values ',element-type '&rest 'nil) 'val)))
+                (deftransform (setf row-major-aref) (((val t)
+                                                      (arr (simple-array ,element-type (*)))
+                                                      (index t))
+                                                     :policy policy)
+                  (list 'setf (list 'core:vref 'arr (bounds-check-form 'arr 'index policy))
+                        (list 'the (list 'values ',element-type '&rest 'nil) 'val))))))
+  (define-vector-transforms t)
+  (define-vector-transforms single-float)
+  (define-vector-transforms double-float)
+  (define-vector-transforms base-char)
+  (define-vector-transforms character)
+  (define-vector-transforms ext:byte64) (define-vector-transforms ext:integer64)
+  (define-vector-transforms ext:byte32) (define-vector-transforms ext:integer32)
+  (define-vector-transforms ext:byte16) (define-vector-transforms ext:integer16)
+  (define-vector-transforms ext:byte8) (define-vector-transforms ext:integer8)
+  (define-vector-transforms fixnum)
+  (define-vector-transforms bit))
 
 (deftransform array-rank (((arr (array * (*))))) 1)
 (deftransform array-dimension (((arr (simple-array * (*))) (dimension (eql 0))))
@@ -746,6 +806,19 @@ Optimizations are available for any of:
 
 (deftransform-type-predicate vectorp vector)
 (deftransform vectorp (((o array))) '(eql (array-rank o) 1))
+
+;;; FIXME: these should just be inline definitions maybe
+;;; and ideally work with multiple indices.
+;;; Also they won't usually come up right now because there are compiler macros
+;;; on these functions to turn them into AREF.
+(deftransform bit (((arr (simple-array bit (*))) (index t))
+                   :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform bit (((arr (array bit (*))) (index t)))
+  `(row-major-aref arr index))
+(deftransform sbit (((arr (simple-array bit (*))) (index t))
+                    :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
 
 (deftransform-type-predicate bit-vector-p bit-vector)
 (deftransform-type-predicate simple-bit-vector-p simple-bit-vector)
@@ -762,6 +835,25 @@ Optimizations are available for any of:
 (deftransform string (((x string))) '(progn x))
 
 (deftransform-type-predicate stringp string)
+
+;;; FIXME: should be inline definitions
+(deftransform char (((arr (simple-array base-char (*))) (index t))
+                   :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform char (((arr (array base-char (*))) (index t)))
+  `(row-major-aref arr index))
+(deftransform schar (((arr (simple-array base-char (*))) (index t))
+                    :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+
+(deftransform char (((arr (simple-array character (*))) (index t))
+                   :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
+(deftransform char (((arr (array character (*))) (index t)))
+  `(row-major-aref arr index))
+(deftransform schar (((arr (simple-array character (*))) (index t))
+                    :policy policy)
+  (list 'core:vref 'arr (bounds-check-form 'arr 'index policy)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

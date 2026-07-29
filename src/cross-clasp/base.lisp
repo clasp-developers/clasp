@@ -416,6 +416,7 @@
                        (setf core::variable-source-info)
                        (setf documentation) ; used by e.g. defpackage
                        ext:add-package-local-nickname
+                       core::gethash3 core::puthash
                        ;; Used by compiler, not expected to exist in target
                        core::delay-macro
                        ;; used in CLOS, not expected to actually exist

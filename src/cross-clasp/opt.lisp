@@ -40,6 +40,9 @@
 (defun core::logand-2op (x y) (logand x y))
 (defun core::logior-2op (x y) (logior x y))
 
+(defun core::gethash3 (key table default) (gethash key table default))
+(defun core::puthash (new key table) (setf (gethash key table) new))
+
 ;; Use classes as "class holders".
 (defun core::find-class-holder (name)
   (find-compiler-class name nil))

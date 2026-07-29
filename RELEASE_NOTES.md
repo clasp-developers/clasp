@@ -2,6 +2,11 @@
 
 ## Optimized
 * Comparisons (`eq`, `<`, etc.) are optimized out based on type information.
+* Accesses to simple arrays with upgraded types of at least (signed-byte 8) or (unsigned-byte 8) can be inlined if there is enough type information.
+* `ffloor` et al. on floats can be inlined given enough type information.
+* `truncate` and `floor` on floats can be inlined given enough type information, if the resulting quotient is a fixnum.
+* `truncate` et al. on integers with unity divisor is optimized out.
+* Simple `gethash` calls are slightly cheaper.
 
 # Version 3.0.1 (LLVM15-20, 22) 2026-06-24
 

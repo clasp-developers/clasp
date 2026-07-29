@@ -86,6 +86,7 @@
              #~"kernel/cmp/opt/opt-array.lisp"
              #~"kernel/cmp/opt/opt-object.lisp"
              #~"kernel/cmp/opt/opt-print.lisp"
+             #~"kernel/cmp/opt/opt-hash.lisp"
              ;; macros
              #~"kernel/lsp/cmuutil.lisp"
              #~"kernel/lsp/shiftf-rotatef.lisp"

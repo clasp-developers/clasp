@@ -21,6 +21,8 @@
 ;;; * :fixnum, meaning a tagged fixnum
 ;;; * :utfixnum, meaning an untagged fixnum, i.e. a word that would shift into
 ;;;   being a fixnum without losing any bits
+;;; * :ub8, :ub16, :ub32, :ub64, meaning unsigned untagged bytes
+;;; * :sb8, :sb16, :sb32, :sb64, corresponding signed but still untagged bytes
 ;;; * :vaslist, meaning an unboxed vaslist
 ;;; So e.g. (:object :object) means a pair of T_O*.
 
@@ -348,6 +350,16 @@
 (defmethod min-vrtype ((vrt1 (eql :base-char)) (vrt2 (eql :character))) vrt1)
 (defmethod min-vrtype ((vrt1 (eql :character)) (vrt2 (eql :base-char))) vrt2)
 
+(macrolet ((fix (vrt)
+             `(progn
+                (defmethod min-vrtype ((vrt1 (eql ,vrt)) (vrt2 (eql :utfixnum))) vrt1)
+                (defmethod min-vrtype ((vrt1 (eql :utfixnum)) (vrt2 (eql ,vrt))) vrt2)
+                (defmethod min-vrtype ((vrt1 (eql ,vrt)) (vrt2 (eql :fixnum))) vrt1)
+                (defmethod min-vrtype ((vrt1 (eql :fixnum)) (vrt2 (eql ,vrt))) vrt2)))
+           (fixes (&rest vrts)
+             `(progn ,@(loop for vrt in vrts collect `(fix ,vrt)))))
+  (fixes :ub8 :sb8 :ub16 :sb16 :ub32 :sb32))
+
 (defgeneric max-vrtype (vrt1 vrt2))
 (defmethod max-vrtype (vrt1 vrt2)
   (if (eql vrt1 vrt2)
@@ -363,6 +375,16 @@
 (defmethod max-vrtype ((vrt1 (eql :fixnum)) (vrt2 (eql :utfixnum))) vrt1)
 (defmethod max-vrtype ((vrt1 (eql :base-char)) (vrt2 (eql :character))) vrt2)
 (defmethod max-vrtype ((vrt1 (eql :character)) (vrt2 (eql :base-char))) vrt1)
+
+(macrolet ((fix (vrt)
+             `(progn
+                (defmethod max-vrtype ((vrt1 (eql ,vrt)) (vrt2 (eql :utfixnum))) vrt2)
+                (defmethod max-vrtype ((vrt1 (eql :utfixnum)) (vrt2 (eql ,vrt))) vrt1)
+                (defmethod max-vrtype ((vrt1 (eql ,vrt)) (vrt2 (eql :fixnum))) vrt2)
+                (defmethod max-vrtype ((vrt1 (eql :fixnum)) (vrt2 (eql ,vrt))) vrt1)))
+           (fixes (&rest vrts)
+             `(progn ,@(loop for vrt in vrts collect `(fix ,vrt)))))
+  (fixes :ub8 :sb8 :ub16 :sb16 :ub32 :sb32))
 
 ;;; Given two rtypes, return the most preferable rtype.
 (defun min-rtype (rt1 rt2)

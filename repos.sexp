@@ -197,7 +197,7 @@
   :directory "src/lisp/kernel/contrib/Ecclesia/"
   :repository "https://github.com/s-expressionists/Ecclesia.git"
   :branch "main"
-  :commit "3b3f78800ae959dd902f61f2c42ef6439ac5188c"
+  :commit "74027d0cedba9b98dce9611bf3ae2793e8819449"
   :pin 1)
  (:name :eclector
   :directory "src/lisp/kernel/contrib/Eclector/"
