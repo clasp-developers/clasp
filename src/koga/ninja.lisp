@@ -206,12 +206,16 @@
   (ninja:write-rule output-stream :update-unicode
                     :command (lisp-command "update-unicode.lisp" "$source")
                     :description "Updating unicode tables")
-  (when (cargo configuration)
-    (ninja:write-rule output-stream :cargo-build
-                      :command (format nil "~a build --release --manifest-path ../src/mmtk_clasp/Cargo.toml --target-dir mmtk_cargo"
-                                       (cargo configuration))
-                      :restat 1
-                      :description "Building MMTk Clasp binding")))
+  (if (cargo configuration)
+      (ninja:write-rule output-stream :cargo-build
+                        :command (format nil "~a build --release --manifest-path ../src/mmtk_clasp/Cargo.toml --target-dir mmtk_cargo"
+                                         (cargo configuration))
+                        :restat 1
+                        :description "Building MMTk Clasp binding")
+      (ninja:write-rule output-stream :cargo-build
+                        :command "echo 'Cannot build MMTk Clasp binding without cargo'; false"
+                        :restat 1
+                        :description "Cannot build MMTk Clasp binding without cargo")))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :ninja)) output-stream (target (eql :tags)) sources
