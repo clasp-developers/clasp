@@ -110,6 +110,7 @@ CL_DEFUN T_sp core__sys_shm_constants() {
   SHMC("SYNC", MS_SYNC);
   SHMC("ASYNC", MS_ASYNC);
   SHMC("INVALIDATE", MS_INVALIDATE);
+  SHMC("EEXIST", EEXIST);
 #undef SHMC
   return l.cons();
 }
