@@ -262,8 +262,9 @@
                       ;; another thread has already added this entry
                       nil
                       (list (cons key outcome)))))
+               ;; NOTE: must be a runtime lookup; a #. literal here never matches.
                ((eq (class-of generic-function)
-                    #.(find-class 'standard-generic-function))
+                    (find-class 'standard-generic-function))
                 (memoize-eql-specialized generic-function method-combination
                                          call-history argument-classes))
                (t

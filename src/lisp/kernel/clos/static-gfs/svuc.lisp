@@ -16,11 +16,12 @@ TODO 2: Build a cell system like we do for make-instance.
 ;;;; NOTE: The static-foo macros may evaluate the instance form more than once.
 ;;;; (Because we know here that it's always just a variable.)
 
+;;; NOTE: must be runtime lookups; #. literals here never match.
 (defun uncustomizable-slot-p (class slotd)
   (let ((metaclass (class-of class)))
-    (and (or (eq metaclass #.(find-class 'standard-class))
-             (eq metaclass #.(find-class 'clos:funcallable-standard-class)))
-         (eq (class-of slotd) #.(find-class 'clos:standard-effective-slot-definition)))))
+    (and (or (eq metaclass (find-class 'standard-class))
+             (eq metaclass (find-class 'clos:funcallable-standard-class)))
+         (eq (class-of slotd) (find-class 'clos:standard-effective-slot-definition)))))
 
 ;;; I said "constant slotd", but slotds aren't dumpable, so to satisfy
 ;;; COMPILE-FILE what we'll actually get is (ltv-slotd class slotd),
