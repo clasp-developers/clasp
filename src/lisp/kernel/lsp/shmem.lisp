@@ -41,7 +41,10 @@
     `(multiple-value-bind (,r ,e) ,form
        (if (zerop ,e) ,r (%signal-syscall-error ,name ,e)))))
 
-(defstruct (mapping (:constructor %make-mapping) (:predicate mappingp))
+;; NOT `mapping': CORE::MAPPING is already an exported C++ class (hashTable.h Mapping_O)
+(defstruct (shm-mapping (:conc-name mapping-)
+                        (:constructor %make-mapping)
+                        (:predicate mappingp))
   (address 0 :type integer)
   (size 0 :type integer)
   (fd -1 :type integer)
@@ -79,25 +82,20 @@
   (sys-getpagesize))
 
 (defun mmap (addr length prot flags fd offset)
-  "Map LENGTH bytes of FD; return a MAPPING. ADDR is usually NIL."
+  "Map LENGTH bytes of FD; return a MAPPING. ADDR is usually NIL. Unmap it explicitly."
+  ;; deliberately no GC finalizer: MAPPING-POINTER hands out a pointer that does not keep
+  ;; the MAPPING alive, so a finalizing munmap could unmap a region still in use
   (let* ((prot-bits (%shm-flags prot))
          (address (%checked "mmap"
                     (sys-mmap (%addr->int addr) length
-                              prot-bits (%shm-flags flags) fd offset)))
-         (m (%make-mapping :address address :size length :fd fd :prot prot-bits)))
-    (gctools:finalize m
-                      (lambda (x)
-                        (unless (mapping-unmapped x)
-                          (sys-munmap (mapping-address x) (mapping-size x))
-                          (setf (mapping-unmapped x) t))))
-    m))
+                              prot-bits (%shm-flags flags) fd offset))))
+    (%make-mapping :address address :size length :fd fd :prot prot-bits)))
 
 (defun munmap (mapping)
-  "Unmap MAPPING; idempotent and cancels its GC finalizer."
+  "Unmap MAPPING; idempotent."
   (unless (mapping-unmapped mapping)
     (%checked "munmap" (sys-munmap (mapping-address mapping) (mapping-size mapping)))
-    (setf (mapping-unmapped mapping) t)
-    (gctools:definalize mapping))
+    (setf (mapping-unmapped mapping) t))
   t)
 
 (defun mprotect (mapping prot)
@@ -128,15 +126,27 @@
     (:output (values '(:rdwr)   '(:read :write)))
     (:io     (values '(:rdwr)   '(:read :write)))))
 
+(defun %shm-open-or-create (name oflags mode size)
+  "Open NAME, sizing it only when we are its creator; return a file descriptor."
+  ;; only the creator may ftruncate a POSIX shm object -- on an existing one that is EINVAL
+  (multiple-value-bind (fd errno)
+      (sys-shm-open name (%shm-flags '(:create :exclusive :rdwr)) mode)
+    (cond ((zerop errno)
+           (clasp-posix::ftruncate fd size)
+           fd)
+          ((eql errno (%shm-flag :eexist))
+           (shm-open name oflags mode))
+          (t (%signal-syscall-error "shm_open" errno)))))
+
 (defun open-shared-memory (name size &key (direction :io) (create t) (mode #o600))
   "Open/create shared-memory NAME of SIZE bytes and map it; return a MAPPING."
   (multiple-value-bind (oflags prot) (%direction-flags direction)
-    (let* ((oflags (if create (cons :create oflags) oflags))
-           (fd (shm-open name oflags mode)))
-      (when create (clasp-posix::ftruncate fd size))
-      (let ((m (mmap nil size prot '(:shared) fd 0)))
-        (setf (mapping-name m) name)
-        m))))
+    (let* ((fd (if create
+                   (%shm-open-or-create name oflags mode size)
+                   (shm-open name oflags mode)))
+           (m (mmap nil size prot '(:shared) fd 0)))
+      (setf (mapping-name m) name)
+      m)))
 
 (defun close-shared-memory (mapping &key unlink)
   "Unmap MAPPING, close its fd, and optionally shm-unlink its name."
@@ -159,7 +169,7 @@
 ;;; re-export through CLASP-POSIX; FTRUNCATE is already a CLASP-POSIX symbol
 (let ((syms '("SHM-OPEN" "SHM-UNLINK" "GETPAGESIZE"
               "MMAP" "MUNMAP" "MPROTECT" "MSYNC" "MLOCK" "MUNLOCK"
-              "MAPPING" "MAPPINGP" "MAPPING-POINTER" "MAPPING-ADDRESS"
+              "SHM-MAPPING" "MAPPINGP" "MAPPING-POINTER" "MAPPING-ADDRESS"
               "MAPPING-SIZE" "MAPPING-FD" "MAPPING-NAME"
               "OPEN-SHARED-MEMORY" "CLOSE-SHARED-MEMORY" "WITH-SHARED-MEMORY"
               "SYSCALL-ERROR" "SYSCALL-ERRNO" "SYSCALL-NAME"
