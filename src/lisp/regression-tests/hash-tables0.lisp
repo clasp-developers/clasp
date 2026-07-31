@@ -153,7 +153,6 @@
         (gctools:garbage-collect)
         (hash-table-count table))
       (1))
-#-use-boehm ; on boehm key-or-value tables are effectively strong.
 (test weak-key-or-value-weakness
       (let ((table (make-hash-table :weakness :key-or-value)))
         (setf (gethash (list nil) table) :value
