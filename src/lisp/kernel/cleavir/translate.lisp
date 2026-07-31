@@ -1276,9 +1276,10 @@ function-or-placeholder - the llvm function or a placeholder for
 (macrolet ((fix (vrt llvm unsignedp)
              `(progn
                 (defmethod cast-one ((from (eql ,vrt)) (to (eql :object)) value)
-                  ;; tag-fixnum does inttoptr which zexts, but if we have a
-                  ;; signed byte, we need to sext
-                  (cmp:irc-tag-fixnum ,(if unsignedp 'value '(cmp:irc-sext value))))
+                  ;; tag-fixnum does inttoptr which zexts, but before
+                  ;; the inttoptr it shifts, so we need to extend
+                  ;; beforehand. (And sext instead, if it's signed.)
+                  (cmp:irc-tag-fixnum (,(if unsignedp 'cmp:irc-zext 'cmp:irc-sext) value)))
                 (defmethod cast-one ((from (eql :object)) (to (eql ,vrt)) value)
                   (cmp:irc-untag-fixnum value ,llvm))
                 (defmethod cast-one ((from (eql ,vrt)) (to (eql :utfixnum)) value)
