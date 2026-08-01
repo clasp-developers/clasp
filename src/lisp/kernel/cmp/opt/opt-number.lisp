@@ -32,16 +32,12 @@
 
 (define-compiler-macro - (minuend &rest subtrahends)
   (if (proper-list-p subtrahends)
-      (if subtrahends
-          `(core:two-arg-- ,minuend (+ ,@subtrahends))
-          `(core:negate ,minuend))
+      (core:expand-inverse 'core:two-arg-- 'core:negate '+ minuend subtrahends)
       (error "The - operator can not be part of a form that is a dotted list.")))
 
 (define-compiler-macro / (dividend &rest divisors)
   (if (proper-list-p divisors)
-      (if divisors
-          `(core:two-arg-/ ,dividend (* ,@divisors))
-          `(core:reciprocal ,dividend))
+      (core:expand-inverse 'core:two-arg-/ 'core:reciprocal '* dividend divisors)
       (error "The / operator can not be part of a form that is a dotted list.")))
 
 (define-compiler-macro < (&whole form &rest numbers)
