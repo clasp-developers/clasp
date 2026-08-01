@@ -458,6 +458,7 @@
                        cmp::warn-cannot-coerce
                        #+clasp si:backquote-append
                        core:expand-associative core:proper-list-p
+                       core:expand-inverse
                        core:expand-compare core:expand-uncompare
                        alexandria:make-gensym-list
                        alexandria:ensure-car
