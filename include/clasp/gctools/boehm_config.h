@@ -205,7 +205,14 @@
 #define PACKAGE_VERSION "8.2.8"
 
 /* Define to enable parallel marking. */
-/* #undef PARALLEL_MARK */
+/* clasp: ENABLED. Heap marking is Boehm-standard conservative marking
+   (ALL_INTERIOR_POINTERS=1 + GC_register_displacement for tagged pointers; clasp
+   registers NO custom mark procedures / typed descriptors), so parallel markers
+   parallelize Boehm's own, parallel-safe marking loop -- clasp injects no
+   per-thread marking logic. GC_THREADS and THREAD_LOCAL_ALLOC are already on, and
+   bdwgc auto-starts (#CPUs-1) marker threads in GC_thr_init. This parallelizes
+   GC_mark_from, the dominant runtime cost (~25-30% in profiles) on multicore. */
+#define PARALLEL_MARK 1
 
 /* If defined, redirect free to this function. */
 /* #undef REDIRECT_FREE */
