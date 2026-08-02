@@ -181,3 +181,30 @@
                            (error () nil))))
                (let ((cmp:*compile-native* t))
                  (loop repeat 30 collect (compile nil src))))))
+
+;;; A DYNAMIC-EXTENT declaration is permission to stack allocate, never proof.
+;;; Here it is simply wrong -- the local function hands the closure back out --
+;;; so the compiler has to forfeit the optimisation. Believing the declaration
+;;; would return a closure whose frame is already gone.
+(test-true dynamic-extent-wrong-declaration-is-safe
+      (let ((f (let ((cmp:*compile-native* t))
+                 (compile nil '(lambda (x k)
+                                (flet ((leak-it (g) (list g k)))
+                                  (let ((c (lambda (y) (+ x y))))
+                                    (declare (dynamic-extent c))
+                                    (values (leak-it c) (leak-it c)
+                                            (leak-it c)))))))))
+        (eql 15 (handler-case (funcall (first (funcall f 10 1)) 5)
+                  (error () nil)))))
+
+;;; The same shape with a declaration that IS correct must keep its meaning.
+(test dynamic-extent-declared-closure-value
+      (let ((f (let ((cmp:*compile-native* t))
+                 (compile nil '(lambda (x k)
+                                (flet ((use-it (g) (length (mapcar g (list k 2 3)))))
+                                  (let ((c (lambda (y) (+ x y))))
+                                    (declare (dynamic-extent c))
+                                    (values (use-it c) (use-it c)
+                                            (use-it c)))))))))
+        (funcall f 10 1))
+      (3 3 3))
