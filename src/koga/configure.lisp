@@ -152,7 +152,7 @@
                :type pathname
                :documentation "The directory under which to install shared Clasp files.")
    (pkgconfig-path :accessor pkgconfig-path
-                   :initform #P"/usr/lib/pkgconfig/"
+                   :initform #P"/usr/local/lib/pkgconfig/"
                    :initarg :pkgconfig-path
                    :type pathname
                    :documentation "The directory under which to install the pkgconfig files.")
