@@ -116,10 +116,15 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to use 'pthread_setname_np(const char*)' function. */
+/* Selected per-platform: this header is a checked-in snapshot, not configured per build. */
+#if defined(__APPLE__)
 #define HAVE_PTHREAD_SETNAME_NP_WITHOUT_TID 1
+#endif
 
 /* Define to use 'pthread_setname_np(pthread_t, const char*)' function. */
-/* #undef HAVE_PTHREAD_SETNAME_NP_WITH_TID */
+#if defined(__linux__)
+#define HAVE_PTHREAD_SETNAME_NP_WITH_TID 1
+#endif
 
 /* Define to use 'pthread_setname_np(pthread_t, const char*, void *)'
    function. */
