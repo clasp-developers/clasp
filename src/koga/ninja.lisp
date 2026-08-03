@@ -632,6 +632,8 @@
          (image (image-source configuration))
          (image-installed (image-source configuration :root :package-lib))
          (iclasp (make-source "iclasp" :variant))
+         (libclasp (make-source (lib-filename configuration "libclasp" :dynamic t)
+                                :variant-lib))
          (clasp-with-env (wrap-with-env configuration iclasp))
          (fasls (mapcar #'source-fasl sources))
          (cfasls (mapcar (lambda (source)
@@ -646,7 +648,7 @@
                                       runtime-variables.lisp runtime-info.lisp
                                       type-map.lisp fli-specs.lisp)
                        :clasp clasp-with-env
-                       :implicit-inputs (list iclasp))
+                       :implicit-inputs (list iclasp libclasp))
     (ninja:write-build output-stream :generate-encodings
                        :inputs (list (make-source "tools-for-build/encodingdata.txt" :code))
                        :outputs (list generated-encodings.lisp))
