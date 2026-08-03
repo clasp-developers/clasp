@@ -1404,6 +1404,10 @@
           for index = (core:bytecode-debug-var/frame-index bdv)
           for ctype = (declared-variable-ctype
                        (core:bytecode-debug-var/decls bdv) (consp name))
+          ;; Permission to stack allocate; the escape analysis still has to agree.
+          for dxp = (and (member 'cl:dynamic-extent
+                                 (core:bytecode-debug-var/decls bdv))
+                         t)
           for (datum) = (aref (locals context) index)
           ;; We make all variables IGNORABLE because the bytecode compiler
           ;; has already warned about any syntactically unused variables
@@ -1415,9 +1419,9 @@
                            :ignore 'cl:ignorable :name name)
           do (etypecase datum
                (bir:linear-datum
-                (bind-variable variable datum ctype inserter context))
+                (bind-variable variable datum ctype inserter context dxp))
                ((cons bir:linear-datum) ; cell
-                (bind-variable variable (car datum) ctype inserter context)))
+                (bind-variable variable (car datum) ctype inserter context dxp)))
              (setf (aref (locals context) index)
                    (cons variable cellp))
           collect (cons name ctype) into typemap
@@ -1443,14 +1447,16 @@
           return (env:parse-type-specifier (second decl) env sys)
         finally (return (ctype:top sys))))
 
-(defun bind-variable (variable value ctype inserter context)
+(defun bind-variable (variable value ctype inserter context
+                      &optional dynamic-extent)
   (let ((typed (compile-type-decl :setq ctype value inserter context)))
-    (%bind-variable variable typed inserter)))
+    (%bind-variable variable typed inserter dynamic-extent)))
 
-(defun %bind-variable (variable value inserter)
+(defun %bind-variable (variable value inserter &optional dynamic-extent)
   (build:insert inserter 'bir:leti
                 :inputs (list value)
-                :outputs (list variable)))
+                :outputs (list variable)
+                :dynamic-extent dynamic-extent))
 
 (defmethod end-annotation ((annot core:bytecode-debug-vars)
                            inserter context)
