@@ -536,7 +536,9 @@ Libs: ~a -lclasp~%"
             (format nil "-I~a -I~a"
                     (root :install-share)
                     (make-source "include/" :install-share))
-            ""
+            (format nil "-L~a -Wl,-rpath,~a"
+                    (root :install-dylib)
+                    (root :install-dylib))
             :remove-include t))
 
 (defmethod print-prologue (configuration (name (eql :libclasp-pc-variant)) output-stream)
