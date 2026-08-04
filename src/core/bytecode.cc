@@ -1012,7 +1012,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_mv result = funwind_protect([&]() {
         return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
       },
-        [&]() { eval::funcall(cleanup); });
+        [&]() {
+          // Push a valid PC fixnum so bytecode_call (via eval::funcall) sees
+          // a proper frame header at fp[-3]. The CALL opcode normally does this
+          // before apply_raw, but cleanup thunks are called from C++ without one.
+          vm.push(vm._stackPointer, core::Integer_O::create((uintptr_t)pc).raw_());
+          eval::funcall(cleanup);
+          vm.drop(vm._stackPointer, 1);
+        });
       // copied from vm_code::call - required to avoid the cleanup's values
       // for... some reason. I'm not totally sure.
       multipleValues.setN(result.raw_(), result.number_of_values());
@@ -1365,7 +1372,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
-    vm.drop(sp, nargs + 2); // 2 = func + nargs
+    vm.drop(sp, nargs + 2); // 1 for func, 1 for pc
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
@@ -1502,7 +1509,11 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_mv result = funwind_protect([&]() {
       return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
     },
-      [&]() { eval::funcall(cleanup); });
+      [&]() {
+        vm.push(vm._stackPointer, core::Integer_O::create((uintptr_t)pc).raw_());
+        eval::funcall(cleanup);
+        vm.drop(vm._stackPointer, 1);
+      });
     multipleValues.setN(result.raw_(), result.number_of_values());
     sp = vm._stackPointer;
     pc = vm._pc;
@@ -1574,10 +1585,10 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
-  // Push the args and FP for debugging (see backtrace.cc)
-  // This is mildly wasteful of stack space, but when calling bytecode from
-  // non-bytecode the arguments won't be on the VM stack, so this is the
-  // best I got.
+  // Push args and FP for debugging (see make_bytecode_frame in backtrace.cc).
+  // fp[-3] = old_sp, which call instructions set to point at the call-site PC
+  // fixnum they push before apply_raw. For entries from C++ (cleanup thunks,
+  // top-level calls), the caller must push a valid fixnum PC before calling us.
   vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
   vm.push(vm._stackPointer, (core::T_O*)lcc_args);
   vm.push(vm._stackPointer, (core::T_O*)old_fp);

@@ -526,13 +526,13 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
                                              void* bytecode_call_fbp) {
   // Snapshot (pc, fp) for the current bytecode frame, then advance the
   // by-ref pc/fp to the caller's bytecode frame using the VM-stack chain
-  // bytecode_call builds (nargs/args/old_fp pushes; the PC at offset 3
-  // came from the caller's `call` opcode push). Each subsequent C frame
-  // named "bytecode_call" picks up its own (pc, fp) via this advance, so
-  // every bytecode frame in the backtrace gets its lexical bindings.
-  // The walk terminates naturally: when bytecode is invoked from C++, the
-  // saved old_fp at offset 0 is NULL (vm._framePointer was NULL), so the
-  // next iteration sees fp == NULL and stops.
+  // bytecode_call builds (nargs/args/old_fp pushes). The PC at offset 3
+  // is fp[-3] = old_sp at bytecode_call entry, which points at the fixnum PC
+  // that call opcodes push onto the stack before apply_raw. For cleanup thunks
+  // called from C++ (the protect opcode), the cleanup lambda pushes an explicit
+  // fixnum PC before eval::funcall so bytecode_call sees the same structure.
+  // For top-level calls from C++, VirtualMachine::_pc starts as nullptr →
+  // Integer_O::create(0) → pc=0, which matches no module and terminates the walk.
   void* bpc = pc;
   T_O** bfp = fp;
   if (fp) { // null fp means we've hit the end.

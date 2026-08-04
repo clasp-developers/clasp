@@ -125,7 +125,7 @@ ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
 namespace core {
 
 VirtualMachine::VirtualMachine()
-    : _Running(true)
+  : _Running(true), _pc(nullptr)
 #ifdef DEBUG_VIRTUAL_MACHINE
       ,
       _counter0(0), _unwind_counter(0), _throw_counter(0)
