@@ -595,7 +595,7 @@ static std::vector<PerfMapEntry> load_perf_map() {
   while (fgets(line, sizeof line, fp)) {
     uint64_t addr = 0, size = 0;
     char name[1024] = {0};
-    if (sscanf(line, "%lx %lx %1023[^\n]", &addr, &size, name) >= 3) {
+    if (sscanf(line, "%" SCNx64 " %" SCNx64 " %1023[^\n]", &addr, &size, name) >= 3) {
       out.push_back({addr, size ? size : 1, std::string(name)});
     }
   }
