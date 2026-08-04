@@ -537,7 +537,15 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
   T_O** bfp = fp;
   if (fp) { // null fp means we've hit the end.
     T_sp tpc((gctools::Tagged)*(fp - BYTECODE_FRAME_PC_OFFSET));
-    pc = (unsigned char*)clasp_to_integral<uintptr_t>(tpc);
+    if (tpc.fixnump() || tpc.isA<Bignum_O>()) [[likely]]
+      pc = (unsigned char*)clasp_to_integral<uintptr_t>(tpc);
+    // Stopgap to preserve some backtrace sanity in the event something
+    // has gone wrong and put a non-PC on the stack. That's a bug, but
+    // signaling an error during backtrace collection will crash hard
+    // and it's pretty dumb for that to be caused by debugging.
+    // Long story short, KLUDGE, if control ever reaches this line
+    // it's a bug, probably in bytecode.cc, that you oughta fix.
+    else pc = nullptr;
     fp = (T_O**)(*(fp - BYTECODE_FRAME_FP_OFFSET));
   }
   // Find the bytecode module containing the current pc.
