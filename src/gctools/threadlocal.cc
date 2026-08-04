@@ -100,6 +100,10 @@ namespace gctools {
 ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
     : _DisableInterrupts(false)
 {
+  update_stack_bounds();
+}
+
+void ThreadLocalStateLowLevel::update_stack_bounds() {
 #if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD) || defined(_TARGET_OS_DARWIN)
   pthread_t self = pthread_self();
   void* stackaddr; size_t stacksize;
@@ -112,13 +116,17 @@ ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
   pthread_attr_get_np(self, &attr);
 #endif
   pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+  _ControlStackTop = stackaddr;
+  _ControlStackBottom = (void*)((char*)stackaddr + stacksize);
 #elif defined(_TARGET_OS_DARWIN)
   stackaddr = pthread_get_stackaddr_np(self);
   stacksize = pthread_get_stacksize_np(self);
+  _ControlStackTop = (void*)((char*)stackaddr - stacksize);
+  _ControlStackBottom = stackaddr;
 #endif
-#endif // LINUX || FREEBSD || DARWIN
-  _ControlStackTop = stackaddr;
-  _ControlStackBottom = (void*)((char*)stackaddr + stacksize);
+#else // i.e. not LINUX || FREEBSD || DARWIN
+#error "Unrecognized OS: Cannot retrieve bounds of control stack (needed for GC)"
+#endif
 };
 
 }; // namespace gctools

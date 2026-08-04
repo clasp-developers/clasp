@@ -51,6 +51,8 @@ struct ThreadLocalStateLowLevel {
   std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;
   std::chrono::duration<size_t, std::nano> _unwind_time;
   ThreadLocalStateLowLevel();
+private:
+  void update_stack_bounds();
 };
 }; // namespace gctools
 
