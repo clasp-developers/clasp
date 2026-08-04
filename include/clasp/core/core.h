@@ -115,12 +115,6 @@ class type_info;
 //! Macro for attribute that causes symbols to be exposed
 #define ATTR_WEAK __attribute__((weak))
 
-#if defined(DEBUG_RECURSIVE_ALLOCATIONS)
-#define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS() gctools::RecursiveAllocationCounter rac;
-#else
-#define DO_DEBUG_MPS_RECURSIVE_ALLOCATIONS()
-#endif
-
 #define clasp_unlikely(x) __builtin_expect(!!(x), 0)
 #define clasp_likely(x) __builtin_expect(!!(x), 1)
 #define UNLIKELY(x) clasp_unlikely(x)
@@ -281,10 +275,7 @@ const handleType UniqueIdHandle = 1;
 
 }; // namespace core
 
-/*! Associate a namespace name with a Package.
-  This is scraped out of the code by "registerClasses.py"
-*/
-
+// Used extensively in Cando but probably needs cleaning up.
 #define UndefinedUnsignedInt UINT_MAX
 #define UNDEF_UINT UndefinedUnsignedInt
 

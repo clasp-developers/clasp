@@ -287,6 +287,12 @@
   :repository "https://github.com/s-expressionists/Maclina.git"
   :branch "main"
   :pin 0)
+ (:name :mmtk-core
+  :directory "src/mmtk-core/"
+  :repository "https://github.com/mmtk/mmtk-core.git"
+  :branch "master"
+  :commit "5781e63331f59bdea7db0a9c3f18305e37b3fcd4"
+  :pin 1)
  (:name :mgl-pax
   :extension :cando
   :directory "src/lisp/kernel/contrib/mgl-pax/"

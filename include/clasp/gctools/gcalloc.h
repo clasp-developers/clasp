@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/gctools/smart_pointers.h>
 #include <clasp/gctools/threadlocal.fwd.h>
 #include <clasp/gctools/snapshotSaveLoad.fwd.h>
+#include <clasp/gctools/stw.h>
 
 #define STACK_ALIGNMENT alignof(char*)
 #define STACK_ALIGN_UP(size) (((size) + STACK_ALIGNMENT - 1) & ~(STACK_ALIGNMENT - 1))

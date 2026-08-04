@@ -225,7 +225,7 @@ class WeakKeyOrValueMapping_O final : public Mapping_O {
   LISP_CLASS(core, CorePkg, WeakKeyOrValueMapping_O, "WeakKeyOrValueMapping", Mapping_O);
 public:
   // need typedefs for e.g. sizeof_container
-  typedef gctools::WeakAndMapping::value_type value_type;
+  typedef gctools::DoubleEphMapping::value_type value_type;
 public:
   WeakKeyOrValueMapping_O(size_t size) : _Mapping(size) {}
   WeakKeyOrValueMapping_O() : WeakKeyOrValueMapping_O(0) {}

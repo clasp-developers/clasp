@@ -116,23 +116,9 @@ extern "C" {
 
 ALWAYS_INLINE core::T_O* cc_stack_enclose(void* closure_address, core::T_O* entryPointInfo, std::size_t numCells) {
   NO_UNWIND_BEGIN();
-  ASSERT(((uintptr_t)(closure_address)&0x7) == 0); //
-  gctools::Header_s* header = reinterpret_cast<gctools::Header_s*>(closure_address);
-  const gctools::Header_s::BadgeStampWtagMtag closure_header = gctools::Header_s::BadgeStampWtagMtag::make<core::Closure_O>();
-//  gctools::global_stack_closure_bytes_allocated += size;
-#ifdef DEBUG_GUARD
-  size_t size = gctools::sizeof_container_with_header<core::Closure_O>(numCells);
-  new (header) gctools::GCHeader<core::Closure_O>::HeaderType(closure_header, size, 0, size);
-#else
-  new (header) gctools::GCHeader<core::Closure_O>::HeaderType(closure_header);
-#endif
   core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
   core::SimpleFun_sp entryPoint = tentryPoint.as<SimpleFun_O>();
-  auto obj = gctools::HeaderPtrToGeneralPtr<typename gctools::smart_ptr<core::Closure_O>::Type>(closure_address);
-  new (obj)(typename gctools::smart_ptr<core::Closure_O>::Type)(numCells, entryPoint);
-  gctools::smart_ptr<core::Closure_O> functoid = gctools::smart_ptr<core::Closure_O>(obj);
-  //  printf("%s:%d  Allocating closure on stack at %p  stack_closure_p()->%d\n", __FILE__, __LINE__, functoid.raw_(),
-  //  functoid->stack_closure_p());
+  core::Closure_sp functoid = gctools::InitObject<core::Closure_O>(closure_address, numCells, entryPoint);
   return functoid.raw_();
   NO_UNWIND_END();
 }

@@ -566,8 +566,8 @@ SimpleString_sp symbolTokenStr(T_sp stream, Token& token, size_t start, size_t e
   return buffer.string()->asMinimalSimpleString();
 }
 
-SimpleString_sp tokenStr(T_sp stream, const Token& token, size_t start = 0, size_t end = UNDEF_UINT, bool only_dots_ok = false) {
-  if (end == UNDEF_UINT)
+SimpleString_sp tokenStr(T_sp stream, const Token& token, size_t start = 0, size_t end = UINT_MAX, bool only_dots_ok = false) {
+  if (end == UINT_MAX)
     end = token.size();
   SafeBufferStrWNs buffer;
   bool only_dots = true;

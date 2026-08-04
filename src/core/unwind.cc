@@ -79,6 +79,9 @@ void sjlj_unwind_invalidate(DestDynEnv_sp dest) {
     ASSERT(gc::IsA<DynEnv_sp>(CONS_CAR(iter)));
     DynEnv_sp diter = gc::As_unsafe<DynEnv_sp>(CONS_CAR(iter));
     if (diter == dest) {
+      // We've arrived. Clear the _UnwindDest so the GC doesn't have
+      // some stale object.
+      thread->_UnwindDest = nil<T_O>();
       // Now actually jump. We need to replace the dynEnvStackGet(), but what we
       // switch it to depends on whether it's a tagbody or block.
       if (dest->unwound_dynenv_p())

@@ -3,7 +3,10 @@
 #include <signal.h>
 #include <functional>
 #include <algorithm> // copy
+#include <concepts> // invocable
 #include <clasp/gctools/threadlocal.fwd.h>
+#include <clasp/gctools/threadLocalStacks.h>
+#include <clasp/core/multipleValues.h>
 
 namespace core {
 
@@ -230,7 +233,8 @@ struct ThreadLocalState {
   std::atomic<core::Cons_sp> _PendingInterruptsTail;
   sigset_t _PendingSignals;
   std::atomic<bool> _PendingSignalsP;
-  std::atomic<bool> _BlockingP;
+  enum class GCState { Running, GCsafe, Parked }; // see stw.h
+  std::atomic<GCState> _GCState;
   List_sp _BufferStr8NsPool;
   List_sp _BufferStrWNsPool;
   StringOutputStream_sp _BFormatStringOutputStream;
@@ -257,6 +261,7 @@ struct ThreadLocalState {
   uint64_t _Tid;
   uintptr_t _BacktraceBasePointer;
   uint64_t _DtreeInterpreterCallCount;
+  gctools::ThreadLocalStateLowLevel _LowLevel;
   VirtualMachine _VM;
 
 #ifdef DEBUG_MONITOR_SUPPORT
@@ -274,7 +279,10 @@ public:
   ThreadLocalState();
   void initialize_thread(mp::Process_sp process);
 
-  pid_t safe_fork();
+  // Fork this process. When will_exec is true the child is expected to exec()
+  // immediately, so the MMTk GC worker threads are left untouched (parking and
+  // respawning them would be wasted work discarded by the exec).
+  pid_t safe_fork(bool will_exec = false);
 
   void dynEnvStackTest(core::T_sp val) const;
   void dynEnvStackSet(core::T_sp val) {
@@ -285,8 +293,6 @@ public:
   }
 
   uint32_t random();
-
-  inline DynamicBindingStack& bindings() { return this->_Bindings; };
 
   void startUpVM();
 
@@ -319,8 +325,50 @@ public:
     return static_cast<bool>(_PendingInterruptsHead.load(std::memory_order_acquire));
   }
   core::T_sp dequeue_interrupt();
-  inline void set_blockingp(bool b) { _BlockingP.store(b, std::memory_order_release); }
-  inline bool blockingp() const { return _BlockingP.load(std::memory_order_acquire); }
+  inline void block() { _GCState.store(GCState::Parked, std::memory_order_release); }
+  inline void gcsafe() { _GCState.store(GCState::GCsafe, std::memory_order_release); }
+  inline void unblock() { _GCState.store(GCState::Running, std::memory_order_release); }
+  inline bool gcsafep() const { return _GCState.load(std::memory_order_acquire) != GCState::Running; }
+  inline bool blockingp() const { return _GCState.load(std::memory_order_acquire) == GCState::Parked; }
+
+  // Call a function on the addresses of objects directly accessible from the
+  // thread's fields.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkRoots(Walker&& walk) {
+    walk((gctools::Tagged*)&_Process);
+    // Get at the actual tagged_pointer since that's also managed.
+    // KLUDGE: better access. why do we even have Vec0 vs GCVector
+    walk((gctools::Tagged*)&_Bindings._ThreadLocalBindings._Vector._Contents);
+    walk((gctools::Tagged*)&_PendingInterruptsHead); // includes tail
+    walk((gctools::Tagged*)&_BufferStr8NsPool);
+    walk((gctools::Tagged*)&_BufferStrWNsPool);
+    walk((gctools::Tagged*)&_BFormatStringOutputStream);
+    walk((gctools::Tagged*)&_WriteToStringOutputStream);
+    _MultipleValues.walkValues(walk);
+    walk((gctools::Tagged*)&_DynEnvStackBottom);
+    //walk((gctools::Tagged*)&_UnwindDest);
+  }
+  // Call a function on the addresses of objects in the bytecode stack.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkVMStack(Walker&& walk) {
+    for (core::T_O** ptr = _VM._stackBottom;
+         ptr < _VM._stackPointer; ++ptr)
+      walk((gctools::Tagged*)ptr);
+  }
+  // Call a function on the addresses of objects in the control stack.
+  // NOTE: It is NOT guaranteed that something that looks like a tagged pointer
+  // actually is one, since we don't control this stack as well as we control
+  // the VM stack and heap references. Scan conservatively.
+  // Also, we assume that the stack grows down.
+  // This is difficult to test for and may not be true in practice on weird
+  // hardened systems.
+  template <std::invocable<gctools::Tagged*> Walker>
+  void walkControlStack(Walker&& walk) {
+    for (const void** ptr = (const void**)_LowLevel._ControlStackPointer;
+         ptr < (const void**)_LowLevel._ControlStackBottom; ++ptr) {
+      walk((gctools::Tagged*)ptr);
+    }
+  }
 
   ~ThreadLocalState();
 };
@@ -330,11 +378,7 @@ void thread_local_invoke_and_clear_cleanup();
 
 }; // namespace core
 
-namespace gctools {
-
-void registerBytesAllocated(size_t bytes);
-};
-
+// used in snapshot load
 struct ThreadManager {
   struct Worker {
 #ifdef USE_BOEHM
@@ -362,12 +406,4 @@ struct ThreadManager {
   void unregister_thread(std::thread& th){
       //    printf("%s:%d:%s What do I do here pid %d\n", __FILE__, __LINE__, __FUNCTION__, getpid(); );
   };
-};
-
-template <typename T> class thread_pool;
-
-namespace gctools {
-
-extern thread_pool<ThreadManager>* global_thread_pool;
-
 };

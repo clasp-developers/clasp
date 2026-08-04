@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include <stack>
 #include <utility> // pair
+#include <cstdint> // UINTPTR_MAX
 #include <unistd.h>
 #include <fcntl.h>
 #include <clasp/core/foundation.h>
@@ -47,42 +48,15 @@ THE SOFTWARE.
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/gctools/memoryManagement.h>
+#include <clasp/gctools/interrupt.h> // detect_fault
+#include <clasp/gctools/roots.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
-#if 0
-#include <clasp/core/bundle.h>
-#include <clasp/core/posixTime.h>
-#include <clasp/core/compiler.h>
-#include <clasp/gctools/gc_interface.fwd.h>
-#endif
-// #include "main/allHeaders.cc"
 
 #ifdef _TARGET_OS_LINUX
 #include <signal.h>
 #endif
-
-extern "C" {
-void gc_park() {
-#if defined(USE_BOEHM)
-  boehm_park();
-#elif defined(USE_MMTK)
-
-#endif
-};
-
-void gc_release() {
-#if defined(USE_BOEHM)
-  boehm_release();
-#elif defined(USE_MMTK)
-  MISSING_GC_SUPPORT();
-#endif
-};
-
-__attribute__((noinline)) void HitAllocationSizeThreshold() { my_thread_low_level->_Allocations._HitAllocationSizeCounter++; }
-
-__attribute__((noinline)) void HitAllocationNumberThreshold() { my_thread_low_level->_Allocations._HitAllocationNumberCounter++; }
-}
 
 #include <clasp/core/scrape.h>
 
@@ -140,60 +114,11 @@ GC_MANAGED_TYPE(gctools::GCVector_moveable<std::pair<gctools::smart_ptr<core::T_
 
 namespace gctools {
 
-size_t global_sizeof_fwd;
-
-// GCStack _ThreadLocalStack;
-size_t _global_stack_max_size;
-
-#if 0
-    HeapRoot* 	rooted_HeapRoots = NULL;
-    StackRoot* 	rooted_StackRoots = NULL;
-#endif
-
 DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__nextStampValue() { return Header_s::StampWtagMtag::shift_unshifted_stamp(global_NextUnshiftedStamp); }
 DOCGROUP(clasp);
 CL_DEFUN Fixnum gctools__NextUnshiftedStampValue() { return global_NextUnshiftedStamp; }
 
-}; // namespace gctools
-namespace gctools {
-void lisp_increment_recursive_allocation_counter(ThreadLocalStateLowLevel* thread, size_t header_value) {
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  int x = thread->_RecursiveAllocationCounter + 1;
-  thread->_RecursiveAllocationCounter = x;
-  if (x != 1) {
-    printf("%s:%d A recursive allocation took place - these are illegal!!!!\n     The outer header_value is %lu and the inner one "
-           "is %lu\n",
-           __FILE__, __LINE__, thread->_RecursiveAllocationHeaderValue, header_value);
-    dbg_safe_backtrace();
-    abort();
-  }
-  thread->_RecursiveAllocationHeaderValue = header_value;
-#endif
-}
-void lisp_decrement_recursive_allocation_counter(ThreadLocalStateLowLevel* thread) {
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  --thread->_RecursiveAllocationCounter;
-#endif
-};
-
-}; // namespace gctools
-
-namespace gctools {
-#if 0
-AllocationRecord* allocation_backtrace(size_t kind, uintptr_t stamp, size_t size, AllocationRecord* prev) {
-// Play with Unix backtrace(3)
-#define BACKTRACE_SIZE 1024
-  void *buffer[BACKTRACE_SIZE];
-  char *funcname = (char *)malloc(1024);
-  size_t funcnamesize = 1024;
-  int nptrs;
-  nptrs = backtrace(buffer, BACKTRACE_SIZE);
-  char **strings = backtrace_symbols(buffer, nptrs);
-  AllocationRecord* record = new BacktraceRecord(strings,nptrs,kind,stamp,size,prev);
-  return record;
-};
-#endif
 }; // namespace gctools
 
 namespace gctools {
@@ -235,96 +160,42 @@ void clasp_dealloc(char* buffer) {
 namespace gctools {
 
 bool is_memory_readable(const void* address, size_t bytes) {
-  int fd[2];
-  int ret = pipe(fd);
-  if (ret == -1) {
-    printf("%s:%d:%s Error creating pipe\n", __FILE__, __LINE__, __FUNCTION__);
-    wait_for_user_signal("Error creating pipe in is_memory_readable");
-  }
-
-  // Try to write to an unwritable file descriptor
-  ret = write(fd[1], address, bytes);
-  close(fd[0]);
-  close(fd[1]);
-
-  if (ret == -1 && errno == EFAULT) {
-    // Memory is not readable
-    return false;
-  } else {
-    // Memory is readable
-    return true;
-  }
+  address_range range;
+  range.low = (uintptr_t)address;
+  range.high = (uintptr_t)address + bytes;
+  if (range.high < range.low)
+    // This can happen if ADDRESS is absurdly high, e.g. address = UINTPTR_MAX-8
+    // and bytes = 8. That makes the addition wrap around.
+    // I am actually seeing this for some reason, dunno why.
+    // But it ought to work, so:
+    range.high = UINTPTR_MAX;
+  return !detect_fault(1, &range,
+                       [&] () {
+                         for (size_t i = 0; i < bytes; ++i) {
+                           // volatile to try to actually force a load here
+                           // the load will trigger a fault if the address
+                           // does not point at our memory
+                           volatile char x = ((char*)address)[i];
+                         }
+                       });
 }
 
-void rawHeaderDescribe(const uintptr_t* headerP) {
-  uintptr_t headerTag = (*headerP) & Header_s::mtag_mask;
-  switch (headerTag) {
-  case Header_s::invalid0_mtag:
-  case Header_s::invalid1_mtag:
-  case Header_s::invalid2_mtag: {
-    printf("  %p : %" PRIuPTR "(%p) %" PRIuPTR "(%p)\n", headerP, *headerP, (void*)*headerP, *(headerP + 1), (void*)*(headerP + 1));
-    printf(" Not an object header!\n");
-    break;
-  }
-  case Header_s::stamp_mtag: {
-    if (is_memory_readable((void*)headerP, 8)) {
-      printf("   %p : %18p <- header\n", headerP, (void*)*headerP);
-    } else {
-      printf("   %p : <<<<< The address is NOT readable\n", headerP);
-      return;
-    }
-#ifndef DEBUG_GUARD
-    printf("   %p : %18p <- vtable\n", (headerP + 1), (void*)*(headerP + 1));
-    fflush(stdout);
+bool is_heap_memory(const void* address) {
+  // check easy stuff first
+  if ((uintptr_t)address < 0x1000) return false;
+  // can happen if we took a null (0) pointer and subtracted sizeof(Header_s)
+  if ((uintptr_t)address > UINTPTR_MAX - 0x1000) return false;
+  // otherwise ask the GC about its heap
+#if defined(USE_BOEHM)
+  return !!GC_base(const_cast<void*>(address));
+#elif defined(USE_MMTK)
+  return mmtk_clasp_is_in_mmtk_spaces(address);
 #else
-    printf("   %p : %18p\n", (headerP + 1), (void*)*(headerP + 1));
-    printf("   %p : %18p\n", (headerP + 2), (void*)*(headerP + 2));
-    printf("   %p : %18p\n", (headerP + 3), (void*)*(headerP + 3));
-    printf("   %p : %18p\n", (headerP + 4), (void*)*(headerP + 4));
-    printf("   %p : %18p\n", (headerP + 5), (void*)*(headerP + 5));
+  return true; // beware
 #endif
-    size_t stamp_wtag = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp_wtag());
-    GCStampEnum kind = (GCStampEnum)((*((Header_s*)headerP))._badge_stamp_wtag_mtag.stamp());
-    printf(" ACTUAL stamp_wtag   = %4zu", stamp_wtag);
-    fflush(stdout);
-    printf(" name: %s\n", obj_name(kind));
-  } break;
-  case Header_s::fwd_mtag: {
-    Header_s* hdr = (Header_s*)headerP;
-    printf("  0x%p : 0x%" PRIuPTR " 0x%" PRIuPTR "\n", headerP, *headerP, *(headerP + 1));
-    printf(" fwd_tag - fwd address: 0x%" PRIuPTR "\n", (*headerP) & Header_s::mtag_mask);
-  } break;
-  }
-#ifdef DEBUG_GUARD
-  Header_s* header = (Header_s*)headerP;
-  header->validate();
-  printf("This object passed the validate() test\n");
-#endif
-};
-}; // namespace gctools
+}
 
-extern "C" {
-void client_describe(void* taggedClient) {
-  if (gctools::tagged_generalp(taggedClient) || gctools::tagged_consp(taggedClient)) {
-    // Currently this assumes that Conses and General objects share the same header
-    // this may not be true in the future
-    // conses may be moved into a separate pool and dealt with in a different way
-    const uintptr_t* headerP;
-    if (gctools::tagged_generalp(taggedClient)) {
-      headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(gctools::untag_general(taggedClient)));
-    } else {
-      headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(gctools::untag_cons(taggedClient)));
-    }
-    gctools::rawHeaderDescribe(headerP);
-  } else {
-    printf("%s:%d Not a tagged pointer - might be immediate value\n", __FILE__, __LINE__);
-    printf("    Trying to interpret as client pointer\n");
-    const uintptr_t* headerP;
-    headerP = reinterpret_cast<const uintptr_t*>(gctools::GeneralPtrToHeaderPtr(taggedClient));
-    gctools::rawHeaderDescribe(headerP);
-  }
-};
-};
+}; // namespace gctools
 
 extern "C" {
 
@@ -357,8 +228,6 @@ void client_validate_tagged(gctools::Tagged taggedClient) {
     // Nothing can be done to validate CONSes, they are too compact.
   }
 };
-
-void header_describe(gctools::Header_s* headerP) { gctools::rawHeaderDescribe((uintptr_t*)headerP); };
 };
 
 namespace gctools {
@@ -405,21 +274,35 @@ void BaseHeader_s::validate() const {
   }
 }
 
-bool ConsHeader_s::isValidConsObject() const {
+// Did you know member functions can be marked volatile? Neither did I, before.
+// We call this function on all kinds of pointers from god knows where to things
+// that aren't actually ConsHeader_s's and have never been. In particular, it's
+// possible for them to be pointers to outside actual memory, in which case
+// accessing any of that memory through fields will segfault.
+// is_memory_readable checks for that using dark magic, but we need to be sure
+// that it's checked before any accesses, and so the compiler must be made not
+// to reorder any of the accesses to "this".
+// Marking the function volatile ensures this. The alternative is a
+// [[clang::optnone]] attribute, which does work, but inhibits other optimizations
+// that we may want.
+// volatile does unfortunately entail some duplicate volatile functions in the
+// classes. FIXME: Come C++23 we can use deducing this to avoid that.
+bool ConsHeader_s::isValidConsObject() const volatile {
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The cons header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
+  if (!is_memory_readable((void*)this, sizeof(ConsHeader_s)))
+    return false;
+#ifdef USE_BOEHM
   void* gcBase;
-  if (!is_memory_readable((void*)this, 8))
-    goto bad;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
     goto bad;
-  if (this->_badge_stamp_wtag_mtag._value == 0)
+#endif
+  if (!this->_badge_stamp_wtag_mtag.stampP())
     goto bad;
-  if (this->_badge_stamp_wtag_mtag.invalidP())
-    goto bad;
+  // test that stamp is STAMPWTAG_CONS
   if (!this->_badge_stamp_wtag_mtag.consObjectP())
     goto bad;
   return true;
@@ -427,17 +310,21 @@ bad:
   return false;
 }
 
-bool Header_s::isValidGeneralObject() const {
+// See apology above isValidConsObject
+bool Header_s::isValidGeneralObject() const volatile {
+  // See apologia in ConsHeader_s
   if (((uintptr_t)this & ptag_mask) != 0) {
     printf("%s:%d The general header %p is out of alignment\n", __FILE__, __LINE__, (void*)this);
     abort();
   }
+  if (!is_memory_readable((void*)this, sizeof(Header_s)))
+    return false;
+#ifdef USE_BOEHM
   void* gcBase;
-  if (!is_memory_readable((void*)this, 8))
-    goto bad;
   gcBase = GC_base((void*)this);
   if (gcBase != (void*)this)
     goto bad;
+#endif
   if (this->_badge_stamp_wtag_mtag._value == 0)
     goto bad;
 #ifdef DEBUG_GUARD
@@ -446,29 +333,29 @@ bool Header_s::isValidGeneralObject() const {
 #endif
   if (this->_badge_stamp_wtag_mtag.invalidP())
     goto bad;
-  if (this->_badge_stamp_wtag_mtag.stampP()) {
+  if (!this->_badge_stamp_wtag_mtag.stampP())
+    goto bad;
 #if defined(USE_PRECISE_GC)
-    uintptr_t stamp_index = (uintptr_t)this->_badge_stamp_wtag_mtag.stamp_();
-    if (stamp_index > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max))
-      goto bad; // wasMTAG
+  if ((uintptr_t)this->_badge_stamp_wtag_mtag.stamp_()
+      > STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_max))
+    goto bad; // wasMTAG
 #endif          // USE_PRECISE_GC
 #ifdef DEBUG_GUARD
-    if (this->_guard != GUARD1)
-      goto bad;
-    if (this->_guard2 != GUARD2)
-      goto bad;
+  if (this->_guard != GUARD1)
+    goto bad;
+  if (this->_guard2 != GUARD2)
+    goto bad;
 #endif
-    if (!(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value)))
-      goto bad;
+  if (!(gctools::Header_s::StampWtagMtag::is_shifted_stamp(this->_badge_stamp_wtag_mtag._value)))
+    goto bad;
 #ifdef DEBUG_GUARD
-    for (unsigned char *cp = ((unsigned char*)(this) + this->_tail_start),
-                       *cpEnd((unsigned char*)(this) + this->_tail_start + this->_tail_size);
-         cp < cpEnd; ++cp) {
-      if (*cp != 0xcc)
-        goto bad;
-    }
-#endif
+  for (unsigned char *cp = ((unsigned char*)(this) + this->_tail_start),
+         *cpEnd((unsigned char*)(this) + this->_tail_start + this->_tail_size);
+       cp < cpEnd; ++cp) {
+    if (*cp != 0xcc)
+      goto bad;
   }
+#endif
   return true;
 bad:
   // printf("%s:%d:%s Encountered a bad general object at %p value: 0x%x\n", __FILE__, __LINE__, __FUNCTION__, this,
@@ -531,8 +418,6 @@ bool BaseHeader_s::preciseIsPolymorphic() const {
   if (this->_badge_stamp_wtag_mtag.stampP()) {
     uintptr_t stamp = this->_badge_stamp_wtag_mtag.stamp();
     return global_stamp_layout[stamp].flags & IS_POLYMORPHIC;
-  } else if (this->_badge_stamp_wtag_mtag.consObjectP()) {
-    return false;
   }
   return false;
 }
@@ -606,14 +491,6 @@ void FinishAssingingBuiltinStamps() {
 
 namespace gctools {
 
-/* Walk all of the roots, passing the address of each root and what it represents */
-template <typename RootWalkCallback>
-void walkRoots(RootWalkCallback&& callback) {
-  callback((Tagged*)&_lisp);
-  for (size_t jj = 0; jj < global_symbol_count; ++jj) {
-    callback((Tagged*)&global_symbols[jj]);
-  }
-};
 
 static void mw_obj_scan(core::General_O* client,
                         std::stack<std::pair<Tagged, Tagged>>& markStack) {
@@ -637,7 +514,7 @@ static void mapAllObjectsInternal(std::set<Tagged>& markSet,
   std::stack<std::pair<Tagged, Tagged>> markStack;
 
   // process all roots
-  walkRoots([&](Tagged* rootf) { markStack.emplace(0, *rootf); });
+  walkGlobalRoots([&](Tagged* rootf) { markStack.emplace(0, *rootf); });
 
   while (!markStack.empty()) {
     // pop an object. we don't need the containing object.
@@ -695,7 +572,7 @@ std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>& dla
 
   std::set<void*> uniqueEntryPoints;
 
-  walkRoots([&](Tagged* rootAddr) { markStack.emplace(0, *rootAddr); });
+  walkGlobalRoots([&](Tagged* rootAddr) { markStack.emplace(0, *rootAddr); });
 
   while (!markStack.empty()) {
     auto p = markStack.top(); markStack.pop();
@@ -768,6 +645,88 @@ size_t objectSize(BaseHeader_s* header) {
     // It's a general object - walk it
     return general_skip(HeaderPtrToGeneralPtr<core::General_O>(header));
   }
+}
+
+void traceablep(std::unordered_map<Tagged, bool>& testing) {
+  std::set<Tagged> markSet;
+  std::stack<Tagged> markStack;
+  std::set<Ephemeron*> ephemera;
+
+  auto fail = testing.end();
+
+  auto fix_field
+    = [&](core::T_O** field) { markStack.push((Tagged)*field); };
+
+  auto fix_eph
+    = [&](Ephemeron* eph) {
+      // Insert ephemeron during normal tracing, otherwise do nothing
+      // and get an iterator reference so we can erase if needed.
+      auto it = ephemera.insert(eph).first;
+      auto p = eph->get_no_lock();
+      // If the ephemeron key is dead, we're done with this
+      if (p.key.deletedp()) {
+        ephemera.erase(it);
+        return;
+      }
+      // OK, not deleted. Have we traced the key? If so,
+      // trace the value and remove us from processing.
+      Tagged key = p.key.tagged_();
+      switch(ptag(key)) {
+      case general_tag: case cons_tag:
+          if (!markSet.contains(key)) break;
+          [[fallthrough]];
+      default: {
+          // or we're something always alive, like a fixnum
+          // or no_key
+          ephemera.erase(it);
+          Tagged value = p.value.tagged_();
+          markStack.push(value);
+      } break;
+      }
+      // We have not traced the key, but might do so later,
+      // so leave us in the set.
+    };
+
+  walkRoots([&](Tagged* rootf) { markStack.push(*rootf); });
+
+ trace:
+  while (!markStack.empty()) {
+    Tagged tagged = markStack.top(); markStack.pop();
+
+    // Is this a value we're trying to trace?
+    auto it = testing.find(tagged);
+    if (it != fail)
+      it->second = true; // yes, and it's reachable
+
+    // Scan fields.
+    switch(ptag(tagged)) {
+    case general_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
+        scan::general((core::General_O*)client,
+                      fix_field, [](WeakPointer*){}, fix_eph);
+      }
+    } break;
+    case cons_tag: {
+      if (!markSet.contains(tagged)) {
+        markSet.insert(tagged);
+        uintptr_t client = untag_object(tagged);
+        scan::cons((core::Cons_O*)client, fix_field);
+      }
+    } break;
+    default: break;
+    }
+  }
+  // Normal tracing completed, but check for remaining ephemera.
+  // for (auto eit : ephemera) fix_eph(eit);
+  // does not work, because we erase iterators as we go.
+  for (auto eit = ephemera.begin(); eit != ephemera.end();) {
+    fix_eph(*(eit++));
+  }
+  // If any ephemera were live, go back and scan those references.
+  if (!markStack.empty()) goto trace;
+  // Otherwise we are done.
 }
 
 }; // namespace gctools

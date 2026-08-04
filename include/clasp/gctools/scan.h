@@ -30,7 +30,7 @@ class scan {
 public:
   template <std::invocable<core::T_O**> Fixer>
   static void cons(core::Cons_O* client, Fixer&& fix) {
-    gctools::Header_s& header = *(gctools::Header_s*)gctools::ConsPtrToHeaderPtr(client);
+    gctools::ConsHeader_s& header = *(gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
     if (header._badge_stamp_wtag_mtag.consObjectP()) {
       fix((core::T_O**)&client->_Car);
       fix((core::T_O**)&client->_Cdr);
@@ -38,7 +38,7 @@ public:
       printf("%s:%d CONS in cons_scan client=%p\n(it's not a CONS or any of fwd car=%p "
            "cdr=%p\n",
              __FILE__, __LINE__, (void*)client, client->car().raw_(), client->cdr().raw_());
-      abort();
+      truly_abort();
     }
   }
   
@@ -151,6 +151,7 @@ private:
   static void weak_shim(gctools::WeakPointer* weak, Fixer&& fix) {
     std::optional<core::T_sp> v = weak->value_no_lock();
     if (v) {
+#ifdef USE_BOEHM
       core::T_O* raw = v->raw_();
       fix(&raw);
       // Store it back in the weak pointer - this is needed for when the
@@ -158,6 +159,9 @@ private:
       // alter pointers.
       // Do not change the pointer outside of image save/load.
       weak->store_no_lock(core::T_sp((gctools::Tagged)raw));
+#else
+      fix((core::T_O**)&weak->_value);
+#endif
     }
   }
 
@@ -165,12 +169,19 @@ private:
   static void eph_shim(gctools::Ephemeron* eph, Fixer&& fix) {
     auto kv = eph->get_no_lock();
     if (!kv.key.deletedp()) {
+#ifdef USE_BOEHM
       core::T_O* rkey = kv.key.raw_();
       core::T_O* rval = kv.value.raw_();
       fix(&rkey); fix(&rval);
       // See comment on weak pointers above.
       eph->reinit_no_lock(core::T_sp((gctools::Tagged)rkey),
                           core::T_sp((gctools::Tagged)rval));
+#else
+      // FIXME: do we need the deletedp check before this? I don't think so?
+      // Resolve once things are stable with MMTk
+      fix((core::T_O**)&eph->_key);
+      fix((core::T_O**)&eph->_value);
+#endif
     }
   }
 

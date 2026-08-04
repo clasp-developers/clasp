@@ -218,8 +218,6 @@ void Lisp::shutdownLispEnvironment() {
   //  my_thread->destroy_sigaltstack();
 }
 
-void Lisp::lisp_initSymbols(LispPtr lisp) {}
-
 /*! Allocations go here
  */
 void Lisp::initialize() {
@@ -249,26 +247,11 @@ string dump_instanceClass_info(Instance_sp co, LispPtr prog) {
 }
 
 void Lisp::setupSpecialSymbols() {
-  RAII_DISABLE_INTERRUPTS();
+  gctools::RAIIDisableInterrupts disable_interrupts;
   SimpleBaseString_sp name_nil = SimpleBaseString_O::make("NIL");
   Null_sp symbol_nil = gctools::GC<Null_O>::allocate(name_nil); // ::create_at_boot("NIL");
-  SimpleBaseString_sp name_unbound = SimpleBaseString_O::make("UNBOUND");
-  Symbol_sp symbol_unbound = gctools::GC<Symbol_O>::allocate(name_unbound);
-  SimpleBaseString_sp name_no_thread_local_binding = SimpleBaseString_O::make("NO-THREAD-LOCAL-BINDING");
-  Symbol_sp symbol_no_thread_local_binding = gctools::GC<Symbol_O>::allocate(name_no_thread_local_binding);
-  SimpleBaseString_sp name_no_key = SimpleBaseString_O::make("NO_KEY");
-  Symbol_sp symbol_no_key = gctools::GC<Symbol_O>::allocate(name_no_key);
-  SimpleBaseString_sp name_deleted = SimpleBaseString_O::make("DELETED");
-  Symbol_sp symbol_deleted = gctools::GC<Symbol_O>::allocate(name_deleted);
-  SimpleBaseString_sp name_same_as_key = SimpleBaseString_O::make("SAME-AS-KEY");
-  Symbol_sp symbol_same_as_key = gctools::GC<Symbol_O>::allocate(name_same_as_key);
-  // TODO: Ensure that these globals are updated by the garbage collector
+  // TODO: Ensure that this global is updated by the garbage collector
   gctools::global_tagged_Symbol_OP_nil = reinterpret_cast<Symbol_O*>(symbol_nil.raw_());
-  symbol_unbound->_HomePackage = symbol_nil;
-  symbol_no_thread_local_binding->_HomePackage = symbol_nil;
-  symbol_no_key->_HomePackage = symbol_nil;
-  symbol_deleted->_HomePackage = symbol_nil;
-  symbol_same_as_key->_HomePackage = symbol_nil;
 }
 
 void Lisp::finalizeSpecialSymbols() {
@@ -277,9 +260,6 @@ void Lisp::finalizeSpecialSymbols() {
   symbol_nil->setf_name(SimpleBaseString_O::make("NIL"));
   symbol_nil->setPackage(_lisp->findPackage("COMMON-LISP"));
   symbol_nil->setf_plist(nil<T_O>());
-  //    	Symbol_sp symbol_unbound = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_unbound);
-  //    	Symbol_sp symbol_deleted = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_deleted);
-  //    	Symbol_sp symbol_same_as_key = gctools::smart_ptr<Symbol_O>(gctools::global_Symbol_OP_same_as_key);
 }
 
 LispPtr Lisp::createLispEnvironment(bool mpiEnabled, int mpiRank, int mpiSize) {
@@ -443,8 +423,6 @@ void Lisp::startupLispEnvironment() {
   this->_PackagesInitialized = false;
   this->_BuiltInClassesInitialized = false;
   this->_NilsCreated = false;
-  this->_EnvironmentInitialized = false;
-  this->_EnvironmentId = 0;
   //
   // Setup the core package aka the sys package
   //
@@ -486,7 +464,6 @@ void Lisp::startupLispEnvironment() {
     coreExposer->define_essential_globals(_lisp);
     this->_PackagesInitialized = true;
   }
-  this->_EnvironmentInitialized = true;
   this->_BuiltInClassesInitialized = true;
   //	LOG("ALL CLASSES: %s"% this->dumpClasses() );
   //    this->createNils();
@@ -643,15 +620,6 @@ void Lisp::put_StrWNs_buffer_string(StrWNs_sp str) {
 }
 
 T_sp Lisp::getCurrentReadTable() { return cl::_sym_STARreadtableSTAR->symbolValue(); }
-
-#if 0
-void Lisp::setMakePackageAndExportSymbolCallbacks(MakePackageCallback mpc, ExportSymbolCallback esc) {
-  
-  LOG("Setting MakePackageCallback and ExportSymbolCallback");
-  this->_MakePackageCallback = mpc;
-  this->_ExportSymbolCallback = esc;
-}
-#endif
 
 #ifdef CLASP_THREADS
 void Lisp::add_process(mp::Process_sp process) {
@@ -915,12 +883,6 @@ start:
         goto nonexistent_used_package;
       }
     }
-    if (globals_->_MakePackageCallback != NULL) {
-      LOG("Calling _MakePackageCallback with package[{}]", name);
-      globals_->_MakePackageCallback(name, _lisp);
-    } else {
-      LOG("_MakePackageCallback is NULL - not calling callback");
-    }
     return newPackage;
   }
   // A correctable error is signaled if the package-name or any of the nicknames
@@ -1139,11 +1101,6 @@ Path_sp Lisp::translateLogicalPathnameUsingPaths(T_sp obj) {
   } else {
     SIMPLE_ERROR("Finish implementing Lisp::translateLogicalPathname");
   }
-}
-
-uint Lisp::nextEnvironmentId() {
-  this->_EnvironmentId++;
-  return this->_EnvironmentId;
 }
 
 unsigned char global_python_vm_codes_literal[] =
@@ -1401,30 +1358,6 @@ void Lisp::readEvalPrintInteractive() {
   this->readEvalPrint(cl::_sym_STARterminal_ioSTAR->symbolValue(), nil<T_O>(), true, true);
   stream_terpri(cl::_sym_STARterminal_ioSTAR->symbolValue());
 }
-
-static bool global_invokedInternalDebugger = false;
-
-struct ExceptionSafeResetInvokedInternalDebugger {
-  ExceptionSafeResetInvokedInternalDebugger() { global_invokedInternalDebugger = true; };
-  virtual ~ExceptionSafeResetInvokedInternalDebugger() { global_invokedInternalDebugger = false; }
-};
-
-void stackSizeWarning(size_t stackUsed) {
-  if (!global_invokedInternalDebugger) {
-    int x;
-    char* xaddr = (char*)(&x);
-    printf("%s:%d Stack is getting full currently at %zu bytes - warning at %u bytes  top@%p current@%p\n", __FILE__, __LINE__,
-           stackUsed, globals_->_StackWarnSize, my_thread_low_level->_StackTop, xaddr);
-    ExceptionSafeResetInvokedInternalDebugger safe;
-    core__invoke_internal_debugger(nil<core::T_O>());
-  }
-};
-
-CL_LAMBDA();
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Return the stack warn size)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__stack_limit() { return clasp_make_fixnum(globals_->_StackWarnSize); };
 
 CL_LAMBDA(&optional (exit-value 0));
 CL_DECLARE();
@@ -2247,12 +2180,6 @@ Symbol_sp Lisp::internKeyword(const string& name) {
   return gc::As<Symbol_sp>(this->_Roots._KeywordPackage->intern(str_real_name));
 }
 
-void Lisp::dump_apropos(const char* part) const {
-  SimpleBaseString_sp substring = SimpleBaseString_O::make(std::string(part));
-  List_sp packages = _lisp->allPackagesAsCons();
-  searchForApropos(packages, substring, true);
-}
-
 bool Lisp::load(int& exitCode) {
   MultipleValues& mvn = core::lisp_multipleValues();
   switch (global_options->_StartupType) {
@@ -2358,8 +2285,6 @@ string Lisp::__repr__() const {
 };
 
 SYMBOL_EXPORT_SC_(CorePkg, selectPackage);
-
-void Lisp::initializeGlobals(LispPtr lisp) {}
 
 LispHolder::LispHolder(bool mpiEnabled, int mpiRank, int mpiSize) {
   this->lisp_ = Lisp::createLispEnvironment(mpiEnabled, mpiRank, mpiSize);

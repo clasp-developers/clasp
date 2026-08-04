@@ -93,11 +93,18 @@ void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fix
     }
   }
 }
-#else // not-actually-weak pointers - TODO for your other GC!
+#else
+// The default implementation looks for deletedp and treats that as invalid,
+// but otherwise has to be handled outside of all of this.
+// If the GC defaults to treating weak references as strong, the value will never
+// have been deleted, so weak pointers are always valid.
+// The GC has to handle deleting outside of here by messing with _value.
 WeakPointer::WeakPointer(core::T_sp o) : _value(o) {}
 
-// always valid
-std::optional<core::T_sp> WeakPointer::value() const { return _value; }
+std::optional<core::T_sp> WeakPointer::value() const {
+  if (_value.deletedp()) return std::nullopt;
+  else return _value;
+}
 std::optional<core::T_sp> WeakPointer::value_no_lock() const { return value(); }
 void WeakPointer::store_no_lock(core::T_sp o) { _value = o; }
 void WeakPointer::store(core::T_sp o) { store_no_lock(o); }

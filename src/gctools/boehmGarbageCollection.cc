@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lispStream.h>
 // #include <clasp/core/numbers.h>
@@ -226,13 +227,10 @@ __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
   //  GC_enable_incremental();
   GC_init();
 
-  gctools::ThreadLocalStateLowLevel* thread_local_state_low_level = new gctools::ThreadLocalStateLowLevel(claspInfo);
-  my_thread_low_level = thread_local_state_low_level;
-
-  // ctor sets up my_thread
   my_thread =
     (core::ThreadLocalState*)ALIGNED_GC_MALLOC_UNCOLLECTABLE(sizeof(core::ThreadLocalState));
   new (my_thread) core::ThreadLocalState(false);
+  my_thread_low_level = &my_thread->_LowLevel;
 
 #if 1
   // I'm not sure if this needs to be done for the main thread
@@ -259,13 +257,13 @@ void shutdownBoehm() {
   delete my_thread_low_level;
 }
 
+bool heap_ptr_p(const void* p) {
+  return GC_is_heap_ptr(p);
+}
+
 size_t heap_size() { return GC_get_heap_size(); }
 size_t free_bytes() { return GC_get_free_bytes(); }
 size_t bytes_since_gc() { return GC_get_bytes_since_gc(); }
-
-void* call_with_stopped_world(void* (*f)(void*), void* data) {
-  return GC_call_with_alloc_lock(f, data);
-}
 
 CL_DEFUN size_t core__dynamic_space_size() { return GC_get_total_bytes(); }
 

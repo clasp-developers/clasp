@@ -39,8 +39,10 @@
 #include <clasp/llvmo/jit.h>
 #include <clasp/llvmo/trampoline_arena.h>
 #include <clasp/gctools/interrupt.h> // wait_for_user_signal
+#include <clasp/gctools/memoryManagement.h>
 #include <clasp/gctools/gcFunctions.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
+#include <clasp/gctools/stw.h> // call_with_stopped_world
 
 #ifdef _TARGET_OS_LINUX
 #include <elf.h>
@@ -100,16 +102,8 @@ struct MaybeTimeStartup {
   };
 };
 
-/* Return "GC" if the pointer is in GC memory or "SL" if it's in the safe/load buffer */
-bool pointer_in_gc_memory(void* pointer) {
-  if (GC_base(pointer))
-    return true;
-  return false;
-}
-
-
 const char* pointer_pool(void* pointer) {
-  if (pointer_in_gc_memory(pointer))
+  if (gctools::heap_ptr_p(pointer))
     return "GC";
   return "SL";
 }
@@ -699,10 +693,10 @@ gctools::clasp_ptr_t maybe_follow_forwarding_pointer(gctools::clasp_ptr_t* clien
     } else {
       printf(" - *header should be fwd ptr but got %p\n", *(void**)header);
     }
-    bool clientAddressPool = pointer_in_gc_memory(clientAddress);
+    bool clientAddressPool = gctools::heap_ptr_p(clientAddress);
     printf("%s:%d:%s       The clientAddress %p is in %s memory\n", __FILE__, __LINE__, __FUNCTION__, clientAddress,
            pointer_pool(clientAddress));
-    bool clientPool = pointer_in_gc_memory(client);
+    bool clientPool = gctools::heap_ptr_p(client);
     printf("%s:%d:%s       The client        %p is in %s memory\n", __FILE__, __LINE__, __FUNCTION__, client, pointer_pool(client));
     printf("%s:%d:%s       ---- They should be in different pools and that is %s\n", __FILE__, __LINE__, __FUNCTION__,
            (clientAddressPool != clientPool) ? "TRUE" : "FALSE");
@@ -1001,13 +995,8 @@ struct ensure_forward_t : public walker_callback_t {
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
     if (!get_forwarding_pointer(header, this->_info)) {
-      if (header->_badge_stamp_wtag_mtag.stampP()) {
-        printf("%s:%d:%s The ISL general %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
-               header->description().c_str());
-      } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-        printf("%s:%d:%s The ISL cons %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
-               header->description().c_str());
-      }
+      printf("%s:%d:%s The ISL object %p %s is not a forwarding pointer\n", __FILE__, __LINE__, __FUNCTION__, (void*)header,
+             header->description().c_str());
     }
   }
   ensure_forward_t(ISLInfo* info) : walker_callback_t(info){};
@@ -1017,7 +1006,7 @@ void gather_info_for_snapshot_save(gctools::BaseHeader_s* header, Fixup* fixup) 
   // Run fixupInternalsForSnapshotSaveLoad with fixup._operation = InfoOp;
   // (set shortly before mapping with this function)
   // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-  if (header->_badge_stamp_wtag_mtag.stampP()) {
+  if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
     if (header->preciseIsPolymorphic()) {
       core::T_O* client = (core::T_O*)HEADER_PTR_TO_GENERAL_PTR(header);
       if (cast::Cast<core::General_O*, core::T_O*>::isA(client)) {
@@ -1032,7 +1021,7 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   Fixup* _fixup;
   void callback(gctools::BaseHeader_s* header) {
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       //
       // Fixup general objects that need it
       //
@@ -1053,8 +1042,6 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-      // Nothing
     }
   }
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
@@ -1069,7 +1056,7 @@ struct calculate_size_t {
   void operator()(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       this->_general_count++;
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       size_t objectSize;
@@ -1137,8 +1124,7 @@ struct copy_progress {
     intptr_t delta = cur - this->_begin;
     if (delta > this->_next_progress_tic) {
       this->_next_progress_tic += this->_inc;
-      core::lisp_write(
-          fmt::format("Copy memory to snapshot buffer {:6.2f} done\n", (100.0 * (float)delta / (float)this->_size)));
+      fmt::print("Copy memory to snapshot buffer {:6.2f} done\n", (100.0 * (float)delta / (float)this->_size));
     }
   }
 };
@@ -1156,7 +1142,7 @@ struct copy_objects_t {
   void operator()(gctools::BaseHeader_s* header) {
     std::string str;
     // On boehm sometimes I get unknown objects that I'm trying to avoid with the next test.
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       gctools::clasp_ptr_t clientStart = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       size_t generalSize = gctools::general_skip((core::General_O*)clientStart);
       if (generalSize == 0)
@@ -1270,7 +1256,7 @@ struct fixup_objects_t : public walker_callback_t {
       : walker_callback_t(info), _operation(op), _buffer(buffer){};
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       gctools::clasp_ptr_t client = (gctools::clasp_ptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
       //
       // This is where we would fixup pointers and entry-points
@@ -1291,7 +1277,7 @@ struct fixup_internals_t : public walker_callback_t {
   fixup_internals_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       if (header->_badge_stamp_wtag_mtag._value ==
           DO_SHIFT_STAMP(gctools::STAMPWTAG_gctools__GCVector_moveable_clbind__detail__edge_)) {
         gctools::GCVector_moveable<clbind::detail::edge>* edges =
@@ -1310,7 +1296,6 @@ struct fixup_internals_t : public walker_callback_t {
           generalObject->fixupInternalsForSnapshotSaveLoad(this->_fixup);
         }
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
     }
   }
 };
@@ -1339,15 +1324,13 @@ struct fixup_vtables_t : public walker_callback_t {
   }
 
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       if (header->preciseIsPolymorphic()) {
         uintptr_t client = (uintptr_t)HEADER_PTR_TO_GENERAL_PTR(header);
         uintptr_t vtable;
         uintptr_t new_vtable;
         this->do_vtable((gctools::Header_s*)header, (core::T_O*)client, vtable, new_vtable);
       }
-    } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
-      // Do nothing
     }
   }
 };
@@ -1380,7 +1363,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
     size_t hitBadPointers = 0;
     for (ssize_t ii = this->_Library._GroupedPointers.size() - 1; ii >= 0; --ii) {
       if (ii % 1000 == 0 && ii > 0) {
-        core::lisp_write(fmt::format("{:>5} remaining pointers to dladdr\n", ii));
+        fmt::print("{:>5} remaining pointers to dladdr\n", ii);
       }
       uintptr_t address = this->_Library._GroupedPointers[ii]._address;
       std::string saveName("");
@@ -1395,7 +1378,7 @@ struct SaveSymbolCallback : public core::SymbolCallback {
         this->_Library._SymbolBuffer.push_back('\0');
       }
     }
-    core::lisp_write(fmt::format("All pointers passed through dladdr\n"));
+    fmt::print("All pointers passed through dladdr\n");
     if (hitBadPointers) {
       ISL_ERROR("There were %lu bad pointers - we need to figure out how to get this to zero", hitBadPointers);
     }
@@ -1556,25 +1539,24 @@ void prepareRelocationTableForSave(Fixup* fixup, SymbolLookup& symbolLookup) {
           void** addr = (void**)curLib._InternalPointers[ii]._ptrptr;
           *curLib._InternalPointers[ii]._ptrptr = encodeRelocation_(idx, groupPointerIdx);
         }
-        core::lisp_write(fmt::format("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size()));
+        fmt::print("{} unique pointers need to be passed to dladdr\n", curLib._GroupedPointers.size());
         SaveSymbolCallback thing(curLib);
         curLib._SymbolInfo.resize(curLib._GroupedPointers.size(), SymbolInfo());
         thing.generateSymbolTable(fixup, symbolLookup);
-        core::lisp_write(
-            fmt::format("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size()));
+        fmt::print("Library #{} {} contains {} unique pointers\n", idx, curLib._Name, curLib._GroupedPointers.size());
         for (size_t ii = 0; ii < curLib._SymbolInfo.size(); ii++) {
           if (curLib._SymbolInfo[ii]._SymbolLength < 0) {
             printf("%s:%d:%s The _SymbolInfo[%lu] does not have a length\n", __FILE__, __LINE__, __FUNCTION__, ii);
           }
         }
-        core::lisp_write(fmt::format("Done with library #{} at {}\n", curLib._Name, (void*)&curLib));
+        fmt::print("Done with library #{} at {}\n", curLib._Name, (void*)&curLib);
       }
     }
   };
   OrderByAddress orderer;
-  core::lisp_write(fmt::format("Add libraries to classify unique pointers\n"));
+  fmt::print("Add libraries to classify unique pointers\n");
   orderer.addLibraries(fixup,symbolLookup);
-  core::lisp_write(fmt::format("Encoding relocation data for all pointers and identifying unique pointers\n"));
+  fmt::print("Encoding relocation data for all pointers and identifying unique pointers\n");
   orderer.identifyUnique(fixup,symbolLookup);
 }
 
@@ -1767,30 +1749,30 @@ void* snapshot_save_impl(void* data) {
   walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart, prepare);
 
   {
-    core::lisp_write(fmt::format("Fixup vtable pointers\n"));
+    fmt::print("Fixup vtable pointers\n");
     gctools::clasp_ptr_t start;
     gctools::clasp_ptr_t end;
     core::exclusiveVtableSectionRange(start, end);
     fixup_vtables_t fixup_vtables(&fixup, (uintptr_t)start, (uintptr_t)end, &islInfo);
     walk_snapshot_save_load_objects((ISLHeader_s*)snapshot._Memory->_BufferStart, fixup_vtables);
   }
-  core::lisp_write(fmt::format("Copy memory done\n"));
+  fmt::print("Copy memory done\n");
 
   //
   // Now generate libraries
   //
   // Calculate the size of the libraries section
   SymbolLookup lookup;
-  core::lisp_write(fmt::format("Prepare relocation table for save\n"));
+  fmt::print("Prepare relocation table for save\n");
   prepareRelocationTableForSave(&fixup, lookup);
 
-  core::lisp_write(fmt::format("Calculate library sizes\n"));
+  fmt::print("Calculate library sizes\n");
   size_t librarySize = 0;
   for (size_t idx = 0; idx < fixup._ISLLibraries.size(); idx++) {
     librarySize += fixup._ISLLibraries[idx].writeSize();
   }
   snapshot._Libraries = new copy_buffer_t(librarySize);
-  core::lisp_write(fmt::format("Copy buffer\n"));
+  fmt::print("Copy buffer\n");
   for (size_t idx = 0; idx < fixup._ISLLibraries.size(); idx++) {
     size_t alignedLen = fixup._ISLLibraries[idx].nameSize();
     char* buffer = (char*)malloc(alignedLen);
@@ -1806,7 +1788,7 @@ void* snapshot_save_impl(void* data) {
     free(buffer);
   }
 
-  core::lisp_write(fmt::format("Generating fileHeader\n"));
+  fmt::print("Generating fileHeader\n");
   ISLFileHeader* fileHeader = snapshot._FileHeader;
   uintptr_t offset = snapshot._HeaderBuffer->_Size;
   fileHeader->_LibrariesOffset = offset;
@@ -1845,7 +1827,7 @@ void* snapshot_save_impl(void* data) {
       }
       filename = tfbuffer;
     }
-    core::lisp_write(fmt::format("Writing snapshot to temporary file {} filedes = {}\n", filename.c_str(), filedes));
+    fmt::print("Writing snapshot to temporary file {} filedes = {}\n", filename.c_str(), filedes);
     snapshot._HeaderBuffer->write_to_filedes(filedes);
     snapshot._Libraries->write_to_filedes(filedes);
     snapshot._Memory->write_to_filedes(filedes);
@@ -2013,7 +1995,7 @@ void snapshot_save(SaveLispAndDie& data) {
   }
   core::lisp_write(fmt::format("Finished removing transient object-files\n"));
 
-  gctools::call_with_stopped_world(snapshot_save_impl, &data);
+  gctools::call_with_stopped_world([&](){snapshot_save_impl(&data);});
 }
 
 struct temporary_root_holder_t {
@@ -2083,7 +2065,7 @@ gctools::clasp_ptr_t relocate_pointer(gctools::clasp_ptr_t* clientAddress, gctoo
 struct relocate_objects_t : public walker_callback_t {
   relocate_objects_t(ISLInfo* info) : walker_callback_t(info){};
   void callback(gctools::BaseHeader_s* header) {
-    if (header->_badge_stamp_wtag_mtag.stampP()) {
+    if (header->_badge_stamp_wtag_mtag.generalObjectP()) {
       gctools::clasp_ptr_t client = HEADER_PTR_TO_GENERAL_PTR(header);
       isl_obj_scan((core::General_O*)client, (void*)this->_info);
     } else if (header->_badge_stamp_wtag_mtag.consObjectP()) {
@@ -2253,7 +2235,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
     struct fixup_CodeBase_t : public walker_callback_t {
       fixup_CodeBase_t(ISLInfo* info) : walker_callback_t(info){};
       void callback(gctools::BaseHeader_s* header) {
-        if (header->_badge_stamp_wtag_mtag.stampP() &&
+        if (header->_badge_stamp_wtag_mtag.generalObjectP() &&
             header->_badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__Library_O)) {
           llvmo::Library_O* lib = (llvmo::Library_O*)(HEADER_PTR_TO_GENERAL_PTR(header));
           core::SimpleBaseString_sp name = lib->_Name;
@@ -2511,11 +2493,9 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
               size_t objectId = allocatedObjectFile->_ObjectId;
               pool.push_task([&obj_claspJIT, jitdylib, objectId]() {
                 // force_materialize can allocate, so set up a bit of a Lisp thread.
-                void* stacktop = &stacktop;
-                gctools::ThreadLocalStateLowLevel tlsll(stacktop);
                 core::ThreadLocalState tls;
-                my_thread_low_level = &tlsll;
                 my_thread = &tls;
+                my_thread_low_level = &tls._LowLevel;
                 // Ensure the thread-local pointers don't dangle after the
                 // local `tls`/`tlsll` objects are destroyed at lambda exit.
                 // Worker threads are reused by the pool; between tasks any

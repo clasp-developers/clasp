@@ -29,6 +29,8 @@ THE SOFTWARE.
 
 namespace gctools {
 
-int initializeMmtk(int argc, char* argv[], bool mpiEnabled, int mpiRank, int mpiSize);
+struct ClaspInfo;
+
+void initializeMmtk(ClaspInfo* claspInfo);
 
 }; // namespace gctools

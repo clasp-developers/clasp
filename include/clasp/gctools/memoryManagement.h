@@ -20,7 +20,9 @@
 //
 #include <atomic>
 #include <set>
+#include <unordered_map>
 #include <utility> // pair
+#include <type_traits> // conditional, is_same
 #include <clasp/gctools/configure_memory.h>
 #include <clasp/gctools/hardErrors.h>
 
@@ -34,7 +36,7 @@ extern "C" {
 #include "src/bdwgc/include/gc_inline.h"
 };
 #elif defined(USE_MMTK)
-#include <mmtk/api/mmtk.h>
+#include <clasp/gctools/mmtk_clasp.h>
 #endif
 
 namespace core {
@@ -89,7 +91,6 @@ typedef unsigned char* clasp_ptr_t;
 namespace gctools {
 /*! Specialize GcKindSelector so that it returns the appropriate GcKindEnum for OT */
 template <class OT> struct GCStamp;
-extern size_t _global_stack_max_size;
 }; // namespace gctools
 
 // #define FWD_MTAG            0b010
@@ -107,16 +108,6 @@ extern size_t _global_stack_max_size;
 // TYPEQ_ADJUST_STAMP will be passed to make_fixnum - so it will be shifted
 #define TYPEQ_ADJUST_STAMP(unshifted_stamp) (unshifted_stamp)
 
-namespace gctools {
-
-class Header_s;
-
-template <typename T> struct GCHeader {
-  typedef Header_s HeaderType;
-};
-
-}; // namespace gctools
-
 /*!
   Template struct:   DynamicCast
 
@@ -130,10 +121,6 @@ word of every object in memory managed by the GC */
 typedef uint32_t stamp_t;
 typedef uint32_t tagged_stamp_t;
 
-}; // namespace gctools
-
-namespace gctools {
-class GCObject {};
 }; // namespace gctools
 
 #include <clasp/gctools/threadlocal.fwd.h>
@@ -157,7 +144,6 @@ void clasp_dealloc(char* buffer);
 
 namespace gctools {
 
-#define STAMPWTAG_DUMMY_FOR_CPOINTER 0
 typedef enum {
 #if !defined(SCRAPING)
 #if !defined(USE_PRECISE_GC)
@@ -174,7 +160,6 @@ typedef enum {
   STAMPWTAG_CONS = STAMPWTAG_core__Cons_O,
   STAMPWTAG_CHARACTER = STAMPWTAG_core__Character_dummy_O,
   STAMPWTAG_UNUSED = STAMPWTAG_core__Unused_dummy_O,
-  STAMPWTAG_CPOINTER = STAMPWTAG_DUMMY_FOR_CPOINTER,
   STAMPWTAG_SINGLE_FLOAT = STAMPWTAG_core__SingleFloat_dummy_O,
   STAMPWTAG_FIXNUM = STAMPWTAG_core__Fixnum_dummy_O,
   STAMPWTAG_INSTANCE = STAMPWTAG_core__Instance_O,
@@ -253,11 +238,16 @@ template <class T> inline size_t sizeof_with_header();
               it indictates that this is not a valid header.
               This pattern is used to indicate a CONS header
       #B010 == invalid1_mtag
-      #B011 == cons_mtag  This indicates that what follows is a cons cell.
+      #B011 == invalid_mtag
       #B100 == invalid2_mtag
       #B101 == fwd_mtag - This tag indicates that the remaining data bits in the header contains a forwarding
               pointer.  The uintptr_t in additional_data[0] contains the length of
               the block from the client pointer.
+              Note that the MMTk build uses forwarding pointers and uses the
+              low bits as a tag similarly, but does not know about fwd_mtag -
+              it does what it wants with the low two bits. It does need
+              general_mtag (i.e. valid objects) to have low zero bits, though,
+              as far as I can tell.
       #B110 == invalid3_mtag
       #B111 == invalid4_mtag
 
@@ -314,13 +304,13 @@ public:
 #endif
   static const size_t general_mtag_shift = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
   static const tagged_stamp_t general_mtag = 0b000;
-  static const tagged_stamp_t invalid0_mtag = 0b001;
-  static const tagged_stamp_t invalid1_mtag = 0b010;
-  static const tagged_stamp_t cons_mtag = 0b011;
-  static const tagged_stamp_t invalid2_mtag = 0b100;
+  //static const tagged_stamp_t invalid_mtag = 0b001;
+  //static const tagged_stamp_t invalid_mtag = 0b010;
+  //static const tagged_stamp_t invalid_mtag = 0b011;
+  //static const tagged_stamp_t invalid_mtag = 0b100;
   static const tagged_stamp_t fwd_mtag = 0b101;
-  static const tagged_stamp_t invalid3_mtag = 0b110;
-  static const tagged_stamp_t invalid4_mtag = 0b111;
+  //static const tagged_stamp_t invalid_mtag = 0b110;
+  //static const tagged_stamp_t invalid_mtag = 0b111;
   static const tagged_stamp_t stamp_mtag = general_mtag;
   static const tagged_stamp_t stamp_mask = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
   static const tagged_stamp_t where_mask = 0b11 << general_mtag_shift;
@@ -357,16 +347,12 @@ public:
 
   //
   //
-  struct Dummy_s {};
   struct StampWtagMtag {
     typedef tagged_stamp_t Value;
     uintptr_t _header_data[0]; // The 0th element overlaps StampWtagMtag values
     tagged_stamp_t _value;
     StampWtagMtag() : _value(0){};
     StampWtagMtag(Value all) : _value(all){};
-
-    // WHAT IS GOING ON
-    //      StampWtagMtag(UnshiftedStamp stamp, badge_t badge) : _value(shift_unshifted_stamp(stamp)), _header_badge(badge) {};
 
     // This is so we can find where we shift/unshift/don'tshift
     static UnshiftedStamp first_NextUnshiftedStamp(UnshiftedStamp start) {
@@ -434,8 +420,8 @@ public:
     static UnshiftedStamp unshift_shifted_stamp(ShiftedStamp us) { return ((us >> BaseHeader_s::general_mtag_shift)); }
 
     template <typename T> static StampWtagMtag make() {
-      StampWtagMtag mak((GCStamp<T>::StampWtag << general_mtag_shift));
-      return mak;
+      return StampWtagMtag((GCStamp<T>::StampWtag << mtag_shift)
+                           | general_mtag);
     }
     static StampWtagMtag make_unknown(UnshiftedStamp the_stamp) { return the_stamp << general_mtag_shift; }
     static StampWtagMtag make_StampWtagMtag(StampWtagMtag vvv) {
@@ -445,20 +431,20 @@ public:
 
   public:
     inline size_t mtag() const { return (size_t)(this->_value & mtag_mask); };
-    bool invalidP() const {
-      if (!(this->_value & general_mtag_mask))
-        return false;
+    bool invalidP() const volatile {
       tagged_stamp_t val = (this->_value & general_mtag_mask);
-      return (val == invalid0_mtag) || (val == invalid1_mtag) || (val == invalid2_mtag);
+      return !(val == general_mtag || val == fwd_mtag);
     };
     bool stampP() const { return (this->_value & general_mtag_mask) == general_mtag; };
-    bool generalObjectP() const { return this->stampP(); };
-    bool consObjectP() const { return (this->_value & mtag_mask) == cons_mtag; };
+    bool stampP() const volatile { return (_value & general_mtag_mask) == general_mtag; };
+    bool generalObjectP() const { return stampP() && !consObjectP(); };
+    bool consObjectP() const volatile { return stamp_wtag() == STAMPWTAG_CONS; }
     bool fwdP() const { return (this->_value & mtag_mask) == fwd_mtag; };
-    bool fwdV() const { return (this->_value & mtag_mask); };
     /*! No sanity checking done - this function assumes kindP == true */
     GCStampEnum stamp_wtag() const { return (GCStampEnum)(this->_value >> general_mtag_shift); };
+    GCStampEnum stamp_wtag() const volatile { return (GCStampEnum)(_value >> general_mtag_shift); };
     GCStampEnum stamp_() const { return (GCStampEnum)(this->_value >> (wtag_width + general_mtag_shift)); };
+    GCStampEnum stamp_() const volatile { return (GCStampEnum)(_value >> (wtag_width + general_mtag_shift)); }
     /*! No sanity checking done - this function assumes fwdP == true */
     void* fwdPointer() const { return reinterpret_cast<void*>(this->_header_data[0] & (~(uintptr_t)mtag_mask)); };
     /*! Return the size of the fwd block - without the header. This reaches into the client area to get the size */
@@ -502,7 +488,6 @@ public:
                                                 /* will treat it like a unused object residing on a free list          */
 
     BadgeStampWtagMtag() : StampWtagMtag(), _header_badge(NoBadge){};
-    BadgeStampWtagMtag(core::Cons_O* cons) : StampWtagMtag(cons_mtag), _header_badge((badge_t)((uintptr_t)cons & 0xFFFFFFFF)){};
     BadgeStampWtagMtag(const BadgeStampWtagMtag& other);
     BadgeStampWtagMtag(StampWtagMtag all) : StampWtagMtag(all), _header_badge(NoBadge){};
     BadgeStampWtagMtag(StampWtagMtag all, badge_t badge) : StampWtagMtag(all), _header_badge(badge) {
@@ -603,7 +588,7 @@ public:
   ConsHeader_s(const BadgeStampWtagMtag& k) : BaseHeader_s(k){};
 
 public:
-  bool isValidConsObject() const;
+  bool isValidConsObject() const volatile;
 };
 
 class Header_s : public BaseHeader_s {
@@ -626,7 +611,7 @@ public:
 #endif
 
 public:
-  bool isValidGeneralObject() const;
+  bool isValidGeneralObject() const volatile;
   void validate() const;
   void quick_validate() const {
 #ifdef DEBUG_QUICK_VALIDATE
@@ -659,7 +644,7 @@ public:
       bpnew = (void**)*(void**)bp;
       if ((uintptr_t)bpnew < (uintptr_t)bp)
         break;
-      if (bpnew > my_thread_low_level->_StackTop)
+      if (bpnew > my_thread_low_level->_ControlStackTop)
         break;
       bp = bpnew;
       this->_backtrace[ii] = pc;
@@ -718,44 +703,6 @@ public:
 #ifdef DEBUG_GUARD
   size_t tail_size() const { return this->_tail_size; };
 #endif
-};
-
-template <class LispClass> struct StackAllocate {
-  Header_s _Header;
-  LispClass _Object;
-
-  template <class... ARGS>
-  StackAllocate(ARGS&&... args) : _Header(Header_s::StampWtagMtag::make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
-
-  smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass*)&this->_Object); }
-};
-
-// We use a sham struct because C++ doesn't let us partially specify templates.
-template <class LispClass> struct InitializeObject {
-
-  static size_t size() { return sizeof_with_header<LispClass>(); }
-
-  template <typename... ARGS> static LispClass* go(void* where, ARGS&&... args) {
-    LispClass* object = (LispClass*)((Header_s*)where + 1);
-    new (where) Header_s(Header_s::StampWtagMtag::make<LispClass>());
-    return new (object) LispClass(std::forward<ARGS>(args)...);
-  }
-};
-
-template <> struct InitializeObject<core::Cons_O> {
-
-  // KLUDGE: We can't specialize InitializeObject directly because Cons_O
-  // is not defined enough yet that we can write code to initialize one.
-  // But if we put in another layer of template, it's apparently okay.
-  template <class ConsType, typename... ARGS> static ConsType* initialize_cons(void* where, ARGS&&... args) {
-    ConsType* object = (ConsType*)((ConsHeader_s*)where + 1);
-    new (where) ConsHeader_s(ConsHeader_s::StampWtagMtag::make<ConsType>());
-    return new (object) ConsType(std::forward<ARGS>(args)...);
-  }
-
-  template <typename... ARGS> static core::Cons_O* go(void* where, ARGS&&... args) {
-    return initialize_cons<core::Cons_O>(where, std::forward<ARGS>(args)...);
-  }
 };
 
 }; // namespace gctools
@@ -842,6 +789,15 @@ inline const Header_s* header_pointer(const void* client_pointer) {
   return reinterpret_cast<const Header_s*>(reinterpret_cast<uintptr_t>(client_pointer) - sizeof(Header_s));
 }
 
+// Get a "base header" for an arbitrary object (general or cons).
+// With DEBUG_GUARD on this will _not_ be the start of the general header,
+// but it is still a valid BaseHeader with _badge_stamp_wtag_mtag-
+// the _dup_badge_stamp_wtag_mtag. So you can't use it as the start of the
+// allocation, but you can work with the stamp and mtag.
+inline BaseHeader_s* base_header_ptr(void* client) {
+  return reinterpret_cast<BaseHeader_s*>(reinterpret_cast<char*>(client) - sizeof(BaseHeader_s));
+}
+
 template <typename T> inline T* HeaderPtrToGeneralPtr(void* base) {
   return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(base) + sizeof(Header_s));
 }
@@ -868,6 +824,60 @@ inline void* ConsPtrToHeaderPtr(void* client) {
 
 inline void* HeaderPtrToConsPtr(void* header) {
   return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(header) + sizeof(ConsHeader_s));
+}
+
+}; // namespace gctools
+
+namespace gctools {
+
+// Allocate a Lisp object on the stack. This can be used in C++ to create a Lisp
+// object in both the C++ and Lisp senses.
+template <class LispClass> struct StackAllocate {
+private:
+  // template skullduggery because Cons needs special casing but hasn't been
+  // fully defined yet.
+  typedef std::conditional_t<std::is_same_v<LispClass, core::Cons_O>,ConsHeader_s,Header_s> GHeader_s;
+public:
+  GHeader_s _Header;
+  LispClass _Object;
+
+  // yeah it's inelegant :(
+  template <class... ARGS>
+  requires (!std::same_as<LispClass, core::Cons_O>)
+  StackAllocate(ARGS&&... args) : _Header(GHeader_s::StampWtagMtag::template make<LispClass>()), _Object(std::forward<ARGS>(args)...){};
+
+  template <class... ARGS>
+  requires std::same_as<LispClass, core::Cons_O>
+  StackAllocate(ARGS&&... args) : _Header(STAMPWTAG_CONS), _Object(std::forward<ARGS>(args)...) {};
+
+  smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass*)&this->_Object); }
+};
+
+// Initialize raw memory as a Lisp object.
+// This is used in generated code (llvmo/link_intrinsics..) to initialize
+// stack allocated Lisp objects.
+template <class Ty_O, class... ARGS>
+smart_ptr<Ty_O> InitObject(void* space, ARGS&&... args) {
+  if constexpr(std::is_same_v<Ty_O, core::Cons_O>) {
+    ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(space);
+    const ConsHeader_s::BadgeStampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Ty_O>());
+    new (header) ConsHeader_s(stamp);
+    Ty_O* obj = (Ty_O*)HeaderPtrToConsPtr(space);
+    new (obj) Ty_O(std::forward<ARGS>(args)...);
+    return smart_ptr<Ty_O>(obj);
+  } else {
+    Header_s* header = reinterpret_cast<Header_s*>(space);
+    const Header_s::BadgeStampWtagMtag stamp = Header_s::BadgeStampWtagMtag::make<Ty_O>();
+#ifdef DEBUG_GUARD
+    size_t size = sizeof_with_header<Ty_O>();
+    new (header) Header_s(stamp, size, 0, size);
+#else
+    new (header) Header_s(stamp);
+#endif
+    Ty_O* obj = HeaderPtrToGeneralPtr<Ty_O>(space);
+    new (obj) Ty_O(std::forward<ARGS>(args)...);
+    return smart_ptr<Ty_O>(obj);
+  }
 }
 
 }; // namespace gctools
@@ -933,20 +943,6 @@ template <class T> inline size_t sizeof_bitunit_container_with_header(size_t num
   return sum;
 };
 
-/* Align size upwards and ensure that it's big enough to store a
- * forwarding pointer.
- * This is used by the scanner and skip (sizer).
- */
-/*   Replaces this macro...
-     #define ALIGN(size)                                                \
-    (AlignUp<Header_s>(size) >= AlignUp<Header_s>(sizeof_with_header<gctools::Fwd_s>())	\
-     ? AlignUp<Header_s>(size)                              \
-     : gctools::sizeof_with_header<gctools::Fwd_s>() )
-*/
-
-extern size_t global_sizeof_fwd;
-inline size_t Align(size_t size) { return ((AlignUp(size) >= global_sizeof_fwd) ? AlignUp(size) : global_sizeof_fwd); };
-
 // Manually define these for the sake of As<Fixnum_sp> etc.
 template <> struct GCStamp<core::Fixnum_I> {
 public:
@@ -1002,8 +998,6 @@ class Instance_O;
 class FuncallableInstance_O;
 } // namespace core
 
-namespace gctools {};
-
 #include <clasp/gctools/smart_pointers.h>
 
 #include <clasp/core/coretypes.h>
@@ -1035,12 +1029,6 @@ template <typename T> void* SmartPtrToBasePtr(smart_ptr<T> obj) {
 }; // namespace gctools
 
 #include <clasp/gctools/gcStack.h>
-// #include <clasp/gctools/gcalloc.h>
-
-namespace gctools {
-
-void rawHeaderDescribe(const uintptr_t* headerP);
-}; // namespace gctools
 
 extern "C" {
 // These must be provided the the garbage collector specific code
@@ -1053,18 +1041,7 @@ void client_validate_tagged(gctools::Tagged taggedClient);
 void client_validate_General_O_ptr(const core::General_O* client_ptr);
 //! Validate a client smart_ptr - only general objects
 void client_validate(core::T_sp client);
-//! Describe the header
-void header_describe(gctools::Header_s* headerP);
 };
-
-// #include <clasp/gctools/containers.h>
-
-namespace gctools {
-#define LITERAL_TAG_CHAR 0
-#define TRANSIENT_TAG_CHAR 1
-
-void untag_literal_index(size_t findex, size_t& index, size_t& tag);
-}; // namespace gctools
 
 namespace gctools {
 
@@ -1097,12 +1074,6 @@ template <typename OT> inline gctools::smart_ptr<OT> ensure_valid_object(gctools
 }
 }; // namespace gctools
 
-extern "C" {
-// Invoke mps_park/mps_release or boehm_park/boehm_release
-void gc_park();
-void gc_release();
-};
-
 #ifdef DEBUG_GUARD_VALIDATE
 #define ENSURE_VALID_OBJECT(x) (gctools::ensure_valid_object(x))
 #define ENSURE_VALID_HEADER(x) (gctools::ensure_valid_header(x))
@@ -1110,13 +1081,6 @@ void gc_release();
 #define ENSURE_VALID_OBJECT(x) x
 #define ENSURE_VALID_HEADER(x) x
 #endif
-
-namespace gctools {
-struct SafeGCPark {
-  SafeGCPark() { gc_park(); };
-  ~SafeGCPark() { gc_release(); }
-};
-}; // namespace gctools
 
 ////////////////////////////////////////////////////////////
 /*!
@@ -1169,7 +1133,10 @@ std::set<Tagged> setOfAllObjects();
 std::set<std::pair<Tagged, Tagged>> memtest(std::set<core::T_sp, T_sp_less>&);
 size_t objectSize(BaseHeader_s* header);
 
+void traceablep(std::unordered_map<Tagged, bool>&);
+
 bool is_memory_readable(const void* address, size_t bytes = 8);
+bool is_heap_memory(const void* address);
 
 // Stuff for ROOM
 // This struct holds info about a given class for ROOM, specifically
@@ -1189,11 +1156,11 @@ typedef map<gctools::GCStampEnum, ReachableClass> ReachableClassMap;
 // These eight are GC-defined.
 void collect_garbage();
 
-void* call_with_stopped_world(void* (*)(void*), void*);
-
 void set_finalizer_list(core::T_sp, core::List_sp);
 void clear_finalizer_list(core::T_sp);
 void invoke_finalizers();
+
+bool heap_ptr_p(const void*);
 
 size_t heap_size();
 size_t free_bytes();

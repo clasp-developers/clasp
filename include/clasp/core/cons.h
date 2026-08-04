@@ -129,14 +129,6 @@ public: // Garbage collector functions
     this->setCdr(tval);
   }
 #endif
-public:
-  //
-  // Return true if the address points to a Cons_O cell header
-  //
-  inline bool cons_header_p() {
-    uintptr_t val = *(uintptr_t*)this;
-    return (val & gctools::Header_s::mtag_mask) == gctools::Header_s::cons_mtag;
-  }
 
 public:
   std::atomic<T_sp> _Car;
@@ -312,9 +304,6 @@ public:
   /*! Return the value associated with the property of the plist - implements CL getf */
   T_sp getf(T_sp key, T_sp defValue) const;
 
-  inline static uintptr_t cons_header(uintptr_t val) {
-    return (val & (~gctools::Header_s::mtag_mask)) | gctools::Header_s::cons_mtag;
-  };
   explicit Cons_O() : _Car(nil<T_O>()), _Cdr(nil<T_O>()){};
   explicit Cons_O(T_sp car, T_sp cdr) : _Car(car), _Cdr(cdr){};
   // These are necessary because atomics are not copyable.

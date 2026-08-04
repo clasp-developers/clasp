@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+
 // This file is included in some very early places (e.g. mpPackage.fwd.h)
 // so make sure it includes very little.
 
@@ -18,17 +20,51 @@
  * Make sure you don't do anything GC-y (like allocate!) and are prepared to be
  * interrupted by signals whenever. Ideally do as little as possible inside,
  * like your single syscall.
- * It is okay to longjmp/whatever out of the block. The signal handler unparks
- * the thread before running user code.
+ * Make sure you unpark. If you longjmp you need to ensure that you unpark first.
+ * The signal handler unparks the thread before running user code.
  * See clasp_musleep for an example of usage.
- * They're macros because they might need to end up calling some kinda
- * call_without_gc(void (*)(void*), void*) eventually.
  */
-#define BEGIN_PARK gctools::begin_park(); do
-#define END_PARK while (false); gctools::end_park()
+#define BEGIN_PARK gctools::call_parked([&]()
+#define END_PARK );
 
 namespace gctools {
-  // Implementation details, defined in park.cc. See above note about including.
-  void begin_park();
-  void end_park();
+// Implementation details, defined in park.cc. See above note about including.
+int begin_park(void*);
+void end_park(int);
+void* end_park_temporarily();
+
+template <std::invocable<> F>
+requires (!std::same_as<void, std::invoke_result_t<F>>)
+decltype(auto) call_parked(F f) {
+  int oldstate = begin_park(__builtin_frame_address(0));
+  decltype(auto) result = f();
+  end_park(oldstate);
+  return result;
+}
+
+template <std::invocable<> F>
+requires (std::same_as<void, std::invoke_result_t<F>>)
+void call_parked(F f) {
+  int oldstate = begin_park(__builtin_frame_address(0));
+  f();
+  end_park(oldstate);
+}
+
+// While parked, temporarily unpark (blocking if needed) to call a thunk.
+// This is used in interrupt.cc for wakeups.
+template <std::invocable<> F>
+requires (!std::same_as<void, std::invoke_result_t<F>>)
+decltype(auto) call_unparked(F f) {
+  void* old = end_park_temporarily();
+  decltype(auto) result = f();
+  begin_park(old);
+  return result;
+}
+template <std::invocable<> F>
+requires std::same_as<void, std::invoke_result_t<F>>
+void call_unparked(F f) {
+  void* old = end_park_temporarily();
+  f();
+  begin_park(old);
+}
 };

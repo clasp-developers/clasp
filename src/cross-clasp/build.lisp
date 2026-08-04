@@ -30,7 +30,10 @@
                                                 ,output ,cfasl))))))
 
 ;;; Execute the system's build instruction.
-(defun build-system (system &key native (parallel-jobs 1))
+;; PARALLEL-JOBS defaults to 0 (compile in this process, no forking). Callers
+;; that want forking must both pass a positive PARALLEL-JOBS and establish the
+;; fork machinery with WITH-FORKING (see BUILD-NATIVE).
+(defun build-system (system &key native (parallel-jobs 0))
   (let ((*compile-verbose* t) (*compile-print* t)
         (*load-verbose* t) (*load-print* t)
         ;; COMPILER instead of CMP so that we get Clasp's package,
@@ -59,7 +62,10 @@
               do (ecase command
                    ((:compile-file)
                     (destructuring-bind (input source output cfasl) rest
-                      (cond ((> parallel-jobs 1)
+                      ;; PARALLEL-JOBS = 0 means "don't fork at all": compile in
+                      ;; this process. PARALLEL-JOBS >= 1 forks a worker per file,
+                      ;; up to PARALLEL-JOBS running concurrently.
+                      (cond ((plusp parallel-jobs)
                              (fork-worker compiler input output source
                                           cfasl ct-client)
                              (maclina.load:load-bytecode
@@ -101,7 +107,7 @@
     (build-system system)))
 
 (defun build-native (input-files output-files source-pathnames cfasls
-                     &key (parallel-jobs 1))
+                     &key (parallel-jobs 0))
   (let ((system (compute-system input-files output-files
                                 source-pathnames cfasls)))
     (with-forking (:parallel-jobs parallel-jobs

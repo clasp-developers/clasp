@@ -15,6 +15,7 @@
 #include <clasp/core/ql.h>
 #include <clasp/core/designators.h> // calledFunctionDesignator
 #include <clasp/core/evaluator.h>   // eval::funcall
+#include <clasp/gctools/stw.h> // gc_yield
 #include <clasp/gctools/interrupt.h> // handle_all_queued_interrupts
 #include <clasp/core/step.h> // breakstep_arguments
 
@@ -301,7 +302,10 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       // non-bytecode function, that in turn calls a bunch of different bytecode
       // functions, which may trash vm._pc making it unsuitable.
       // We have to do this for all call instructions, not just this one.
-      vm.push(sp, (T_O*)pc);
+      // The PC is pushed as an actual fixnum so that the GC can scan the
+      // bytecode stack without worrying about invalid pointers - since the PC
+      // is only aligned to bytes, it can look like a tagged pointer.
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -326,7 +330,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         VM_RECORD_PLAYBACK(args[ii], name_args.str().c_str());
       }
 #endif
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = func->apply_raw(nargs, args);
@@ -344,7 +348,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -698,7 +702,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -716,7 +720,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_sp res = func->apply_raw(nargs, args);
@@ -735,7 +739,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       Function_sp func = gc::As_assert<Function_sp>(tfunc);
       T_O** args = vm.stackref(sp, nargs - 1);
       maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-      vm.push(sp, (T_O*)pc);
+      vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
       vm._pc = pc;
       vm._stackPointer = sp;
       T_mv res = func->apply_raw(nargs, args);
@@ -1008,7 +1012,14 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_mv result = funwind_protect([&]() {
         return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
       },
-        [&]() { eval::funcall(cleanup); });
+        [&]() {
+          // Push a valid PC fixnum so bytecode_call (via eval::funcall) sees
+          // a proper frame header at fp[-3]. The CALL opcode normally does this
+          // before apply_raw, but cleanup thunks are called from C++ without one.
+          vm.push(vm._stackPointer, core::Integer_O::create((uintptr_t)pc).raw_());
+          eval::funcall(cleanup);
+          vm.drop(vm._stackPointer, 1);
+        });
       // copied from vm_code::call - required to avoid the cleanup's values
       // for... some reason. I'm not totally sure.
       multipleValues.setN(result.raw_(), result.number_of_values());
@@ -1092,7 +1103,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
@@ -1118,7 +1129,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       VM_RECORD_PLAYBACK(args[ii], name_args.str().c_str());
     }
 #endif
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_sp res = func->apply_raw(nargs, args);
@@ -1138,7 +1149,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
@@ -1357,11 +1368,11 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     Function_sp func = gc::As_assert<Function_sp>(tfunc);
     T_O** args = vm.stackref(sp, nargs - 1);
     maybe_step_call(thread, __builtin_frame_address(0), func, nargs, args);
-    vm.push(sp, (T_O*)pc);
+    vm.push(sp, core::Integer_O::create((uintptr_t)pc).raw_());
     vm._pc = pc;
     vm._stackPointer = sp;
     T_mv res = func->apply_raw(nargs, args);
-    vm.drop(sp, nargs + 2); // 2 = func + nargs
+    vm.drop(sp, nargs + 2); // 1 for func, 1 for pc
     if (nvals != 0) {
       vm.push(sp, res.raw_()); // primary
       size_t svalues = multipleValues.getSize();
@@ -1498,7 +1509,11 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_mv result = funwind_protect([&]() {
       return bytecode_vm(vm, literals, closed, closure, fp, sp, lcc_nargs, lcc_args);
     },
-      [&]() { eval::funcall(cleanup); });
+      [&]() {
+        vm.push(vm._stackPointer, core::Integer_O::create((uintptr_t)pc).raw_());
+        eval::funcall(cleanup);
+        vm.drop(vm._stackPointer, 1);
+      });
     multipleValues.setN(result.raw_(), result.number_of_values());
     sp = vm._stackPointer;
     pc = vm._pc;
@@ -1533,6 +1548,9 @@ extern "C" {
 #define BYTECODE_COMPILE_THRESHOLD 65535
 
 gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, size_t lcc_nargs, core::T_O** lcc_args) {
+  // NOTE: the GC scans up to vm._stackPointer, so it needs to be correct
+  // when gc_yield is called - as it should be here.
+  gctools::gc_yield();
   gctools::handle_all_queued_interrupts();
   core::Closure_O* closure = gctools::untag_general<core::Closure_O*>((core::Closure_O*)lcc_closure);
   ASSERT(gc::IsA<core::BytecodeSimpleFun_sp>(closure->entryPoint()));
@@ -1567,10 +1585,10 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   // being unwound to.
   core::T_O** old_fp = vm._framePointer;
   core::T_O** old_sp = vm._stackPointer;
-  // Push the args and FP for debugging (see backtrace.cc)
-  // This is mildly wasteful of stack space, but when calling bytecode from
-  // non-bytecode the arguments won't be on the VM stack, so this is the
-  // best I got.
+  // Push args and FP for debugging (see make_bytecode_frame in backtrace.cc).
+  // fp[-3] = old_sp, which call instructions set to point at the call-site PC
+  // fixnum they push before apply_raw. For entries from C++ (cleanup thunks,
+  // top-level calls), the caller must push a valid fixnum PC before calling us.
   vm.push(vm._stackPointer, core::make_fixnum(lcc_nargs).raw_());
   vm.push(vm._stackPointer, (core::T_O*)lcc_args);
   vm.push(vm._stackPointer, (core::T_O*)old_fp);

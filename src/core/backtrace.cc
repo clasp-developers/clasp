@@ -526,17 +526,26 @@ static DebuggerFrame_sp make_bytecode_frame(size_t frameIndex, unsigned char*& p
                                              void* bytecode_call_fbp) {
   // Snapshot (pc, fp) for the current bytecode frame, then advance the
   // by-ref pc/fp to the caller's bytecode frame using the VM-stack chain
-  // bytecode_call builds (nargs/args/old_fp pushes; the PC at offset 3
-  // came from the caller's `call` opcode push). Each subsequent C frame
-  // named "bytecode_call" picks up its own (pc, fp) via this advance, so
-  // every bytecode frame in the backtrace gets its lexical bindings.
-  // The walk terminates naturally: when bytecode is invoked from C++, the
-  // saved old_fp at offset 0 is NULL (vm._framePointer was NULL), so the
-  // next iteration sees fp == NULL and stops.
+  // bytecode_call builds (nargs/args/old_fp pushes). The PC at offset 3
+  // is fp[-3] = old_sp at bytecode_call entry, which points at the fixnum PC
+  // that call opcodes push onto the stack before apply_raw. For cleanup thunks
+  // called from C++ (the protect opcode), the cleanup lambda pushes an explicit
+  // fixnum PC before eval::funcall so bytecode_call sees the same structure.
+  // For top-level calls from C++, VirtualMachine::_pc starts as nullptr →
+  // Integer_O::create(0) → pc=0, which matches no module and terminates the walk.
   void* bpc = pc;
   T_O** bfp = fp;
-  if (fp) {
-    pc = (unsigned char*)(*(fp - BYTECODE_FRAME_PC_OFFSET));
+  if (fp) { // null fp means we've hit the end.
+    T_sp tpc((gctools::Tagged)*(fp - BYTECODE_FRAME_PC_OFFSET));
+    if (tpc.fixnump() || tpc.isA<Bignum_O>()) [[likely]]
+      pc = (unsigned char*)clasp_to_integral<uintptr_t>(tpc);
+    // Stopgap to preserve some backtrace sanity in the event something
+    // has gone wrong and put a non-PC on the stack. That's a bug, but
+    // signaling an error during backtrace collection will crash hard
+    // and it's pretty dumb for that to be caused by debugging.
+    // Long story short, KLUDGE, if control ever reaches this line
+    // it's a bug, probably in bytecode.cc, that you oughta fix.
+    else pc = nullptr;
     fp = (T_O**)(*(fp - BYTECODE_FRAME_FP_OFFSET));
   }
   // Find the bytecode module containing the current pc.
@@ -860,7 +869,7 @@ static T_mv os_call_with_frame(std::function<T_mv(DebuggerFrame_sp)> func) {
       char** strings = backtrace_symbols(buffer, returned);
       void* fbp = __builtin_frame_address(0); // TODO later
       uintptr_t bplow = (uintptr_t)&fbp;
-      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_StackTop;
+      uintptr_t bphigh = (uintptr_t)my_thread_low_level->_ControlStackTop;
       DebuggerFrame_sp bot = make_frame(0, buffer[0], strings[0], fbp, bytecode_pc, bytecode_fp);
       DebuggerFrame_sp prev = bot;
       void* newfbp;

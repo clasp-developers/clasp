@@ -6,8 +6,13 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <pthread.h>
+#ifdef _TARGET_OS_FREEBSD
+#include <pthread_np.h>
+#endif
 #include <clasp/core/foundation.h>
 #include <clasp/gctools/threadlocal.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/core/array.h>
@@ -16,11 +21,12 @@
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/core/unwind.h>                    // DynEnv stuff
-#include <clasp/gctools/boehmGarbageCollection.h> // DynEnv stuff
 #include <clasp/external/thread-pool/thread_pool.h>
 
-THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level;
-THREAD_LOCAL core::ThreadLocalState* my_thread;
+// Signal handlers and a few other things treat my_thread(_low_level) being
+// non-null as indicating we are in a Lisp thread.
+THREAD_LOCAL gctools::ThreadLocalStateLowLevel* my_thread_low_level = nullptr;
+THREAD_LOCAL core::ThreadLocalState* my_thread = nullptr;
 
 namespace core {
 
@@ -40,20 +46,6 @@ CL_DEFUN void core__debug_virtual_machine(int val, bool reset_counters) {
 void VirtualMachine::error() {
   printf("%s:%d:%s There was an error encountered in the vm - put a breakpoint here to trap it\n", __FILE__, __LINE__,
          __FUNCTION__);
-};
-
-unsigned int* BignumExportBuffer::getOrAllocate(const mpz_class& bignum, int nail) {
-  size_t size = _lisp->integer_ordering()._mpz_import_size;
-  size_t numb = (size << 3) - nail; // *8
-  size_t count = (mpz_sizeinbase(bignum.get_mpz_t(), 2) + numb - 1) / numb;
-  size_t bytes = count * size;
-  if (bytes > this->bufferSize) {
-    if (this->buffer) {
-      free(this->buffer);
-    }
-    this->buffer = (unsigned int*)malloc(bytes);
-  }
-  return this->buffer;
 };
 
 }; // namespace core
@@ -105,22 +97,43 @@ bool DynamicBindingStack::thread_local_boundp(uint32_t index) const {
 }; // namespace core
 
 namespace gctools {
-ThreadLocalStateLowLevel::ThreadLocalStateLowLevel(void* stack_top)
-    : _StackTop(stack_top), _DisableInterrupts(false)
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-      ,
-      _RecursiveAllocationCounter(0)
+ThreadLocalStateLowLevel::ThreadLocalStateLowLevel()
+    : _DisableInterrupts(false)
+{
+  update_stack_bounds();
+}
+
+void ThreadLocalStateLowLevel::update_stack_bounds() {
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD) || defined(_TARGET_OS_DARWIN)
+  pthread_t self = pthread_self();
+  void* stackaddr; size_t stacksize;
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD)
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+#if defined(_TARGET_OS_LINUX)
+  pthread_getattr_np(self, &attr);
+#else // _TARGET_OS_FREEBSD
+  pthread_attr_get_np(self, &attr);
 #endif
-
-          {};
-
-ThreadLocalStateLowLevel::~ThreadLocalStateLowLevel(){};
+  pthread_attr_getstack(&attr, &stackaddr, &stacksize);
+  _ControlStackTop = stackaddr;
+  _ControlStackBottom = (void*)((char*)stackaddr + stacksize);
+#elif defined(_TARGET_OS_DARWIN)
+  stackaddr = pthread_get_stackaddr_np(self);
+  stacksize = pthread_get_stacksize_np(self);
+  _ControlStackTop = (void*)((char*)stackaddr - stacksize);
+  _ControlStackBottom = stackaddr;
+#endif
+#else // i.e. not LINUX || FREEBSD || DARWIN
+#error "Unrecognized OS: Cannot retrieve bounds of control stack (needed for GC)"
+#endif
+};
 
 }; // namespace gctools
 namespace core {
 
 VirtualMachine::VirtualMachine()
-    : _Running(true)
+  : _Running(true), _pc(nullptr)
 #ifdef DEBUG_VIRTUAL_MACHINE
       ,
       _counter0(0), _unwind_counter(0), _throw_counter(0)
@@ -182,7 +195,7 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy)
-  : _unwinds(0), _CleanupFunctions(NULL), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false),
+  : _unwinds(0), _CleanupFunctions(NULL), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false), _GCState(GCState::Running),
     // initialized with null pointers so that dequeue_interrupt
     // can see that the queue is not yet available.
     // Default-initializing an atomic default-initializes the underlying object
@@ -198,20 +211,56 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+  gctools::stw_register_thread(this);
+#ifdef USE_MMTK
+  // Note that stw_register_thread blocked if the world was stopped, so at
+  // this point the world is not stopped. MMTk demands that the set of mutators
+  // not change during a stop, and bind_mutator adds a mutator.
+  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+#endif
+
 }
 
-pid_t ThreadLocalState::safe_fork() {
+pid_t ThreadLocalState::safe_fork(bool will_exec) {
   // Wrap fork in code that turns guards off and on
   this->_VM.disable_guards();
+#ifdef USE_MMTK
+  // MMTk runs its collector on dedicated GC worker threads. fork() only clones
+  // the calling thread, so without help the child would inherit an MMTk heap
+  // with no live workers and hang on its first collection. Park the workers
+  // (this blocks until their native threads exit) before forking, then respawn
+  // them in BOTH the parent and the child. No MMTk-heap allocation is allowed
+  // between fork() and mmtk_clasp_after_fork().
+  //
+  // When will_exec is true the child execs immediately and never touches the
+  // MMTk heap, and the parent has nothing to recover, so skip the dance
+  // entirely and let the workers keep running across the fork.
+  const bool mmtk_fork = !will_exec;
+  if (mmtk_fork)
+    mmtk_clasp_prepare_to_fork();
+#endif
   pid_t result = fork();
   if (result == -1) {
     // error
+#ifdef USE_MMTK
+    // No fork happened; bring the parent's workers back up.
+    if (mmtk_fork)
+      mmtk_clasp_after_fork(this);
+#endif
     printf("%s:%d:%s fork failed errno = %d\n", __FILE__, __LINE__, __FUNCTION__, errno);
   } else if (result == 0) {
     // child
+#ifdef USE_MMTK
+    if (mmtk_fork)
+      mmtk_clasp_after_fork(this);
+#endif
     this->_VM.enable_guards();
   } else {
     // parent
+#ifdef USE_MMTK
+    if (mmtk_fork)
+      mmtk_clasp_after_fork(this);
+#endif
     this->_VM.enable_guards();
   }
   return result;
@@ -250,6 +299,7 @@ ERR:
 ThreadLocalState::ThreadLocalState()
   : _unwinds(0), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
     _PendingInterruptsHead(), _PendingInterruptsTail(),
+    _GCState(GCState::Running),
     _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
 #ifdef _TARGET_OS_DARWIN
   pthread_threadid_np(NULL, &this->_Tid);
@@ -262,6 +312,10 @@ ThreadLocalState::ThreadLocalState()
   this->_xorshf_y = rand();
   this->_xorshf_z = rand();
   sigemptyset(&this->_PendingSignals);
+  gctools::stw_register_thread(this);
+#ifdef USE_MMTK
+  _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+#endif
 }
 
 static void dumpDynEnvStack(T_sp stack) {
@@ -400,7 +454,29 @@ core::T_sp ThreadLocalState::dequeue_interrupt() {
 
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
-ThreadLocalState::~ThreadLocalState() {}
+ThreadLocalState::~ThreadLocalState() {
+  // In general we can't destroy mutators during a pause - in MMTk for example
+  // it's explicitly undefined behavior (see ActivePlan::mutators).
+  // So when destroying a thread we need to wake it if it's parked/gcsafe,
+  // which will block until any stop-the-world pause is over,
+  // and then not have any safepoints from there to the end of this destructor
+  // to ensure that there are no more pauses.
+  // FIXME: Ideally this would be isolated in stw.h/cc somehow, but we need to
+  // mmtk_clasp_destroy_mutator, and we don't want to do that in stw.h/cc.
+  // Possibly some other ActivePlan::mutators implementation would be more
+  // amenable to this.
+  if (gcsafep()) // also covers parked/blockingp
+    gctools::end_gcsafe(this);
+#ifdef USE_MMTK
+  // Make sure the mutator is destroyed before unregistering.
+  // Destroying the mutator removes it from the set of threads MMTk scans
+  // (as per our ActivePlan::mutators implementation, at least),
+  // but we won't tell MMTk that all mutators are stopped until (at least)
+  // we unregister ourselves below.
+  mmtk_clasp_destroy_mutator(_LowLevel._mmtk_mutator);
+#endif
+  gctools::stw_unregister_thread(this);
+}
 
 void thread_local_register_cleanup(const std::function<void(void)>& cleanup) {
   CleanupFunctionNode* node = new CleanupFunctionNode(cleanup, my_thread->_CleanupFunctions);
@@ -419,9 +495,6 @@ void thread_local_invoke_and_clear_cleanup() {
   }
   my_thread->_CleanupFunctions = NULL;
 }
-
-// Need to use LTO to inline this.
-inline void registerTypesAllocated(size_t bytes) { my_thread->_BytesAllocated += bytes; }
 
 void ThreadLocalState::initialize_thread(mp::Process_sp process) {
   //  printf("%s:%d Initialize all ThreadLocalState things this->%p\n",__FILE__, __LINE__, (void*)this);

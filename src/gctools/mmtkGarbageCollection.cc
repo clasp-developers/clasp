@@ -1,5 +1,5 @@
 /*
-    File: boehmGarbageCollection.cc
+    File: mmtkGarbageCollection.cc
 */
 
 /*
@@ -23,69 +23,182 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* -^- */
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
-// #include <clasp/core/numbers.h>
-#include <clasp/core/evaluator.h>
+#include <clasp/core/cons.h>
 #include <clasp/gctools/gctoolsPackage.h>
+#include <clasp/gctools/stw.h>
 #ifdef USE_MMTK
 #include <clasp/gctools/mmtkGarbageCollection.h>
 #include <clasp/gctools/gcFunctions.h>
-#include <clasp/core/debugger.h>
-#include <clasp/core/compiler.h>
-#include <clasp/gctools/snapshotSaveLoad.h>
-
-THREAD_LOCAL MMTk_Mutator my_mutator;
+#include <clasp/gctools/roots.h>
+#include <clasp/gctools/scan.h>
+#include <clasp/gctools/skip.h>
 
 namespace gctools {
-__attribute__((noinline)) int initializeMmtk(int argc, char* argv[], bool mpiEnabled, int mpiRank, int mpiSize) {
-  gc_init((size_t)(1024 * 1024 * 1024) * (size_t)4);
 
-  void* topOfStack;
-  my_mutator = bind_mutator(topOfStack);
+__attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
+  // Build and initialise the MMTk instance.
+  MMTkClaspBuilder builder = mmtk_clasp_create_builder();
+  mmtk_clasp_set_option(builder, "plan", "Immix");
+  mmtk_clasp_set_dynamic_heap_size(builder, (size_t)256 * 1024 * 1024,
+                                   (size_t)4 * 1024 * 1024 * 1024);
+  mmtk_clasp_init(builder);
 
-  // ctor sets up my_thread
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(&topOfStack);
-  core::ThreadLocalState thread_local_state(false); // special ctor that does not require _Nil be defined
-  my_thread_low_level = &thread_local_state_low_level;
-  my_thread = &thread_local_state;
+  // Set up thread-local state for the main thread.
+  my_thread = (core::ThreadLocalState*)malloc(sizeof(core::ThreadLocalState));
+  new (my_thread) core::ThreadLocalState(false);
+  my_thread_low_level = &my_thread->_LowLevel;
 
-#if 0
-  // I'm not sure if this needs to be done for the main thread
-  GC_stack_base gc_stack_base;
-  GC_get_stack_base(&gc_stack_base);
-  GC_register_my_thread(&gc_stack_base);
-#endif
-
-#ifndef SCRAPING
-#define ALL_PREGCSTARTUPS_CALLS
-#include PRE_GC_STARTUP_INC_H
-#undef ALL_PREGCSTARTUPS_CALLS
-
-  //
-  // Set up the _lisp and symbols memory as roots
-  //
-  gctools::clasp_ptr_t* lispRoot = (gctools::clasp_ptr_t*)&_lisp;
-  GC_add_roots((void*)lispRoot, (void*)((char*)lispRoot + sizeof(void*)));
-  gctools::clasp_ptr_t* coreSymbolRoots = (gctools::clasp_ptr_t*)&global_core_symbols[0];
-  GC_add_roots((void*)coreSymbolRoots, (void*)((char*)coreSymbolRoots + sizeof(void*) * NUMBER_OF_CORE_SYMBOLS));
-  gctools::clasp_ptr_t* symbolRoots = (gctools::clasp_ptr_t*)&global_symbols[0];
-  GC_add_roots((void*)symbolRoots, (void*)((char*)symbolRoots + sizeof(void*) * global_symbol_count));
-
-#endif
-  int exitCode;
-  try {
-    exitCode = startupFn(argc, argv, mpiEnabled, mpiRank, mpiSize);
-  } catch (core::SaveLispAndDie& ee) {
-#ifdef USE_PRECISE_GC
-    snapshotSaveLoad::snapshot_save(ee);
-#endif
-    exitCode = 0;
-  }
-  return exitCode;
+  // The mutator for this thread was bound by ThreadLocalState's ctor.
+  mmtk_clasp_initialize_collection(my_thread);
 }
 
-};     // namespace gctools
-#endif // whole file #ifdef USE_MMTK
+// --- GC interface stubs ---
+
+void collect_garbage() {
+  mmtk_clasp_handle_user_collection_request(my_thread);
+}
+
+void set_finalizer_list(core::T_sp object, core::List_sp finalizers) {
+  (void)object;
+  (void)finalizers;
+}
+
+void clear_finalizer_list(core::T_sp object) {
+  (void)object;
+}
+
+void invoke_finalizers() {}
+
+bool heap_ptr_p(const void* p) {
+  return mmtk_clasp_is_in_mmtk_spaces(p);
+}
+
+size_t heap_size() { return mmtk_clasp_total_bytes(); }
+
+size_t free_bytes() { return mmtk_clasp_free_bytes(); }
+
+size_t bytes_since_gc() { return 0; }
+
+CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
+
+}; // namespace gctools
+
+// Scan the pointer fields of an object, calling callback for each field address.
+// Uses scan::cons / scan::general_pointers; weak pointers are treated as strong
+// for now (they are traced but not cleared if the referent dies).
+extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data) {
+  const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
+  auto scan = [&](core::T_O** field) {
+    gctools::Tagged thing = *(gctools::Tagged*)field;
+    switch (gctools::ptag(thing)) {
+    case gctools::general_tag: {
+      void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
+      if (header < (gctools::Header_s*)0x1000) abort();
+      if (!header->isValidGeneralObject()) abort();
+    } break;
+    case gctools::cons_tag: {
+      void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
+      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
+      if (header < (gctools::ConsHeader_s*)0x1000) abort();
+      if (!header->isValidConsObject()) abort();
+    }
+    }
+    callback(static_cast<void*>(field), data);
+  };
+  if (near->_badge_stamp_wtag_mtag.consObjectP()) {
+    gctools::scan::cons(static_cast<core::Cons_O*>(client), scan);
+  } else {
+    gctools::scan::general(static_cast<core::General_O*>(client),
+                           scan,
+                           [&](gctools::WeakPointer* weak) {
+                             mmtk_clasp_scan_weak(static_cast<void*>(&weak->_value));
+                           },
+                           [&](gctools::Ephemeron* eph) {
+                             mmtk_clasp_scan_ephemeron(reinterpret_cast<void*>(&eph->_key),
+                                                       reinterpret_cast<void*>(&eph->_value));
+                           });
+  }
+}
+
+// Total allocation size (header + body) for an object given its client pointer.
+//
+// The stamp is always readable from client-sizeof(BaseHeader_s) (= client-8):
+// for conses it's ConsHeader_s; for general objects without DEBUG_GUARD it's
+// Header_s; for general objects with DEBUG_GUARD
+// it's the _dup_badge_stamp_wtag_mtag guard copy at the end of Header_s.
+// That lets us distinguish cons from general before dispatching to the right
+// skip function and header size.
+extern "C" size_t clasp_object_size(void* client) {
+  const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
+  if (near->_badge_stamp_wtag_mtag.consObjectP()) {
+    return sizeof(gctools::ConsHeader_s) + gctools::cons_skip(static_cast<core::Cons_O*>(client));
+  } else {
+    return sizeof(gctools::Header_s) + gctools::general_skip(static_cast<core::General_O*>(client));
+  }
+}
+
+// callback for MMTk's mutator(tls)
+extern "C" MMTkClaspMutator clasp_get_mutator(void* tls) {
+  return static_cast<core::ThreadLocalState*>(tls)->_LowLevel._mmtk_mutator;
+}
+
+// Root-scanning callbacks for MMTk's Rust scanning implementation.
+// These are called with the world stopped.
+
+extern "C" void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void* data) {
+  gctools::walkGlobalRoots([&](gctools::Tagged* tp) {
+    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
+    switch (gctools::ptag(*tp)) {
+    case gctools::general_tag:
+    case gctools::cons_tag: {
+      if (client < (void*)0x1000) abort();
+    } break;
+    }
+    callback(static_cast<void*>(tp), data);
+  });
+}
+
+extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallback callback, void* data) {
+  core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
+  auto walk = [&](gctools::Tagged* tp) {
+    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
+    switch (gctools::ptag(*tp)) {
+    case gctools::general_tag: {
+      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
+      if (header > (gctools::Header_s*)0x1000 && header->isValidGeneralObject())
+        callback(static_cast<void*>(tp), data);
+      else abort();
+    } break;
+    case gctools::cons_tag: {
+      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
+      if (header > (gctools::ConsHeader_s*)0x1000 && header->isValidConsObject())
+        callback(static_cast<void*>(tp), data);
+      else abort();
+    } break;
+    }
+    //callback(static_cast<void*>(tp), data);
+  };
+  ts->walkRoots(walk);
+  ts->walkVMStack(walk);
+}
+
+extern "C" void clasp_walk_thread_conservative_roots(void* tls, ClaspConservativeRootCallback callback, void* data) {
+  core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
+  ts->walkControlStack([&](gctools::Tagged* tp) {
+    // Strip all tag bits to get a potential client pointer.  Only aligned,
+    // non-null addresses can be MMTk object references.
+    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
+    if (!client)
+      return;
+    // The VO bit is the authoritative check: MMTk sets it at allocation and
+    // clears it at reclamation, so it is reliable without inspecting headers.
+    if (mmtk_clasp_is_mmtk_object(client))
+      callback(client, data);
+  });
+}
+
+#endif // USE_MMTK

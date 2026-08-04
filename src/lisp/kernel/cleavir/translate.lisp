@@ -895,6 +895,7 @@ function-or-placeholder - the llvm function or a placeholder for
                (sninputs (%size_t ninputs))
                (enclose
                  (ecase extent
+                   #+(or)
                    (:dynamic
                     (%intrinsic-call
                      "cc_stack_enclose"
@@ -902,7 +903,7 @@ function-or-placeholder - the llvm function or a placeholder for
                                            :alignment cmp:+alignment+
                                            :label "stack-allocated-closure")
                            xepc sninputs)))
-                   (:indefinite
+                   ((:dynamic :indefinite)
                     (%intrinsic-invoke-if-landing-pad-or-call
                      "cc_enclose"
                      (list xepc sninputs))))))
@@ -1949,7 +1950,7 @@ function-or-placeholder - the llvm function or a placeholder for
         (cmp:with-debug-info-source-position (source-pos-info)
           ;; but first, check for interrupts now that we have a source
           (%intrinsic-invoke-if-landing-pad-or-call
-           "cc_signal_interrupts" ())
+           "cc_safepoint" ())
           (let* ((function-type (llvm-sys:get-function-type (main-function llvm-function-info)))
                  (arguments
                    (mapcar (lambda (arg)

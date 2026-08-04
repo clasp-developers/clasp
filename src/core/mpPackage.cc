@@ -183,11 +183,10 @@ void Process_O::runInner(core::List_sp bindings) {
 }
 
 __attribute__((noinline))
-void Process_O::run(void* cold_end_of_stack) {
-  gctools::ThreadLocalStateLowLevel thread_local_state_low_level(cold_end_of_stack);
+void Process_O::run() {
   core::ThreadLocalState thread_local_state;
-  my_thread_low_level = &thread_local_state_low_level;
   my_thread = &thread_local_state;
+  my_thread_low_level = &thread_local_state._LowLevel;
   my_thread->startUpVM();
   my_thread->initialize_thread(this->asSmartPtr());
   //  my_thread->create_sigaltstack();
@@ -216,8 +215,7 @@ void Process_O::run(void* cold_end_of_stack) {
 
 // This is the function actually passed to pthread_create.
 void* start_thread(void* vinfo) {
-  void* cold_end_of_stack = &cold_end_of_stack;
-  static_cast<Process_O*>(vinfo)->run(cold_end_of_stack);
+  static_cast<Process_O*>(vinfo)->run();
   return NULL;
 }
 
@@ -490,7 +488,9 @@ CL_DEFUN core::T_mv mp__process_join(Process_sp process) {
   if (process->phase() == Nascent)
     ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process));
   if (process->phase() != Exited) {
-    pthread_join(process->_TheThread._value, NULL);
+    BEGIN_PARK {
+      pthread_join(process->_TheThread._value, NULL);
+    } END_PARK;
   }
   if (process->_Aborted)
     ERROR(_sym_process_join_error, core::lisp_createList(kw::_sym_process, process, kw::_sym_original_condition,

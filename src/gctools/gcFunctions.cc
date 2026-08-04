@@ -28,10 +28,14 @@
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
+#include <clasp/gctools/stw.h>
 #include <clasp/core/compiler.h>
 #include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/weakPointer.h>
+#include <clasp/core/ql.h>
+#include <clasp/core/mpPackage.h>
 
 namespace gctools {
 std::atomic<double> global_DiscriminatingFunctionCompilationSeconds(0.0);
@@ -210,23 +214,6 @@ CL_DEFUN bool core__inherits_from_instance(core::T_sp obj) { return (gc::IsA<cor
 
 namespace gctools {
 
-CL_LAMBDA(on &key (backtrace-start 0) (backtrace-count 0) (backtrace-depth 6));
-DOCGROUP(clasp);
-CL_DEFUN void gctools__monitor_allocations(bool on, core::Fixnum_sp backtraceStart, core::Fixnum_sp backtraceCount,
-                                           core::Fixnum_sp backtraceDepth) {
-#ifdef DEBUG_MONITOR_ALLOCATIONS
-  global_monitorAllocations.on = on;
-  global_monitorAllocations.counter = 0;
-  if (backtraceStart.unsafe_fixnum() < 0 || backtraceCount.unsafe_fixnum() < 0 || backtraceDepth.unsafe_fixnum() < 0) {
-    SIMPLE_ERROR("Keyword arguments must all be >= 0");
-  }
-  global_monitorAllocations.start = backtraceStart.unsafe_fixnum();
-  global_monitorAllocations.end = backtraceStart.unsafe_fixnum() + backtraceCount.unsafe_fixnum();
-  global_monitorAllocations.backtraceDepth = backtraceDepth.unsafe_fixnum();
-  printf("%s:%d  monitorAllocations set to %d\n", __FILE__, __LINE__, on);
-#endif
-};
-
 SYMBOL_EXPORT_SC_(GcToolsPkg, ramp);
 SYMBOL_EXPORT_SC_(GcToolsPkg, rampCollectAll);
 
@@ -349,14 +336,8 @@ void roomMapper(Tagged tagged, void* data) {
   (*rcmap)[stamp].update(sz);
 }
 
-void* map_gc_objects_w_alloc_lock(void* data) {
-  mapAllObjects(roomMapper, data);
-  return nullptr;
-}
-
 void fill_reachable_class_map(ReachableClassMap* rcmap) {
-  call_with_stopped_world(map_gc_objects_w_alloc_lock,
-                          (void*)rcmap);
+  call_with_stopped_world([&](){mapAllObjects(roomMapper, rcmap);});
 }
 
 CL_LAMBDA(&optional (x :default));
@@ -428,8 +409,8 @@ CL_LAMBDA();
 CL_DOCSTRING("Walk all objects in memory and determine how many contain pointers that are not to valid objects. Return true iff all pointers are valid. Writes a report to standard output.");
 CL_DEFUN bool gctools__memory_test() {
   // Collect twice to try and get the mark bits set properly
-  GC_gcollect();
-  GC_gcollect();
+  collect_garbage();
+  collect_garbage();
   return memory_test();
 }
 
@@ -596,14 +577,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_STACKMAPS = {}\n", (debug_stackmaps ? "**DEFINED**" : "undefined")));
 
-  bool debug_recursive_allocations = false;
-#ifdef DEBUG_RECURSIVE_ALLOCATIONS
-  debug_recursive_allocations = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_RECURSIVE_ALLOCATIONS = {}\n", (debug_recursive_allocations ? "**DEFINED**" : "undefined")));
-
   bool debug_guard = false;
 #ifdef DEBUG_GUARD
   debug_guard = true;
@@ -729,16 +702,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
 #endif
   if (buildReport)
     ss << (fmt::format("DEBUG_LONG_CALL_HISTORY = {}\n", (debug_long_call_history ? "**DEFINED**" : "undefined")));
-
-  bool debug_memory_profile = false;
-#ifdef DEBUG_MEMORY_PROFILE
-  debug_memory_profile = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-MEMORY-PROFILE"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_MEMORY_PROFILE = {}\n", (debug_memory_profile ? "**DEFINED**" : "undefined")));
 
   bool debug_verify_modules = false;
 #ifdef DEBUG_VERIFY_MODULES
@@ -987,4 +950,203 @@ CL_DEFUN void gctools__dump_stamp_info(size_t unshifted_stamp) {
   core::clasp_write_string(dump_stamp_info(STAMP_UNSHIFT_MTAG(unshifted_stamp)));
 }
 
+// Used in regression tests
+CL_DOCSTRING(R"dx(Return this thread's stack top, current stack pointer, and bottom. The stack pointer is immediately stale. This function for testing purposes only.)dx");
+CL_DEFUN core::T_mv gctools__stw_stack_bounds() {
+  void *sp, *bottom, *top;
+  gctools::call_gcsafe([&]() {
+    sp = my_thread_low_level->_ControlStackPointer;
+    bottom = my_thread_low_level->_ControlStackBottom;
+    top = my_thread_low_level->_ControlStackTop;
+  });
+  return Values(core::Integer_O::create((uintptr_t)top),
+                core::Integer_O::create((uintptr_t)sp),
+                core::Integer_O::create((uintptr_t)bottom));
+}
+
+CL_DOCSTRING(R"dx(Test if some objects are traceable for garbage collection. The argument is a list of weak pointers. The result is a list of the same length of booleans, each boolean being true iff the weak pointer was valid and its object was traceable.
+Multiple objects are tested simultaneously because this requires stopping the world and doing a full memory scan, both of which are slow.
+An object being untraceable to this function does not necessarily mean that it will be collected by the garbage collector. This function works independently of the GC backend, and GCs may not collect objects due to their own implementation strategies and/or flaws. In particular, Boehm does not have true ephemerons, so Boehm may never collect certain objects pointed to by ephemerons even if this function indicates they are untraceable.)dx");
+CL_DEFUN core::List_sp gctools__traceablep(core::List_sp weaks) {
+  std::unordered_map<Tagged, bool> testing;
+  for (auto e : weaks) {
+    core::WeakPointer_sp w = core::oCar(e).as<core::WeakPointer_O>();
+    WeakPointer link = w->_Link;
+    auto v = link.value();
+    if (v) // valid
+      testing.emplace(v->tagged_(), false);
+  }
+  call_with_stopped_world([&](){traceablep(testing);});
+  // Now we know which pointers are traceable, so construct
+  // a new list of booleans.
+  ql::list result;
+  auto fail = testing.end();
+  for (auto e : weaks) {
+    core::WeakPointer_sp w = core::oCar(e).as_unsafe<core::WeakPointer_O>();
+    WeakPointer link = w->_Link;
+    auto v = link.value();
+    if (v) {
+      auto it = testing.find(v->tagged_());
+      if (it == fail)
+        result << nil<core::T_O>();
+      else if (it->second)
+        result << cl::_sym_T_O;
+      else result << nil<core::T_O>();
+    } else result << nil<core::T_O>();
+  }
+  return result.cons();
+}
+
+CL_DOCSTRING(R"dx(Test function for scanning bytecode stacks. Looks through a thread's bytecode VM stack and counts and returns:
+1) non-objects (e.g. fixnums)
+2) valid objects
+3) invalid objects (should be zero!))dx");
+CL_DEFUN core::T_mv gctools__bytecode_stack_stats(mp::Process_sp proc) {
+  core::ThreadLocalState* tls = proc->_ThreadInfo;
+  const core::VirtualMachine& VM = tls->_VM;
+  size_t valid = 0, invalid = 0, nonobject = 0;
+
+  auto scanner
+    = [&](Tagged* ptr) {
+      Tagged o = *ptr;
+      switch(ptag(o)) {
+      case general_tag: {
+        uintptr_t client = untag_object(o);
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr((void*)client);
+        if (header->isValidGeneralObject()) ++valid;
+        else ++invalid;
+      } break;
+      case cons_tag: {
+        uintptr_t client = untag_object(o);
+        ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr((void*)client);
+        if (header->isValidConsObject()) ++valid;
+        else ++invalid;
+      } break;
+      default: ++nonobject;
+      }
+    };
+  call_with_stopped_world([&](){tls->walkVMStack(scanner);});
+  return Values(core::Integer_O::create(nonobject),
+                core::Integer_O::create(valid),
+                core::Integer_O::create(invalid));
+}
+
+CL_DOCSTRING(R"dx(Test function for scanning control stacks. Looks through a thread's stack and counts and returns:
+1) non-objects (e.g. fixnums)
+2) valid objects
+3) invalid objects)dx");
+CL_DEFUN core::T_mv gctools__control_stack_stats(mp::Process_sp proc) {
+  core::ThreadLocalState* tls = proc->_ThreadInfo;
+  size_t valid = 0, invalid = 0, nonobject = 0, interior = 0;
+
+  auto scanner
+    = [&](Tagged* ptr) {
+      Tagged o = *ptr;
+#ifdef USE_BOEHM
+      void* base = GC_base((void*)o);
+#else
+      void* base = nullptr;
+#endif
+      Header_s* gheader = (Header_s*)base;
+      ConsHeader_s* cheader = (ConsHeader_s*)base;
+      
+      switch(ptag(o)) {
+      case general_tag: {
+        void* client = (void*)untag_object(o);
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
+        if ((!base || (header == gheader))
+            && header->isValidGeneralObject())
+          ++valid;
+        else if (base
+                 && (gheader->isValidGeneralObject()
+                     || cheader->isValidConsObject()))
+          ++interior;
+        else ++invalid;
+      } break;
+      case cons_tag: {
+        void* client = (void*)untag_object(o);
+        ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr(client);
+        if ((!base || header == cheader)
+            && header->isValidConsObject())
+          ++valid;
+        else if (base
+                 && (gheader->isValidGeneralObject()
+                     || cheader->isValidConsObject()))
+          ++interior;
+        else ++invalid;
+      } break;
+      default: {
+#ifdef USE_BOEHM
+        if (base && (gheader->isValidGeneralObject()
+                     || cheader->isValidConsObject()))
+          ++interior;
+        else
+#endif
+          ++nonobject;
+      } break;
+      }
+    };
+  call_with_stopped_world([&](){tls->walkControlStack(scanner);});
+  return Values(core::Integer_O::create(nonobject),
+                core::Integer_O::create(valid),
+                core::Integer_O::create(invalid),
+                core::Integer_O::create(interior));
+}
+
+CL_DOCSTRING(R"dx(Test function for finding interior pointers in control stacks. Looks through a thread's stack and returns a list of objects identified from interior pointers.
+This function is pretty error-prone - don't be surprised if a returned object is some junk that causes segfaults when examined.)dx");
+CL_DEFUN core::List_sp gctools__interior_pointers(mp::Process_sp proc) {
+  core::ThreadLocalState* tls = proc->_ThreadInfo;
+  std::set<Tagged> interiors;
+
+  auto scanner
+    = [&](Tagged* ptr) {
+      Tagged o = (Tagged)*ptr;
+#ifdef USE_BOEHM
+      void* base = GC_base((void*)o);
+#else
+      void* base = nullptr;
+#endif
+      
+      if (!base) return;
+      
+      Header_s* gheader = (Header_s*)base;
+      ConsHeader_s* cheader = (ConsHeader_s*)base;
+        
+      switch(ptag(o)) {
+      case general_tag: {
+        void* client = (void*)untag_object(o);
+        Header_s* header = (Header_s*)GeneralPtrToHeaderPtr(client);
+        if (header == gheader) return;
+      } break;
+      case cons_tag: {
+        void* client = (void*)untag_object(o);
+        ConsHeader_s* header = (ConsHeader_s*)ConsPtrToHeaderPtr(client);
+        if (header == cheader) return;
+      }
+      }
+
+        // base is non-null and not equal to any properly tagged header,
+        // so we may have an interior pointer.
+        // find any actual object.
+      if (gheader->isValidGeneralObject()) {
+        core::General_O* gen = HeaderPtrToGeneralPtr<core::General_O>(base);
+        interiors.insert((Tagged)tag_general(gen));
+      } else if (cheader->isValidConsObject()) {
+        core::Cons_O* cons = (core::Cons_O*)HeaderPtrToConsPtr(base);
+        interiors.insert((Tagged)tag_cons(cons));
+      }
+    }; // scanner
+
+  call_with_stopped_world([&](){tls->walkControlStack(scanner);});
+
+  // Now we have a set of tagged objects. Turn them into actual objects
+  // and return.
+  ql::list result;
+  for (auto t : interiors) {
+    core::T_sp obj(t);
+    result << obj;
+  }
+  return result.cons();
+}
 }; // namespace gctools
