@@ -127,41 +127,52 @@
 
 ;;; These tests are pretty strict - they want the garbage to actually be
 ;;; collected by that garbage-collect call, which may not be the case if we
-;;; ever get a more relaxed collector (generational or something)
+;;; ever get a more relaxed collector (generational or something).
+;;;
+;;; BUILDER populates the table and then RETURNS, so the frame holding the dead
+;;; temporaries is popped before we collect. Building and collecting in one frame
+;;; lets Boehm's conservative stack scan see a stale reference to a temporary and
+;;; keep its entry alive, which is what made these tests flaky. The assertion is
+;;; unchanged: still one collection, still an exact count.
+(defun weak-count (builder)
+  (let ((table (funcall builder)))
+    (gctools:garbage-collect)
+    (hash-table-count table)))
+
 (test weak-key-weakness
-      (let ((table (make-hash-table :weakness :key)))
-        (setf (gethash (list 37) table) :value
-              (gethash :key table) (list nil)
-              (gethash :key2 table) (list nil))
-        (gctools:garbage-collect)
-        (hash-table-count table))
+      (weak-count (lambda ()
+                    (let ((table (make-hash-table :weakness :key)))
+                      (setf (gethash (list 37) table) :value
+                            (gethash :key table) (list nil)
+                            (gethash :key2 table) (list nil))
+                      table)))
       (2))
 (test weak-value-weakness
-      (let ((table (make-hash-table :weakness :value)))
-        (setf (gethash :key table) (list 37)
-              (gethash (list nil) table) :value
-              (gethash (list 18) table) :value)
-        (gctools:garbage-collect)
-        (hash-table-count table))
+      (weak-count (lambda ()
+                    (let ((table (make-hash-table :weakness :value)))
+                      (setf (gethash :key table) (list 37)
+                            (gethash (list nil) table) :value
+                            (gethash (list 18) table) :value)
+                      table)))
       (2))
 (test weak-key-and-value-weakness
-      (let ((table (make-hash-table :weakness :key-and-value)))
-        (setf (gethash (list nil) table) :value
-              (gethash :key table) (list nil)
-              (gethash (list nil) table) (list nil)
-              (gethash :key table) :value)
-        (gctools:garbage-collect)
-        (hash-table-count table))
+      (weak-count (lambda ()
+                    (let ((table (make-hash-table :weakness :key-and-value)))
+                      (setf (gethash (list nil) table) :value
+                            (gethash :key table) (list nil)
+                            (gethash (list nil) table) (list nil)
+                            (gethash :key table) :value)
+                      table)))
       (1))
 #-use-boehm ; on boehm key-or-value tables are effectively strong.
 (test weak-key-or-value-weakness
-      (let ((table (make-hash-table :weakness :key-or)))
-        (setf (gethash (list nil) table) :value
-              (gethash :key table) (list nil)
-              (gethash (list nil) table) (list nil)
-              (gethash :key table) :value)
-        (gctools:garbage-collect)
-        (hash-table-count table))
+      (weak-count (lambda ()
+                    (let ((table (make-hash-table :weakness :key-or)))
+                      (setf (gethash (list nil) table) :value
+                            (gethash :key table) (list nil)
+                            (gethash (list nil) table) (list nil)
+                            (gethash :key table) :value)
+                      table)))
       (3))
 
 (test equalp-hash-table-1
