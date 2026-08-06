@@ -25,38 +25,6 @@ THE SOFTWARE.
 */
 /* -^- */
 
-#if 0
-/**/                                                                                                                              \
-#if 0
-/**/                                                                                                                              \
-#define DEBUG_HASH_TABLE(expr)                                                                                                     \
-  if (core::_sym_STARdebug_hash_tableSTAR.boundp() && core::_sym_STARdebug_hash_tableSTAR->boundP() &&                             \
-      core::_sym_STARdebug_hash_tableSTAR->symbolValue().notnilp())                                                                \
-  expr
-/**/                                                                                                                             \
-#else
-/**/                                                                                                                              \
-#define DEBUG_HASH_TABLE(expr)                                                                                                     \
-  if (this->_Debug) {                                                                                                              \
-    expr                                                                                                                           \
-  }
-/**/                                                                                                                                \
-#endif
-#else
-#define DEBUG_HASH_TABLE(expr)
-#endif
-
-#if 0
-/**/                                                                                                                              \
-#define DEBUG_HASH_TABLE1(expr)                                                                                                    \
-  if (this->_Debug)                                                                                                                \
-  expr
-#else
-/**/ #define DEBUG_HASH_TABLE1(expr)
-#endif
-
-// #define DEBUG_LEVEL_FULL
-
 #include <limits>
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
@@ -544,10 +512,6 @@ bool HashTable_O::remhash(T_sp key) {
 }
 
 T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
-  DEBUG_HASH_TABLE({
-    core::clasp_write_string(
-        fmt::format("{}:{}:{}   key->{}  value->{}\n", __FILE__, __LINE__, __FUNCTION__, _rep_(key), _rep_(value)));
-  });
   if (key.no_keyp()) {
     SIMPLE_ERROR("Do not use {} as a key!!", _rep_(key));
   }
@@ -575,7 +539,6 @@ T_sp HashTable_O::setf_gethash_no_write_lock(T_sp key, T_sp value) {
   goto NO_ROOM;
 ADD_KEY_VALUE:
   _Table->newEntry(write, key, value);
-  DEBUG_HASH_TABLE({ core::clasp_write_string(fmt::format("{}:{} Found empty slot at index = {}\n", __FILE__, __LINE__, write)); });
   if (_Table->countInexact() > this->_RehashThreshold * this->_Table->size()) {
     LOG("Expanding hash table");
     this->rehash_no_lock(true);
@@ -619,7 +582,6 @@ CL_DEFUN T_sp core__puthash(T_sp value, T_sp key, HashTable_sp hash_table) {
 }
 
 void HashTable_O::rehash_no_lock(bool expandTable) {
-  DEBUG_HASH_TABLE1({ core::clasp_write_string(fmt::format("{}:{} rehash_no_lock\n", __FILE__, __LINE__)); });
   ASSERTF(!Number_O::zerop(this->_RehashSize), "RehashSize is zero - it shouldn't be");
 
   gc::Fixnum curSize = this->_Table->size();

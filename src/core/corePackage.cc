@@ -137,7 +137,6 @@ SYMBOL_EXPORT_SC_(CorePkg, STARdebugVaslistSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_accessorsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_dtree_interpreterSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_fastgfSTAR);
-SYMBOL_EXPORT_SC_(CorePkg, STARdebug_hash_tableSTAR)
 SYMBOL_EXPORT_SC_(CorePkg, STARdebug_threadsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARdrag_native_callsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARenablePrintPrettySTAR);
@@ -557,7 +556,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbuiltin_single_dispatch_method_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_macro_function_namesSTAR->defparameter(nil<core::T_O>());
   _sym_STARbuiltin_setf_function_namesSTAR->defparameter(nil<core::T_O>());
-  _sym_STARdebug_hash_tableSTAR->defparameter(nil<core::T_O>());
   _sym_STARforeign_data_reader_callbackSTAR->defparameter(nil<core::T_O>());
   _sym_STARnumber_of_entry_pointsSTAR->defparameter(make_fixnum(NUMBER_OF_ENTRY_POINTS));
   comp::_sym_STARcompile_file_parallelSTAR->defparameter(nil<core::T_O>());
