@@ -736,29 +736,31 @@ CL_LAMBDA(feature-test);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(feature_p takes one argument - a feature test)dx");
 DOCGROUP(clasp);
-CL_DEFUN T_sp core__reader_feature_p(T_sp feature_test) {
+CL_DEFUN bool core__reader_feature_p(T_sp feature_test) {
   if (feature_test.nilp())
-    return nil<T_O>();
+    return false;
   else if (cl__atom(feature_test)) {
     List_sp features_list = cl::_sym_STARfeaturesSTAR->symbolValue();
     if (features_list.nilp())
-      return nil<T_O>();
-    return features_list.asCons()->member(gc::As<Symbol_sp>(feature_test), nil<T_O>(), nil<T_O>(), nil<T_O>());
+      return false;
+    return features_list.asCons()->member(gc::As<Symbol_sp>(feature_test), nil<T_O>(), nil<T_O>(), nil<T_O>()).notnilp();
   } else {
     ASSERT(cl__listp(feature_test));
     List_sp features_cons = feature_test;
     T_sp features_head = oCar(features_cons);
     if (features_head == kw::_sym_not) {
-      return _lisp->_not(eval::funcall(_sym_reader_feature_p, oSecond(features_cons)));
+      return !core__reader_feature_p(oSecond(features_cons));
     } else if (features_head == kw::_sym_and) {
-      return (eval::funcall(core::_sym_every_list, _sym_reader_feature_p, oCdr(features_cons)));
+      T_sp sub = eval::funcall(core::_sym_every_list, _sym_reader_feature_p, oCdr(features_cons));
+      return sub.notnilp();
     } else if (features_head == kw::_sym_or) {
       List_sp or_features = oCdr(features_cons);
       if (or_features.consp()) {
-        return (eval::funcall(core::_sym_some_list, _sym_reader_feature_p, oCdr(features_cons)));
+        T_sp sub = eval::funcall(core::_sym_some_list, _sym_reader_feature_p, oCdr(features_cons));
+        return sub.notnilp();
       }
       // Trivial case of #+(or) returns nil.
-      return nil<T_O>();
+      return false;
     }
     SIMPLE_ERROR("Illegal feature test: {}", _rep_(features_cons));
   }
@@ -779,7 +781,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_plus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
   LOG("feature[{}]", _rep_(feat));
-  if (T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
+  if (core__reader_feature_p(feat)) {
     LOG("The feature test passed - reading lisp object");
     T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     LOG("Read the object[{}]", _rep_(obj));
@@ -798,7 +800,7 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv core__sharp_minus(T_sp sin, Character_sp ch, T_sp num) {
   T_sp feat = read_feature_test(sin);
   LOG("feature[{}]", _rep_(feat));
-  if (!T_sp(eval::funcall(_sym_reader_feature_p, feat)).isTrue()) {
+  if (!core__reader_feature_p(feat)) {
     LOG("The feature test passed - reading lisp object");
     T_sp obj = cl__read(sin, _lisp->_true(), nil<T_O>(), _lisp->_true());
     LOG("Read the object[{}]", _rep_(obj));

@@ -428,7 +428,6 @@ private:
 
 public:
   T_sp _true() const { return this->_Roots._TrueObject; };
-  T_sp _not(T_sp x) const { return this->_boolean(!x.isTrue()); };
   T_sp _false() const { return nil<T_O>(); };
   T_sp _boolean(bool b) const {
     if (b)
