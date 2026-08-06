@@ -20,7 +20,6 @@
   (write-ifndef output-stream "CLASP_CONFIG_H")
   (write-defines output-stream
                  "CLASP_CONFIG_H" t
-                 "USE_PARALLEL_BUILD" (parallel-build configuration)
                  "STARTUP_IMAGE_EXTENSION"
                  (if (eq (build-mode configuration) :bytecode)
                      "fasl"

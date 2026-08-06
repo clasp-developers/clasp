@@ -2060,13 +2060,7 @@ core::List_sp CallBase_O::getArgumentList() const {
 
 DOCGROUP(clasp);
 CL_DEFUN core::List_sp llvm_sys__call_or_invoke_getArgumentList(CallBase_sp callOrInvoke) {
-  core::List_sp result = callOrInvoke->getArgumentList();
-#ifdef DEBUG_EVALUATE
-  if (core::_sym_STARdebugEvalSTAR && core::_sym_STARdebugEvalSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s on %s result = %s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(callOrInvoke).c_str(), _rep_(result).c_str());
-  }
-#endif
-  return result;
+  return callOrInvoke->getArgumentList();
 }
 
 CL_DEFMETHOD void CallBase_O::addParamAttr(unsigned index, llvm::Attribute::AttrKind attrkind) {

@@ -856,7 +856,6 @@ CL_DEFUN Instance_sp cl__class_of(T_sp obj) {
   return (result);
 }
 
-SYMBOL_EXPORT_SC_(CorePkg, STARdebug_fsetSTAR);
 CL_LAMBDA(function-name fn &optional is-macro (lambda-list nil lambda-list-p));
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Primitive to setup a function/macro)dx");

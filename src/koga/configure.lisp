@@ -126,11 +126,6 @@
                :initform #P"build/"
                :type pathname
                :documentation "The directory where build files are to be put.")
-   (parallel-build :accessor parallel-build
-                   :initarg :parallel-build
-                   :initform t
-                   :type boolean
-                   :documentation "Build clasp in parallel")
    (bin-path :accessor bin-path
              :initform #P"/usr/local/bin/"
              :initarg :bin-path
