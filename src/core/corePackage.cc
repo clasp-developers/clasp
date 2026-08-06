@@ -343,45 +343,6 @@ SYMBOL_SC_(CorePkg, test_not);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
 SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
 
-void setNilable(gc::Nilable<String_sp>& val, bool s) {
-  if (!s) {
-    val = nil<String_O>();
-  } else {
-    val = gc::As_unsafe<String_sp>(SimpleBaseString_O::make("Yahoo"));
-  }
-}
-
-gc::Nilable<String_sp> getNilable(bool s) {
-  gc::Nilable<String_sp> val;
-  if (!s) {
-    val = nil<String_O>();
-  } else {
-    val = gc::As_unsafe<String_sp>(SimpleBaseString_O::make("Yahoo"));
-  }
-  return val;
-}
-
-void testNilable() {
-  gc::Nilable<String_sp> foo;
-  printf("%s:%d initialized foo = %s\n", __FILE__, __LINE__, _rep_(static_cast<T_sp>(foo)).c_str());
-  foo = gc::As_unsafe<String_sp>(SimpleBaseString_O::make("This is a test"));
-  printf("%s:%d assigned foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
-  foo = nil<T_O>();
-  printf("%s:%d nil'd foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
-  setNilable(foo, false);
-  printf("%s:%d set false foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
-  setNilable(foo, true);
-  printf("%s:%d set true foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
-  foo = getNilable(false);
-  printf("%s:%d get false foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
-  foo = getNilable(true);
-  printf("%s:%d get true foo = %s  nilp=%d\n", __FILE__, __LINE__, _rep_(foo).c_str(), foo.nilp());
-}
-
-void testFeatures() {
-  testNilable();
-}
-
 CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg){};
 
 __attribute((optnone)) void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
