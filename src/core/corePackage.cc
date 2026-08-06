@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <stdio.h>
 #include <sys/wait.h>
 #include <cfenv>
+#include <arpa/inet.h> // for htonl
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
 #include <clasp/core/lisp.h>
@@ -342,6 +343,12 @@ SYMBOL_SC_(CorePkg, symbolMacroletLambda);
 SYMBOL_SC_(CorePkg, test_not);
 SYMBOL_SC_(CorePkg, universalErrorHandler);
 SYMBOL_SC_(CorePkg, unrecognizedKeywordArgumentError);
+
+static bool big_endian_p() {
+  // htonl converts from host to network order. Network order is big endian.
+  // So if htonl is an identity function, host order is big-endian.
+  return htonl(47) == 47;
+}
 
 CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg){};
 
@@ -699,6 +706,10 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #ifdef CLASP_LONG_FLOAT_BINARY128
   features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT/BINARY128"), features);
 #endif
+  if (big_endian_p())
+    features = Cons_O::create(kw::_sym_big_endian, features);
+  else
+    features = Cons_O::create(kw::_sym_little_endian, features);
   cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features);
 }
 }; // namespace core

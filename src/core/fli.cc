@@ -78,7 +78,6 @@ THE SOFTWARE.
 #include <algorithm>
 
 #include <dlfcn.h>
-#include <arpa/inet.h> // for htonl
 
 #if defined(__APPLE__)
 #include <mach-o/ldsyms.h>
@@ -174,7 +173,6 @@ const std::string FROM_OBJECT_FN_NAME_PREFIX("from_object_");
 //   FORWARD DECLARATIONS
 // ---------------------------------------------------------------------------
 
-void setup_endianess_info(void);
 void register_foreign_types(void);
 void register_foreign_type_spec(core::ComplexVector_T_sp sp_tst, uint32_t n_index, const core::Symbol_sp lisp_symbol,
                                 const std::string& lisp_name, const size_t size, const size_t alignment,
@@ -213,22 +211,6 @@ template <typename T> struct register_foreign_type {
 // ---------------------------------------------------------------------------
 //   FUNCTIONS & METHODS
 // ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-inline void setup_endianess_info(void) {
-  core::List_sp features = cl::_sym_STARfeaturesSTAR->symbolValue();
-
-  if (htonl(47) == 47) {
-    // Big Endian
-    features = core::Cons_O::create(kw::_sym_big_endian, features);
-  } else {
-    // Little Endian.
-    features = core::Cons_O::create(kw::_sym_little_endian, features);
-  }
-
-  cl::_sym_STARfeaturesSTAR->setf_symbolValue(features);
-}
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -329,10 +311,6 @@ CL_INITIALIZER void clasp_fli_initialization(void) {
   // 1 - REGISTER FOREIGN TYPES
 
   register_foreign_types();
-
-  // 2 - SETUP ENDIANESS INFO
-
-  setup_endianess_info();
 
   // CLASP FFI INITIALIZATION DONE
 }
