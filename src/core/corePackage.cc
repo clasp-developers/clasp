@@ -335,6 +335,92 @@ __attribute((optnone)) void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpo
   (void)what;
 }
 
+static List_sp compute_features() {
+  List_sp features = nil<core::T_O>();
+  features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
+  features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
+  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
+  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
+  features = Cons_O::create(_lisp->internKeyword("64-BIT"), features);
+#ifdef _TARGET_OS_DARWIN
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
+#endif
+#ifdef _TARGET_OS_LINUX
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
+#endif
+#ifdef _TARGET_OS_FREEBSD
+  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
+  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
+  features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
+#endif
+#ifdef __x86_64__
+  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
+#endif
+#ifdef __aarch64__
+  features = Cons_O::create(_lisp->internKeyword("ARM64"), features);
+#endif
+#ifdef CLASP_UNICODE
+  features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
+#endif
+  features = Cons_O::create(_lisp->internKeyword("LLVM" CXX_MACRO_STRING(__clang_major__)), features);
+#ifdef VARARGS
+  features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
+#endif
+#ifdef _DEBUG_BUILD
+  features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
+#else // _RELEASE_BUILD
+  features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
+#endif
+#ifdef USE_MPI
+  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
+#endif
+#if defined(USE_BOEHM)
+  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
+#elif defined(USE_MMTK)
+  features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
+#endif
+#ifdef USE_PRECISE_GC
+  // Informs CL that precise GC is being used
+  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
+#endif
+#ifdef CLASP_THREADS
+  features = Cons_O::create(_lisp->internKeyword("THREADS"), features);
+#endif
+#if TAG_BITS == 4
+  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"), features);
+#endif
+#ifdef CLASP_EXTENSIONS
+  features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"), features);
+#endif
+#ifdef CLASP_SHORT_FLOAT
+  features = Cons_O::create(_lisp->internKeyword("SHORT-FLOAT"), features);
+#endif
+#ifdef CLASP_SHORT_FLOAT_BINARY16
+  features = Cons_O::create(_lisp->internKeyword("SHORT-FLOAT/BINARY16"), features);
+#endif
+#ifdef CLASP_LONG_FLOAT
+  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT"), features);
+#endif
+#ifdef CLASP_LONG_FLOAT_BINARY80
+  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT/BINARY80"), features);
+#endif
+#ifdef CLASP_LONG_FLOAT_BINARY128
+  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT/BINARY128"), features);
+#endif
+  if (big_endian_p())
+    features = Cons_O::create(kw::_sym_big_endian, features);
+  else
+    features = Cons_O::create(kw::_sym_little_endian, features);
+
+  return features;
+}
+
 void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   {
     Package_sp package = gc::As<Package_sp>(_lisp->findPackage(this->packageName()));
@@ -579,87 +665,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdebugVaslistSTAR->defparameter(nil<core::T_O>());
   _sym_STARdebug_dtree_interpreterSTAR->defparameter(nil<core::T_O>());
 
-  List_sp features = nil<core::T_O>();
-  features = Cons_O::create(_lisp->internKeyword("CLASP"), features);
-  features = Cons_O::create(_lisp->internKeyword("COMMON-LISP"), features);
-  features = Cons_O::create(_lisp->internKeyword("ANSI-CL"), features);
-  features = Cons_O::create(_lisp->internKeyword("IEEE-FLOATING-POINT"), features);
-  features = Cons_O::create(_lisp->internKeyword("64-BIT"), features);
-#ifdef _TARGET_OS_DARWIN
-  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
-  features = Cons_O::create(_lisp->internKeyword("DARWIN"), features);
-#endif
-#ifdef _TARGET_OS_LINUX
-  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("LINUX"), features);
-#endif
-#ifdef _TARGET_OS_FREEBSD
-  features = Cons_O::create(_lisp->internKeyword("UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("OS-UNIX"), features);
-  features = Cons_O::create(_lisp->internKeyword("BSD"), features);
-  features = Cons_O::create(_lisp->internKeyword("FREEBSD"), features);
-#endif
-#ifdef __x86_64__
-  features = Cons_O::create(_lisp->internKeyword("X86-64"), features);
-#endif
-#ifdef __aarch64__
-  features = Cons_O::create(_lisp->internKeyword("ARM64"), features);
-#endif
-#ifdef CLASP_UNICODE
-  features = Cons_O::create(_lisp->internKeyword("UNICODE"), features);
-#endif
-  features = Cons_O::create(_lisp->internKeyword("LLVM" CXX_MACRO_STRING(__clang_major__)), features);
-#ifdef VARARGS
-  features = Cons_O::create(_lisp->internKeyword("VARARGS"), features);
-#endif
-#ifdef _DEBUG_BUILD
-  features = Cons_O::create(_lisp->internKeyword("DEBUG-BUILD"), features);
-#else // _RELEASE_BUILD
-  features = Cons_O::create(_lisp->internKeyword("RELEASE-BUILD"), features);
-#endif
-#ifdef USE_MPI
-  features = Cons_O::create(_lisp->internKeyword("USE-MPI"), features);
-#endif
-#if defined(USE_BOEHM)
-  features = Cons_O::create(_lisp->internKeyword("USE-BOEHM"), features);
-#elif defined(USE_MMTK)
-  features = Cons_O::create(_lisp->internKeyword("USE-MMTK"), features);
-#endif
-#ifdef USE_PRECISE_GC
-  // Informs CL that precise GC is being used
-  features = Cons_O::create(_lisp->internKeyword("USE-PRECISE-GC"), features);
-#endif
-#ifdef CLASP_THREADS
-  features = Cons_O::create(_lisp->internKeyword("THREADS"), features);
-#endif
-#if TAG_BITS == 4
-  features = Cons_O::create(_lisp->internKeyword("TAG-BITS4"), features);
-#endif
-#ifdef CLASP_EXTENSIONS
-  features = Cons_O::create(_lisp->internKeyword("EXTENSIONS"), features);
-#endif
-#ifdef CLASP_SHORT_FLOAT
-  features = Cons_O::create(_lisp->internKeyword("SHORT-FLOAT"), features);
-#endif
-#ifdef CLASP_SHORT_FLOAT_BINARY16
-  features = Cons_O::create(_lisp->internKeyword("SHORT-FLOAT/BINARY16"), features);
-#endif
-#ifdef CLASP_LONG_FLOAT
-  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT"), features);
-#endif
-#ifdef CLASP_LONG_FLOAT_BINARY80
-  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT/BINARY80"), features);
-#endif
-#ifdef CLASP_LONG_FLOAT_BINARY128
-  features = Cons_O::create(_lisp->internKeyword("LONG-FLOAT/BINARY128"), features);
-#endif
-  if (big_endian_p())
-    features = Cons_O::create(kw::_sym_big_endian, features);
-  else
-    features = Cons_O::create(kw::_sym_little_endian, features);
-  cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features);
+  cl::_sym_STARfeaturesSTAR->defparameter(compute_features());
 }
 }; // namespace core
