@@ -210,7 +210,6 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cando = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cando);
-  List_sp cst = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cst);
   ss << (cando.notnilp() ? "cando-" : "clasp-");
 #if defined(USE_BOEHM)
 #ifdef USE_PRECISE_GC
@@ -229,10 +228,9 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   ss << "prep-";
 #endif
   ss << CLASP_VERSION;
-  if (cst.notnilp())
-    ss << "-cst";
-  else
-    ss << "-non-cst";
+  // FIXME: Once we're sure about compatibility, lose this.
+  // Whether we're using concrete syntax trees is not useful.
+  ss << "-non-cst";
   return SimpleBaseString_O::make(ss.str());
 };
 
