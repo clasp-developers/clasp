@@ -66,6 +66,6 @@ bool almostEqualAbsoluteOrRelative(double va, double vb, double absEpsilon, doub
 inline double degrees(double rad) { return rad / 0.0174533; };
 inline double radians(double deg) { return deg * 0.0174533; };
 
-void exposeCando_Numerics();
+void exposeClasp_Numerics();
 
 }; // namespace core

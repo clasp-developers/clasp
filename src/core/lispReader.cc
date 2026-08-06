@@ -1237,9 +1237,4 @@ step10:
   TRAP_BAD_CONS(object);
   return (Values(object));
 }
-
-void exposeCore_lisp_reader() {
-
-  // functions for reader
-}
 }; // namespace core

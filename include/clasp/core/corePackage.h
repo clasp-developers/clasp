@@ -50,6 +50,4 @@ public:
 public:
   void define_essential_globals(LispPtr lisp);
 };
-
-void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn);
 }; // namespace core

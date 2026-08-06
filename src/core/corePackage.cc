@@ -288,7 +288,6 @@ SYMBOL_SC_(CorePkg, STARenvironmentPrintingTabSTAR);
 SYMBOL_SC_(CorePkg, STARnestedErrorDepthSTAR);
 SYMBOL_SC_(CorePkg, STARprintPackageSTAR);
 SYMBOL_SC_(CorePkg, STARsharpEqContextSTAR);
-SYMBOL_SC_(CorePkg, STARsystem_defsetf_update_functionsSTAR);
 SYMBOL_SC_(CorePkg, __init__);
 SYMBOL_SC_(CorePkg, adjustable);
 SYMBOL_SC_(CorePkg, alist);
@@ -386,49 +385,15 @@ void testFeatures() {
 CoreExposer_O::CoreExposer_O(LispPtr lisp) : Exposer_O(lisp, CorePkg){};
 
 __attribute((optnone)) void CoreExposer_O::expose(core::LispPtr lisp, WhatToExpose what) const {
-  switch (what) {
-  case candoClasses:
-    break;
-  case candoFunctions:
-    exposeCando_Numerics();
-    exposeCore_lisp_reader();
-    {
-      Readtable_sp readtable = Readtable_O::create_standard_readtable();
-      cl::_sym_STARreadtableSTAR->defparameter(readtable);
-      _sym__PLUS_standardReadtable_PLUS_->defconstant(Readtable_O::create_standard_readtable());
-    }
-    break;
-  case candoGlobals: {
-    // expose the CorePkg constants here
-    //----------- symbols are created in lisp.cc::startupLispEnvironment ----------
-    // #define SYMBOLS_CREATE
-    // #i n c l u d e SYMBOLS_SCRAPED_INC_H
-    //-----------------------------------------------------------------------------
-  }
-
-  break;
-  case pythonClasses: {
-    IMPLEMENT_MEF("Handle other packages");
-  } break;
-  case pythonFunctions:
-    break;
-  case pythonGlobals:
-    // expose globals here
-    break;
-  }
+  // TODO: Remove exposers, they're ancient.
+  (void)lisp;
+  (void)what;
 }
 
 void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   {
     Package_sp package = gc::As<Package_sp>(_lisp->findPackage(this->packageName()));
     package->usePackage(gc::As<Package_sp>(_lisp->findPackage("CL", true)));
-#define CorePkg_EXPORT
-#define DO_SYMBOL(ns, cname, idx, pkgName, lispName, export) cname->exportYourself(export);
-#ifndef SCRAPING
-#include SYMBOLS_SCRAPED_INC_H
-#endif
-#undef DO_SYMBOL
-#undef CorePkg_EXPORT
   };
   /* Set the values of some essential global symbols */
   cl::_sym_nil = gctools::smart_ptr<core::Symbol_O>((gctools::Tagged)gctools::global_tagged_Symbol_OP_nil); //->initialize();
@@ -521,7 +486,6 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARdocumentation_poolSTAR->defparameter(
       Cons_O::createList(HashTable_O::createEql(), SimpleBaseString_O::make("help_file.dat")));
   _sym_STARdocumentation_poolSTAR->exportYourself();
-  _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(nil<T_O>());
   cl::_sym_STARmacroexpand_hookSTAR->defparameter(cl::_sym_funcall);
   _sym_STARsharp_equal_final_tableSTAR->defparameter(nil<T_O>());
   _sym__PLUS_variant_name_PLUS_->defconstant(SimpleBaseString_O::make(VARIANT_NAME));
@@ -776,16 +740,4 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
 #endif
   cl::_sym_STARfeaturesSTAR->exportYourself()->defparameter(features);
 }
-
-void add_defsetf_access_update(Symbol_sp access_fn, Symbol_sp update_fn) {
-  Cons_sp pair = Cons_O::create(access_fn, update_fn);
-  List_sp list = _sym_STARsystem_defsetf_update_functionsSTAR->symbolValue();
-  _sym_STARsystem_defsetf_update_functionsSTAR->defparameter(Cons_O::create(pair, list));
-}
 }; // namespace core
-
-#define EXPAND_CLASS_MACROS
-#define _CLASS_MACRO(_T_) STATIC_CLASS_INFO(_T_);
-// #include <clasp/core/initClasses.h>
-#undef _CLASS_MACRO
-#undef EXPAND_CLASS_MACROS

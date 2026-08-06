@@ -44,6 +44,4 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin);
 void make_str_preserve_case(StrNs_sp sout, List_sp cur_char);
 void make_str_upcase(StrNs_sp sout, List_sp cur_char);
 void make_str(StrNs_sp sout, List_sp cur_char);
-
-extern void exposeCore_lisp_reader();
 }; // namespace core
