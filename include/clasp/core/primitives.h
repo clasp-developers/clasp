@@ -91,37 +91,3 @@ namespace core {
 /*! Calculate crc32 for a block of data */
 void crc32(const void* data, size_t n_bytes, uint32_t* crc);
 }; // namespace core
-
-namespace core {
-FORWARD(Test);
-class Test {
-public:
-  Test() : multiplier(1234){};
-
-public:
-  int multiplier;
-  std::vector<int> numbers;
-  void setMultiplier(int m);
-  void set2(int n0, int n1);
-  void set3(int n0, int n1, int n2);
-  void print_numbers();
-};
-
-FORWARD(Test);
-class Test_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(core, CorePkg, Test, Test_O, "Test", core::ExternalObject_O);
-  typedef Test ExternalType;
-  typedef Test* PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
-public:
-  PointerToExternalType wrappedPtr() const { return static_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-};
-
-}; // namespace core
