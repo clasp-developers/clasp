@@ -280,6 +280,7 @@ SYMBOL_EXPORT_SC_(ClPkg, schar);
 SYMBOL_EXPORT_SC_(ClPkg, sequence);
 SYMBOL_EXPORT_SC_(ClPkg, seriousCondition);
 SYMBOL_EXPORT_SC_(ClPkg, set);
+SYMBOL_EXPORT_SC_(ClPkg, setf);
 SYMBOL_EXPORT_SC_(ClPkg, short_float);
 SYMBOL_EXPORT_SC_(ClPkg, simpleCondition);
 SYMBOL_EXPORT_SC_(ClPkg, simpleError);
