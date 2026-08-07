@@ -322,11 +322,32 @@ has not been set."
          (message :emph "Configuring non-reproducible build")
          (loop for variant in (variants configuration)
                do (append-ldflags variant
-                                  ;; Quote the path: the build directory may
-                                  ;; contain spaces, and ninja passes ldflags
-                                  ;; through /bin/sh which would otherwise split
+                                  ;; Two rpaths, in this order.
+                                  ;;
+                                  ;; First a loader-relative one. `install' copies the
+                                  ;; binary but cannot rewrite the rpath baked in at link
+                                  ;; time, so without this an INSTALLED clasp resolves
+                                  ;; libclasp through the absolute build path below and
+                                  ;; keeps loading out of the build tree: removing that
+                                  ;; tree breaks the install, rebuilding it silently
+                                  ;; changes the installed clasp, and two installs cannot
+                                  ;; coexist.  In the install layout the binary is in
+                                  ;; <prefix>/bin and the library in <prefix>/lib, so
+                                  ;; ../lib resolves; in the build tree the binary sits in
+                                  ;; <build>/<variant>/ with its library in
+                                  ;; <build>/<variant>/lib, so ../lib names <build>/lib,
+                                  ;; which does not exist and is simply skipped.
+                                  ;;
+                                  ;; Then the absolute build path, which is what the
+                                  ;; in-tree binary actually uses.  Quote it: the build
+                                  ;; directory may contain spaces, and ninja passes
+                                  ;; ldflags through /bin/sh which would otherwise split
                                   ;; the rpath at the space.
-                                  (format nil "-Wl,-rpath,\"~a\""
+                                  (format nil "~a -Wl,-rpath,\"~a\""
+                                          #+darwin "-Wl,-rpath,@loader_path/../lib"
+                                          ;; $ORIGIN must survive both ninja ($$) and
+                                          ;; /bin/sh (single quotes) to reach the linker.
+                                          #-darwin "-Wl,-rpath,'$$ORIGIN/../lib'"
                                           (normalize-directory
                                            (uiop:ensure-absolute-pathname
                                             (merge-pathnames
