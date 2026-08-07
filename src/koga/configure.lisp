@@ -344,11 +344,6 @@
                  :initform nil
                  :type boolean
                  :documentation "generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**")
-   (debug-threads :accessor debug-threads
-                  :initarg :debug-threads
-                  :initform nil
-                  :type boolean
-                  :documentation "")
    (debug-ensure-valid-object :accessor debug-ensure-valid-object
                               :initarg :debug-ensure-valid-object
                               :initform nil

@@ -4165,31 +4165,6 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, library);
 
 namespace llvmo {
 
-DOCGROUP(clasp);
-CL_DEFUN core::T_sp llvm_sys__lookup_jit_symbol_info(void* ptr) {
-  printf("%s:%d:%s ptr = %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-  core::HashTable_sp ht = gc::As<core::HashTable_sp>(comp::_sym_STARjit_saved_symbol_infoSTAR->symbolValue());
-  core::T_sp result = nil<core::T_O>();
-  ht->map_while_true([ptr, &result](core::T_sp key, core::T_sp value) -> bool {
-    if (value.consp()) {
-      core::T_sp address = value.unsafe_cons()->ocadr();
-      core::T_sp size = value.unsafe_cons()->car();
-      char* start = (char*)(gc::As<core::Pointer_sp>(address)->ptr());
-      if (size.fixnump()) {
-        char* end = start + size.unsafe_fixnum();
-        //          printf("%s:%d  Comparing ptr@%p to %p - %p\n", __FILE__, __LINE__, ptr, start, end);
-        if (start <= (char*)ptr && ptr < end) {
-          result = core::Cons_O::create(key, value);
-          //            printf("Found a match\n");
-          return false;
-        }
-      }
-    }
-    return true;
-  });
-  return result;
-}
-
 /*! Remove the llvm.global_ctors array and any functions contained within it.
     The proper way to remove them is to never allow them into the Module.
     That would require a lot of C++ header file rearrangement.

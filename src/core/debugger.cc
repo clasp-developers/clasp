@@ -91,19 +91,7 @@ CL_DEFUN size_t core__vaslist_length(Vaslist_sp v) {
 
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__vaslist_pop(Vaslist_sp v) {
-#ifdef DEBUG_VASLIST
-  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s nargs: %lu  args: %p\n", __FILE__, __LINE__, __FUNCTION__, v->_nargs, v->_args);
-  }
-#endif
-  T_sp val = v->next_arg();
-#ifdef DEBUG_VASLIST
-  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s Returning vaslist_pop-> @%p\n", __FILE__, __LINE__, __FUNCTION__, val.raw_());
-    printf("%s:%d:%s Returning vaslist_pop->%s\n", __FILE__, __LINE__, __FUNCTION__, _rep_(val).c_str());
-  }
-#endif
-  return val;
+  return v->next_arg();
 }
 
 DOCGROUP(clasp);
@@ -614,12 +602,6 @@ void dbg_safe_println(void* raw) { printf(" %s\n", dbg_safe_repr(raw).c_str()); 
 extern "C" {
 
 void tprint(void* ptr) { core::dbg_printTPtr((uintptr_t)ptr, false); }
-
-void tsymbol(void* ptr) {
-  printf("%s:%d Looking up symbol at ptr->%p\n", __FILE__, __LINE__, ptr);
-  core::T_sp result = llvmo::llvm_sys__lookup_jit_symbol_info(ptr);
-  printf("      Result -> %s\n", _rep_(result).c_str());
-}
 
 SYMBOL_EXPORT_SC_(CorePkg, primitive_print_backtrace);
 void dbg_primitive_print_backtrace() { core::eval::funcall(core::_sym_primitive_print_backtrace); }

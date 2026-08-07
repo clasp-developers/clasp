@@ -83,14 +83,6 @@ ALWAYS_INLINE core::T_O* cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t 
   new (&untagged_vargs_rest[0]) Vaslist(nargs, vaslist->args());
   new (&untagged_vargs_rest[1]) Vaslist(nargs, vaslist->args());
   T_O* result = untagged_vargs_rest->asTaggedPtr();
-#ifdef DEBUG_VASLIST
-  if (_sym_STARdebugVaslistSTAR && _sym_STARdebugVaslistSTAR->symbolValue().notnilp()) {
-    printf("%s:%d:%s nargs = %lu\n", __FILE__, __LINE__, __FUNCTION__, nargs);
-    for (size_t ii = 0; ii < nargs; ++ii) {
-      printf("     vaslist[%lu] = %s\n", ii, _rep_(core::T_sp((gctools::Tagged)untagged_vargs_rest[0][ii])).c_str());
-    }
-  }
-#endif
   return result;
   NO_UNWIND_END();
 }
