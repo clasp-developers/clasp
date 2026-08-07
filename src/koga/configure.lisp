@@ -126,11 +126,6 @@
                :initform #P"build/"
                :type pathname
                :documentation "The directory where build files are to be put.")
-   (parallel-build :accessor parallel-build
-                   :initarg :parallel-build
-                   :initform t
-                   :type boolean
-                   :documentation "Build clasp in parallel")
    (bin-path :accessor bin-path
              :initform #P"/usr/local/bin/"
              :initarg :bin-path
@@ -349,11 +344,6 @@
                  :initform nil
                  :type boolean
                  :documentation "generate slow gf dispatch logging and write out dispatch functions to /tmp/dispatch-history-**")
-   (debug-threads :accessor debug-threads
-                  :initarg :debug-threads
-                  :initform nil
-                  :type boolean
-                  :documentation "")
    (debug-ensure-valid-object :accessor debug-ensure-valid-object
                               :initarg :debug-ensure-valid-object
                               :initform nil

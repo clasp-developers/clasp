@@ -513,11 +513,13 @@ void Lisp::startupLispEnvironment() {
 #ifdef DEFINE_CL_SYMBOLS
     initializeAllClSymbolsFunctions();
 #endif
-    coreExposer->expose(_lisp, Exposer_O::candoClasses);
-    //	    initializeCandoClos(_lisp);
   }
-  coreExposer->expose(_lisp, Exposer_O::candoFunctions);
-  coreExposer->expose(_lisp, Exposer_O::candoGlobals);
+  exposeClasp_Numerics();
+  {
+    Readtable_sp readtable = Readtable_O::create_standard_readtable();
+    cl::_sym_STARreadtableSTAR->defparameter(readtable);
+    _sym__PLUS_standardReadtable_PLUS_->defconstant(Readtable_O::create_standard_readtable());
+  }
   {
     for (vector<InitializationCallback>::iterator ic = globals_->_GlobalInitializationCallbacks.begin();
          ic != globals_->_GlobalInitializationCallbacks.end(); ic++) {
@@ -1709,9 +1711,6 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
   bool sawAMacro = false;
   bool expandedMacro = false;
   uint macroExpansionCount = 0;
-  if (_sym_STARdebugMacroexpandSTAR->symbolValue().isTrue()) {
-    printf("%s:%d - macroexpanding --> %s\n", __FILE__, 2551, _rep_(form).c_str());
-  }
   MultipleValues& mvn = core::lisp_multipleValues();
   T_sp cur = form;
   do {
@@ -1724,9 +1723,6 @@ CL_DEFUN T_mv cl__macroexpand(T_sp form, T_sp env) {
       SIMPLE_ERROR("Macro expansion happened {} times - You may have a macro expansion infinite loop", macroExpansionCount);
     }
   } while (sawAMacro);
-  if (_sym_STARdebugMacroexpandSTAR->symbolValue().isTrue()) {
-    printf("%s:%d -     after macroexpanding --> %s\n", __FILE__, 2565, _rep_(cur).c_str());
-  }
   return (Values(cur, _lisp->_boolean(expandedMacro)));
 };
 

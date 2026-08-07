@@ -210,7 +210,6 @@ DOCGROUP(clasp);
 CL_DEFUN T_sp cl__lisp_implementation_version() {
   stringstream ss;
   List_sp cando = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cando);
-  List_sp cst = gc::As<Cons_sp>(cl::_sym_STARfeaturesSTAR->symbolValue())->memberEq(kw::_sym_cst);
   ss << (cando.notnilp() ? "cando-" : "clasp-");
 #if defined(USE_BOEHM)
 #ifdef USE_PRECISE_GC
@@ -229,10 +228,9 @@ CL_DEFUN T_sp cl__lisp_implementation_version() {
   ss << "prep-";
 #endif
   ss << CLASP_VERSION;
-  if (cst.notnilp())
-    ss << "-cst";
-  else
-    ss << "-non-cst";
+  // FIXME: Once we're sure about compatibility, lose this.
+  // Whether we're using concrete syntax trees is not useful.
+  ss << "-non-cst";
   return SimpleBaseString_O::make(ss.str());
 };
 
@@ -280,25 +278,6 @@ CL_DEFUN T_sp core__create_tagged_immediate_value_or_nil(T_sp object) {
   }
   return nil<T_O>();
 };
-
-CL_LAMBDA(obj);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Convert a fixnum value that represents an immediate back into an immediate value)dx");
-CL_DOCSTRING_LONG(
-    R"dx(either a fixnum, character or single float into an tagged version and return as an integer (either Fixnum or Bignum) or return NIL)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__value_from_tagged_immediate(T_sp object) {
-  if (object.fixnump()) {
-    T_sp value((gctools::Tagged)object.unsafe_fixnum());
-    return value;
-  }
-  if (gc::IsA<Bignum_sp>(object)) {
-    size_t val = clasp_to_size_t(object);
-    T_sp value((gctools::Tagged)val);
-    return value;
-  }
-  SIMPLE_ERROR("Value must fit in fixnum");
-}
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -384,26 +363,6 @@ CL_DEFUN T_sp cl__set(Symbol_sp sym, T_sp val) {
   return val;
 };
 
-CL_LAMBDA(arg &optional msg);
-CL_DECLARE();
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__print_address_of(T_sp arg, T_sp msg) {
-  ASSERT(arg.objectp());
-  void* ptr = &(*arg);
-  printf("%s:%d  AddressOf = %p msg: %s\n", __FILE__, __LINE__, ptr, _rep_(msg).c_str());
-  return arg;
-};
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(
-    R"dx(Ssee the incomplete-next-higher-power-of-2 builtin - only works for Fixnums and not the full range; just for testing)dx");
-DOCGROUP(clasp);
-CL_DEFUN int core__incomplete_next_higher_power_of_2(Fixnum_sp fn) {
-  unsigned int f = unbox_fixnum(fn);
-  return 1 << ((sizeof(f) * 8) - __builtin_clz(f));
-};
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING(R"dx(allRegisteredClassNames)dx");
@@ -415,34 +374,6 @@ CL_DEFUN Vector_sp core__all_registered_class_names() {
   }
   return vo;
 };
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(toTaggedFixnum)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__to_tagged_fixnum(int val) { return gctools::smart_ptr<T_O>(val); };
-
-CL_LAMBDA(val);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(fromTaggedFixnum)dx");
-DOCGROUP(clasp);
-CL_DEFUN gctools::Fixnum core__from_tagged_fixnum(T_sp val) {
-  if (val.fixnump()) {
-    return val.unsafe_fixnum();
-  }
-  SIMPLE_ERROR("Not a fixnum");
-};
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(dumpTaggedFixnum)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__dump_tagged_fixnum(T_sp val) {
-  if (val.fixnump()) {
-    printf("%s:%d Raw TaggedFixnum %p   Untagged %" PFixnum "\n", __FILE__, __LINE__, val.raw_(), val.unsafe_fixnum());
-  } else
-    printf("%s:%d Not a tagged fixnum\n", __FILE__, __LINE__);
-}
 
 CL_DOCSTRING(R"dx(Return the LLVM version as integer values, i.e. (VALUES major minor patch))dx");
 DOCGROUP(clasp);
@@ -465,12 +396,6 @@ CL_DEFUN void core__describe_cxx_object(T_sp obj, T_sp stream) {
   }
   SIMPLE_ERROR("Use the CL facilities to describe this object");
 };
-
-CL_LAMBDA(arg);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(isTrue)dx");
-DOCGROUP(clasp);
-CL_DEFUN bool core__is_true(T_sp arg) { return arg.isTrue(); };
 
 CL_LAMBDA();
 CL_DECLARE();
@@ -562,37 +487,6 @@ CL_DEFUN T_sp core__valid_function_name_p(T_sp arg) {
     return nil<T_O>();
   return _lisp->_true();
 };
-
-CL_LAMBDA(listOfPairs);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Split a list of pairs into a pair of lists returned as MultipleValues)dx");
-CL_DOCSTRING_LONG(
-    R"dx(The first list is each first element and the second list is each second element or nil if there was no second element)dx");
-DOCGROUP(clasp);
-CL_DEFUN T_mv core__separate_pair_list(List_sp listOfPairs) {
-  ql::list firsts;
-  ql::list seconds;
-  for (auto cur : listOfPairs) {
-    T_sp element = oCar(cur);
-    if (cl__atom(element)) {
-      firsts << element;
-      seconds << nil<T_O>();
-    } else if (element.consp()) {
-      List_sp pair = element;
-      size_t pairlen = cl__length(pair);
-      if (pairlen == 2 || pairlen == 1) {
-        firsts << oCar(pair);
-        seconds << oCadr(pair);
-      } else {
-        SIMPLE_ERROR("Expected one or two element list got: {}", _rep_(pair));
-      }
-    } else {
-      SIMPLE_ERROR("Expected single object or 2-element list - got: {}", _rep_(element));
-    }
-  }
-  T_sp tfirsts = firsts.cons();
-  return (Values(tfirsts, seconds.cons()));
-}
 
 // ignore env
 CL_LAMBDA(name &optional env);
@@ -736,19 +630,6 @@ CL_DEFUN Integer_sp cl__ash(Integer_sp integer, Integer_sp count) {
   }
 }
 
-CL_LAMBDA(&optional fmt-control &rest args);
-CL_DECLARE();
-CL_DOCSTRING(
-    R"dx(Built in implementation of break - that calls the internal debugger - replace this with a CL implemented version)dx");
-DOCGROUP(clasp);
-CL_DEFUN void core__break_low_level(T_sp fmt, List_sp args) {
-  if (fmt.notnilp()) {
-    cl__format(_lisp->_true(), gc::As<String_sp>(fmt), args);
-  }
-  dbg_hook("built in break");
-  core__invoke_internal_debugger(nil<core::T_O>());
-};
-
 CL_LAMBDA(&optional msg);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(hook to invoke gdb)dx");
@@ -759,18 +640,6 @@ NEVER_OPTIMIZE CL_DEFUN void core__gdb(T_sp msg) {
     smsg = _rep_(msg);
     dbg_hook(smsg.c_str());
   }
-};
-
-
-
-CL_LAMBDA(&optional obj);
-CL_DECLARE();
-CL_DOCSTRING(R"dx(hook to invoke gdb)dx");
-DOCGROUP(clasp);
-__attribute__((optnone))
-CL_DEFUN
-void core__trap_execution(T_sp obj) {
-  // do nothing
 };
 
 CL_LAMBDA(msg o);
@@ -857,45 +726,6 @@ CL_DEFUN Instance_sp cl__class_of(T_sp obj) {
   Instance_sp result = lisp_instance_class(obj);
   return (result);
 }
-
-SYMBOL_EXPORT_SC_(CorePkg, STARdebug_fsetSTAR);
-CL_LAMBDA(function-name fn &optional is-macro (lambda-list nil lambda-list-p));
-CL_DECLARE();
-CL_DOCSTRING(R"dx(Primitive to setup a function/macro)dx");
-CL_DOCSTRING_LONG(R"dx(* Arguments
-- function-name :: The name of the function to bind.
-- fn :: The function object.
-- is-macro :: A boolean.
-- lambda-list : A lambda-list or nil.
-- lambda-list-p : T if lambda-list is passed
-* Description
-Bind a function to the function slot of a symbol
-- handles symbol function-name and (SETF XXXX) names.
-IS-MACRO defines if the function is a macro or not.
-LAMBDA-LIST passes the lambda-list.)dx")
-DOCGROUP(clasp);
-CL_DEFUN T_sp core__fset(T_sp functionName, Function_sp functor, T_sp is_macro, T_sp lambda_list, T_sp lambda_list_p) {
-  if (Function_sp functionObject = functor.asOrNull<Function_O>()) {
-    if (lambda_list_p.notnilp()) {
-      functionObject->setf_lambdaList(lambda_list);
-    }
-  }
-  if (cl__symbolp(functionName)) {
-    Symbol_sp symbol = gc::As<Symbol_sp>(functionName);
-    symbol->setf_macroP(is_macro.isTrue());
-    symbol->setf_symbolFunction(functor);
-    return functor;
-  } else if (functionName.consp()) {
-    SYMBOL_EXPORT_SC_(ClPkg, setf);
-    List_sp cur = functionName;
-    if (oCar(cur) == cl::_sym_setf) {
-      Symbol_sp symbol = gc::As<Symbol_sp>(oCadr(cur));
-      symbol->setSetfFdefinition(functor);
-      return functor;
-    }
-  }
-  TYPE_ERROR(functionName, Cons_O::createList(cl::_sym_satisfies, core::_sym_validFunctionNameP));
-};
 
 CL_LAMBDA(function-name);
 CL_DECLARE();
@@ -1715,12 +1545,6 @@ CL_DEFUN Fixnum_sp cl__sxhash(T_sp obj) {
 
 namespace core {
 
-SYMBOL_EXPORT_SC_(KeywordPkg, next);
-SYMBOL_EXPORT_SC_(KeywordPkg, prev);
-}; // namespace core
-
-namespace core {
-
 CL_LISPIFY_NAME("ext:function-lambda-list");
 CL_LAMBDA(function);
 CL_DECLARE();
@@ -1900,12 +1724,6 @@ CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLine
 }
 }; // namespace core
 
-extern "C" {
-int add_two_numbers(int x, int y) { return x + y; }
-
-void print_add_two_numbers(int x, int y) { printf("%s:%d %d + %d -> %d\n", __FILE__, __LINE__, x, y, x + y); }
-};
-
 SYMBOL_SC_(CorePkg, smartPointerDetails);
 SYMBOL_EXPORT_SC_(ClPkg, null);
 SYMBOL_SC_(CorePkg, unbound);
@@ -2059,48 +1877,6 @@ void crc32(const void* data, size_t n_bytes, uint32_t* crc) {
       table[i] = crc32_for_byte(i);
   for (size_t i = 0; i < n_bytes; ++i)
     *crc = table[(uint8_t)*crc ^ ((uint8_t*)data)[i]] ^ *crc >> 8;
-}
-
-}; // namespace core
-
-namespace core {
-
-void Test::setMultiplier(int m) { this->multiplier = m; }
-
-void Test::set2(int n0, int n1) {
-  this->numbers.clear();
-  printf("%s:%d In set2 n0-> %d n1-> %d\n", __FILE__, __LINE__, n0, n1);
-  this->numbers.push_back(n0);
-  this->numbers.push_back(n1);
-}
-
-void Test::set3(int n0, int n1, int n2) {
-  this->numbers.clear();
-  this->numbers.push_back(n0);
-  this->numbers.push_back(n1);
-  this->numbers.push_back(n2);
-}
-
-void Test::print_numbers() {
-  int idx = 0;
-  for (auto n : this->numbers) {
-    printf("%s:%d number[%d] -> %d\n", __FILE__, __LINE__, idx, n * this->multiplier);
-    ++idx;
-  }
-}
-
-CL_EXTERN_DEFMETHOD(Test_O, &Test::setMultiplier);
-CL_EXTERN_DEFMETHOD(Test_O, &Test::set2);
-CL_EXTERN_DEFMETHOD(Test_O, &Test::set3);
-CL_EXTERN_DEFMETHOD(Test_O, &Test::print_numbers);
-
-}; // namespace core
-
-namespace core {
-void initialize_primitives() {
-  //
-  // Define functions first because generics and methods depend on some of them
-  //
 }
 
 }; // namespace core

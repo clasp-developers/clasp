@@ -62,7 +62,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, compile_toplevel);
 SYMBOL_EXPORT_SC_(KeywordPkg, cr);
 SYMBOL_EXPORT_SC_(KeywordPkg, create);
 SYMBOL_EXPORT_SC_(KeywordPkg, crlf);
-SYMBOL_EXPORT_SC_(KeywordPkg, cst);
 SYMBOL_EXPORT_SC_(KeywordPkg, datum);
 SYMBOL_EXPORT_SC_(KeywordPkg, debug);
 SYMBOL_EXPORT_SC_(KeywordPkg, debugObjectFiles);

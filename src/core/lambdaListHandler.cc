@@ -47,41 +47,6 @@ SYMBOL_EXPORT_SC_(KeywordPkg, minNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, maxNargs);
 SYMBOL_EXPORT_SC_(KeywordPkg, unrecognizedKeywords);
 SYMBOL_EXPORT_SC_(CorePkg, AMPva_rest);
-/*! Return true if the form represents a type
- */
-DOCGROUP(clasp);
-CL_DEFUN bool core__is_a_type(T_sp form) {
-  if (form == _lisp->_true())
-    return true;
-  if (form.nilp())
-    return true;
-  if (form == cl::_sym_sequence)
-    return true;
-  if (form == cl::_sym_simple_base_string)
-    return true;
-  if (cl__symbolp(form)) {
-    if (core::_sym__PLUS_known_typep_predicates_PLUS_.notnilp()) {
-      List_sp type_predicates = core::_sym__PLUS_known_typep_predicates_PLUS_->symbolValue();
-      if (type_predicates.notnilp()) {
-        T_sp predicate = oCdr(gc::As<Cons_sp>(type_predicates)->assoc(form, nil<core::T_O>(), cl::_sym_eq, nil<core::T_O>()));
-        if (predicate.notnilp()) {
-          return true;
-        };
-      }
-    }
-  }
-  if (form.consp() && core__proper_list_p(form) && oCar(form) == cl::_sym_member) {
-    return true;
-  };
-  if (form.consp() && CONS_CAR(form) == cl::_sym_eql) {
-    return true;
-  };
-  if (cl__symbolp(form)) {
-    if (cl__find_class(form, false, nil<core::T_O>()).notnilp())
-      return true;
-  }
-  return false;
-}
 
 /*! Canonicalize one declare.
 * Arguments
@@ -172,10 +137,6 @@ CL_DEFUN List_sp core__canonicalize_declarations(List_sp decls) {
       // Ignore
     } else if (head == ext::_sym_assume_no_errors) {
       // Ignore
-    } else if (core__is_a_type(head)) {
-      for (auto fp : static_cast<List_sp>(oCdr(d))) {
-        canon = Cons_O::create(Cons_O::createList(cl::_sym_type, head, oCar(fp)), canon);
-      }
     } else {
       canon = Cons_O::create(d, canon);
     }

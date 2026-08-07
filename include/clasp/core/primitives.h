@@ -47,16 +47,6 @@ T_sp cl__read(T_sp input_stream_designator, T_sp eof_error_p = nil<T_O>(), T_sp 
 T_sp cl__read_preserving_whitespace(T_sp input_stream_designator, T_sp eof_error_p = nil<T_O>(), T_sp eof_value = nil<T_O>(),
                                     T_sp recursive_p = nil<T_O>());
 
-#if 0
-    EXTERN_FN(read);
-    EXTERN_FN(read_delimited_list);
-    EXTERN_FN(convert_to_list_of_classes);
-
-    EXTERN_GENERIC(make_instance);
-    EXTERN_GENERIC(ensure_class_using_class);
-    EXTERN_GENERIC(reinitialize_instance);
-#endif
-
 T_sp cl__type_of(T_sp x);
 T_sp core__notany_list(T_sp predicate, List_sp sequences);
 T_sp core__every_list(T_sp predicate, List_sp sequences);
@@ -78,22 +68,9 @@ T_sp cl__mapcar(T_sp op, List_sp lists);
 }; // namespace core
 
 namespace core {
-
-/*! Return the FileScope for the obj - if obj is nil then return
-      one for anonymous */
-
-/*! Expose the primitives to cando */
-void initialize_primitives();
-/*! Expose the primitives to python */
-void initializePythonPrimitives(LispPtr lisp);
-}; // namespace core
-
-namespace core {
 int clasp_musleep(double dsec, bool alertable);
-void core__dynamic_binding_stack_dump(std::ostream& out);
 
 T_sp core__valid_function_name_p(T_sp arg);
-void core__exception_stack_dump();
 T_sp core__create_tagged_immediate_value_or_nil(T_sp object);
 bool cl__constantp(T_sp obj, T_sp env = nil<T_O>());
 T_mv cl__values_list(T_sp list);
@@ -113,38 +90,4 @@ T_sp core__next_number();
 namespace core {
 /*! Calculate crc32 for a block of data */
 void crc32(const void* data, size_t n_bytes, uint32_t* crc);
-}; // namespace core
-
-namespace core {
-FORWARD(Test);
-class Test {
-public:
-  Test() : multiplier(1234){};
-
-public:
-  int multiplier;
-  std::vector<int> numbers;
-  void setMultiplier(int m);
-  void set2(int n0, int n1);
-  void set3(int n0, int n1, int n2);
-  void print_numbers();
-};
-
-FORWARD(Test);
-class Test_O : public core::ExternalObject_O {
-  LISP_EXTERNAL_CLASS(core, CorePkg, Test, Test_O, "Test", core::ExternalObject_O);
-  typedef Test ExternalType;
-  typedef Test* PointerToExternalType;
-
-protected:
-  PointerToExternalType _ptr;
-
-public:
-  PointerToExternalType wrappedPtr() const { return static_cast<ExternalType*>(this->_ptr); };
-  void set_wrapped(PointerToExternalType ptr) {
-    /* delete this->_ptr; */
-    this->_ptr = ptr;
-  }
-};
-
 }; // namespace core

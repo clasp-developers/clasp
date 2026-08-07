@@ -259,7 +259,7 @@ static inline F compute_epsilon(bool negative) {
   return std::nextafter(halfceps, F(1));
 }
 
-void exposeCando_Numerics() {
+void exposeClasp_Numerics() {
   cl::_sym_mostPositiveShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<short_float_t>::max()));
   cl::_sym_mostNegativeShortFloat->defconstant(clasp_make_single_float(-std::numeric_limits<short_float_t>::max()));
   cl::_sym_leastPositiveShortFloat->defconstant(clasp_make_single_float(std::numeric_limits<short_float_t>::denorm_min()));

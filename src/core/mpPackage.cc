@@ -61,64 +61,6 @@ Mutex global_BindingIndexPoolMutex(BINDINDX_NAMEWORD, false);
 std::vector<size_t> global_BindingIndexPool;
 #endif
 
-#ifdef DEBUG_THREADS
-struct DebugThread {
-  DebugThread* _Next;
-  std::string _Message;
-  size_t _Tid;
-  DebugThread(DebugThread* next, const std::string& msg, size_t tid) : _Next(next), _Message(msg), _Tid(tid){};
-};
-
-std::atomic<DebugThread*> global_DebugThreadList;
-
-void dump_debug_threads(const char* filename) {
-  FILE* fout = fopen(filename, "w");
-  DebugThread* cur = global_DebugThreadList.load();
-  while (cur) {
-    fprintf(fout, "Tid[%lu] %s\n", cur->_Tid, cur->_Message.c_str());
-    cur = cur->_Next;
-  }
-  fclose(fout);
-}
-#endif
-
-}; // namespace mp
-namespace mp {
-
-#ifdef DEBUG_THREADS
-void debug_mutex_lock(Mutex* m) {
-  if (core::_sym_STARdebug_threadsSTAR && !core::_sym_STARdebug_threadsSTAR.unboundp() &&
-      core::_sym_STARdebug_threadsSTAR->boundP() && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
-    stringstream ss;
-    ss << "lock " << (char*)&(m->_NameWord) << std::endl;
-    DebugThread* cur = new DebugThread(global_DebugThreadList.load(), ss.str(), my_thread->_Tid);
-    bool exchanged = false;
-    do {
-      exchanged = global_DebugThreadList.compare_exchange_strong(cur->_Next, cur);
-      if (!exchanged) {
-        cur->_Next = global_DebugThreadList.load();
-      }
-    } while (!exchanged);
-  }
-};
-
-void debug_mutex_unlock(Mutex* m) {
-  if (core::_sym_STARdebug_threadsSTAR && !core::_sym_STARdebug_threadsSTAR.unboundp() &&
-      core::_sym_STARdebug_threadsSTAR->boundP() && core::_sym_STARdebug_threadsSTAR->symbolValue().notnilp()) {
-    stringstream ss;
-    ss << "UNlock " << (char*)&(m->_NameWord) << std::endl;
-    DebugThread* cur = new DebugThread(global_DebugThreadList.load(), ss.str(), my_thread->_Tid);
-    bool exchanged = false;
-    do {
-      exchanged = global_DebugThreadList.compare_exchange_strong(cur->_Next, cur);
-      if (!exchanged) {
-        cur->_Next = global_DebugThreadList.load();
-      }
-    } while (!exchanged);
-  }
-};
-#endif // DEBUG_THREADS
-
 }; // namespace mp
 
 namespace mp {

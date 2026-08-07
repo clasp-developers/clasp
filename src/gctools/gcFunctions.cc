@@ -615,14 +615,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_ENSURE_VALID_OBJECT = {}\n", (debug_ensure_valid_object ? "**DEFINED**" : "undefined")));
 
-  bool debug_threads = false;
-#ifdef DEBUG_THREADS
-  debug_threads = true;
-  debugging = true;
-#endif
-  if (buildReport)
-    ss << (fmt::format("DEBUG_THREADS = {}\n", (debug_threads ? "**DEFINED**" : "undefined")));
-
   bool debug_release = false;
 #ifdef DEBUG_RELEASE
   debug_release = true;

@@ -46,7 +46,6 @@ SYMBOL_EXPORT_SC_(ClosPkg, dispatch_miss);
 SYMBOL_EXPORT_SC_(ClosPkg, dispatch_miss_va);
 SYMBOL_EXPORT_SC_(ClosPkg, single_dispatch_miss);
 SYMBOL_EXPORT_SC_(ClosPkg, single_dispatch_miss_va);
-SYMBOL_EXPORT_SC_(ClosPkg, _PLUS_the_standard_class_PLUS_);
 SYMBOL_EXPORT_SC_(ClosPkg, funcallable_standard_class);
 SYMBOL_EXPORT_SC_(ClosPkg, dispatcher_count);
 
