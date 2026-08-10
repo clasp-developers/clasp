@@ -182,11 +182,6 @@ public:
     if (contents_end == contents_capacity) {
       // This is where we grow the Vector
       size_t new_capacity = contents_capacity * GCVectorGrow;
-#ifdef DEBUG_ASSERT
-      if (new_capacity > 65536) {
-        printf("%s:%d gcvector capacity is larger than 65536\n", __FILE__, __LINE__);
-      }
-#endif
       vec = alloc.allocate(new_capacity);
       new (&*vec) GCVector_moveable<T>(new_capacity);
       for (size_t zi(0); zi < contents_end; ++zi) {
