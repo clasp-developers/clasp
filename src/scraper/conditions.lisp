@@ -55,3 +55,22 @@
   (when cur-docstring (error-if-bad-expose-info-setup* tag cur-docstring))
   (when cur-docstring-long (error-if-bad-expose-info-setup* tag cur-docstring-long))
   (when cur-priority (error-if-bad-expose-info-setup* tag cur-priority))  )
+
+;;; A WARNING, not an INTERPRET-ERROR like everything above, because the check that signals it
+;;; is a heuristic - it cannot do C++ name resolution, so it can flag a type that is genuinely
+;;; visible at global scope.  Re-parent it to INTERPRET-ERROR if it turns out to be clean
+;;; across the tree.
+(define-condition unqualified-signature-type (warning)
+  ((tag :initarg :tag :accessor tag)
+   (kind :initarg :kind :accessor kind)
+   (type-name :initarg :type-name :accessor type-name)
+   (namespace :initarg :namespace :accessor namespace))
+  (:report (lambda (condition stream)
+             (format stream "~a ~(~a~) type ~s is unqualified - the generated wrapper is ~
+                             emitted outside namespace ~a.  Did you mean ~a::~a?"
+                     (tags:source-pos (tag condition))
+                     (kind condition)
+                     (type-name condition)
+                     (namespace condition)
+                     (namespace condition)
+                     (string-trim "*& " (type-name condition))))))

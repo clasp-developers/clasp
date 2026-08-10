@@ -69,6 +69,61 @@ and not a simple-function so return (values name class::name nil)"
           (values (subseq full-function-name (+ 2 colon-colon-pos)) full-function-name nil)
           (values full-function-name full-function-name t)))))
 
+(defparameter *no-qualification-needed*
+  '("void" "bool" "char" "short" "int" "long" "float" "double"
+    "signed" "unsigned" "size_t" "ssize_t" "auto" "string"
+    "uint8_t" "uint16_t" "uint32_t" "uint64_t"
+    "int8_t" "int16_t" "int32_t" "int64_t"
+    "Fixnum" "uint" "Vector3" "num_real" "vecreal" "Matrix" "uintptr_t"
+    "const" "volatile" "class" "struct" "typename")
+  "Type names that resolve in a generated wrapper without a namespace qualifier.
+
+Expect this to grow: it is discovered a build at a time, since the check cannot tell a
+globally-visible type from a namespace-scoped one.  If it keeps growing, that is the signal the
+heuristic is not paying for itself and GENERATE-MAYBE-NAMESPACE-TYPE is the better place to
+solve this.")
+
+(defun needs-qualification-p (token)
+  "True when TOKEN looks like a bare type name that will not resolve outside its namespace."
+  (let ((clean (string-trim "*& " token)))
+    (and (plusp (length clean))
+         (alpha-char-p (char clean 0))          ; identifiers only
+         (not (search "::" clean))               ; already qualified
+         ;; GENERATE-MAYBE-NAMESPACE-TYPE (csubst.lisp:3-15) already prepends the namespace to
+         ;; bare _sp / _mv types, so those reach the wrapper qualified and are not a problem.
+         ;; Everything else passes through as written - which is why BondMask broke and T_sp
+         ;; did not.
+         (not (search "_sp" clean))
+         (not (search "_mv" clean))
+         (not (member clean *no-qualification-needed* :test #'string=)))))
+
+(defun warn-unqualified-signature-types (raw-sig namespace tag)
+  "Warn when a scraped signature names its RETURN type without a namespace qualifier.
+
+The wrapper generated into c-wrappers.h is emitted OUTSIDE the declaring namespace, so a type
+that resolves fine in the source may not resolve there - the failure shows up as a clang error
+against a line thousands deep in generated code, with no pointer back to the declaration that
+caused it.  This reports it at scrape time against the source line instead.
+
+Only the return type is checked.  EXTRACT-FUNCTION-NAME-FROM-SIGNATURE takes everything before
+the first whitespace as the return type and errors if that lands after the open paren, so a
+return type is a single token by construction and needs no parsing.  Parameter types would need
+splitting on top-level commas and dropping trailing identifiers; not done yet.
+
+Heuristic, hence a WARNING: a type declared at global scope is fine unqualified and will be
+flagged anyway."
+  (when namespace
+    (let* ((sig (string-trim-whitespace
+                 (maybe-remove-one-prefix-from-start raw-sig '("inline" "static"))))
+           (first-space (position-if (lambda (c) (member c +whitespace+)) sig))
+           (open-paren (position #\( sig :test #'char=)))
+      (when (and first-space open-paren (< first-space open-paren))
+        (let ((return-type (subseq sig 0 first-space)))
+          (when (needs-qualification-p return-type)
+            (warn 'unqualified-signature-type
+                  :tag tag :kind :return
+                  :type-name return-type :namespace namespace)))))))
+
 (defun maybe-remove-cast (str)
   (let* ((tstr (string-trim-whitespace str))
          (close-paren (position #\( tstr :from-end t)))

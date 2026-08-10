@@ -418,6 +418,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
       (multiple-value-bind (function-name full-function-name simple-function)
           (extract-function-name-from-signature signature-text tag)
         (declare (ignore function-name))
+        (warn-unqualified-signature-types signature-text namespace tag)
         (pushnew (make-instance 'expose-defun
                                 :namespace% namespace
                                 :lisp-name% (ensure-function-method-name packaged-function-name)
@@ -472,6 +473,7 @@ Compare the symbol against previous definitions of symbols - if there is a misma
       (multiple-value-bind (function-name full-function-name simple-function)
           (extract-function-name-from-signature signature-text tag)
         (declare (ignore function-name))
+        (warn-unqualified-signature-types signature-text namespace tag)
         (pushnew (make-instance 'expose-defun-setf ; here.
                                 :namespace% namespace
                                 :lisp-name% (ensure-function-method-name packaged-function-name)
