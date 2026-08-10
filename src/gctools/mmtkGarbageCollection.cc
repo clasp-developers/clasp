@@ -97,14 +97,14 @@ extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callbac
     case gctools::general_tag: {
       void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
-      if (header < (gctools::Header_s*)0x1000) abort();
-      if (!header->isValidGeneralObject()) abort();
+      if (header < (gctools::Header_s*)0x1000) gctools::wait_for_user_signal("bad object");
+      if (!header->isValidGeneralObject()) gctools::wait_for_user_signal("bad object");
     } break;
     case gctools::cons_tag: {
       void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
       gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
-      if (header < (gctools::ConsHeader_s*)0x1000) abort();
-      if (!header->isValidConsObject()) abort();
+      if (header < (gctools::ConsHeader_s*)0x1000) gctools::wait_for_user_signal("bad object");
+      if (!header->isValidConsObject()) gctools::wait_for_user_signal("bad object");
     }
     }
     callback(static_cast<void*>(field), data);
@@ -115,11 +115,13 @@ extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callbac
     gctools::scan::general(static_cast<core::General_O*>(client),
                            scan,
                            [&](gctools::WeakPointer* weak) {
-                             mmtk_clasp_scan_weak(static_cast<void*>(&weak->_value));
+                             size_t off = (char*)&weak->_value - (char*)client;
+                             mmtk_clasp_scan_weak(client, off);
                            },
                            [&](gctools::Ephemeron* eph) {
-                             mmtk_clasp_scan_ephemeron(reinterpret_cast<void*>(&eph->_key),
-                                                       reinterpret_cast<void*>(&eph->_value));
+                             size_t k = (char*)&eph->_key - (char*)client;
+                             size_t v = (char*)&eph->_value - (char*)client;
+                             mmtk_clasp_scan_ephemeron(client, k, v);
                            });
   }
 }
@@ -155,7 +157,7 @@ extern "C" void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void*
     switch (gctools::ptag(*tp)) {
     case gctools::general_tag:
     case gctools::cons_tag: {
-      if (client < (void*)0x1000) abort();
+      if (client < (void*)0x1000) gctools::wait_for_user_signal("bad object");
     } break;
     }
     callback(static_cast<void*>(tp), data);
@@ -171,13 +173,13 @@ extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallb
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
       if (header > (gctools::Header_s*)0x1000 && header->isValidGeneralObject())
         callback(static_cast<void*>(tp), data);
-      else abort();
+      else gctools::wait_for_user_signal("bad object");
     } break;
     case gctools::cons_tag: {
       gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
       if (header > (gctools::ConsHeader_s*)0x1000 && header->isValidConsObject())
         callback(static_cast<void*>(tp), data);
-      else abort();
+      else gctools::wait_for_user_signal("bad object");
     } break;
     }
     //callback(static_cast<void*>(tp), data);

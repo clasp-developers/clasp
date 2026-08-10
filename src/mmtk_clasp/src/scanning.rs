@@ -52,13 +52,34 @@ unsafe extern "C" fn conservative_root_cb(client_ptr: *mut c_void, data: *mut c_
     }
 }
 
+// Structure for gctools::WeakPointer.
+// It is a reference to the containing object and then an offset to the
+// weak reference field. We do things this way so that the containing
+// object may be moved.
+pub(crate) struct WeakPointer {
+    pub(crate) object: ObjectReference,
+    pub(crate) offset: usize,
+}
+
 // Structure for gctools::Ephemeron.
 // TODO: ideally we would just use the actual ephemeron, but then, ideally we
 // would be scanning in Rust instead of using a callback.
 pub(crate) struct Ephemeron {
-    pub(crate) key: ClaspVMSlot,
-    pub(crate) value: ClaspVMSlot
+    pub(crate) object: ObjectReference,
+    pub(crate) key: usize,
+    pub(crate) value: usize,
 }
+struct EphemeronSlots {
+    key: ClaspVMSlot,
+    value: ClaspVMSlot
+}
+
+fn ephemeron_to_slots(eph: &Ephemeron) -> EphemeronSlots {
+    let moved = eph.object.get_forwarded_object().unwrap_or(eph.object);
+    EphemeronSlots { key: ClaspVMSlot::from_address(moved.to_raw_address().add(eph.key)),
+                     value: ClaspVMSlot::from_address(moved.to_raw_address().add(eph.value)) }
+}
+
 
 // Vec of Ephemerons that need processing.
 // This is added to during scanning and partially emptied by process_weak_refs.
@@ -70,7 +91,7 @@ pub(crate) static EPHEMERONS: std::sync::Mutex<Vec<Ephemeron>>
 // Vec of WeakPointer (the C++ class) that need processing.
 // This is added to during scanning and emptied by process_weak_refs.
 // The mutex is because multiple scan workers may need to add to it.
-pub(crate) static WEAK_POINTERS: std::sync::Mutex<Vec<ClaspVMSlot>>
+pub(crate) static WEAK_POINTERS: std::sync::Mutex<Vec<WeakPointer>>
     = std::sync::Mutex::new(Vec::new());
 
 fn report_precise_roots(slots: Vec<ClaspVMSlot>, factory: &mut impl RootsWorkFactory<ClaspVMSlot>) {
@@ -92,7 +113,7 @@ fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
     // Process ephemerons
     let mut ephs = EPHEMERONS.lock().unwrap();
     tracer_context.with_tracer(worker, |tracer| {
-        let mut resolve = |eph: &mut Ephemeron| {
+        let mut resolve = |eph: EphemeronSlots| {
             // This ephemeron has a live key, so forward the value
             // and note that there may be new live objects to trace.
             // If load() returns None it's immediate or something
@@ -106,7 +127,8 @@ fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
         // Iterate over EPHEMERONS, retaining only those whose keys are not
         // known to be alive. Any ephemerons with live keys add to a new trace
         // and forward objects before they are removed from EPHEMERONS.
-        ephs.retain_mut(|eph| {
+        ephs.retain_mut(|eph_act| {
+            let eph = ephemeron_to_slots(&eph_act);
             match eph.key.load_value() {
                 // deleted - make sure the value is deleted as well.
                 Unbound => {
@@ -143,7 +165,8 @@ fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
         // Otherwise, there is no longer any way for ephemeron keys to turn up
         // alive, so we're done with ephemerons. Their keys are all dead
         // so delete their keys and values, and clear EPHEMERONS.
-        for dead in ephs.drain(..) {
+        for deadeph in ephs.drain(..) {
+            let dead = ephemeron_to_slots(&deadeph);
             dead.key.delete();
             dead.value.delete();
         }
@@ -153,7 +176,10 @@ fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
 
 fn process_weak_ptrs() {
     let mut weaks = WEAK_POINTERS.lock().unwrap();
-    for weak_slot in weaks.drain(..) {
+    for weakptr in weaks.drain(..) {
+        // Get the actual slot from the (possibly moved) containing
+        // object.
+        let weak_slot = ClaspVMSlot::from_address(weakptr.object.get_forwarded_object().unwrap_or(weakptr.object).to_raw_address().add(weakptr.offset));
         // If the referent is deleted or an immediate we don't care about it.
         // during scanning we shouldn't even collect them, but just in case.
         if let Some(obj) = weak_slot.load() {
