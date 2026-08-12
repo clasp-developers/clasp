@@ -52,10 +52,10 @@ public:
 
 public: // Functions here
   /*! Value of the reference to the object. If the object was destroyed then return nil. */
-  T_sp value() const;
+  T_sp value() const { return _Link.value().value_or(nil<T_O>()); }
 
   /*! Return true if the object referenced by this still exists, otherwise return false */
-  bool valid() const;
+  bool valid() const { return _Link.value().has_value(); }
 
   void fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup* fixup) override {
     _Link.fixupInternalsForSnapshotSaveLoad(fixup);

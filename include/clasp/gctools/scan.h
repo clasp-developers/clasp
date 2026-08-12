@@ -73,6 +73,7 @@ public:
               [[unlikely]]
             case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
                 [[unlikely]]
+            case QWEAK_OFFSET: break; // TODO
             case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
                 [[likely]] // normal field
             default: fix((core::T_O**)field); break;

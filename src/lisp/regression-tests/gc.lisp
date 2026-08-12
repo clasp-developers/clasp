@@ -43,6 +43,51 @@
           invalid))
       (0))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;
+
+(defun dying-reference (&optional queue)
+  (ext:make-weak-pointer (list nil) queue))
+
+;;; test that the queue is actually a FIFO,
+;;; and that it can be emptied properly.
+(test reference-queue.1
+      (let* ((queue (ext:make-reference-queue))
+             (ptr1 (ext:make-weak-pointer nil queue))
+             (ptr2 (ext:make-weak-pointer nil queue)))
+        (ext:weak-reference-enqueue ptr1)
+        (ext:weak-reference-enqueue ptr2)
+        (values (eq (ext:reference-queue-remove queue) ptr1)
+                (eq (ext:reference-queue-remove queue) ptr2)
+                (null (ext:reference-queue-remove queue))))
+      (t t t))
+
+;;; test that the GC enqueues dead references.
+;;; We don't test FIFO with GC enqueueing, since there's no other reason to
+;;; ensure that GCs actually collect all weak pointers immediately, etc.
+(test reference-queue.2
+      (let* ((queue (ext:make-reference-queue))
+             (ptrs (loop repeat 100 collect (dying-reference queue))))
+        (loop repeat 10 do (gctools:garbage-collect))
+        (gctools:invoke-finalizers)
+        (let ((ndead (loop until (null (ext:reference-queue-remove queue))
+                           sum 1)))
+          (values (if (> ndead 95) t ndead)
+                  (let ((count (count-if #'ext:weak-pointer-valid ptrs)))
+                    (if (= (+ count ndead) 100) t (+ count ndead))))))
+      (t t))
+
+;;; test that a reference can't be enqueued more than once.
+(test reference-queue.3
+      (let* ((queue (ext:make-reference-queue))
+             (ptr (ext:make-weak-pointer nil queue)))
+        (values (ext:weak-reference-enqueue ptr)
+                (ext:weak-reference-enqueue ptr)
+                (eq (ext:reference-queue-remove queue) ptr)
+                (ext:reference-queue-remove queue)))
+      (t nil t nil))
+
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;; This is a separate function in a perhaps-futile effort to prevent

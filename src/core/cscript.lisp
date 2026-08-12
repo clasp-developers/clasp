@@ -7,6 +7,7 @@
            #~"function.cc"
            #~"creator.cc"
            #~"sharpEqualWrapper.cc"
+           #~"referenceQueue.cc"
            #~"weakPointer.cc"
            #~"compiler.cc"
            #~"instance.cc"
