@@ -82,6 +82,16 @@ typedef void (*ClaspConservativeRootCallback)(void* client_ptr, void* data);
 extern void mmtk_clasp_scan_weak(void*, size_t);
 extern void mmtk_clasp_scan_ephemeron(void*, size_t key, size_t value); // ditto ephemerons
 
+// Scan a queueable weak reference.
+// The bools are whether the reference should be resurrected.
+// References that have already been cleared shouldn't go here;
+// instead they can either be ignored, or if they were resurrected, can be
+// scanned as strong references.
+extern void mmtk_clasp_scan_qweak(void*, size_t, bool resurrectp);
+
+// Called from MMTk to enqueue a weak reference with dead referent.
+extern void clasp_enqueue_weak_ref(void*);
+
 // Scan the pointer fields of an object, calling callback(slot_addr, data) for each.
 extern void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data);
 

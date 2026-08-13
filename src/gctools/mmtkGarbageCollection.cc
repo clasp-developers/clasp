@@ -87,8 +87,7 @@ CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 }; // namespace gctools
 
 // Scan the pointer fields of an object, calling callback for each field address.
-// Uses scan::cons / scan::general_pointers; weak pointers are treated as strong
-// for now (they are traced but not cleared if the referent dies).
+// Uses scan::cons / scan::general.
 extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data) {
   const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
   auto scan = [&](core::T_O** field) {
@@ -118,12 +117,28 @@ extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callbac
                              size_t off = (char*)&weak->_value - (char*)client;
                              mmtk_clasp_scan_weak(client, off);
                            },
+                           [&](gctools::QueueableWeakReference* weak) {
+                             if (!weak->clearedp()) {
+                               size_t off = (char*)&weak->_referent - (char*)client;
+                               mmtk_clasp_scan_qweak(client, off,
+                                                     weak->_resurrectp);
+                             } else if (weak->_resurrectp) {
+                               // Reference has been resurrected, so treat it
+                               // as a strong reference.
+                               scan(reinterpret_cast<core::T_O**>(&weak->_referent));
+                             }
+                           },
                            [&](gctools::Ephemeron* eph) {
                              size_t k = (char*)&eph->_key - (char*)client;
                              size_t v = (char*)&eph->_value - (char*)client;
                              mmtk_clasp_scan_ephemeron(client, k, v);
                            });
   }
+}
+
+extern "C" void clasp_enqueue_weak_ref(void* qweak) {
+  gctools::QueueableWeakReference* qw = (gctools::QueueableWeakReference*)qweak;
+  qw->enqueue();
 }
 
 // Total allocation size (header + body) for an object given its client pointer.

@@ -110,8 +110,9 @@ struct QueueableWeakReference {
 public:
   QueueableWeakReference(core::T_sp referent, bool resurrectp);
   std::optional<core::T_sp> value() const;
+  bool enqueue();
   bool clear();
-  bool valid() const { return _resurrectp || !_clearedp.test(); }
+  bool clearedp() const { return _clearedp.test(std::memory_order_relaxed); }
 #ifdef USE_BOEHM
   // despite the "hidden", this will be a strong (unhidden) pointer
   // if the reference had resurrectp = true and has been cleared. Boehm is dumb.
@@ -134,10 +135,14 @@ public:
   // during construction. This ensures that such references are always valid
   // (because resurrectp) and the GC never messes with them (because clearedp).
   friend class scan;
+private:
+  std::optional<core::T_sp> value_no_lock() const;
+  // Defined weirdly in core/referenceQueue.cc as offsetof(QWR_O, this)
+  // so that we can get the QWR_O from this. Yes. Sucks.
+  static const size_t OFFSET;
 #ifdef USE_BOEHM
   // Assorted crap that's required to deal with Boehm weirdness.
 private:
-  std::optional<core::T_sp> value_no_lock() const;
   void store_no_lock(core::T_sp);
 private:
   struct value_helper_s {
@@ -147,9 +152,6 @@ private:
   };
   static void* value_helper(void*);
   static void finalizer(void* obj, void* cdata);
-  // Defined weirdly in core/referenceQueue.cc as offsetof(QWR_O, this)
-  // so that we can get the QWR_O from this. Yes. Sucks.
-  static const size_t OFFSET;
 #endif
 };
 

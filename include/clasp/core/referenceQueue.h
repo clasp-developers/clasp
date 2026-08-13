@@ -35,7 +35,7 @@ public:
   static QueueableWeakReference_sp make(T_sp, ReferenceQueue_sp, bool);
 public:
   public:
-  bool valid() const { return _link.valid(); }
+  bool valid() const { return _link.value().has_value(); }
   T_sp value() const { return _link.value().value_or(nil<T_O>()); }
 
   // Invalidate the reference and put it on its queue, or don't if that's

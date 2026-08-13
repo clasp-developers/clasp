@@ -2,12 +2,10 @@
 #include <clasp/core/common.h>
 #include <clasp/core/referenceQueue.h>
 
-#ifdef USE_BOEHM
 // see gctools/gcweak.h
 namespace gctools {
 const size_t QueueableWeakReference::OFFSET = offsetof(core::QueueableWeakReference_O, _link);
 }
-#endif
 
 namespace core {
 

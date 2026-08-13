@@ -8,6 +8,9 @@ use crate::scanning::WeakPointer;
 use crate::scanning::WEAK_POINTERS;
 use crate::scanning::Ephemeron;
 use crate::scanning::EPHEMERONS;
+use crate::scanning::QueueableWeakReference;
+use crate::scanning::QWEAKS;
+use crate::scanning::QWEAKS_RESURRECT;
 use libc::c_char;
 use mmtk::memory_manager;
 use mmtk::scheduler::GCWorker;
@@ -158,6 +161,20 @@ pub extern "C" fn mmtk_clasp_scan_ephemeron(
 ) {
     let eph = Ephemeron { object: eph, key: key_offset, value: value_offset };
     EPHEMERONS.lock().unwrap().push(eph);
+}
+
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_scan_qweak(
+    weak: ObjectReference,
+    offset: usize,
+    resurrectp: bool,
+) {
+    let weak = QueueableWeakReference { object: weak, offset: offset };
+    if resurrectp {
+        QWEAKS_RESURRECT.lock().unwrap().push(weak);
+    } else {
+        QWEAKS.lock().unwrap().push(weak);
+    }
 }
 
 #[no_mangle]

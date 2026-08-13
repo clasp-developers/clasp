@@ -152,6 +152,14 @@ bool QueueableWeakReference::clear() {
   } else return false;
 }
 
+// Called by GC
+bool QueueableWeakReference::enqueue() {
+  // dark magic, sorry
+  core::QueueableWeakReference_O* us
+    = reinterpret_cast<core::QueueableWeakReference_O*>((char*)this - OFFSET);
+  return us->enqueue();
+}
+
 #ifdef USE_BOEHM
 std::optional<core::T_sp> QueueableWeakReference::value() const {
   value_helper_s vhs(this);
@@ -161,7 +169,7 @@ std::optional<core::T_sp> QueueableWeakReference::value() const {
 
 void* QueueableWeakReference::value_helper(void* data) {
   value_helper_s* vhsp = (value_helper_s*)data;
-  if (!vhsp->wp->_clearedp.test())
+  if (!vhsp->wp->clearedp())
     // we're still weak but our reference is live.
     vhsp->result = core::T_sp((Tagged)GC_REVEAL_POINTER(vhsp->wp->_referent));
   else if (vhsp->wp->_resurrectp) {
@@ -182,10 +190,7 @@ void QueueableWeakReference::store_no_lock(core::T_sp n) {
 
 void QueueableWeakReference::finalizer(void* obj, void* cdata) {
   QueueableWeakReference* me = (QueueableWeakReference*)cdata;
-  // dark magic, sorry
-  core::QueueableWeakReference_O* us
-    = reinterpret_cast<core::QueueableWeakReference_O*>((char*)me - OFFSET);
-  us->enqueue();
+  me->enqueue();
   // keep object alive for the duration of this finalizer hopefully.
   // Otherwise there's a possibility (maybe?) that Boehm actually destroys the
   // object during this finalizer, before we turn ourselves into a strong
@@ -194,9 +199,12 @@ void QueueableWeakReference::finalizer(void* obj, void* cdata) {
 }
 
 #else // non-boehm collectors
-std::optional<core::T_sp> value() const {
-  if (resurrectp || !clearedp) return _referent;
+std::optional<core::T_sp> QueueableWeakReference::value() const {
+  if (_resurrectp || !clearedp()) return _referent;
   else return std::nullopt;
+}
+std::optional<core::T_sp> QueueableWeakReference::value_no_lock() const {
+  return value();
 }
 #endif
 
