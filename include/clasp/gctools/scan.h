@@ -44,9 +44,11 @@ public:
   
   template <std::invocable<core::T_O**> Fixer,
             std::invocable<WeakPointer*> WeakFixer,
+            std::invocable<QueueableWeakReference*> QueueableFixer,
             std::invocable<Ephemeron*> EphFixer>
   static void general(core::General_O* client, Fixer&& fix,
-                      WeakFixer&& weakfix, EphFixer&& ephfix) {
+                      WeakFixer&& weakfix, QueueableFixer queueablefix,
+                      EphFixer&& ephfix) {
     const gctools::Header_s& header = *(const gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
     size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
     switch (header._badge_stamp_wtag_mtag.mtag()) {
@@ -73,7 +75,9 @@ public:
               [[unlikely]]
             case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
                 [[unlikely]]
-            case QWEAK_OFFSET: break; // TODO
+            case QWEAK_OFFSET:
+                queueablefix((QueueableWeakReference*)field); break;
+                [[unlikely]]
             case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
                 [[likely]] // normal field
             default: fix((core::T_O**)field); break;
@@ -114,6 +118,9 @@ public:
               switch (field_layout->type) {
                 [[unlikely]]
               case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
+                  [[unlikely]]
+              case QWEAK_OFFSET:
+                  queueablefix((QueueableWeakReference*)field); break;
                   [[unlikely]]
               case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
                   [[likely]] // normal field
@@ -167,6 +174,20 @@ private:
   }
 
   template <std::invocable<core::T_O**> Fixer>
+  static void qweak_shim(gctools::QueueableWeakReference* qweak, Fixer&& fix) {
+    std::optional<core::T_sp> v = qweak->value_no_lock();
+    if (v) {
+#ifdef USE_BOEHM
+      core::T_O* raw = v->raw_();
+      fix(&raw);
+      qweak->store_no_lock(core::T_sp((gctools::Tagged)raw));
+#else
+      fix((core::T_O**)&qweak->_referent);
+#endif
+    }
+  }
+
+  template <std::invocable<core::T_O**> Fixer>
   static void eph_shim(gctools::Ephemeron* eph, Fixer&& fix) {
     auto kv = eph->get_no_lock();
     if (!kv.key.deletedp()) {
@@ -191,6 +212,7 @@ public:
   static void general_pointers(core::General_O* client, Fixer&& fix) {
     general(client, fix,
             [&](WeakPointer* weak) { weak_shim(weak, fix); },
+            [&](QueueableWeakReference* q) { qweak_shim(q, fix); },
             [&](Ephemeron* eph) { eph_shim(eph, fix); });
   }
 };

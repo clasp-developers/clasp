@@ -497,7 +497,8 @@ static void mw_obj_scan(core::General_O* client,
   auto fix = [&](core::T_O** field) {
     markStack.emplace((Tagged)client, (Tagged)*field);
   };
-  scan::general(client, fix, [](WeakPointer*){}, [](Ephemeron*){});
+  scan::general(client, fix, [](WeakPointer*){}, [](QueueableWeakReference*){},
+                [](Ephemeron*){});
 }
 
 static void mw_cons_scan(core::Cons_O* client,
@@ -705,7 +706,9 @@ void traceablep(std::unordered_map<Tagged, bool>& testing) {
         markSet.insert(tagged);
         uintptr_t client = untag_object(tagged);
         scan::general((core::General_O*)client,
-                      fix_field, [](WeakPointer*){}, fix_eph);
+                      fix_field, [](WeakPointer*){},
+                      [](QueueableWeakReference*){},
+                      fix_eph);
       }
     } break;
     case cons_tag: {

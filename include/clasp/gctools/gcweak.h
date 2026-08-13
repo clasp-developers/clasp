@@ -133,8 +133,12 @@ public:
   // For immediate objects, we set resurrectp and clearedp = true
   // during construction. This ensures that such references are always valid
   // (because resurrectp) and the GC never messes with them (because clearedp).
+  friend class scan;
 #ifdef USE_BOEHM
   // Assorted crap that's required to deal with Boehm weirdness.
+private:
+  std::optional<core::T_sp> value_no_lock() const;
+  void store_no_lock(core::T_sp);
 private:
   struct value_helper_s {
     value_helper_s(const QueueableWeakReference* w) : wp(w), result() {}

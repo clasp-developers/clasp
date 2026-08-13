@@ -171,6 +171,15 @@ void* QueueableWeakReference::value_helper(void* data) {
   return nullptr;
 }
 
+std::optional<core::T_sp> QueueableWeakReference::value_no_lock() const {
+  value_helper_s vhs(this);
+  value_helper(&vhs);
+  return vhs.result;
+}
+void QueueableWeakReference::store_no_lock(core::T_sp n) {
+  _referent = GC_HIDE_POINTER(n.tagged_());
+}
+
 void QueueableWeakReference::finalizer(void* obj, void* cdata) {
   QueueableWeakReference* me = (QueueableWeakReference*)cdata;
   // dark magic, sorry
