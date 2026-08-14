@@ -4257,6 +4257,49 @@ static int safe_close(int f) {
   return output;
 }
 
+// Function-local so they are constructed on first use: safe_fopen can run before file-scope
+// statics of other translation units are initialized.
+static std::mutex& open_files_mutex() {
+  static std::mutex m;
+  return m;
+}
+
+static std::set<FILE*>& open_files() {
+  static std::set<FILE*> s;
+  return s;
+}
+
+static void register_open_file(FILE* f) {
+  if (!f)
+    return;
+  std::lock_guard<std::mutex> guard(open_files_mutex());
+  open_files().insert(f);
+}
+
+static void unregister_open_file(FILE* f) {
+  if (!f)
+    return;
+  std::lock_guard<std::mutex> guard(open_files_mutex());
+  open_files().erase(f);
+}
+
+// Flush what we can lock right now; a stream another thread is blocked inside is skipped, not waited on.
+void flush_open_c_streams() {
+  std::vector<FILE*> snapshot;
+  if (open_files_mutex().try_lock()) {
+    snapshot.assign(open_files().begin(), open_files().end());
+    open_files_mutex().unlock();
+  }
+  snapshot.push_back(stdout);
+  snapshot.push_back(stderr);
+  for (FILE* f : snapshot) {
+    if (f && ftrylockfile(f) == 0) {
+      fflush(f);
+      funlockfile(f);
+    }
+  }
+}
+
 static FILE* safe_fopen(const char* filename, const char* mode) {
   FILE* output;
   BEGIN_PARK {
@@ -4264,6 +4307,7 @@ static FILE* safe_fopen(const char* filename, const char* mode) {
       output = fopen(filename, mode);
     } while (!output && errno == EINTR);
   } END_PARK;
+  register_open_file(output);
   return output;
 }
 
@@ -4335,11 +4379,13 @@ static FILE* safe_fdopen(int fildes, const char* mode) {
       perror("In safe_fdopen");
     }
   } END_PARK;
+  register_open_file(output);
   return output;
 }
 
 static int safe_fclose(FILE* stream) {
   int output;
+  unregister_open_file(stream);
   BEGIN_PARK {
     output = fclose(stream);
   } END_PARK;
