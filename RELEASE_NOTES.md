@@ -1,5 +1,12 @@
 # Version 3.1.0 (LLVM15-20, 22) Pending
 
+## Added
+* New class `ext:reference-queue`, like Java's, can be used to trigger actions when an object is garbage-collected, with more control than finalizers allow. `ext:make-reference-queue` makes a queue, and `ext:reference-queue-poll` and `ext:reference-queue-remove` dequeue a reference with or without waiting respectively.
+* `ext:make-weak-pointer` can be passed a reference queue as a second argument in order to tell the GC to enqueue the weak reference once the referent dies.
+
+## Changed
+* Finalizer functions passed to `gctools:finalize` are now called with an unspecified object rather than the collected object. This means finalizers can no longer resurrect objects, which improves GC efficiency. In the future, finalizers will probably have to accept zero arguments instead.
+
 ## Optimized
 * Comparisons (`eq`, `<`, etc.) are optimized out based on type information.
 * Accesses to simple arrays with upgraded types of at least (signed-byte 8) or (unsigned-byte 8) can be inlined if there is enough type information.
