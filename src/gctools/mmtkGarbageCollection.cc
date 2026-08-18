@@ -61,15 +61,6 @@ void collect_garbage() {
   mmtk_clasp_handle_user_collection_request(my_thread);
 }
 
-void set_finalizer_list(core::T_sp object, core::List_sp finalizers) {
-  (void)object;
-  (void)finalizers;
-}
-
-void clear_finalizer_list(core::T_sp object) {
-  (void)object;
-}
-
 void invoke_finalizers() {}
 
 bool heap_ptr_p(const void* p) {

@@ -525,6 +525,7 @@ CL_DEFUN void gctools__invoke_finalizers() {
         f->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
     }
   }
+  invoke_finalizers(); // run any GC finalizers. only matters on boehm atm
 }
 
 // Invoked at GC safepoints: see stw.cc.
