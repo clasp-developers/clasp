@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <clasp/core/referenceQueue.fwd.h>
 #include <clasp/core/object.h>
 #include <clasp/core/corePackage.fwd.h>
 #include <clasp/core/mpPackage.h>

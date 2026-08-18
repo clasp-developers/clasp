@@ -72,6 +72,7 @@ THE SOFTWARE.
 #include <clasp/core/package.h>
 #include <clasp/core/pathname.h>
 #include <clasp/core/pointer.h>
+#include <clasp/core/referenceQueue.h>
 #include <clasp/core/random.h>
 #include <clasp/core/readtable.h>
 #include <clasp/core/record.h>
@@ -591,7 +592,8 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARterminate_hooksSTAR->defparameter(nil<T_O>());
   SimpleBaseString_sp sbsr1 = SimpleBaseString_O::make("SYSPMNR");
   SimpleBaseString_sp sbsw1 = SimpleBaseString_O::make("SYSPMNW");
-  _lisp->_Roots._Finalizers = HashTable_O::createEqWeakKey();
+  _lisp->_Roots._Finalizers = HashTable_O::createEq();
+  _lisp->_Roots._FinalizerQueue = ReferenceQueue_O::make();
   _lisp->_Roots._Sysprop = HashTable_O::create_thread_safe(cl::_sym_eql, sbsr1, sbsw1);
   std::list<string> nicknames;
   std::list<string> use_packages;

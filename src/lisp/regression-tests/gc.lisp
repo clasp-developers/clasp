@@ -58,7 +58,7 @@
              (ptr2 (ext:make-weak-pointer nil queue)))
         (ext:weak-reference-enqueue ptr1)
         (ext:weak-reference-enqueue ptr2)
-        (values (eq (ext:reference-queue-remove queue) ptr1)
+-        (values (eq (ext:reference-queue-remove queue) ptr1)
                 (eq (ext:reference-queue-remove queue) ptr2)
                 (null (ext:reference-queue-remove queue))))
       (t t t))
@@ -103,9 +103,7 @@
   (let (;; We store the count in a cons so we can use atomic-incf.
         ;; FIXME: Better would be supporting atomic ops on lexicals.
         (countc (list 0)))
-    (flet ((inc (a)
-             (declare (ignore a))
-             (mp:atomic-incf (car countc))))
+    (flet ((inc (x) (declare (ignore x)) (mp:atomic-incf (car countc))))
       (values (loop repeat n
                     for object = (funcall maker)
                     do (gctools:finalize object #'inc)
@@ -142,10 +140,11 @@
 (test finalizers-cons-remove
       (let ((count 0))
         (let ((s (make-list 5)))
-          (flet ((inc (a) (declare (ignore a)) (incf count)))
+          (flet ((inc (x) (declare (ignore x)) (incf count)))
             (loop repeat 5 do (gctools:finalize s #'inc)))
           (gctools:definalize s))
         (loop repeat 10 do (gctools:garbage-collect))
+        (gctools:invoke-finalizers)
         count)
       (0)
       :description "Check if list of cons finalizers were discarded")
@@ -158,11 +157,12 @@
 (test finalizers-general-remove
       (let ((count 0))
         (let ((s (make-array 5)))
-          (flet ((inc (a) (declare (ignore a)) (incf count)))
+          (flet ((inc (x) (declare (ignore x)) (incf count)))
             (loop repeat 5 do (gctools:finalize s #'inc)))
           (gctools:definalize s))
         ;; S is now unreachable
         (loop repeat 10 do (gctools:garbage-collect))
+        (gctools:invoke-finalizers)
         count)
       (0)
       :description "Check if list of general finalizers were discarded")
