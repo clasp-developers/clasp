@@ -35,12 +35,20 @@ THE SOFTWARE.
 #include <array>
 #include <unordered_map>
 #include <vector>
+#include <new> // hardware_destructive_interference_size
 #include <clasp/gctools/park.h> // BEGIN_PARK, END_PARK
 
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
 
 namespace sf {
+
+// old clang needs this since h_d_i_s wasn't defined for a while
+#ifdef __cpp_lib_hardware_interference_size
+using std::hardware_destructive_interference_size;
+#else
+constexpr size_t hardware_destructive_interference_size = alignof(std::max_align_t);
+#endif
 
 //
 // From https://www.codeproject.com/Articles/1183423/We-Make-a-std-shared-mutex-10-Times-Faster
@@ -51,7 +59,7 @@ namespace sf {
 template <unsigned contention_free_count = 36, bool shared_flag = false> class contention_free_shared_mutex {
   std::atomic<bool> want_x_lock;
   struct cont_free_flag_t {
-    alignas(std::hardware_destructive_interference_size) // avoid false sharing
+    alignas(hardware_destructive_interference_size) // avoid false sharing
     std::atomic<int> value = 0;
   };
   typedef std::array<cont_free_flag_t, contention_free_count> array_slock_t;
