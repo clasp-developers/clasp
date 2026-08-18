@@ -527,6 +527,36 @@ CL_DEFUN void gctools__invoke_finalizers() {
   }
 }
 
+// Invoked at GC safepoints: see stw.cc.
+// Try invoking finalizers. If we run into lock contention
+// just give up. This should avoid any recursive lock silliness, which is
+// important to get right since safepoints happen in a lot of random places!
+// Finalizers can signal errors, so this is still somewhat disruptive, but to
+// some extent that's probably unavoidable in a system where you say the
+// implementation call call your functions (finalizers) at literally any time.
+// Anyone wanting more control can use reference queues to rig something up.
+void try_invoking_finalizers() {
+  core::ReferenceQueue_sp queue = _lisp->_Roots._FinalizerQueue;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
+  while (true) {
+    std::optional<core::T_sp> f;
+    {
+      TRY_READ_WRITE_LOCK(globals_->_FinalizersMutex) {
+        core::T_sp tref = queue->remove();
+        if (tref.isA<core::QueueableWeakReference_O>()) {
+          f = ht->find(tref);
+          if (f) {
+            ht->remhash(tref);
+          }
+        } else return; // nothing in the queue: we're done.
+      } else return; // someone else has the lock: we tried enough, give up.
+    }
+    // We are no longer holding the lock. Try finalizing something.
+    if (f && f->isA<core::Function_O>())
+      f->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
+  }
+}
+
 DOCGROUP(clasp);
 CL_DEFUN void gctools__definalize(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);

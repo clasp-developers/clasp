@@ -92,12 +92,20 @@ void end_gcsafe(core::ThreadLocalState* thread) {
   thread->unblock();
 }
 
+void try_invoking_finalizers(); // defined in gcFunctions.cc
+
 // see gc_yield
 void gc_yield_slow_thread(core::ThreadLocalState* thread) {
   // Don't need to wait on world_stopping_cv, since in gc_yield we already
   // checked that world_stopped is true.
   begin_gcsafe(thread, __builtin_frame_address(0));
   end_gcsafe(thread);
+  // Try some finalizers.
+  // NOTE: This is maybe slower than it has to be right now - every thread will
+  // come out of a GC pause simultaneously, and they'll all race to grab the lock
+  // so they can run finalizers, and only one will win. Needless contention.
+  // But maybe that doesn't matter if you're already GCing.
+  try_invoking_finalizers();
 }
 
 void gc_yield_slow() { gc_yield_slow_thread(my_thread); }
