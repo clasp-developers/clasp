@@ -83,14 +83,8 @@ extern CommandLineOptions* global_options;
 extern bool global_initialize_builtin_classes;
 
 class Bundle;
-class CallStack;
-SMART(Intrinsic);
-SMART(Reader);
-SMART(FunctionValueEnvironment);
 SMART(Package);
 SMART(Path);
-SMART(Hierarchy);
-SMART(Environment);
 
 T_sp cl__sort(List_sp sequence, T_sp predicate, T_sp key = nil<core::T_O>());
 
@@ -102,38 +96,6 @@ public:
   SymbolClassHolderPair(Symbol_sp s, ClassHolder_sp c) : symbol(s), theClassHolder(c){};
   Symbol_sp symbol;
   ClassHolder_sp theClassHolder;
-};
-
-/*! A structure that stores the integer byte/word ordering information for this processor.
-      It is calculated when the Lisp environment starts up and can be accessed by routines to
-      handle slicing up uint64_t */
-class IntegerOrdering //: public gctools::GCIgnoreClass
-{
-public:
-  bool _BigEndian;
-  bool _MostSignificantWordFirst;
-  int _mpz_import_word_order;
-  int _mpz_import_size;
-  int _mpz_import_endian;
-
-  IntegerOrdering() {
-    // Setup the contents here in the constructor
-    unsigned int endian_test = 1;
-    char* endian_test_ptr = (char*)&endian_test;
-    this->_mpz_import_endian = 0; // use native endianness (see mpz_import)
-    this->_mpz_import_size = sizeof(int);
-    if (*endian_test_ptr == 1) {
-      this->_BigEndian = false;
-      this->_MostSignificantWordFirst = false;
-      this->_mpz_import_word_order = -1;
-    } else if (*(endian_test_ptr + sizeof(int) - 1) == 1) {
-      this->_BigEndian = true;
-      this->_MostSignificantWordFirst = true;
-      this->_mpz_import_word_order = 1;
-    } else {
-      throw_hard_error("What the heck? - the Endian test failed when starting up Lisp environment");
-    }
-  }
 };
 
 /*! Class for defining new packages and doing package dependent
@@ -184,7 +146,7 @@ template <typename oclass> class class_;
 
 template <> struct gctools::GCInfo<core::Lisp> {
   static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = unmanaged;
 };
 
@@ -335,8 +297,6 @@ public:
 
 public:
   GCRoots _Roots; // Always make this first - so it's close to the front of the object
-  /*! Stores whether the system is big-endian or not */
-  IntegerOrdering _IntegerOrdering;
   bool _BootClassTableIsValid;
   int _RequireLevel;
   bool _CoreBuiltInClassesInitialized;
@@ -371,9 +331,6 @@ public:
   void put_Str8Ns_buffer_string(Str8Ns_sp str);
   StrWNs_sp get_StrWNs_buffer_string();
   void put_StrWNs_buffer_string(StrWNs_sp str);
-
-public:
-  IntegerOrdering const& integer_ordering() const { return this->_IntegerOrdering; };
 
 public:
   void mapClassNamesAndClasses(KeyValueMapper* mapper);
@@ -437,11 +394,6 @@ public:
     return this->_false();
   };
 
-public:
-  /*! Return true if running a graphical environment
-   */
-  bool graphical();
-  //	void setGraphical(bool g) { this->_Graphical = g;};
 public:
   bool CoreBuiltInClassesInitialized() { return this->_CoreBuiltInClassesInitialized; };
   bool BuiltInClassesInitialized() { return this->_BuiltInClassesInitialized; };
@@ -643,7 +595,6 @@ public:
    */
   void parseCommandLineArguments(const CommandLineOptions& options);
 
-  Intrinsic_sp getIntrinsic(const string& name);
   string getMethodName(uint methodId);
   uint getMethodId(const string& methodName);
 
