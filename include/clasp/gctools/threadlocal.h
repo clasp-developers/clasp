@@ -164,6 +164,14 @@ struct VirtualMachine {
              this->_unwind_counter, this->_throw_counter);
     }
 #endif
+    // Initialize all local variable slots to unbound so that the
+    // precise GC root scanner doesn't mistake stale stack words for tagged
+    // heap pointers before each slot is written by a binding opcode.
+    // Registers are at fp[1..nlocals] (setreg writes fp[base+1]);
+    // fp[0] holds old_fp (a raw C pointer) which must not be touched here.
+    core::T_O* ub = unbound<core::T_O*>().raw_();
+    for (size_t i = 1; i <= nlocals; ++i)
+      framePointer[i] = ub;
     core::T_O** ret = framePointer + nlocals;
     VM_STACK_POINTER_CHECK(*this);
     VM_ASSERT_ALIGNED(*this, ret);

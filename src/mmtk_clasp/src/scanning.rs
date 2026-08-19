@@ -36,6 +36,9 @@ extern "C" {
         callback: unsafe extern "C" fn(*mut c_void, *mut c_void),
         data: *mut c_void,
     );
+    fn clasp_enqueue_weak_ref(
+        wref: *mut c_void,
+    );
 }
 
 unsafe extern "C" fn precise_root_cb(slot: *mut c_void, data: *mut c_void) {
@@ -52,13 +55,40 @@ unsafe extern "C" fn conservative_root_cb(client_ptr: *mut c_void, data: *mut c_
     }
 }
 
+// Structure for gctools::WeakPointer.
+// It is a reference to the containing object and then an offset to the
+// weak reference field. We do things this way so that the containing
+// object may be moved.
+pub(crate) struct WeakPointer {
+    pub(crate) object: ObjectReference,
+    pub(crate) offset: usize,
+}
+
+// Structure for gctools::QueueableWeakReference.
+pub(crate) struct QueueableWeakReference {
+    pub(crate) object: ObjectReference,
+    pub(crate) offset: usize,
+}
+
 // Structure for gctools::Ephemeron.
 // TODO: ideally we would just use the actual ephemeron, but then, ideally we
 // would be scanning in Rust instead of using a callback.
 pub(crate) struct Ephemeron {
-    pub(crate) key: ClaspVMSlot,
-    pub(crate) value: ClaspVMSlot
+    pub(crate) object: ObjectReference,
+    pub(crate) key: usize,
+    pub(crate) value: usize,
 }
+struct EphemeronSlots {
+    key: ClaspVMSlot,
+    value: ClaspVMSlot
+}
+
+fn ephemeron_to_slots(eph: &Ephemeron) -> EphemeronSlots {
+    let moved = eph.object.get_forwarded_object().unwrap_or(eph.object);
+    EphemeronSlots { key: ClaspVMSlot::from_address(moved.to_raw_address().add(eph.key)),
+                     value: ClaspVMSlot::from_address(moved.to_raw_address().add(eph.value)) }
+}
+
 
 // Vec of Ephemerons that need processing.
 // This is added to during scanning and partially emptied by process_weak_refs.
@@ -70,7 +100,14 @@ pub(crate) static EPHEMERONS: std::sync::Mutex<Vec<Ephemeron>>
 // Vec of WeakPointer (the C++ class) that need processing.
 // This is added to during scanning and emptied by process_weak_refs.
 // The mutex is because multiple scan workers may need to add to it.
-pub(crate) static WEAK_POINTERS: std::sync::Mutex<Vec<ClaspVMSlot>>
+pub(crate) static WEAK_POINTERS: std::sync::Mutex<Vec<WeakPointer>>
+    = std::sync::Mutex::new(Vec::new());
+
+// Vecs for QueueableWeakReference.
+// One for references that resurrect and one for ones that don't.
+pub(crate) static QWEAKS: std::sync::Mutex<Vec<QueueableWeakReference>>
+    = std::sync::Mutex::new(Vec::new());
+pub(crate) static QWEAKS_RESURRECT: std::sync::Mutex<Vec<QueueableWeakReference>>
     = std::sync::Mutex::new(Vec::new());
 
 fn report_precise_roots(slots: Vec<ClaspVMSlot>, factory: &mut impl RootsWorkFactory<ClaspVMSlot>) {
@@ -86,13 +123,13 @@ fn report_pinning_roots(roots: Vec<ObjectReference>, factory: &mut impl RootsWor
 }
 
 fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
-                      tracer_context: impl ObjectTracerContext<ClaspVM>,
+                      tracer_context: &impl ObjectTracerContext<ClaspVM>,
 ) -> bool {
     let mut trace_again = false;
     // Process ephemerons
     let mut ephs = EPHEMERONS.lock().unwrap();
     tracer_context.with_tracer(worker, |tracer| {
-        let mut resolve = |eph: &mut Ephemeron| {
+        let mut resolve = |eph: EphemeronSlots| {
             // This ephemeron has a live key, so forward the value
             // and note that there may be new live objects to trace.
             // If load() returns None it's immediate or something
@@ -106,7 +143,8 @@ fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
         // Iterate over EPHEMERONS, retaining only those whose keys are not
         // known to be alive. Any ephemerons with live keys add to a new trace
         // and forward objects before they are removed from EPHEMERONS.
-        ephs.retain_mut(|eph| {
+        ephs.retain_mut(|eph_act| {
+            let eph = ephemeron_to_slots(&eph_act);
             match eph.key.load_value() {
                 // deleted - make sure the value is deleted as well.
                 Unbound => {
@@ -139,21 +177,27 @@ fn process_ephemerons(worker: &mut GCWorker<ClaspVM>,
     // values to trace, any seemingly dead ephemeron keys may now be
     // found to be alive,
     // so leave the ephemerons in EPHEMERONS and run another trace.
-    if !trace_again {
-        // Otherwise, there is no longer any way for ephemeron keys to turn up
-        // alive, so we're done with ephemerons. Their keys are all dead
-        // so delete their keys and values, and clear EPHEMERONS.
-        for dead in ephs.drain(..) {
-            dead.key.delete();
-            dead.value.delete();
-        }
-    }
     trace_again
+}
+
+fn process_ephemerons_post() {
+    // Otherwise, there is no longer any way for ephemeron keys to turn up
+    // alive, so we're done with ephemerons. Their keys are all dead
+    // so delete their keys and values, and clear EPHEMERONS.
+    let mut ephs = EPHEMERONS.lock().unwrap();
+    for deadeph in ephs.drain(..) {
+        let dead = ephemeron_to_slots(&deadeph);
+        dead.key.delete();
+        dead.value.delete();
+    }
 }
 
 fn process_weak_ptrs() {
     let mut weaks = WEAK_POINTERS.lock().unwrap();
-    for weak_slot in weaks.drain(..) {
+    for weakptr in weaks.drain(..) {
+        // Get the actual slot from the (possibly moved) containing
+        // object.
+        let weak_slot = ClaspVMSlot::from_address(weakptr.object.get_forwarded_object().unwrap_or(weakptr.object).to_raw_address().add(weakptr.offset));
         // If the referent is deleted or an immediate we don't care about it.
         // during scanning we shouldn't even collect them, but just in case.
         if let Some(obj) = weak_slot.load() {
@@ -166,6 +210,67 @@ fn process_weak_ptrs() {
             }
         }
     }
+}
+
+// pretty much the same as weak pointers, except we also call into Clasp
+// to enqueue the reference.
+fn process_qweaks() {
+    let mut qweaks = QWEAKS.lock().unwrap();
+    for qweak in qweaks.drain(..) {
+        let addr = qweak.object.get_forwarded_object().unwrap_or(qweak.object).to_raw_address().add(qweak.offset);
+        let slot = ClaspVMSlot::from_address(addr);
+        if let Some(obj) = slot.load() {
+            if obj.is_reachable() {
+                slot.store(obj.get_forwarded_object().unwrap_or(obj));
+            } else {
+                slot.delete(); // technically unnecessary
+                unsafe { clasp_enqueue_weak_ref(addr.to_mut_ptr::<c_void>()); }
+            }
+        }
+    }
+}
+
+fn process_resurrecting_qweaks(worker: &mut GCWorker<ClaspVM>,
+                               tracer_context: &impl ObjectTracerContext<ClaspVM>,
+) -> bool {
+    let mut trace_again = false;
+    let mut qweaks = QWEAKS_RESURRECT.lock().unwrap();
+    qweaks.retain_mut(|qweak| {
+        let addr = qweak.object.get_forwarded_object().unwrap_or(qweak.object).to_raw_address().add(qweak.offset);
+        let slot = ClaspVMSlot::from_address(addr);
+        if let Some(obj) = slot.load() {
+            if obj.is_reachable() {
+                // Referent is not dead, so just update for copy, and then
+                // we can stop worrying about it.
+                slot.store(obj.get_forwarded_object().unwrap_or(obj));
+                false
+            } else if !trace_again {
+                slot.store(obj.get_forwarded_object().unwrap_or(obj));
+                // Referent is dead and we haven't resurrected yet,
+                // so resurrect.
+                unsafe { clasp_enqueue_weak_ref(addr.to_mut_ptr::<c_void>()); }
+                // hey look it's exactly what MMTk docs say not to do:
+                // with_tracer for one single trace.
+                // Too bad. We can only resurrect one object per
+                // process_weak_refs since doing so may make other objects
+                // become alive without resurrecting a weak reference.
+                tracer_context.with_tracer(worker, |tracer| {
+                    tracer.trace_object(obj);
+                });
+                trace_again = true;
+                false
+            } else {
+                // Referent is seemingly dead but may yet become reachable
+                // from some resurrection,
+                // so keep it in QWEAKS_RESURRECT.
+                true
+            }
+        } else {
+            // This is a weak reference to an immediate or something.
+            false
+        }
+    });
+    trace_again
 }
 
 pub struct VMScanning;
@@ -251,8 +356,23 @@ impl Scanning<ClaspVM> for VMScanning {
     fn process_weak_refs(worker: &mut GCWorker<ClaspVM>,
                          tracer_context: impl ObjectTracerContext<ClaspVM>,
     ) -> bool {
-        if process_ephemerons(worker, tracer_context) { return true; }
+        // Go through ephemerons, reviving any values with live keys
+        // and leaving seemingly dead ephemerons for later.
+        // If any revival was done, return early to trace again.
+        if process_ephemerons(worker, &tracer_context) { return true; }
+        // At this point all ephemerons are dead, unless a finalizer reference
+        // revives them.
+        // (This should never happen, since we only use resurrecting finalizers
+        //  for C++, but I'm future proofing a bit in case that changes.)
+        if process_resurrecting_qweaks(worker, &tracer_context) { return true; }
+        // We've computed a transitive closure. Liquidate remaining references.
+        process_ephemerons_post();
+        process_qweaks();
         process_weak_ptrs();
+        // QWEAKS_RESURRECT is necessarily empty here:
+        // in process_resurrecting_qweaks we dropped any with live referents,
+        // and then returned false only if no resurrection was done.
+        // So we don't need to drain it separately.
         false
     }
 }

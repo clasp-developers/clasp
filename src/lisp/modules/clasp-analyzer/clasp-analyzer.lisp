@@ -413,6 +413,7 @@ This could change the value of stamps for specific classes - but that would brea
   specializer)
 
 (defstruct (weak-ptr-ctype (:include ctype)))
+(defstruct (qweak-ctype (:include ctype)))
 (defstruct (ephemeron-ctype (:include ctype)))
 
 (defstruct (pointer-ctype (:include ctype))
@@ -516,6 +517,8 @@ This could change the value of stamps for specific classes - but that would brea
   ())
 
 (defclass weak-ptr-offset (copyable-offset)
+  ())
+(defclass qweak-offset (copyable-offset)
   ())
 (defclass ephemeron-offset (copyable-offset)
   ())
@@ -951,6 +954,9 @@ to expose to C++.
 (defmethod linearize-class-layout-impl ((x weak-ptr-ctype) base analysis)
   (declare (ignore analysis))
   (list (make-instance 'weak-ptr-offset :base base :offset-type x)))
+(defmethod linearize-class-layout-impl ((x qweak-ctype) base analysis)
+  (declare (ignore analysis))
+  (list (make-instance 'qweak-offset :base base :offset-type x)))
 (defmethod linearize-class-layout-impl ((x ephemeron-ctype) base analysis)
   (declare (ignore analysis))
   (list (make-instance 'ephemeron-offset :base base :offset-type x)))
@@ -1211,6 +1217,8 @@ can be saved and reloaded within the project for later analysis"
           (make-shared-mutex-ctype :key decl-key :name name))
          ((string= name "WeakPointer")
           (make-weak-ptr-ctype :key decl-key))
+         ((string= name "QueueableWeakReference")
+          (make-qweak-ctype :key decl-key))
          ((string= name "Ephemeron")
           (make-ephemeron-ctype :key decl-key))
          (t (make-cxxrecord-ctype :key decl-key :name name))))
@@ -1894,6 +1902,9 @@ so that they don't have to be constantly recalculated"
 (defmethod contains-fixptr-impl-p ((x weak-ptr-ctype) project)
   (declare (ignore project))
   t)
+(defmethod contains-fixptr-impl-p ((x qweak-ctype) project)
+  (declare (ignore project))
+  t)
 (defmethod contains-fixptr-impl-p ((x ephemeron-ctype) project)
   (declare (ignore project))
   t)
@@ -1946,6 +1957,9 @@ so that they don't have to be constantly recalculated"
   nil)
 (defmethod expand-forwards-with-template-arguments
     ((forwards t) (alloc-ctype weak-ptr-ctype))
+  nil)
+(defmethod expand-forwards-with-template-arguments
+    ((forwards t) (alloc-ctype qweak-ctype))
   nil)
 (defmethod expand-forwards-with-template-arguments
     ((forwards t) (alloc-ctype ephemeron-ctype))
@@ -2481,6 +2495,9 @@ Recursively analyze x and return T if x contains fixable pointers."
 (defmethod fixable-instance-variables-impl ((x weak-ptr-ctype) analysis)
   (declare (ignore analysis))
   :weak-ptr-fix)
+(defmethod fixable-instance-variables-impl ((x qweak-ctype) analysis)
+  (declare (ignore analysis))
+  :qweak-fix)
 (defmethod fixable-instance-variables-impl ((x ephemeron-ctype) analysis)
   (declare (ignore analysis))
   :ephemeron-fix)

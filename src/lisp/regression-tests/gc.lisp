@@ -43,6 +43,51 @@
           invalid))
       (0))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;
+
+(defun dying-reference (&optional queue)
+  (ext:make-weak-pointer (list nil) queue))
+
+;;; test that the queue is actually a FIFO,
+;;; and that it can be emptied properly.
+(test reference-queue.1
+      (let* ((queue (ext:make-reference-queue))
+             (ptr1 (ext:make-weak-pointer nil queue))
+             (ptr2 (ext:make-weak-pointer nil queue)))
+        (ext:weak-reference-enqueue ptr1)
+        (ext:weak-reference-enqueue ptr2)
+-        (values (eq (ext:reference-queue-remove queue) ptr1)
+                (eq (ext:reference-queue-remove queue) ptr2)
+                (null (ext:reference-queue-remove queue))))
+      (t t t))
+
+;;; test that the GC enqueues dead references.
+;;; We don't test FIFO with GC enqueueing, since there's no other reason to
+;;; ensure that GCs actually collect all weak pointers immediately, etc.
+(test reference-queue.2
+      (let* ((queue (ext:make-reference-queue))
+             (ptrs (loop repeat 100 collect (dying-reference queue))))
+        (loop repeat 10 do (gctools:garbage-collect))
+        (gctools:invoke-finalizers)
+        (let ((ndead (loop until (null (ext:reference-queue-remove queue))
+                           sum 1)))
+          (values (if (> ndead 95) t ndead)
+                  (let ((count (count-if #'ext:weak-pointer-valid ptrs)))
+                    (if (= (+ count ndead) 100) t (+ count ndead))))))
+      (t t))
+
+;;; test that a reference can't be enqueued more than once.
+(test reference-queue.3
+      (let* ((queue (ext:make-reference-queue))
+             (ptr (ext:make-weak-pointer nil queue)))
+        (values (ext:weak-reference-enqueue ptr)
+                (ext:weak-reference-enqueue ptr)
+                (eq (ext:reference-queue-remove queue) ptr)
+                (ext:reference-queue-remove queue)))
+      (t nil t nil))
+
 ;;; ----------------------------------------------------------------------
 ;;;
 ;;; This is a separate function in a perhaps-futile effort to prevent
@@ -58,9 +103,7 @@
   (let (;; We store the count in a cons so we can use atomic-incf.
         ;; FIXME: Better would be supporting atomic ops on lexicals.
         (countc (list 0)))
-    (flet ((inc (a)
-             (declare (ignore a))
-             (mp:atomic-incf (car countc))))
+    (flet ((inc (x) (declare (ignore x)) (mp:atomic-incf (car countc))))
       (values (loop repeat n
                     for object = (funcall maker)
                     do (gctools:finalize object #'inc)
@@ -97,10 +140,11 @@
 (test finalizers-cons-remove
       (let ((count 0))
         (let ((s (make-list 5)))
-          (flet ((inc (a) (declare (ignore a)) (incf count)))
+          (flet ((inc (x) (declare (ignore x)) (incf count)))
             (loop repeat 5 do (gctools:finalize s #'inc)))
           (gctools:definalize s))
         (loop repeat 10 do (gctools:garbage-collect))
+        (gctools:invoke-finalizers)
         count)
       (0)
       :description "Check if list of cons finalizers were discarded")
@@ -113,11 +157,12 @@
 (test finalizers-general-remove
       (let ((count 0))
         (let ((s (make-array 5)))
-          (flet ((inc (a) (declare (ignore a)) (incf count)))
+          (flet ((inc (x) (declare (ignore x)) (incf count)))
             (loop repeat 5 do (gctools:finalize s #'inc)))
           (gctools:definalize s))
         ;; S is now unreachable
         (loop repeat 10 do (gctools:garbage-collect))
+        (gctools:invoke-finalizers)
         count)
       (0)
       :description "Check if list of general finalizers were discarded")

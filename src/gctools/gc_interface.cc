@@ -348,7 +348,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::Rack_O);
   Init__fixed_field(core::Rack_O, 0, ctype_size_t, _ShiftedStamp);
   Init__fixed_field(core::Rack_O, 1, SMART_PTR_OFFSET, _Sig);
-  Init__variable_array0(core::Rack_O, _Slots);
+  Init__variable_array0(core::Rack_O, _Slots._Data);
   Init__variable_capacity(core::Rack_O, value_type, _Slots._Length, _Slots._Length);
   Init__variable_field(core::Rack_O, gctools::SMART_PTR_OFFSET, 0, "only", 0);
 

@@ -382,6 +382,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM1("make-cell\n");
       T_sp car((gctools::Tagged)(vm.pop(sp)));
       T_sp cdr((gctools::Tagged)nil<T_O>().raw_());
+      vm._stackPointer = sp;
       vm.push(sp, Cons_O::create(car, cdr).raw_());
       pc++;
       break;
@@ -410,6 +411,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
+      vm._stackPointer = sp;
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
       // FIXME: Can we use some more abstracted access?
       vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
@@ -425,6 +427,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
       size_t nclosed = fn->environmentSize();
       DBG_VM("  nclosed = %zu\n", nclosed);
+      vm._stackPointer = sp;
       Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
       vm.push(sp, closure.raw_());
       pc++;
@@ -476,6 +479,9 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t start = *(++pc);
       DBG_VM("listify-rest-args %" PRIu8 "\n", start);
       ql::list rest;
+      // Keep the stack pointer updated in case ql::list::operator<< conses
+      // and thereby initiates GC.
+      vm._stackPointer = sp;
       for (size_t i = start; i < lcc_nargs; ++i) {
         T_sp tobj((gctools::Tagged)lcc_args[i]);
         rest << tobj;
@@ -505,6 +511,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       bool ll_aokp = key_count_info & 0x1;
       bool aokp = false;
       T_sp unknown_keys = nil<T_O>();
+      vm._stackPointer = sp;
       SimpleVector_sp argstemp = SimpleVector_O::make(key_count, unbound<T_O>());
       if (lcc_nargs > more_start) {
         if (((lcc_nargs - more_start) % 2) != 0) {
@@ -774,6 +781,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       jmp_buf target;
       void* frame = __builtin_frame_address(0);
       vm._pc = pc;
+      vm._stackPointer = sp;
       TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
       vm.setreg(fp, n, env.raw_());
       gctools::StackAllocate<Cons_O> sa_ec(env, thread->dynEnvStackGet());
@@ -974,6 +982,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM1("fdesignator %" PRIu8 "\n", c);
       T_sp env((gctools::Tagged)literals[c]);
       T_sp desig((gctools::Tagged)vm.pop(sp));
+      vm._stackPointer = sp;
       Function_sp fun = env.nilp() ? coerce::calledFunctionDesignator(desig) : fdesignator_in_env(desig, env);
       vm.push(sp, fun.raw_());
       VM_RECORD_PLAYBACK(run.raw_(), "fdesignator");
@@ -1004,6 +1013,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("  nclosed = %zu\n", nclosed);
       // Technically we could avoid consing a closure when nclosed = 0
       // but I don't know that it's worth the trouble.
+      vm._stackPointer = sp;
       Closure_sp cleanup = Closure_O::make_bytecode_closure(fn, nclosed);
       vm.copyto(sp, nclosed, (T_O**)(cleanup->_Slots.data()));
       vm.drop(sp, nclosed);
@@ -1041,6 +1051,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       uint8_t n = *(++pc);
       DBG_VM1("encell %" PRIu8 "\n", n);
       T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
+      vm._stackPointer = sp;
       vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
       pc++;
       break;
@@ -1201,6 +1212,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
+    vm._stackPointer = sp;
     Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
     // FIXME: Can we use some more abstracted access?
     vm.copyto(sp, nclosed, (T_O**)(closure->_Slots.data()));
@@ -1217,6 +1229,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     BytecodeSimpleFun_sp fn = gc::As_assert<BytecodeSimpleFun_sp>(fn_sp);
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
+    vm._stackPointer = sp;
     Closure_sp closure = Closure_O::make_bytecode_closure(fn, nclosed);
     vm.push(sp, closure.raw_());
     pc += 3;
@@ -1264,6 +1277,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint16_t start = low + (*(pc + 2) << 8);
     DBG_VM("long listify-rest-args %" PRIu16 "\n", start);
     ql::list rest;
+    vm._stackPointer = sp;
     for (size_t i = start; i < lcc_nargs; ++i) {
       T_sp tobj((gctools::Tagged)lcc_args[i]);
       rest << tobj;
@@ -1284,6 +1298,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     bool ll_aokp = key_count_info & 0x1;
     bool aokp = false;
     T_sp unknown_keys = nil<T_O>();
+    vm._stackPointer = sp;
     SimpleVector_sp argstemp = SimpleVector_O::make(key_count, unbound<T_O>());
     if (lcc_nargs > more_start) {
       if (((lcc_nargs - more_start) % 2) != 0) {
@@ -1406,6 +1421,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     jmp_buf target;
     void* frame = __builtin_frame_address(0);
     vm._pc = pc;
+    vm._stackPointer = sp;
     TagbodyDynEnv_sp env = TagbodyDynEnv_O::create(frame, &target);
     vm.setreg(fp, n, env.raw_());
     gctools::StackAllocate<Cons_O> sa_ec(env, thread->dynEnvStackGet());
@@ -1479,6 +1495,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     DBG_VM1("long fdesignator %" PRIu16 "\n", n);
     T_sp env((gctools::Tagged)literals[n]);
     T_sp desig((gctools::Tagged)vm.pop(sp));
+    vm._stackPointer = sp;
     Function_sp fun = env.nilp() ? coerce::calledFunctionDesignator(desig) : fdesignator_in_env(desig, env);
     vm.push(sp, fun.raw_());
     pc++;
@@ -1502,6 +1519,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     BytecodeSimpleFun_sp fn = fn_sp.as_assert<BytecodeSimpleFun_O>();
     size_t nclosed = fn->environmentSize();
     DBG_VM("  nclosed = %zu\n", nclosed);
+    vm._stackPointer = sp;
     Closure_sp cleanup = Closure_O::make_bytecode_closure(fn, nclosed);
     vm.copyto(sp, nclosed, (T_O**)(cleanup->_Slots.data()));
     vm.drop(sp, nclosed);
@@ -1524,6 +1542,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     uint16_t n = low + (*(++pc) << 8);
     DBG_VM1("encell %" PRIu16 "\n", n);
     T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
+    vm._stackPointer = sp;
     vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
     pc++;
     break;
@@ -1593,7 +1612,7 @@ gctools::return_type bytecode_call(unsigned char* pc, core::T_O* lcc_closure, si
   vm.push(vm._stackPointer, (core::T_O*)lcc_args);
   vm.push(vm._stackPointer, (core::T_O*)old_fp);
   core::T_O** fp = vm._framePointer = vm._stackPointer;
-  core::T_O** sp = vm.push_frame(fp, nlocals);
+  core::T_O** sp = vm._stackPointer = vm.push_frame(fp, nlocals);
   try {
     gctools::StackAllocate<core::VMFrameDynEnv_O> frame(old_sp, old_fp);
     gctools::StackAllocate<core::Cons_O> sa_ec(frame.asSmartPtr(), my_thread->dynEnvStackGet());

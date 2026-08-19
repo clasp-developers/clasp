@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include <clasp/core/numbers.h>
 #include <clasp/core/pointer.fwd.h>
 #include <clasp/core/hashTable.fwd.h>
+#include <clasp/core/referenceQueue.fwd.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 #include <clasp/core/numbers.fwd.h>
 #include <clasp/core/bignum.h>
@@ -271,6 +272,7 @@ public:
     List_sp _ActiveThreads;
     List_sp _DefaultSpecialBindings;
     HashTable_sp _Finalizers;
+    ReferenceQueue_sp _FinalizerQueue;
     HashTable_sp _Sysprop;
     HashTable_sp _ClassTable;
     CharacterInfo charInfo; // Contains GC managed pointers

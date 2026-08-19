@@ -72,6 +72,7 @@ THE SOFTWARE.
 
 #include <functional>
 #include <optional>
+#include <atomic>
 
 namespace gctools {
 
@@ -103,6 +104,55 @@ private:
   };
   static void* value_helper(void*);
 #endif // lacking real support, we have not-actually-weak pointers.
+};
+
+struct QueueableWeakReference {
+public:
+  QueueableWeakReference(core::T_sp referent, bool resurrectp);
+  std::optional<core::T_sp> value() const;
+  bool enqueue();
+  bool clear();
+  bool clearedp() const { return _clearedp.test(std::memory_order_relaxed); }
+#ifdef USE_BOEHM
+  // despite the "hidden", this will be a strong (unhidden) pointer
+  // if the reference had resurrectp = true and has been cleared. Boehm is dumb.
+  GC_hidden_pointer _referent;
+#else
+  core::T_sp _referent;
+#endif
+  // Should the referent by resurrected by GC when it runs into this reference
+  // and determines the referent is dead?
+  // The answer is usually no because object resurrection is weird to do,
+  // but we do need it to run C++ destructors.
+  bool _resurrectp = false;
+  // Has the GC cleared the referent?
+  // Note that if resurrectp is true, a cleared reference has
+  // a strong reference to _referent.
+  // Atomic so we can enqueue without holding a lock.
+  // As of C++20 this will be initialized to false.
+  std::atomic_flag _clearedp;
+  // For immediate objects, we set resurrectp and clearedp = true
+  // during construction. This ensures that such references are always valid
+  // (because resurrectp) and the GC never messes with them (because clearedp).
+  friend class scan;
+private:
+  std::optional<core::T_sp> value_no_lock() const;
+  // Defined weirdly in core/referenceQueue.cc as offsetof(QWR_O, this)
+  // so that we can get the QWR_O from this. Yes. Sucks.
+  static const size_t OFFSET;
+#ifdef USE_BOEHM
+  // Assorted crap that's required to deal with Boehm weirdness.
+private:
+  void store_no_lock(core::T_sp);
+private:
+  struct value_helper_s {
+    value_helper_s(const QueueableWeakReference* w) : wp(w), result() {}
+    const QueueableWeakReference* wp;
+    std::optional<core::T_sp> result;
+  };
+  static void* value_helper(void*);
+  static void finalizer(void* obj, void* cdata);
+#endif
 };
 
 // Used below in hash maps and ephemerons.
@@ -155,7 +205,7 @@ private:
 public: // FIXME
 #ifdef USE_BOEHM
   GC_hidden_pointer _key;
-#else // FIXME for other GCs!
+#else
   core::T_sp _key;
 #endif
   core::T_sp _value;

@@ -4,10 +4,13 @@ use crate::active_plan::{register_mutator, unregister_mutator};
 use crate::mmtk;
 use crate::ClaspVM;
 use crate::SINGLETON;
+use crate::scanning::WeakPointer;
 use crate::scanning::WEAK_POINTERS;
 use crate::scanning::Ephemeron;
 use crate::scanning::EPHEMERONS;
-use crate::ClaspVMSlot;
+use crate::scanning::QueueableWeakReference;
+use crate::scanning::QWEAKS;
+use crate::scanning::QWEAKS_RESURRECT;
 use libc::c_char;
 use mmtk::memory_manager;
 use mmtk::scheduler::GCWorker;
@@ -17,7 +20,6 @@ use mmtk::AllocationSemantics;
 use mmtk::MMTKBuilder;
 use mmtk::Mutator;
 use std::ffi::CStr;
-use std::ffi::c_void;
 
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_create_builder() -> *mut MMTKBuilder {
@@ -144,19 +146,35 @@ pub extern "C" fn mmtk_clasp_post_alloc(
 
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_scan_weak(
-    weak_slot: *mut c_void,
+    weak: ObjectReference,
+    field_offset: usize,
 ) {
-    WEAK_POINTERS.lock().unwrap().push(unsafe { ClaspVMSlot::from_address(Address::from_usize(weak_slot as usize)) });
+    let ptr = WeakPointer { object: weak, offset: field_offset };
+    WEAK_POINTERS.lock().unwrap().push(ptr);
 }
 
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_scan_ephemeron(
-    key_slot: *mut c_void,
-    value_slot: *mut c_void,
+    eph: ObjectReference,
+    key_offset: usize,
+    value_offset: usize,
 ) {
-    let eph = Ephemeron { key: unsafe { ClaspVMSlot::from_address(Address::from_usize(key_slot as usize)) },
-                          value: unsafe { ClaspVMSlot::from_address(Address::from_usize(value_slot as usize)) }};
+    let eph = Ephemeron { object: eph, key: key_offset, value: value_offset };
     EPHEMERONS.lock().unwrap().push(eph);
+}
+
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_scan_qweak(
+    weak: ObjectReference,
+    offset: usize,
+    resurrectp: bool,
+) {
+    let weak = QueueableWeakReference { object: weak, offset: offset };
+    if resurrectp {
+        QWEAKS_RESURRECT.lock().unwrap().push(weak);
+    } else {
+        QWEAKS.lock().unwrap().push(weak);
+    }
 }
 
 #[no_mangle]

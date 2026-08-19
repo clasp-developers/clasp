@@ -170,6 +170,7 @@ class Mutex_O : public core::CxxObject_O {
   LISP_CLASS(mp, MpPkg, Mutex_O, "Mutex", core::CxxObject_O);
 
 public:
+  // FIXME: make anonymous mutexes easier?
   CL_LISPIFY_NAME("make-lock");
   CL_DOCSTRING("Create and return a fresh mutex with the given name.")
   CL_LAMBDA(&key (name "Anonymous Mutex"));

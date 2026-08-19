@@ -113,7 +113,8 @@ inline uintptr_t bitmap_field_bitmap(size_t bitindex) { return (uintptr_t)1 << b
 static inline bool fixable_type_p(size_t type) {
   return type == SMART_PTR_OFFSET || type == ATOMIC_SMART_PTR_OFFSET
     || type == TAGGED_POINTER_OFFSET || type == POINTER_OFFSET
-    || type == WEAK_PTR_OFFSET || type == EPHEMERON_OFFSET;
+    || type == WEAK_PTR_OFFSET || type == QWEAK_OFFSET
+    || type == EPHEMERON_OFFSET;
 }
 
 void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
@@ -221,7 +222,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         int bit_index;
         uintptr_t field_bitmap;
         bit_index = bitmap_field_index(63, field_offset);
-        if (data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET
+        if (data_type == WEAK_PTR_OFFSET
+            || data_type == QWEAK_OFFSET
+            || data_type == EPHEMERON_OFFSET
             || bit_index == -1) {
           // We have a field we need to fix that is beyond the range of a bitmap.
           // Flag this class to tell the scanner to use the field layouts instead.
@@ -328,7 +331,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
         int bit_index = bitmap_field_index(63, field_offset);
         uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
-        if (data_type == WEAK_PTR_OFFSET || data_type == EPHEMERON_OFFSET
+        if (data_type == WEAK_PTR_OFFSET || data_type == QWEAK_OFFSET
+            || data_type == EPHEMERON_OFFSET
             || bit_index == -1) {
           local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
         } else {

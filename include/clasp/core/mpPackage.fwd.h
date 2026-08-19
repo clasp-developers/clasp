@@ -35,12 +35,20 @@ THE SOFTWARE.
 #include <array>
 #include <unordered_map>
 #include <vector>
+#include <new> // hardware_destructive_interference_size
 #include <clasp/gctools/park.h> // BEGIN_PARK, END_PARK
 
 PACKAGE_USE("COMMON-LISP");
 NAMESPACE_PACKAGE_ASSOCIATION(mp, MpPkg, "MP")
 
 namespace sf {
+
+// old clang needs this since h_d_i_s wasn't defined for a while
+#ifdef __cpp_lib_hardware_interference_size
+using std::hardware_destructive_interference_size;
+#else
+constexpr size_t hardware_destructive_interference_size = alignof(std::max_align_t);
+#endif
 
 //
 // From https://www.codeproject.com/Articles/1183423/We-Make-a-std-shared-mutex-10-Times-Faster
@@ -50,20 +58,15 @@ namespace sf {
 // contention free shared mutex (same-lock-type is recursive for X->X, X->S or S->S locks), but (S->X - is UB)
 template <unsigned contention_free_count = 36, bool shared_flag = false> class contention_free_shared_mutex {
   std::atomic<bool> want_x_lock;
-  // struct cont_free_flag_t { alignas(std::hardware_destructive_interference_size) std::atomic<int> value; cont_free_flag_t() {
-  // value = 0; } }; // C++17
   struct cont_free_flag_t {
-    char tmp[60];
-    std::atomic<int> value;
-    cont_free_flag_t() { value = 0; }
-  }; // tmp[] to avoid false sharing
+    alignas(hardware_destructive_interference_size) // avoid false sharing
+    std::atomic<int> value = 0;
+  };
   typedef std::array<cont_free_flag_t, contention_free_count> array_slock_t;
 
   const std::shared_ptr<array_slock_t> shared_locks_array_ptr; // 0 - unregistred, 1 registred & free, 2... - busy
-  char avoid_falsesharing_1[64];
 
   array_slock_t& shared_locks_array;
-  char avoid_falsesharing_2[64];
 
   int recursive_xlock_count;
 
@@ -251,6 +254,29 @@ public:
     }
 
     ++recursive_xlock_count;
+  }
+
+  bool try_lock() {
+    int const register_index = get_or_set_index();
+    if (register_index >= 0)
+      assert(shared_locks_array[register_index].value.load(std::memory_order_acquire) == 1);
+
+    if (owner_thread_id.load(std::memory_order_acquire) != get_fast_this_thread_id()) {
+      bool flag = false;
+      if (!want_x_lock.compare_exchange_strong(flag, true, std::memory_order_seq_cst))
+        return false;
+
+      for (auto& i : shared_locks_array)
+        if (i.value.load(std::memory_order_seq_cst) > 1) {
+          // somebody has a read lock, so give up
+          want_x_lock.store(false, std::memory_order_release);
+          return false;
+        }
+    }
+
+    owner_thread_id.store(get_fast_this_thread_id(), std::memory_order_release);
+    ++recursive_xlock_count;
+    return true;
   }
 
   void unlock() {
@@ -549,9 +575,11 @@ struct ConditionVariable {
 #ifdef CLASP_THREADS
 #define WITH_READ_LOCK(mutex) std::shared_lock lock__(mutex)
 #define WITH_READ_WRITE_LOCK(mutex) std::unique_lock lock__(mutex)
+#define TRY_READ_WRITE_LOCK(mutex) std::unique_lock lock__(mutex, std::try_to_lock_t()); if (lock__)
 #else
 #define WITH_READ_LOCK(m)
 #define WITH_READ_WRITE_LOCK(m)
+#define TRY_READ_WRITE_LOCK(m) if (true)
 #endif
 
 void* start_thread(void* info);

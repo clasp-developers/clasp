@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/referenceQueue.h>
 
 namespace gctools {
 
@@ -109,6 +110,102 @@ std::optional<core::T_sp> WeakPointer::value_no_lock() const { return value(); }
 void WeakPointer::store_no_lock(core::T_sp o) { _value = o; }
 void WeakPointer::store(core::T_sp o) { store_no_lock(o); }
 void WeakPointer::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fixup*) {}
+#endif
+
+QueueableWeakReference::QueueableWeakReference(core::T_sp o, bool resurrectp)
+  : _resurrectp(resurrectp || !o.objectp()),
+#ifdef USE_BOEHM
+    _referent(o.objectp() ? GC_HIDE_POINTER(o.tagged_()) : o.tagged_())
+#else
+    _referent(o)
+#endif
+{
+#ifdef USE_BOEHM
+  if (o.objectp()) {
+    void* base = GC_base((void*)o.tagged_());
+    // NOTE: Boehm keeps alive any object referenced from the client
+    // data. We give it `this`, and therefore the
+    // QueueableWeakReference_O is immortal until it's cleared.
+    // This is not expected to be a huge problem, but
+    // it could nonetheless cause a small memory leak.
+    GC_register_finalizer_no_order(base, finalizer, this, NULL, NULL);
+  }
+#endif
+  if (!o.objectp()) _clearedp.test_and_set(); // pre-clear ourselves
+}
+
+bool QueueableWeakReference::clear() {
+  if (!_clearedp.test_and_set()) {
+    // Previous value of clearedp was false, so we won the race.
+    // if we're not resurrecting, the referent after clear() is actually
+    // irrelevant, but we set it to something innocuous to make it obvious
+    // if we're in here with a debugger or whatever.
+#ifdef USE_BOEHM
+    if (_resurrectp)
+      _referent = (GC_hidden_pointer)GC_REVEAL_POINTER(_referent);
+    else _referent = (GC_hidden_pointer)NULL;
+#else
+    if (!_resurrectp)
+      _referent = deleted<core::T_O>();
+#endif
+    return true;
+  } else return false;
+}
+
+// Called by GC
+bool QueueableWeakReference::enqueue() {
+  // dark magic, sorry
+  core::QueueableWeakReference_O* us
+    = reinterpret_cast<core::QueueableWeakReference_O*>((char*)this - OFFSET);
+  return us->enqueue();
+}
+
+#ifdef USE_BOEHM
+std::optional<core::T_sp> QueueableWeakReference::value() const {
+  value_helper_s vhs(this);
+  GC_call_with_alloc_lock(value_helper, &vhs);
+  return vhs.result;
+}
+
+void* QueueableWeakReference::value_helper(void* data) {
+  value_helper_s* vhsp = (value_helper_s*)data;
+  if (!vhsp->wp->clearedp())
+    // we're still weak but our reference is live.
+    vhsp->result = core::T_sp((Tagged)GC_REVEAL_POINTER(vhsp->wp->_referent));
+  else if (vhsp->wp->_resurrectp) {
+    // We're now a strong reference, so just return.
+    vhsp->result = core::T_sp((Tagged)vhsp->wp->_referent);
+  } else vhsp->result = std::nullopt; // we're a dead reference
+  return nullptr;
+}
+
+std::optional<core::T_sp> QueueableWeakReference::value_no_lock() const {
+  value_helper_s vhs(this);
+  value_helper(&vhs);
+  return vhs.result;
+}
+void QueueableWeakReference::store_no_lock(core::T_sp n) {
+  _referent = GC_HIDE_POINTER(n.tagged_());
+}
+
+void QueueableWeakReference::finalizer(void* obj, void* cdata) {
+  QueueableWeakReference* me = (QueueableWeakReference*)cdata;
+  me->enqueue();
+  // keep object alive for the duration of this finalizer hopefully.
+  // Otherwise there's a possibility (maybe?) that Boehm actually destroys the
+  // object during this finalizer, before we turn ourselves into a strong
+  // reference in clear(), and that would be bad.
+  volatile void* save = obj;
+}
+
+#else // non-boehm collectors
+std::optional<core::T_sp> QueueableWeakReference::value() const {
+  if (_resurrectp || !clearedp()) return _referent;
+  else return std::nullopt;
+}
+std::optional<core::T_sp> QueueableWeakReference::value_no_lock() const {
+  return value();
+}
 #endif
 
 #ifdef USE_BOEHM

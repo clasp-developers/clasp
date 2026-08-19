@@ -16,6 +16,7 @@
 #include <clasp/core/unwind.h> // sjlj_throw (issue #1784 SLAD routing)
 #include <clasp/core/pathname.h>
 #include <clasp/core/hashTableEq.h>
+#include <clasp/core/referenceQueue.h>
 #include <clasp/core/lispStream.h>
 #include <clasp/core/array.h>
 #include <clasp/core/symbolTable.h>
@@ -477,34 +478,95 @@ namespace gctools {
 /*! Call finalizer_callback with no arguments when object is finalized.*/
 DOCGROUP(clasp);
 CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_callback) {
-  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::HashTable_sp ht = _lisp->_Roots._Finalizers;
-  core::List_sp orig_finalizers = ht->gethash(object, nil<core::T_O>());
-  core::List_sp finalizers = core::Cons_O::create(finalizer_callback, orig_finalizers);
-  ht->hash_table_setf_gethash(object, finalizers);
-  // Register the finalizer with the GC
-  set_finalizer_list(object, finalizers);
+  core::ReferenceQueue_sp queue = _lisp->_Roots._FinalizerQueue;
+  core::QueueableWeakReference_sp ref
+    = core::QueueableWeakReference_O::make(object, queue, false);
+  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
+  ht->hash_table_setf_gethash(ref, finalizer_callback);
 };
 
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
-  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
+  ql::list finalizers;
+  WITH_READ_LOCK(globals_->_FinalizersMutex);
   core::HashTable_sp ht = _lisp->_Roots._Finalizers;
-  return ht->gethash(object, nil<core::T_O>());
+  ht->maphash([&](core::T_sp k, core::T_sp v) {
+    if (k.isA<core::QueueableWeakReference_O>()
+        && k.as_unsafe<core::QueueableWeakReference_O>()->value() == object)
+      finalizers << v;
+  });
+  return finalizers.cons();
 }
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__invoke_finalizers() {
-  invoke_finalizers();
+  core::ReferenceQueue_sp queue = _lisp->_Roots._FinalizerQueue;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::T_sp tref = queue->remove();
+  for (; tref.notnilp(); tref = queue->remove()) {
+    if (tref.isA<core::QueueableWeakReference_O>()) {
+      std::optional<core::T_sp> f;
+      {WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
+        f = ht->find(tref);
+        if (f) ht->remhash(tref);
+      }
+      // Make sure we do not hold the finalizers lock while calling the
+      // finalizer, since it could do anything.
+      // (Recursive finalizer invocation should be ok, since reference queues
+      //  are adequately synchronized on their own, without the finalizers lock.)
+      if (f && f->isA<core::Function_O>())
+        // KLUDGE: Finalizers used to receive the object as an argument.
+        // This lets you resurrect objects which is messy, so it's no longer
+        // supported. But trivial-garbage's Clasp bindings are written to
+        // pass FINALIZE a function of one argument that they ignore, so to
+        // avoid breaking too much at once, we'll pass NIL until
+        // trivial-garbage can be updated.
+        f->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
+    }
+  }
+  invoke_finalizers(); // run any GC finalizers. only matters on boehm atm
+}
+
+// Invoked at GC safepoints: see stw.cc.
+// Try invoking finalizers. If we run into lock contention
+// just give up. This should avoid any recursive lock silliness, which is
+// important to get right since safepoints happen in a lot of random places!
+// Finalizers can signal errors, so this is still somewhat disruptive, but to
+// some extent that's probably unavoidable in a system where you say the
+// implementation call call your functions (finalizers) at literally any time.
+// Anyone wanting more control can use reference queues to rig something up.
+void try_invoking_finalizers() {
+  core::ReferenceQueue_sp queue = _lisp->_Roots._FinalizerQueue;
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
+  while (true) {
+    std::optional<core::T_sp> f;
+    {
+      TRY_READ_WRITE_LOCK(globals_->_FinalizersMutex) {
+        core::T_sp tref = queue->remove();
+        if (tref.isA<core::QueueableWeakReference_O>()) {
+          f = ht->find(tref);
+          if (f) {
+            ht->remhash(tref);
+          }
+        } else return; // nothing in the queue: we're done.
+      } else return; // someone else has the lock: we tried enough, give up.
+    }
+    // We are no longer holding the lock. Try finalizing something.
+    if (f && f->isA<core::Function_O>())
+      f->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
+  }
 }
 
 DOCGROUP(clasp);
 CL_DEFUN void gctools__definalize(core::T_sp object) {
   WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
   core::HashTable_sp ht = _lisp->_Roots._Finalizers;
-  if (ht->gethash(object))
-    ht->remhash(object);
-  clear_finalizer_list(object);
+  ht->maphash([&](core::T_sp k, core::T_sp v) {
+    if (k.isA<core::QueueableWeakReference_O>()
+        && k.as_unsafe<core::QueueableWeakReference_O>()->value() == object)
+      ht->remhash(k);
+  });
 }
 
 }; // namespace gctools

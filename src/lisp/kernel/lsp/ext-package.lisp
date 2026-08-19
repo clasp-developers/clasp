@@ -9,6 +9,7 @@
           core:list-all-logical-hosts
           core:logical-host-p
           core:make-weak-pointer
+          core:make-reference-queue
           core:temporary-directory
           core:mkstemp
           core:printing-char-p
@@ -16,6 +17,9 @@
           core:rmdir
           core:weak-pointer-valid
           core:weak-pointer-value
+          core:weak-reference-enqueue
+          core:reference-queue-remove
+          core:reference-queue-poll
           core:num-logical-processors
           core:quasiquote
           core:unquote
@@ -80,6 +84,8 @@
             ;;; for asdf and slime and trivial-garbage to use ext:
           getpid argc argv rmdir temporary-directory mkstemp weak-pointer-value
           make-weak-pointer weak-pointer-valid hash-table-weakness
+          weak-reference-enqueue make-reference-queue reference-queue-remove
+          reference-queue-poll
           num-logical-processors
           quasiquote
           unquote
