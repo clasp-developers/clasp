@@ -39,13 +39,13 @@ std::atomic<bool> world_stopped{false};
 enum class StopType { Running, MutatorStop, GCStop };
 std::atomic<StopType> stop_type{StopType::Running};
 
-void gc_yield_slow_thread(core::ThreadLocalState*);
+static void yield_for_gc(core::ThreadLocalState*);
 
 void stw_register_thread(core::ThreadLocalState* thread) {
   running_count.fetch_add(1, std::memory_order_acq_rel);
   // Now that we're registered, yield in case a GC is underway.
   if (world_stopped.load(std::memory_order_relaxed))
-    gc_yield_slow_thread(thread);
+    yield_for_gc(thread);
 }
 
 void stw_unregister_thread(core::ThreadLocalState* thread) {
@@ -94,12 +94,19 @@ void end_gcsafe(core::ThreadLocalState* thread) {
 
 void try_invoking_finalizers(); // defined in gcFunctions.cc
 
-// see gc_yield
-void gc_yield_slow_thread(core::ThreadLocalState* thread) {
+// separate from gc_yield_slow_thread because we don't want stw_register_thread
+// to try running any finalizers - that's run during thread initialization
+// so the thread will not be ready to grab any locks, needed for finalization.
+static void yield_for_gc(core::ThreadLocalState* thread) {
   // Don't need to wait on world_stopping_cv, since in gc_yield we already
   // checked that world_stopped is true.
   begin_gcsafe(thread, __builtin_frame_address(0));
   end_gcsafe(thread);
+}
+
+// see gc_yield
+void gc_yield_slow_thread(core::ThreadLocalState* thread) {
+  yield_for_gc(thread);
   // Try some finalizers.
   // NOTE: This is maybe slower than it has to be right now - every thread will
   // come out of a GC pause simultaneously, and they'll all race to grab the lock
