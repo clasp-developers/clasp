@@ -34,6 +34,7 @@
 #include <clasp/core/debugger.h>
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/wrappers.h>
+#include <clasp/core/pointer.h>
 #include <clasp/core/weakPointer.h>
 #include <clasp/core/ql.h>
 #include <clasp/core/mpPackage.h>
@@ -486,6 +487,27 @@ CL_DEFUN void gctools__finalize(core::T_sp object, core::Function_sp finalizer_c
   ht->hash_table_setf_gethash(ref, finalizer_callback);
 };
 
+#ifndef USE_BOEHM
+// register a C++ destructor as a finalizer.
+// see gcalloc.h for use
+void register_destructor_finalizer(core::T_sp sp, void(*pdestructor)(void*)) {
+  core::HashTable_sp ht = _lisp->_Roots._Finalizers;
+  core::ReferenceQueue_sp queue = _lisp->_Roots._FinalizerQueue;
+  // This is sometimes called extremely early during boot for e.g. variable cells
+  // at which point we may not be ready. If we're not ready, don't finalize.
+  // This shouldn't pose an issue since those very early objects are never
+  // actually collected (e.g. CL:NIL's variable cell).
+  if (!ht || !queue) return;
+  // Pack the destructor into a Pointer_O so it can live in the hash table.
+  core::Pointer_sp destructor =
+    core::Pointer_O::create(reinterpret_cast<void*>(pdestructor));
+  core::QueueableWeakReference_sp ref
+    = core::QueueableWeakReference_O::make(sp, queue, true);
+  WITH_READ_WRITE_LOCK(globals_->_FinalizersMutex);
+  ht->hash_table_setf_gethash(ref, destructor);
+}
+#endif
+
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
   ql::list finalizers;
@@ -497,6 +519,32 @@ CL_DEFUN core::T_sp gctools__finalizers(core::T_sp object) {
       finalizers << v;
   });
   return finalizers.cons();
+}
+
+static void maybe_finalize_one(core::QueueableWeakReference_sp ref,
+                               std::optional<core::T_sp> finalizer) {
+  if (finalizer) {
+    if (finalizer->isA<core::Function_O>())
+      // KLUDGE: Finalizers used to receive the object as an argument.
+      // This lets you resurrect objects which is messy, so it's no longer
+      // supported. But trivial-garbage's Clasp bindings are written to
+      // pass FINALIZE a function of one argument that they ignore, so to
+      // avoid breaking too much at once, we'll pass NIL until
+      // trivial-garbage can be updated.
+      finalizer->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
+#ifndef USE_BOEHM
+    else if (finalizer->isA<core::Pointer_O>()) {
+      // destructor finalizer: the pointer is to a void(void*)
+      // that's expecting the object.
+      core::T_sp zombie = ref->value();
+      if (zombie.nilp()) // should be impossible but errors are awkward here
+        return;
+      core::Pointer_sp d = finalizer->as_unsafe<core::Pointer_O>();
+      auto destructor = reinterpret_cast<void (*)(void*)>(d->ptr());
+      destructor(zombie.untag_object());
+    }
+#endif
+  }
 }
 
 DOCGROUP(clasp);
@@ -515,14 +563,7 @@ CL_DEFUN void gctools__invoke_finalizers() {
       // finalizer, since it could do anything.
       // (Recursive finalizer invocation should be ok, since reference queues
       //  are adequately synchronized on their own, without the finalizers lock.)
-      if (f && f->isA<core::Function_O>())
-        // KLUDGE: Finalizers used to receive the object as an argument.
-        // This lets you resurrect objects which is messy, so it's no longer
-        // supported. But trivial-garbage's Clasp bindings are written to
-        // pass FINALIZE a function of one argument that they ignore, so to
-        // avoid breaking too much at once, we'll pass NIL until
-        // trivial-garbage can be updated.
-        f->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
+      maybe_finalize_one(tref.as_unsafe<core::QueueableWeakReference_O>(), f);
     }
   }
   invoke_finalizers(); // run any GC finalizers. only matters on boehm atm
@@ -540,10 +581,11 @@ void try_invoking_finalizers() {
   core::ReferenceQueue_sp queue = _lisp->_Roots._FinalizerQueue;
   core::HashTable_sp ht = _lisp->_Roots._Finalizers;
   while (true) {
+    core::T_sp tref = nil<core::T_O>();
     std::optional<core::T_sp> f;
     {
       TRY_READ_WRITE_LOCK(globals_->_FinalizersMutex) {
-        core::T_sp tref = queue->remove();
+        tref = queue->remove();
         if (tref.isA<core::QueueableWeakReference_O>()) {
           f = ht->find(tref);
           if (f) {
@@ -553,8 +595,7 @@ void try_invoking_finalizers() {
       } else return; // someone else has the lock: we tried enough, give up.
     }
     // We are no longer holding the lock. Try finalizing something.
-    if (f && f->isA<core::Function_O>())
-      f->as_unsafe<core::Function_O>()->funcall(nil<core::T_O>());
+    maybe_finalize_one(tref.as_unsafe<core::QueueableWeakReference_O>(), f);
   }
 }
 
