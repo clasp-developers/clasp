@@ -36,12 +36,6 @@ THE SOFTWARE.
 #include <clasp/core/iterator.h>
 #include <clasp/core/pathname.fwd.h>
 
-template <> struct gctools::GCInfo<core::Path_O> {
-  static bool constexpr NeedsInitialization = true;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
-
 namespace core {
 
 SMART(Path);
@@ -49,7 +43,8 @@ class Path_O : public General_O {
   LISP_CLASS(core, CorePkg, Path_O, "path", General_O);
 
 public:
-  void initialize();
+  Path_O() = default;
+  Path_O(const Path_O& ss) : Base(ss), _Path(ss._Path) {}
 
 private:
   dont_expose<std::filesystem::path> _Path;
@@ -117,9 +112,6 @@ public:
 
   /*! Return true if the file pointed to by this path exists */
   bool exists();
-  Path_O(const Path_O& ss); //!< Copy constructor
-
-  DEFAULT_CTOR_DTOR(Path_O);
 };
 }; // namespace core
 

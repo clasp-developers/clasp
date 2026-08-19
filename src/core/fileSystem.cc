@@ -106,10 +106,6 @@ CL_DEFUN T_mv cl__ensure_directories_exist(T_sp pathspec) {
   return (Values(pathspec, _lisp->_true()));
 }
 
-Path_O::Path_O(Path_O const& other) : Base(other) { this->_Path = other._Path; }
-
-void Path_O::initialize() { this->Base::initialize(); }
-
 Path_sp Path_O::create(const string& path) {
   auto op = gctools::GC<Path_O>::allocate();
   op->setPathFromString(path);
