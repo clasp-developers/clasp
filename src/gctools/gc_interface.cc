@@ -398,8 +398,6 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(mp::Process_O);
   Init_class_kind(core::SingleDispatchMethod_O);
   Init_class_kind(core::Iterator_O);
-  Init_class_kind(core::DirectoryIterator_O);
-  Init_class_kind(core::RecursiveDirectoryIterator_O);
   Init_class_kind(core::Array_O);
   Init_class_kind(core::MDArray_O);
   Init_class_kind(core::MDArray_int16_t_O);
@@ -637,9 +635,7 @@ void dumpBoehmLayoutTables(std::ostream& fout) {
   Init_class_kind(core::StringOutputStream_O);
   Init_class_kind(core::StringInputStream_O);
   Init_class_kind(core::EchoStream_O);
-  Init_class_kind(core::FileStatus_O);
   Init_class_kind(core::SourcePosInfo_O);
-  Init_class_kind(core::DirectoryEntry_O);
   Init_class_kind(core::Record_O);
   Init_class_kind(clbind::ClassRegistry_O);
   Init_class_kind(core::Cons_O);
