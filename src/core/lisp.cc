@@ -1380,7 +1380,9 @@ DOCGROUP(clasp);
   }
   VirtualMachine& vm = my_thread->_VM;
   vm.shutdown();
-  exit(exitValue);
+  // _IO_cleanup() would block on a FILE another thread is wedged inside, so flush explicitly and skip it.
+  flush_open_c_streams();
+  _exit(exitValue);
 #endif
 };
 
