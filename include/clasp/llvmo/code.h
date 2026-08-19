@@ -38,7 +38,7 @@ THE SOFTWARE.
 
 template <> struct gctools::GCInfo<llvmo::ObjectFile_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -130,7 +130,6 @@ public:
   static size_t sizeofInState(ObjectFile_O* code, CodeState_t state);
 
 public:
-  ~ObjectFile_O();
   std::string __repr__() const;
   static void writeToFile(const std::string& filename, const char* start, size_t size);
   bool memoryBufferValid() const { return this->_MemoryBuffer.get() != NULL; };
@@ -200,7 +199,7 @@ bool general_entry_point_redirect_p(void* ep);
 
 template <> struct gctools::GCInfo<llvmo::CodeBlock_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 
@@ -308,8 +307,6 @@ public:
         _DataCode(totalSize, 0, true)
 #endif
                               {};
-
-  ~CodeBlock_O();
 };
 
 }; // namespace llvmo
