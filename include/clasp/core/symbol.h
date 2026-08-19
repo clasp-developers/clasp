@@ -34,8 +34,6 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/array.h>
 #include <clasp/core/function.h>
-#include <clasp/core/environment.fwd.h>
-// #include <clasp/core/lisp.h>
 
 #define KW(s) (_lisp->internKeyword(s))
 

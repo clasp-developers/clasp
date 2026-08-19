@@ -33,8 +33,6 @@ THE SOFTWARE.
 #include <clasp/core/object.h>
 #include <clasp/core/symbol.h>
 #include <clasp/core/array.h>
-// #include "stringSet.fwd.h"
-#include <clasp/core/environment.fwd.h>
 #include <clasp/core/cons.h>
 
 namespace core {
