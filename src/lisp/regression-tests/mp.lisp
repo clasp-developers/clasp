@@ -253,3 +253,105 @@
         (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
         (car place))
       ((nil nil nil nil nil nil nil)))
+
+
+;;; Returns true if THUNK's process is gone within SECONDS of being killed. The
+;;; process must still be running when it is killed: a thunk that dies on its own
+;;; would otherwise look exactly like a cancelled one and pass vacuously.
+(defun cancelled-within-p (thunk seconds)
+  (let ((p (mp:process-run-function nil thunk)))
+    (loop repeat 200 until (mp:process-active-p p) do (sleep 0.01))
+    (and (mp:process-active-p p)
+         (progn
+           (mp:process-kill p)
+           (loop repeat (ceiling seconds 0.01)
+                 while (mp:process-active-p p)
+                 do (sleep 0.01))
+           (not (mp:process-active-p p))))))
+
+;;; A loop body of pure VM opcodes reaches no function-call safepoint, so it is
+;;; cancellable only if the interpreter polls interrupts on backward branches.
+(test-true cancel-opcode-only-loop
+           (cancelled-within-p (lambda () (loop)) 3))
+
+(test-true cancel-arithmetic-loop
+           (cancelled-within-p (lambda () (let ((x 0)) (loop (setq x (1+ x))))) 3))
+
+;;; Control: a loop that calls a function was always cancellable.
+(test-true cancel-loop-with-call
+           (cancelled-within-p (lambda () (loop (funcall #'identity 1))) 3))
+
+;;; Native code reaches its own safepoints, so the VM's back-edge poll does not
+;;; cover it. Asserts SIMPLE-CORE-FUN so it cannot pass by testing bytecode;
+;;; vacuous where no native compiler exists.
+(test-true cancel-native-opcode-only-loop
+           (let ((f (ignore-errors
+                     (let ((cmp:*compile-native* t))
+                       (compile nil '(lambda () (loop)))))))
+             (if (typep f 'core:simple-core-fun)
+                 (cancelled-within-p f 3)
+                 t)))
+
+;;; A body that finishes in time returns normally and signals nothing.
+(test with-timeout-completes
+      (mp:with-timeout (30) (+ 1 2))
+      (3))
+
+;;; A spinning body is interrupted; this only works because loops now poll.
+(test-expect-error with-timeout-fires
+                   (mp:with-timeout (0.2) (loop))
+                   :type mp:timeout)
+
+;;; The timeout must not fire after the body has already returned. An instant body
+;;; never enqueues an interrupt, so this alone does not cover the race below.
+(test-true with-timeout-no-late-fire
+           (progn (mp:with-timeout (0.2) t)
+                  (sleep 0.5)
+                  t))
+
+;;; A blocking foreign call must park, so an interrupt can wake it with SIGCONT
+;;; rather than sitting queued until the call returns on its own.
+(test-expect-error with-timeout-blocking-foreign
+                   (mp:with-timeout (0.5) (ext:system "sleep 3"))
+                   :type mp:timeout)
+
+;;; ...and it must be woken PROMPTLY, not merely reported late on return. Three
+;;; seconds of sleep must not elapse; without parking this takes the full 3s.
+(test-true with-timeout-foreign-is-prompt
+           (let ((start (get-internal-real-time)))
+             (ignore-errors (mp:with-timeout (0.5) (ext:system "sleep 3")))
+             (< (/ (- (get-internal-real-time) start)
+                   internal-time-units-per-second)
+                2.0)))
+
+;;; ...and the interrupt queued during that call must not fire afterwards.
+(test-true with-timeout-foreign-no-late-fire
+           (progn (ignore-errors (mp:with-timeout (0.5) (ext:system "sleep 2")))
+                  (sleep 1)
+                  t))
+
+;;; A thread blocked in read(2) on an empty pipe must be cancellable. Without
+;;; parking the thread is never marked blocking, so no SIGCONT is sent and it
+;;; blocks forever. Bounded deliberately: an unbounded form would hang the whole
+;;; suite rather than fail, which is how a 6-hour CI timeout happens.
+(test-true cancel-blocking-read
+           (multiple-value-bind (r w) (core:pipe)
+             (declare (ignore w))
+             (let ((buf (make-string 16 :element-type 'base-char)))
+               (cancelled-within-p (lambda () (core:read-fd r buf)) 3))))
+
+;;; A thread blocked in accept(2) must be cancellable. A local socket is used so
+;;; the test needs no port and no network. Verified to answer NO before the
+;;; sockets were parked and YES after, so it is a real discriminator.
+(test-true cancel-blocking-accept
+           (let* ((path (format nil "/tmp/clasp-accept-test-~a.sock" (get-universal-time)))
+                  (sock (make-instance 'sb-bsd-sockets:local-socket :type :stream)))
+             (unwind-protect
+                  (progn (sb-bsd-sockets:socket-bind sock path)
+                         (sb-bsd-sockets:socket-listen sock 1)
+                         (cancelled-within-p
+                          (lambda () (sb-bsd-sockets:socket-accept sock)) 3))
+               (ignore-errors (sb-bsd-sockets:socket-close sock))
+               (ignore-errors (delete-file path)))))
+
+
