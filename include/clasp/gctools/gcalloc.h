@@ -168,10 +168,27 @@ static smart_ptr<OT> initialize_snapshot_object(Header_s* base, snapshotSaveLoad
 } // namespace gctools
 
 namespace gctools {
+// on boehm we use boehm finalizers for destructors. See gcalloc_boehm.h
+// on everything else we register an actual finalizer similar to other
+// finalizers. see gcFunctions.cc for register_destructor_finalizer
+#ifndef USE_BOEHM
+void register_destructor_finalizer(core::T_sp obj, void(*destructor)(void*));
+template <class OT>
+static void do_register_destructor_finalizer(smart_ptr<OT> sp) {
+  register_destructor_finalizer(sp, [](void* obj) {
+    static_cast<OT*>(obj)->~OT();
+  });
+}
+#endif
 template <class OT>
 static void finalizeIfNeeded(smart_ptr<OT> sp) {
-  if constexpr(GCInfo<OT>::NeedsFinalization)
+  if constexpr(GCInfo<OT>::NeedsFinalization) {
+#ifdef USE_BOEHM
     do_register_destructor_finalizer<OT>(SmartPtrToBasePtr(sp));
+#else
+    do_register_destructor_finalizer<OT>(sp);
+#endif
+  }
 }
 } // namespace gctools
 
