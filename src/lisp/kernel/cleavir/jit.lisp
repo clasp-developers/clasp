@@ -124,23 +124,21 @@
 
 (defun jit-add-module (module startup-shutdown-id ctable-name fvector-name)
   (cmp:irc-verify-module-safe module)
-  (unwind-protect
-       (let ((jit-engine (llvm-sys:clasp-jit)))
-         (cmp:with-track-llvm-time
-           (when *dump-compile-module*
-             (format t "About to dump module~%")
-             (llvm-sys:dump-module module)
-             (format t "Done dump module~%"))
-           (mp:with-lock (*jit-lock*)
-             (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
-               ;; Install the literals, and as a bonus, collect the constants table
-               ;; and function vector so the caller can make or retrieve objects.
-               (let ((object-file
-                       (llvm-sys:add-irmodule
-                        jit-engine dylib module
-                        cmp:*thread-safe-context* startup-shutdown-id))
-                     (litarr (llvm-sys:lookup jit-engine dylib ctable-name))
-                     (fvector
-                       (llvm-sys:lookup jit-engine dylib fvector-name)))
-                 (values object-file litarr fvector))))))
-    (gctools:thread-local-cleanup)))
+  (let ((jit-engine (llvm-sys:clasp-jit)))
+    (cmp:with-track-llvm-time
+        (when *dump-compile-module*
+          (format t "About to dump module~%")
+          (llvm-sys:dump-module module)
+          (format t "Done dump module~%"))
+      (mp:with-lock (*jit-lock*)
+        (let ((dylib (llvm-sys:get-main-jitdylib jit-engine)))
+          ;; Install the literals, and as a bonus, collect the constants table
+          ;; and function vector so the caller can make or retrieve objects.
+          (let ((object-file
+                  (llvm-sys:add-irmodule
+                   jit-engine dylib module
+                   cmp:*thread-safe-context* startup-shutdown-id))
+                (litarr (llvm-sys:lookup jit-engine dylib ctable-name))
+                (fvector
+                  (llvm-sys:lookup jit-engine dylib fvector-name)))
+            (values object-file litarr fvector)))))))
