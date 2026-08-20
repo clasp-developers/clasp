@@ -245,7 +245,7 @@ int Process_O::startProcess() {
   return result;
 }
 
-void Process_O::interrupt(core::T_sp interrupt) {
+bool Process_O::interrupt(core::T_sp interrupt) {
    /*
    * Lifted from the ECL source code.  meister 2017
    * We first ensure that the process is active and running
@@ -266,9 +266,9 @@ void Process_O::interrupt(core::T_sp interrupt) {
           // FIXME?: We could use pthread_sigqueue to stick in some extra info
           // in order to disambiguate our wakeups from others' a bit.
           pthread_kill(_TheThread._value, SIGCONT);
-        return;
+        return true;
       }
-    case Exited: return; // we were too slow! oh well, who cares.
+    case Exited: return false; // we were too slow, and the caller may care.
     case Nascent: SIMPLE_ERROR("Cannot interrupt unstarted process.");
     case Booting: waitPhase(p);
     }
@@ -448,10 +448,14 @@ CL_DEFUN core::T_sp mp__process_preset(Process_sp process, core::T_sp function, 
   return process;
 }
 
-CL_DOCSTRING(R"dx(Internal. Enqueue the given interrupt to the thread's pending interrupt list. Returns no values.")dx");
+CL_DOCSTRING(R"dx(Internal. Enqueue the given interrupt on the process's pending interrupt list.
+
+Returns true if the interrupt was enqueued on a live process, and false if the process had already
+exited, in which case the interrupt is discarded. A true value does NOT mean the interrupt has run:
+delivery is asynchronous, and happens when the process next reaches a safepoint.)dx");
 DOCGROUP(clasp);
-CL_DEFUN void mp__enqueue_interrupt(Process_sp process, core::T_sp interrupt) {
-  process->interrupt(interrupt);
+CL_DEFUN bool mp__enqueue_interrupt(Process_sp process, core::T_sp interrupt) {
+  return process->interrupt(interrupt);
 }
 
 SYMBOL_EXPORT_SC_(MpPkg, posix_interrupt);

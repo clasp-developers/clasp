@@ -136,7 +136,7 @@ public:
   string __repr__() const override;
   inline ProcessPhase phase() const { return _Phase.load(std::memory_order_acquire); }
   string phase_as_string() const;
-  void interrupt(core::T_sp interrupt);
+  bool interrupt(core::T_sp interrupt);
   void suspend();
   void resume();
 private:
