@@ -74,8 +74,11 @@ void DynamicBindingStack::release_binding_index(size_t index) const {
 };
 
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
-  unlikely_if(index >= this->_ThreadLocalBindings.size()) this->_ThreadLocalBindings.resize(index + 1,
-                                                                                            no_thread_local_binding<T_O>());
+  if (index >= this->_ThreadLocalBindings.size()) [[unlikely]]
+    // note: in case it's not obvious, only the thread ever adds a new local
+    // binding, so no synchronization is necessary here.
+    this->_ThreadLocalBindings.resize(index + 1,
+                                      no_thread_local_binding<T_O>());
   return &(this->_ThreadLocalBindings[index]);
 }
 

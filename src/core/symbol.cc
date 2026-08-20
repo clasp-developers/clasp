@@ -229,8 +229,12 @@ uint32_t VariableCell_O::ensureBindingIndex() const {
       // grabbed.
       bindings.release_binding_index(new_index);
       return no_binding;
-    } else
+    } else {
+      // We got a new binding index. Set up GC to call our destructor so that
+      // the index is released if we die.
+      gctools::GC<VariableCell_O>::finalizeDestructor(this->asSmartPtr());
       return new_index;
+    }
   } else
     return binding_index;
 }
