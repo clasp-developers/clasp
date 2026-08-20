@@ -179,13 +179,13 @@ extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallb
     switch (gctools::ptag(*tp)) {
     case gctools::general_tag: {
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
-      if (header > (gctools::Header_s*)0x1000 && header->isValidGeneralObject())
+      if (header > (gctools::Header_s*)0x1000)
         callback(static_cast<void*>(tp), data);
       else gctools::wait_for_user_signal("bad object");
     } break;
     case gctools::cons_tag: {
       gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
-      if (header > (gctools::ConsHeader_s*)0x1000 && header->isValidConsObject())
+      if (header > (gctools::ConsHeader_s*)0x1000)
         callback(static_cast<void*>(tp), data);
       else gctools::wait_for_user_signal("bad object");
     } break;
