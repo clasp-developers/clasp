@@ -14,6 +14,9 @@ template <std::invocable<Tagged*> RootWalkCallback>
 void walkGlobalRoots(RootWalkCallback&& callback) {
   // luckily, just the one god object references everything else
   callback((Tagged*)&_lisp);
+  // but we also need to update any global pointers for moving GC.
+  for (size_t jj = 0; jj < global_symbol_count; ++jj)
+    callback((Tagged*)&global_symbols[jj]);
 };
 
 template <std::invocable<Tagged*> ThreadWalkCallback>
