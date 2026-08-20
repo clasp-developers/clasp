@@ -286,3 +286,19 @@
              (if (typep f 'core:simple-core-fun)
                  (cancelled-within-p f 3)
                  t)))
+
+;;; A body that finishes in time returns normally and signals nothing.
+(test with-timeout-completes
+      (mp:with-timeout (30) (+ 1 2))
+      (3))
+
+;;; A spinning body is interrupted; this only works because loops now poll.
+(test-expect-error with-timeout-fires
+                   (mp:with-timeout (0.2) (loop))
+                   :type mp:timeout)
+
+;;; The timeout must not fire after the body has already returned.
+(test-true with-timeout-no-late-fire
+           (progn (mp:with-timeout (0.2) t)
+                  (sleep 0.5)
+                  t))

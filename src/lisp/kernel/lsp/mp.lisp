@@ -158,3 +158,49 @@ If DATUM is provided, it and ARGUMENTS designate a condition of default type SIM
    (if datum
        (core::coerce-to-condition datum arguments 'simple-error 'abort-process)
        nil)))
+
+#+threads
+;; A subtype of ERROR, not just SERIOUS-CONDITION, so HANDLER-CASE on ERROR and
+;; IGNORE-ERRORS catch it; SBCL and bordeaux-threads use SERIOUS-CONDITION.
+(define-condition timeout (error)
+  ((%seconds :initarg :seconds :reader timeout-seconds))
+  (:report (lambda (condition stream)
+             (format stream "Timed out after ~a second~:p."
+                     (timeout-seconds condition)))))
+
+#+threads
+(defun call-with-timeout (seconds function)
+  "Call FUNCTION, signalling TIMEOUT in this process if it runs longer than SECONDS.
+The timeout is delivered as an interrupt, so it lands at the next safepoint."
+  (let* ((lock (make-lock :name 'with-timeout))
+         (cv (make-condition-variable :name 'with-timeout))
+         (target *current-process*)
+         (deadline (+ (get-internal-real-time)
+                      (round (* seconds internal-time-units-per-second))))
+         (donep nil)
+         (watchdog
+           (process-run-function
+            'with-timeout-watchdog
+            (lambda ()
+              (with-lock (lock)
+                ;; Re-check DONEP because a timedwait may return early.
+                (loop until donep
+                      for remaining = (/ (- deadline (get-internal-real-time))
+                                         internal-time-units-per-second)
+                      while (plusp remaining)
+                      do (condition-variable-timedwait cv lock (float remaining 1d0)))
+                (unless donep
+                  (interrupt-process
+                   target
+                   (lambda () (error 'timeout :seconds seconds)))))))))
+    (unwind-protect (funcall function)
+      (with-lock (lock)
+        (setf donep t)
+        (condition-variable-signal cv))
+      (process-join watchdog))))
+
+#+threads
+(defmacro with-timeout ((seconds) &body body)
+  "Execute BODY, signalling MP:TIMEOUT in this process if it has not finished
+within SECONDS."
+  `(call-with-timeout ,seconds (lambda () ,@body)))
