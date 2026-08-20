@@ -88,13 +88,15 @@ extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callbac
       void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
       gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
       if (header < (gctools::Header_s*)0x1000) gctools::wait_for_user_signal("bad object");
-      if (!header->isValidGeneralObject()) gctools::wait_for_user_signal("bad object");
+      // isValidGeneralObject() cannot be checked here: with a moving GC (Immix),
+      // the object may have been evacuated and the old header overwritten with a
+      // forwarding word. MMTk's callback handles forwarding; we must not validate first.
     } break;
     case gctools::cons_tag: {
       void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
       gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
       if (header < (gctools::ConsHeader_s*)0x1000) gctools::wait_for_user_signal("bad object");
-      if (!header->isValidConsObject()) gctools::wait_for_user_signal("bad object");
+      // isValidConsObject() same caveat as isValidGeneralObject() above.
     }
     }
     callback(static_cast<void*>(field), data);
