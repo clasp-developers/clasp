@@ -76,8 +76,10 @@ impl ActivePlan<ClaspVM> for VMActivePlan {
         MUTATORS.read().unwrap().len()
     }
 
-    fn is_mutator(_tls: VMThread) -> bool {
-        true
+    fn is_mutator(tls: VMThread) -> bool {
+        // This tls is one we provide in spawn_gc_thread. Keep it coordinated
+        // if we ever need some actual tls for GC workers for some reason.
+        tls != VMThread::UNINITIALIZED
     }
 
     fn mutator(tls: VMMutatorThread) -> &'static mut Mutator<ClaspVM> {

@@ -82,19 +82,15 @@ impl Collection<ClaspVM> for VMCollection {
             .name("MMTk GC Worker".to_string())
             .spawn(move || {
                 use mmtk::util::opaque_pointer::*;
-                use mmtk::util::Address;
                 // mask most signals for this thread so Lisp threads can deal
                 // with them. We do keep hardware signals like SEGV to make bugs
                 // more immediate; the process-wide signal handlers will
                 // recognize that we are not a Lisp thread and SIG_DFL.
                 unsafe { clasp_mask_signals_for_alien() };
-                // do whatever mmtk wants us doing
-                // This seems like an insane way to get a VMWorkerThread,
-                // but the docs aren't helpful. This is what Julia does.
-                let worker_tls =
-                    VMWorkerThread(VMThread(OpaquePointer::from_address(unsafe {
-                        Address::from_usize(thread_id::get())
-                    })));
+                // Use a null TLS for GC workers. We have no per-worker thread
+                // object for MMTk to look up, and null lets is_mutator() cheaply
+                // distinguish workers from mutator threads.
+                let worker_tls = VMWorkerThread(VMThread::UNINITIALIZED);
                 match ctx {
                     GCThreadContext::Worker(w) => {
                         mmtk::memory_manager::start_worker(mmtk(), worker_tls, w);
