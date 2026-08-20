@@ -829,12 +829,7 @@ List_sp lisp_parse_arguments(const string& packageName, const string& args, int 
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(args);
   Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, nil<T_O>()));
-#if 0  
-  Reader_sp reader = Reader_O::create(str);
-  T_sp osscons = reader->primitive_read(true, nil<T_O>(), false);
-#else
   T_sp osscons = read_lisp_object(str, true, nil<T_O>(), false);
-#endif
   List_sp sscons = osscons;
   return sscons;
 }
@@ -875,12 +870,7 @@ List_sp lisp_parse_declares(const string& packageName, const string& declarestri
   ChangePackage changePackage(pkg);
   SimpleBaseString_sp ss = SimpleBaseString_O::make(declarestring);
   Stream_sp str = gc::As_unsafe<Stream_sp>(cl__make_string_input_stream(ss, 0, nil<T_O>()));
-#if 0
-  Reader_sp reader = Reader_O::create(str);
-  List_sp sscons = reader->primitive_read(true, nil<T_O>(), false);
-#else
   List_sp sscons = read_lisp_object(str, true, nil<T_O>(), false);
-#endif
   return sscons;
 }
 

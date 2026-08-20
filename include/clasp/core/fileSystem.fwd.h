@@ -27,8 +27,4 @@ THE SOFTWARE.
 /* -^- */
 namespace core {
 FORWARD(Path);
-FORWARD(DirectoryIterator);
-FORWARD(RecursiveDirectoryIterator);
-FORWARD(DirectoryEntry);
-FORWARD(FileStatus);
 } // namespace core

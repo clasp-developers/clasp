@@ -110,7 +110,7 @@ using namespace llvm::orc;
 // the thread is killed
 template <> struct gctools::GCInfo<llvmo::ClaspJIT_O> {
   static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
+  static bool constexpr NeedsFinalization = false;
   static GCInfo_policy constexpr Policy = collectable_immobile;
 };
 

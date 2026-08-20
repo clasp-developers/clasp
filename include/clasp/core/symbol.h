@@ -34,8 +34,6 @@ THE SOFTWARE.
 #include <clasp/core/cons.h>
 #include <clasp/core/array.h>
 #include <clasp/core/function.h>
-#include <clasp/core/environment.fwd.h>
-// #include <clasp/core/lisp.h>
 
 #define KW(s) (_lisp->internKeyword(s))
 
@@ -45,12 +43,11 @@ THE SOFTWARE.
 
 template <> struct gctools::GCInfo<core::VariableCell_O> {
   static bool constexpr NeedsInitialization = false;
-#ifdef CLASP_THREADS
-  // Gotta release the binding index.
-  static bool constexpr NeedsFinalization = true;
-#else
+  // We have to release the binding index if we have one,
+  // which is done in the destructor. BUT, we don't bother actually setting up
+  // a finalizer until we get a binding index (see ensureBindingIndex)
+  // to save memory and time.
   static bool constexpr NeedsFinalization = false;
-#endif
   static GCInfo_policy constexpr Policy = normal;
 };
 
@@ -80,6 +77,9 @@ class VariableCell_O : public General_O {
 public:
   VariableCell_O(T_sp name) : _GlobalValue(unbound<T_O>()), _BindingIdx(NO_THREAD_LOCAL_BINDINGS), _Name(name) {}
 #ifdef CLASP_THREADS
+  // Beware! This destructor will NOT be run for GC-managed symbols unless they
+  // have obtained a local binding index. See ensureBindingIndex.
+  // (All symbols are GC-managed. Why would we stack allocate a symbol?)
   virtual ~VariableCell_O() {
     uint32_t idx = bindingIndex();
     if (idx != NO_THREAD_LOCAL_BINDINGS)

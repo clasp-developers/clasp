@@ -131,8 +131,6 @@ ObjectFile_sp ObjectFile_O::create(const std::string& scodename, std::unique_ptr
   return of;
 }
 
-ObjectFile_O::~ObjectFile_O() { DEBUG_OBJECT_FILES_PRINT(("%s:%d dtor for ObjectFile_O %p\n", __FILE__, __LINE__, (void*)this)); }
-
 llvm::Expected<std::unique_ptr<llvm::object::ObjectFile>> ObjectFile_O::getObjectFile() {
   llvm::MemoryBufferRef mem = *(this->_MemoryBuffer);
   return llvm::object::ObjectFile::createObjectFile(mem);
@@ -608,10 +606,6 @@ CL_DEFUN void describe_code() {
 
 CL_LAMBDA(&optional (size 8388608));
 CL_DEFUN CodeBlock_sp llvm_sys__make_code_block(size_t size) { return CodeBlock_O::make<gctools::RuntimeStage>(size); };
-
-CodeBlock_O::~CodeBlock_O() {
-  printf("%s:%d:%s Trying to destruct CodeBlock_O - what do I do?\n", __FILE__, __LINE__, __FUNCTION__);
-}
 
 bool CodeBlock_O::calculate(BasicLayout& BL) {
   uintptr_t headOffset = this->_HeadOffset;

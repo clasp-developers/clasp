@@ -275,11 +275,6 @@ gctools::return_type wrapped_test(core::T_O* arg0, core::T_O* arg1, core::T_O* a
 };
 namespace core {
 
-int f(Environment_sp& e) {
-  (void)e;
-  return 1;
-}
-
 CL_LAMBDA();
 CL_DECLARE();
 CL_DOCSTRING(R"dx(Print info about booting)dx");

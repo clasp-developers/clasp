@@ -664,17 +664,8 @@ public:
   DITypeRefArray_sp getOrCreateTypeArray(core::List_sp elements);
   DIBuilder_O() : Base(), _ptr(NULL) {};
   virtual ~DIBuilder_O() {
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-      //      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr](void) {
-#ifdef DEBUG_DTORS
-        printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-        delete ptr;
-      });
-      _ptr = NULL;
-    };
+    if (_ptr != NULL)
+      delete _ptr;
   }
 
 }; // DIBuilder_O

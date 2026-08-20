@@ -460,17 +460,8 @@ public:
   Triple_O(bool ownedp = false)
     : Base(), _ptr(NULL), _PtrIsOwned(ownedp){};
   ~Triple_O() {
-    if (_ptr != NULL && _PtrIsOwned) {
-      auto ptr = this->_ptr;
-      //      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr](void) {
-#ifdef DEBUG_DTORS
-        printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-        delete ptr;
-      });
-      _ptr = NULL;
-    };
+    if (_ptr != NULL && _PtrIsOwned)
+      delete _ptr;
   }
 
 }; // Triple_O
@@ -557,17 +548,8 @@ public:
 public:
   TargetOptions_O() : Base(), _ptr(NULL){};
   ~TargetOptions_O() {
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-      //      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr](void) {
-#ifdef DEBUG_DTORS
-        printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-        delete ptr;
-      });
-      _ptr = NULL;
-    };
+    if (_ptr != NULL)
+      delete _ptr;
   }
 
 }; // TargetOptions_O
@@ -888,16 +870,8 @@ public:
 
   TargetMachine_O() : Base(), _ptr(NULL){};
   ~TargetMachine_O() {
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-      core::thread_local_register_cleanup([ptr](void) {
-#ifdef DEBUG_DTORS
-        printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-        delete ptr;
-      });
-      _ptr = NULL;
-    };
+    if (_ptr != NULL)
+      delete _ptr;
   }
 }; // TargetMachine_O
 }; // namespace llvmo
@@ -1280,17 +1254,8 @@ public:
   /*! Delete the default constructor because llvm::DataLayout doesn't have one */
   DataLayout_O() = delete;
   ~DataLayout_O() {
-    if (this->_DataLayout) {
-      auto ptr = this->_DataLayout;
-      //      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr](void) {
-#ifdef DEBUG_DTORS
-        printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-        delete ptr;
-      });
-      this->_DataLayout = NULL;
-    }
+    if (_DataLayout)
+      delete _DataLayout;
   }
   DataLayout_sp copy() const;
 
@@ -1919,17 +1884,8 @@ public:
   core::T_sp getInsertPointInstruction();
   IRBuilderBase_O() : Base(), _ptr(NULL), _CurrentDebugLocationSet(false){};
   ~IRBuilderBase_O() {
-    if (_ptr != NULL) {
-      auto ptr = this->_ptr;
-      //      printf("%s:%d:%s registering dtor\n", __FILE__, __LINE__, __FUNCTION__ );
-      core::thread_local_register_cleanup([ptr](void) {
-#ifdef DEBUG_DTORS
-        printf("%s:%d:%s dtor %p\n", __FILE__, __LINE__, __FUNCTION__, ptr);
-#endif
-        delete ptr;
-      });
-      _ptr = NULL;
-    };
+    if (_ptr != NULL)
+      delete _ptr;
   }
 
 public:

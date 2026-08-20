@@ -747,41 +747,6 @@ T_sp lambda_list_for_name(T_sp raw_lambda_list) {
  * ------------------------------------------------------------
  */
 
-/*! Trivial initializers are atomic values that aren't non-keyword symbols
- */
-bool initializerIsTrivial(T_sp lambda_list, List_sp seen, T_sp initializer) {
-  if (initializer.consp()) {
-    Cons_sp cinit = gc::As_unsafe<Cons_sp>(initializer);
-    for (auto cur : (List_sp)seen) {
-      T_sp oseen = CONS_CAR(cur);
-      if (cinit->memberEq(oseen).notnilp()) {
-        if (!_lisp->_Roots._TheSystemIsUp) {
-          printf("%s:%d:%s\n  In lambda-list %s\n    the initializer %s is a list\n    and references the seen symbol %s \n    - "
-                 "so it is not trivial and needs a ValueEnvironment_O\n",
-                 __FILE__, __LINE__, __FUNCTION__, _rep_(lambda_list).c_str(), _rep_(initializer).c_str(), _rep_(oseen).c_str());
-        }
-        return false;
-      }
-    }
-    return true;
-  } else if (gc::IsA<Symbol_sp>(initializer)) {
-    if (seen.consp()) {
-      Cons_sp cseen = gc::As_unsafe<Cons_sp>(seen);
-      Symbol_sp sdefault = gc::As_unsafe<Symbol_sp>(initializer);
-      T_sp result = cseen->memberEq(sdefault);
-      if (result.notnilp()) {
-        if (!_lisp->_Roots._TheSystemIsUp) {
-          printf("%s:%d:%s default initializer: %s\n   lambda-list: %s\n   references a seen symbol: %s\n    - needs a "
-                 "ValueEnvironment_O\n",
-                 __FILE__, __LINE__, __FUNCTION__, _rep_(sdefault).c_str(), _rep_(lambda_list).c_str(), _rep_(seen).c_str());
-        }
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
 T_mv process_single_dispatch_lambda_list(List_sp llraw, bool allow_first_argument_default_dispatcher) {
   List_sp llprocessed = cl__copy_list(llraw);
   Symbol_sp sd_symbol = nil<Symbol_O>();

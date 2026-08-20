@@ -41,17 +41,14 @@ SMART(ExternalObject);
 class ExternalObject_O : public General_O {
   LISP_CLASS(core, CorePkg, ExternalObject_O, "ExternalObject", General_O);
 
-private:
-  Instance_sp _Class;
+public:
+  explicit ExternalObject_O() = default;
 
 public:
   virtual bool eql_(T_sp obj) const;
   CL_DEFMETHOD virtual bool isUndefined() const { return this->externalObject() == NULL; };
   virtual void* externalObject() const { SUBCLASS_MUST_IMPLEMENT(); };
   virtual void set_externalObject(void* ptr) { SUBCLASS_MUST_IMPLEMENT(); };
-
-public:
-  explicit ExternalObject_O() : Base(), _Class(nil<Instance_O>()){};
 };
 
 template <class Type, class WrapperType> gctools::smart_ptr<Type> RP_Create_wrapped(WrapperType ptr) {

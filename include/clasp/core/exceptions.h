@@ -371,8 +371,6 @@ public:
 
   void lazyInitialize();
 
-  //	_LispCallStackHolder& lispCallStack();
-
   DebugStream(int rank);
   virtual ~DebugStream();
 };

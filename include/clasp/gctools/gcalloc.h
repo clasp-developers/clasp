@@ -371,6 +371,13 @@ public:
   static void freeRoots(void* roots) {
     do_free(roots);
   };
+  static void finalizeDestructor(smart_pointer_type obj) {
+#ifdef USE_BOEHM
+    do_register_destructor_finalizer<OT>(SmartPtrToBasePtr(obj));
+#else
+    do_register_destructor_finalizer<OT>(obj);
+#endif
+  }
 
 };
 }; // namespace gctools

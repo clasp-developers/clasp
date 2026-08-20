@@ -12,15 +12,6 @@ namespace core {
 
 }; // namespace core
 
-namespace core {
-struct CleanupFunctionNode {
-  std::function<void(void)> _CleanupFunction;
-  CleanupFunctionNode* _Next;
-  CleanupFunctionNode(const std::function<void(void)>& cleanup, CleanupFunctionNode* next)
-      : _CleanupFunction(cleanup), _Next(next){};
-};
-}; // namespace core
-
 namespace llvmo {
 class ObjectFile_O;
 typedef gctools::smart_ptr<ObjectFile_O> ObjectFile_sp;
@@ -264,7 +255,6 @@ struct ThreadLocalState {
   size_t _xorshf_x; // Marsaglia's xorshf generator
   size_t _xorshf_y;
   size_t _xorshf_z;
-  CleanupFunctionNode* _CleanupFunctions;
   uint64_t _BytesAllocated;
   uint64_t _Tid;
   uintptr_t _BacktraceBasePointer;
@@ -380,9 +370,6 @@ public:
 
   ~ThreadLocalState();
 };
-
-void thread_local_register_cleanup(const std::function<void(void)>& cleanup);
-void thread_local_invoke_and_clear_cleanup();
 
 }; // namespace core
 

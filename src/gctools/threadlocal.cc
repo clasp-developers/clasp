@@ -74,8 +74,11 @@ void DynamicBindingStack::release_binding_index(size_t index) const {
 };
 
 T_sp* DynamicBindingStack::thread_local_reference(const uint32_t index) const {
-  unlikely_if(index >= this->_ThreadLocalBindings.size()) this->_ThreadLocalBindings.resize(index + 1,
-                                                                                            no_thread_local_binding<T_O>());
+  if (index >= this->_ThreadLocalBindings.size()) [[unlikely]]
+    // note: in case it's not obvious, only the thread ever adds a new local
+    // binding, so no synchronization is necessary here.
+    this->_ThreadLocalBindings.resize(index + 1,
+                                      no_thread_local_binding<T_O>());
   return &(this->_ThreadLocalBindings[index]);
 }
 
@@ -195,7 +198,7 @@ VirtualMachine::~VirtualMachine() {
 // ThreadLocalState::finish_initialization_main_thread() after the Nil symbol is
 // in GC managed memory.
 ThreadLocalState::ThreadLocalState(bool dummy)
-  : _unwinds(0), _CleanupFunctions(NULL), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false), _GCState(GCState::Running),
+  : _unwinds(0), _BufferStr8NsPool(), _BufferStrWNsPool(), _PendingSignalsP(false), _GCState(GCState::Running),
     // initialized with null pointers so that dequeue_interrupt
     // can see that the queue is not yet available.
     // Default-initializing an atomic default-initializes the underlying object
@@ -297,7 +300,7 @@ ERR:
 
 // This is for constructing ThreadLocalState for threads
 ThreadLocalState::ThreadLocalState()
-  : _unwinds(0), _CleanupFunctions(NULL), _Breakstep(false), _PendingSignalsP(false),
+  : _unwinds(0), _Breakstep(false), _PendingSignalsP(false),
     _PendingInterruptsHead(), _PendingInterruptsTail(),
     _GCState(GCState::Running),
     _BreakstepFrame(NULL), _DynEnvStackBottom(nil<core::T_O>()), _UnwindDest(nil<core::T_O>()) {
@@ -476,24 +479,6 @@ ThreadLocalState::~ThreadLocalState() {
   mmtk_clasp_destroy_mutator(_LowLevel._mmtk_mutator);
 #endif
   gctools::stw_unregister_thread(this);
-}
-
-void thread_local_register_cleanup(const std::function<void(void)>& cleanup) {
-  CleanupFunctionNode* node = new CleanupFunctionNode(cleanup, my_thread->_CleanupFunctions);
-  //  printf("%s:%d:%s %p\n", __FILE__, __LINE__, __FUNCTION__, (void*)node);
-  my_thread->_CleanupFunctions = node;
-}
-
-void thread_local_invoke_and_clear_cleanup() {
-  //  printf("%s:%d:%s\n", __FILE__, __LINE__, __FUNCTION__);
-  CleanupFunctionNode* node = my_thread->_CleanupFunctions;
-  while (node) {
-    node->_CleanupFunction();
-    CleanupFunctionNode* next = node->_Next;
-    delete node;
-    node = next;
-  }
-  my_thread->_CleanupFunctions = NULL;
 }
 
 void ThreadLocalState::initialize_thread(mp::Process_sp process) {
