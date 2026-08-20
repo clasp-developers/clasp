@@ -324,3 +324,13 @@
            (progn (ignore-errors (mp:with-timeout (0.5) (ext:system "sleep 2")))
                   (sleep 1)
                   t))
+
+;;; A thread blocked in read(2) on an empty pipe must be cancellable. Without
+;;; parking the thread is never marked blocking, so no SIGCONT is sent and it
+;;; blocks forever. Bounded deliberately: an unbounded form would hang the whole
+;;; suite rather than fail, which is how a 6-hour CI timeout happens.
+(test-true cancel-blocking-read
+           (multiple-value-bind (r w) (core:pipe)
+             (declare (ignore w))
+             (let ((buf (make-string 16 :element-type 'base-char)))
+               (cancelled-within-p (lambda () (core:read-fd r buf)) 3))))

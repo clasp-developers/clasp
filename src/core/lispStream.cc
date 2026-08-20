@@ -1353,7 +1353,9 @@ CL_DEFUN T_mv core__read_fd(int filedes, SimpleBaseString_sp buffer) {
   size_t buffer_length = cl__length(buffer);
   unsigned char* buffer_data = &(*buffer)[0];
   while (1) {
-    int num = read(filedes, buffer_data, buffer_length);
+    // Park: read() blocks until data arrives. Safe to hold BUFFER_DATA across it
+    // because no GC variant relocates (NON_MOVING_GC).
+    int num = BEGIN_PARK { return (int)read(filedes, buffer_data, buffer_length); } END_PARK;
     if (!(num < 0 && errno == EINTR)) {
       if (num < 0) {
         return Values(make_fixnum(num), make_fixnum(errno));
