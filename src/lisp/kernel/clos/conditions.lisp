@@ -1453,19 +1453,36 @@ Interrupts are implicitly blocked while signaling an interrupt, and while unwind
 
 ;;; for backward compatibility (e.g. bordeaux)
 (defun mp:interrupt-process (process function)
+  "Request that PROCESS call FUNCTION at its next safepoint.
+Returns true if the request was enqueued on a live process, false if PROCESS had already exited. A
+true value does not mean FUNCTION has run: delivery is asynchronous."
   (check-type process mp:process)
   (check-type function function)
   (mp:interrupt process 'mp:call-interrupt :function function))
 
+;;; PROCESS-KILL and PROCESS-CANCEL are deliberately the same request. A forceful
+;;; kill is not offered because there is no safe one: terminating a thread
+;;; asynchronously in a garbage-collected runtime abandons whatever locks and heap
+;;; invariants it held. Other implementations reach the same conclusion; SBCL's
+;;; TERMINATE-THREAD is cooperative too.
 (defun mp:process-kill (process)
-  ;; FIXME: This function should maybe be the more chaotic SIGKILL version,
-  ;; while cancel-thread (cancel-process?) is the nicer interrupt.
+  "Request that PROCESS abort at its next safepoint. Synonym of PROCESS-CANCEL.
+Returns true if the request was enqueued on a live process, false if PROCESS had already exited.
+
+A true value does NOT mean PROCESS has died. Cancellation is cooperative: it is delivered at a
+safepoint, so a process that reaches none -- a loop of pure opcodes with no back edge polling, or a
+foreign call made without parking -- may not stop at all. Use PROCESS-ACTIVE-P or PROCESS-JOIN to
+learn whether it actually stopped."
   (mp:interrupt process 'mp:cancellation-interrupt))
 
-(defun mp:process-cancel (process) ; the nicer version.
+(defun mp:process-cancel (process)
+  "Request that PROCESS abort at its next safepoint. Synonym of PROCESS-KILL; see that function for
+the return value and for why cancellation is cooperative."
   (mp:interrupt process 'mp:cancellation-interrupt))
 
 (defun mp:process-suspend (process)
+  "Request that PROCESS pause at its next safepoint.
+Returns true if the request was enqueued on a live process, false if PROCESS had already exited."
   (mp:interrupt process 'mp:suspension-interrupt))
 
 (defmethod mp:service-interrupt ((i ext:interactive-interrupt))
