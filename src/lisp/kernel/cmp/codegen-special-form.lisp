@@ -110,9 +110,16 @@
 
 ;;; FOREIGN-CALL, FOREIGN-CALL-POINTER
 
+;;; FOREIGN-TYPES is (return-type (arg-types...)) or, for a variadic callee,
+;;; (return-type (arg-types...) fixed-count). The distinction is not cosmetic: on
+;;; Darwin arm64 variadic arguments are passed on the stack, so lowering a
+;;; variadic call as non-variadic puts them in registers and the callee reads
+;;; whatever the stack happened to hold -- usually zero.
 (defun function-type-create-on-the-fly (foreign-types)
-  (let ((arg-types (mapcar (lambda (type)
-                             (clasp-ffi::safe-translator-type type))
-                           (second foreign-types)))
-        (varargs nil))
+  (let* ((all-arg-types (mapcar (lambda (type)
+                                  (clasp-ffi::safe-translator-type type))
+                                (second foreign-types)))
+         (fixed-count (third foreign-types))
+         (varargs (and fixed-count t))
+         (arg-types (if varargs (subseq all-arg-types 0 fixed-count) all-arg-types)))
     (llvm-sys:function-type-get (clasp-ffi::safe-translator-type (first foreign-types)) arg-types varargs)))
