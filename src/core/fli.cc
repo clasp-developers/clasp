@@ -1146,6 +1146,41 @@ core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp val
   return mk_fixnum_uint8(tmp);
 }
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// MEM-CAS
+// ---------------------------------------------------------------------------
+
+// A libatomic call would take a lock inside the swap, so fail the build instead.
+static_assert(__atomic_always_lock_free(sizeof(uint32_t), 0) && __atomic_always_lock_free(sizeof(uint64_t), 0),
+              "Foreign words must swap lock-free");
+
+template <typename T> inline T cas_mem(uintptr_t address, T expected, T desired) {
+  if (address % alignof(T) != 0) {
+    SIMPLE_ERROR("Address {} is not {}-byte aligned, so it cannot be swapped atomically", address, alignof(T));
+  }
+  // The builtin overwrites EXPECTED with the word it saw, so EXPECTED is the prior word either way.
+  __atomic_compare_exchange_n(reinterpret_cast<T*>(address), &expected, desired, false, __ATOMIC_SEQ_CST,
+                              __ATOMIC_SEQ_CST);
+  return expected;
+}
+
+core::T_sp PERCENTcas_mem_uint32(core::Integer_sp address, core::T_sp expected, core::T_sp desired) {
+  uint32_t prior =
+      cas_mem<uint32_t>(core::clasp_to_uintptr_t(address), translate::make_from_object<uint32_t>(expected),
+                        translate::make_from_object<uint32_t>(desired));
+  DEBUG_PRINT(BF("%s (%s:%d) | prior = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % prior);
+  return mk_fixnum_uint32(prior);
+}
+
+core::T_sp PERCENTcas_mem_uint64(core::Integer_sp address, core::T_sp expected, core::T_sp desired) {
+  uint64_t prior =
+      cas_mem<uint64_t>(core::clasp_to_uintptr_t(address), translate::make_from_object<uint64_t>(expected),
+                        translate::make_from_object<uint64_t>(desired));
+  DEBUG_PRINT(BF("%s (%s:%d) | prior = %d\n.") % __FUNCTION__ % __FILE__ % __LINE__ % prior);
+  return mk_integer_uint64(prior);
+}
+
 /*const struct section_64* get_section_data(const char* segment_name, const char* section_name) {
   const struct section_64* p_section = (struct section_64*)NULL;
 
