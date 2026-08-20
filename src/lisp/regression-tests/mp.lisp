@@ -275,3 +275,14 @@
 ;;; Control: a loop that calls a function was always cancellable.
 (test-true cancel-loop-with-call
            (cancelled-within-p (lambda () (loop (funcall #'identity 1))) 3))
+
+;;; Native code reaches its own safepoints, so the VM's back-edge poll does not
+;;; cover it. Asserts SIMPLE-CORE-FUN so it cannot pass by testing bytecode;
+;;; vacuous where no native compiler exists.
+(test-true cancel-native-opcode-only-loop
+           (let ((f (ignore-errors
+                     (let ((cmp:*compile-native* t))
+                       (compile nil '(lambda () (loop)))))))
+             (if (typep f 'core:simple-core-fun)
+                 (cancelled-within-p f 3)
+                 t)))

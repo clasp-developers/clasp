@@ -255,12 +255,44 @@ function-or-placeholder - the llvm function or a placeholder for
                                          (inst-source instruction)
                                          999902))
     (call-next-method)))
+(defvar *laid-out-iblocks*)
+(defvar *safepoint-counter* nil)
+
+;; Iblocks are laid out in forward flow order, so a branch to one already laid
+;; out is a back edge - the native counterpart of the VM's negative jump offset.
+(defun back-edge-p (instruction)
+  (and (boundp '*laid-out-iblocks*)
+       (loop for succ in (bir:next instruction)
+             thereis (gethash succ *laid-out-iblocks*))))
+
+;; cc_safepoint is an out-of-line unwinding call, so polling every back edge
+;; costs ~3x on a tight loop; sample one edge in +safepoint-sample+ instead.
+(defparameter +safepoint-sample+ 255)
+
+(defun emit-back-edge-safepoint ()
+  (let* ((n (cmp:irc-typed-load cmp:%size_t% *safepoint-counter*))
+         (n1 (cmp:irc-add n (cmp:jit-constant-size_t 1)))
+         (poll (cmp:irc-basic-block-create "safepoint-poll"))
+         (cont (cmp:irc-basic-block-create "safepoint-cont")))
+    (cmp:irc-store n1 *safepoint-counter*)
+    (cmp:irc-cond-br (cmp:irc-icmp-eq
+                      (cmp:irc-and n1 (cmp:jit-constant-size_t +safepoint-sample+))
+                      (cmp:jit-constant-size_t 0))
+                     poll cont)
+    (cmp:irc-begin-block poll)
+    (%intrinsic-invoke-if-landing-pad-or-call "cc_safepoint" ())
+    (cmp:irc-br cont)
+    (cmp:irc-begin-block cont)))
+
 (defmethod translate-terminator :around
     ((instruction bir:instruction) abi next)
   (declare (ignore abi next))
   (cmp:with-debug-info-source-position ((ensure-origin
                                          (inst-source instruction)
                                          999903))
+    ;; Poll interrupts on back edges so native loops stay cancellable.
+    (when (and *safepoint-counter* (back-edge-p instruction))
+      (emit-back-edge-safepoint))
     (call-next-method)))
 
 (defmethod translate-terminator ((instruction bir:unreachable)
@@ -1876,6 +1908,8 @@ function-or-placeholder - the llvm function or a placeholder for
               do (setf (gethash phi *datum-values*) dat))))))
 
 (defun layout-iblock (iblock abi)
+  (when (boundp '*laid-out-iblocks*)
+    (setf (gethash iblock *laid-out-iblocks*) t))
   (cmp:irc-begin-block (iblock-tag iblock))
   (cmp:with-landing-pad (maybe-entry-landing-pad
                          (bir:dynamic-environment iblock) *tags*)
@@ -1991,11 +2025,18 @@ function-or-placeholder - the llvm function or a placeholder for
                                          (arguments llvm-function-info))
                   when lexical ; skip unused fixed
                     do (setf (gethash lexical *datum-values*) arg)))
-          ;; Branch to the start block.
-          (cmp:irc-br (iblock-tag (bir:start ir)))
-          ;; Lay out blocks.
-          (bir:do-iblocks (ib ir)
-            (layout-iblock ib abi))))))
+          ;; Counter for sampled back-edge safepoints; must live in the alloca block.
+          (let ((*safepoint-counter*
+                  (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
+                    (let ((c (cmp:alloca-size_t "safepoint-counter")))
+                      (cmp:irc-store (cmp:jit-constant-size_t 0) c)
+                      c)))
+                (*laid-out-iblocks* (make-hash-table :test #'eq)))
+            ;; Branch to the start block.
+            (cmp:irc-br (iblock-tag (bir:start ir)))
+            ;; Lay out blocks.
+            (bir:do-iblocks (ib ir)
+              (layout-iblock ib abi)))))))
   ;; Finish up by jumping from the entry block to the body block
   (cmp:with-irbuilder (cmp:*irbuilder-function-alloca*)
     (cmp:irc-br body-block))
