@@ -254,15 +254,20 @@
         (car place))
       ((nil nil nil nil nil nil nil)))
 
-;;; Returns true if THUNK's process is gone within SECONDS of being killed.
+
+;;; Returns true if THUNK's process is gone within SECONDS of being killed. The
+;;; process must still be running when it is killed: a thunk that dies on its own
+;;; would otherwise look exactly like a cancelled one and pass vacuously.
 (defun cancelled-within-p (thunk seconds)
   (let ((p (mp:process-run-function nil thunk)))
     (loop repeat 200 until (mp:process-active-p p) do (sleep 0.01))
-    (mp:process-kill p)
-    (loop repeat (ceiling seconds 0.01)
-          while (mp:process-active-p p)
-          do (sleep 0.01))
-    (not (mp:process-active-p p))))
+    (and (mp:process-active-p p)
+         (progn
+           (mp:process-kill p)
+           (loop repeat (ceiling seconds 0.01)
+                 while (mp:process-active-p p)
+                 do (sleep 0.01))
+           (not (mp:process-active-p p))))))
 
 ;;; A loop body of pure VM opcodes reaches no function-call safepoint, so it is
 ;;; cancellable only if the interpreter polls interrupts on backward branches.
@@ -334,3 +339,19 @@
              (declare (ignore w))
              (let ((buf (make-string 16 :element-type 'base-char)))
                (cancelled-within-p (lambda () (core:read-fd r buf)) 3))))
+
+;;; A thread blocked in accept(2) must be cancellable. A local socket is used so
+;;; the test needs no port and no network. Verified to answer NO before the
+;;; sockets were parked and YES after, so it is a real discriminator.
+(test-true cancel-blocking-accept
+           (let* ((path (format nil "/tmp/clasp-accept-test-~a.sock" (get-universal-time)))
+                  (sock (make-instance 'sb-bsd-sockets:local-socket :type :stream)))
+             (unwind-protect
+                  (progn (sb-bsd-sockets:socket-bind sock path)
+                         (sb-bsd-sockets:socket-listen sock 1)
+                         (cancelled-within-p
+                          (lambda () (sb-bsd-sockets:socket-accept sock)) 3))
+               (ignore-errors (sb-bsd-sockets:socket-close sock))
+               (ignore-errors (delete-file path)))))
+
+

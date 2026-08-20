@@ -315,7 +315,8 @@ CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_inetSocket(int sfd) {
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_in);
   int new_fd;
 
-  new_fd = accept(sfd, (struct sockaddr*)&sockaddr, &addr_len);
+  // Park: accept() blocks until a connection arrives.
+  new_fd = BEGIN_PARK { return accept(sfd, (struct sockaddr*)&sockaddr, &addr_len); } END_PARK;
 
   int return0 = new_fd;
   core::T_sp return1 = nil<core::T_O>();
@@ -343,7 +344,10 @@ CL_DEFUN int sockets_internal__ll_socketConnect_inetSocket(int port, int ip0, in
   struct sockaddr_in sockaddr;
   int output;
   fill_inet_sockaddr(&sockaddr, port, ip0, ip1, ip2, ip3);
-  output = connect(socket_file_descriptor, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
+  // Park: connect() blocks for the handshake.
+  output = BEGIN_PARK {
+    return connect(socket_file_descriptor, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_in));
+  } END_PARK;
   return output;
 }
 
@@ -512,7 +516,10 @@ DOCGROUP(clasp);
 CL_DEFUN core::T_mv sockets_internal__ll_socketAccept_localSocket(int socketFileDescriptor) {
   struct sockaddr_un sockaddr;
   socklen_t addr_len = (socklen_t)sizeof(struct sockaddr_un);
-  int new_fd = accept(socketFileDescriptor, (struct sockaddr*)&sockaddr, &addr_len);
+  // Park: accept() blocks until a connection arrives.
+  int new_fd = BEGIN_PARK {
+    return accept(socketFileDescriptor, (struct sockaddr*)&sockaddr, &addr_len);
+  } END_PARK;
   core::T_sp second_ret = nil<core::T_O>();
   if (new_fd != -1) {
     second_ret = core::SimpleBaseString_O::make(sockaddr.sun_path);
@@ -534,7 +541,8 @@ CL_DEFUN int sockets_internal__ll_socketConnect_localSocket(int fd, int family, 
   strncpy(sockaddr.sun_path, path.c_str(), sizeof(sockaddr.sun_path));
   sockaddr.sun_path[sizeof(sockaddr.sun_path) - 1] = '\0';
 
-  output = connect(fd, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_un));
+  // Park: connect() blocks for the handshake.
+  output = BEGIN_PARK { return connect(fd, (struct sockaddr*)&sockaddr, sizeof(struct sockaddr_un)); } END_PARK;
 
   return output;
 }
@@ -752,7 +760,10 @@ CL_DEFUN int sockets_internal__do_select(core::T_sp to_secs, unsigned int to_mus
     tv.tv_sec = to_secs.unsafe_fixnum();
     tv.tv_usec = to_musecs;
   }
-  return select(max_fd + 1, (fd_set*)rfds->ptr(), NULL, NULL, (to_secs.fixnump()) ? &tv : NULL);
+  // Park: a non-fixnum timeout means NULL, i.e. block indefinitely.
+  return BEGIN_PARK {
+    return select(max_fd + 1, (fd_set*)rfds->ptr(), NULL, NULL, (to_secs.fixnump()) ? &tv : NULL);
+  } END_PARK;
 }
 
 void initialize_sockets_globals() {
