@@ -171,13 +171,17 @@ If DATUM is provided, it and ARGUMENTS designate a condition of default type SIM
 #+threads
 (defun call-with-timeout (seconds function)
   "Call FUNCTION, signalling TIMEOUT in this process if it runs longer than SECONDS.
-The timeout is delivered as an interrupt, so it lands at the next safepoint."
+The timeout is delivered as an interrupt, so it lands at the next safepoint. A body
+blocked in a foreign call reaches no safepoint until the call returns, so there the
+expiry is detected on return instead; either way TIMEOUT is signalled inside the
+dynamic extent of the caller, where handlers are still established."
   (let* ((lock (make-lock :name 'with-timeout))
          (cv (make-condition-variable :name 'with-timeout))
          (target *current-process*)
          (deadline (+ (get-internal-real-time)
                       (round (* seconds internal-time-units-per-second))))
          (donep nil)
+         (firedp nil)
          (watchdog
            (process-run-function
             'with-timeout-watchdog
@@ -190,14 +194,20 @@ The timeout is delivered as an interrupt, so it lands at the next safepoint."
                       while (plusp remaining)
                       do (condition-variable-timedwait cv lock (float remaining 1d0)))
                 (unless donep
+                  (setf firedp t)
                   (interrupt-process
                    target
-                   (lambda () (error 'timeout :seconds seconds)))))))))
-    (unwind-protect (funcall function)
-      (with-lock (lock)
-        (setf donep t)
-        (condition-variable-signal cv))
-      (process-join watchdog))))
+                   ;; Re-check at delivery: an interrupt queued while the body was
+                   ;; in a foreign call arrives after the body has already returned.
+                   (lambda () (unless donep (error 'timeout :seconds seconds))))))))))
+    (let ((values (unwind-protect (multiple-value-list (funcall function))
+                    (with-lock (lock)
+                      (setf donep t)
+                      (condition-variable-signal cv))
+                    (process-join watchdog))))
+      ;; The deadline passed but the interrupt could not land in time.
+      (when firedp (error 'timeout :seconds seconds))
+      (values-list values))))
 
 #+threads
 (defmacro with-timeout ((seconds) &body body)

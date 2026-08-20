@@ -297,8 +297,30 @@
                    (mp:with-timeout (0.2) (loop))
                    :type mp:timeout)
 
-;;; The timeout must not fire after the body has already returned.
+;;; The timeout must not fire after the body has already returned. An instant body
+;;; never enqueues an interrupt, so this alone does not cover the race below.
 (test-true with-timeout-no-late-fire
            (progn (mp:with-timeout (0.2) t)
                   (sleep 0.5)
+                  t))
+
+;;; A blocking foreign call must park, so an interrupt can wake it with SIGCONT
+;;; rather than sitting queued until the call returns on its own.
+(test-expect-error with-timeout-blocking-foreign
+                   (mp:with-timeout (0.5) (ext:system "sleep 3"))
+                   :type mp:timeout)
+
+;;; ...and it must be woken PROMPTLY, not merely reported late on return. Three
+;;; seconds of sleep must not elapse; without parking this takes the full 3s.
+(test-true with-timeout-foreign-is-prompt
+           (let ((start (get-internal-real-time)))
+             (ignore-errors (mp:with-timeout (0.5) (ext:system "sleep 3")))
+             (< (/ (- (get-internal-real-time) start)
+                   internal-time-units-per-second)
+                2.0)))
+
+;;; ...and the interrupt queued during that call must not fire afterwards.
+(test-true with-timeout-foreign-no-late-fire
+           (progn (ignore-errors (mp:with-timeout (0.5) (ext:system "sleep 2")))
+                  (sleep 1)
                   t))
