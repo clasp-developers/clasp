@@ -232,6 +232,7 @@ writing the build and variant outputs."
                               :code #P""
                               :install-bin (bin-path *configuration*)
                               :install-share (share-path *configuration*)
+                              :install-dylib (dylib-path *configuration*)
                               :install-lib (lib-path *configuration*)
                               :install-generated install-generated
                               :package-bin (resolve-package-path (bin-path *configuration*))
