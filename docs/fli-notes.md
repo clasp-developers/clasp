@@ -48,6 +48,7 @@ A quote of [Dr. Christian E. Schafmeister][], [drmeister][] on Github, the ceato
     * II.1 [Source Code](#id-ii.1)
         * II.1.1 [Source Code Files](#id-ii.1.1)
     * II.2 [Source Code Rules & Conventions](#id-ii.2)
+    * II.3 [Calling Variadic Foreign Functions](#id-ii.3)
 
 * * * * *
 
@@ -153,3 +154,61 @@ Integration with the main development branch of [drmeister's repository, branch 
 The following rules and conventions have been used to implement the FLI:
 
 1. All FLI Lisp functions and macros are prefixed with a % sign - indicating that these macros and functions are meant to not be used directly by a user of the FLI, except when implementing low level access to Clasp's FLI on purpose.
+
+* * * * *
+
+<div id="id-ii.3">
+## II.3 Calling Variadic Foreign Functions ##
+
+A variadic callee -- `printf`, `open`, `fcntl`, `shm_open` -- must be called through a
+*variadic* function type that names how many of its parameters are fixed. Calling it through
+an ordinary function type is undefined behaviour in C, and the two are not interchangeable in
+practice:
+
+* On **x86-64 SysV** variadic arguments are passed in the same registers as fixed ones, so the
+  mistake is invisible.
+* On **Darwin arm64** variadic arguments are passed on the **stack**. A call lowered as
+  non-variadic leaves them in registers, the callee reads an unwritten stack slot, and every
+  variadic argument arrives as **zero**.
+
+The usual symptom is a mode or flag that silently does nothing. `shm_open(name, flags, 0600)`
+creates its object with `st_mode` `0`, which cannot then be reopened; `fcntl(fd, F_SETFD,
+FD_CLOEXEC)` returns success without setting the flag.
+
+### API
+
+    (clasp-ffi:%foreign-funcall-varargs NAME FIXED-COUNT &rest ARGUMENTS)
+    (clasp-ffi:%foreign-funcall-pointer-varargs PTR FIXED-COUNT &rest ARGUMENTS)
+
+`ARGUMENTS` alternate type and value and end with the return type, exactly as for
+`%FOREIGN-FUNCALL`. `FIXED-COUNT` is how many of them are the callee's **fixed** parameters;
+the rest are variadic. It must be a literal integer, because it selects the fixed prefix when
+the function type is built at compile time, and it is validated at macroexpansion.
+
+    ;; int fcntl(int fd, int cmd, ...);  -- two fixed parameters
+    (clasp-ffi:%foreign-funcall-varargs "fcntl" 2 :int fd :int f-setfd :int fd-cloexec :int)
+
+`%FOREIGN-FUNCALL` is unchanged and still builds a non-variadic type, which is correct for the
+overwhelming majority of callees. Only reach for the variadic forms when the C declaration has
+an ellipsis.
+
+### Implementation
+
+`CMP:FUNCTION-TYPE-CREATE-ON-THE-FLY` accepts the foreign-type list in two shapes:
+
+    (return-type (arg-types ...))                 ; non-variadic
+    (return-type (arg-types ...) fixed-count)     ; variadic
+
+The third element is optional, so the representation is backward compatible: the BIR
+instruction, the translator and the foreign-caller cache all treat the signature as opaque data
+and needed no change.
+
+### CFFI
+
+CFFI already carries the fixed/variadic split down to the backend, and falls back to appending
+the two lists -- discarding the distinction -- when the backend does not define
+`%FOREIGN-FUNCALL-VARARGS`. Clasp's backend defines it, so
+
+    (cffi:foreign-funcall-varargs "shm_open" (:string name :int flags) :int #o600 :int)
+
+passes the mode correctly.

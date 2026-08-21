@@ -218,6 +218,16 @@
        (right '() (if (endp (rest list)) right (list* (second list) right))))
       ((endp list) (list (nreverse left) (nreverse right)))))
 
+(defun check-fixed-count (fixed-count arg-types context)
+  "Signal at macroexpansion if FIXED-COUNT cannot name a prefix of ARG-TYPES."
+  (unless (integerp fixed-count)
+    (error "~a: the fixed-argument count must be a literal integer, got ~s.~@
+            It selects the callee's fixed parameters at compile time and cannot be computed at runtime."
+           context fixed-count))
+  (unless (<= 0 fixed-count (length arg-types))
+    (error "~a: fixed-argument count ~s is out of range; the call passes ~s argument~:p."
+           context fixed-count (length arg-types))))
+
 (defun extract-signature (arguments)
   "Converts (:float 16.0 :int 3 :float) -> (values '(:float (:float :int)) (16.0 3))"
   (let* ((types-args (clasp-ffi::split-list arguments))
@@ -237,6 +247,32 @@
   (multiple-value-bind (signature args)
       (extract-signature arguments)
     `(core:foreign-call-pointer ,signature (ensure-core-pointer ,ptr "%foreign-funcall-pointer" ,ptr) ,@args)))
+
+;;; A variadic callee must be called through a variadic function type, naming how
+;;; many arguments are fixed. Passing everything as fixed works by accident on
+;;; x86-64 SysV, where variadic arguments use the same registers, and fails on
+;;; Darwin arm64, where they are passed on the stack: the callee then reads an
+;;; unwritten slot, so the argument arrives as zero.
+(defmacro %foreign-funcall-varargs (name fixed-count &rest arguments)
+  "Call the variadic foreign function NAME. ARGUMENTS alternate type and value and
+end with the return type, as for %FOREIGN-FUNCALL; the first FIXED-COUNT of them
+are the callee's fixed parameters and the rest are variadic."
+  (multiple-value-bind (signature args)
+      (extract-signature arguments)
+    (check-fixed-count fixed-count (second signature) '%FOREIGN-FUNCALL-VARARGS)
+    `(core:foreign-call-pointer ,(append signature (list fixed-count))
+                                (ensure-core-pointer (core:dlsym :rtld-default ,name)
+                                                     "%foreign-funcall-varargs" ,name)
+                                ,@args)))
+
+(defmacro %foreign-funcall-pointer-varargs (ptr fixed-count &rest arguments)
+  "As %FOREIGN-FUNCALL-VARARGS, but calls the function at PTR."
+  (multiple-value-bind (signature args)
+      (extract-signature arguments)
+    (check-fixed-count fixed-count (second signature) '%FOREIGN-FUNCALL-POINTER-VARARGS)
+    `(core:foreign-call-pointer ,(append signature (list fixed-count))
+                                (ensure-core-pointer ,ptr "%foreign-funcall-pointer-varargs" ,ptr)
+                                ,@args)))
 
 ;;; We'd like for the bytecode to be able to handle foreign calls, but it
 ;;; doesn't make sense for it to handle them directly. So, we provide a
@@ -481,6 +517,8 @@
             %mem-set
             %foreign-funcall
             %foreign-funcall-pointer
+            %foreign-funcall-varargs
+            %foreign-funcall-pointer-varargs
             %load-foreign-library
             %close-foreign-library
             %foreign-symbol-pointer
