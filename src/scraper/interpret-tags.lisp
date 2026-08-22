@@ -8,14 +8,26 @@
 
 (define-condition bad-cl-defun/defmethod ()
   ((tag :initarg :tag :accessor tag)
-   (other-tag :initarg :other-tag :accessor other-tag))
+   (other-tag :initarg :other-tag :accessor other-tag)
+   (gap :initform nil :initarg :gap :accessor gap)
+   (slack :initform 0 :initarg :slack :accessor slack)
+   (allowed :initform nil :initarg :allowed :accessor allowed))
   (:report (lambda (condition stream)
-             (format stream "Error at ~a interpreting tag ~a ~a the tag ~a at ~a is too far away"
+             (format stream "Error at ~a interpreting tag ~a ~a the tag ~a at ~a is too far away~
+                             ~@[ (~d lines apart~@[, ~d of them tag text~]~@[, ~d unaccounted lines allowed~])~]~
+                             ~%  Modifier tags must sit directly above the CL_DEFUN/CL_DEFMETHOD ~
+                             they describe.  A long CL_DOCSTRING or CL_LAMBDA does NOT count against ~
+                             this - a tag's own lines are discounted - so reaching this means real ~
+                             code came between them, or a modifier was orphaned by a function that ~
+                             moved or was deleted."
                      (tags:source-pos (tag condition))
                      (tags:tag-code (tag condition))
                      (tags:identifier (tag condition))
                      (tags:tag-code (other-tag condition))
-                     (tags:source-pos (other-tag condition)))))
+                     (tags:source-pos (other-tag condition))
+                     (gap condition)
+                     (and (plusp (slack condition)) (slack condition))
+                     (allowed condition))))
   (:documentation "Error when CL_DEFUN, CL_DEFMETHOD are too far away from their modifiers are too far away"))
 
 (defclass expose-code ()
