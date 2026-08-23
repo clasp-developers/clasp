@@ -200,9 +200,11 @@ private:
 
   template <typename Stage = RuntimeStage, GCInfo_policy Policy = normal>
   static Header_s* raw_allocate(const Header_s::BadgeStampWtagMtag& the_header, size_t size) {
-    if constexpr(Policy == normal || Policy == collectable_immobile) {
+    if constexpr(Policy == normal) {
       DO_DRAG_GENERAL_ALLOCATION();
       return do_general_allocation<Stage>(the_header, size);
+    } else if constexpr(Policy == collectable_immobile) {
+      return do_immobile_allocation<Stage>(the_header, size);
     } else if constexpr(Policy == atomic) {
       return do_atomic_allocation<Stage>(the_header, size);
     } else { // unmanaged

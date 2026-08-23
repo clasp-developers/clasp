@@ -36,10 +36,7 @@ inline ConsHeader_s* do_cons_allocation(size_t size) {
   return header;
 }
 
-// --- Atomic allocation (no pointer fields) ---
-
-template <typename Stage = RuntimeStage>
-inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+static inline Header_s* do_generic_slow_allocation(const Header_s::StampWtagMtag& the_header, size_t size, MMTkClaspAllocSemantics semantics) {
   RAIIDisableInterrupts disable_interrupts;
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -47,8 +44,8 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   true_size += tail_size;
 #endif
   void* alloc_start;
-  alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
+  alloc_start = mmtk_alloc_raw(true_size, semantics);
+  mmtk_post_alloc(alloc_start, true_size, semantics);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
@@ -58,51 +55,32 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
   new (header) Header_s(the_header);
 #endif
   return header;
+}
+
+// --- Atomic allocation (no pointer fields) ---
+
+template <typename Stage = RuntimeStage>
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+  return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_DEFAULT);
 }
 
 // --- General allocation (contains pointers) ---
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  RAIIDisableInterrupts disable_interrupts;
-  size_t true_size = size;
-#ifdef DEBUG_GUARD
-  size_t tail_size = ((rand() % 8) + 1) * Alignment();
-  true_size += tail_size;
-#endif
-  void* alloc_start;
-  alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_DEFAULT);
-  Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
-#ifdef DEBUG_GUARD
-  memset(header, 0x00, true_size);
-  new (header) Header_s(the_header, size, tail_size, true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
+  return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_DEFAULT);
 }
 
-// --- Uncollectable / non-moving allocation ---
+// --- Non-moving allocation ---
+template <typename Stage = RuntimeStage>
+inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+  return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_NON_MOVING);
+}
+
+// --- Uncollectable & non-moving allocation ---
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
-  size_t true_size = size;
-#ifdef DEBUG_GUARD
-  size_t tail_size = ((rand() % 8) + 1) * Alignment();
-  true_size += tail_size;
-#endif
-  void* alloc_start = mmtk_alloc_raw(true_size, MMTK_CLASP_ALLOC_NON_MOVING);
-  mmtk_post_alloc(alloc_start, true_size, MMTK_CLASP_ALLOC_NON_MOVING);
-  Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
-  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
-#ifdef DEBUG_GUARD
-  memset(header, 0x00, true_size);
-  new (header) Header_s(the_header, size, tail_size, true_size);
-#else
-  new (header) Header_s(the_header);
-#endif
-  return header;
+  return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_IMMORTAL);
 }
 
 // --- Zero-initialised allocation for the bytecode VM root vector ---

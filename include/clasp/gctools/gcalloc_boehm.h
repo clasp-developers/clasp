@@ -91,6 +91,12 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   return header;
 };
 
+template <typename Stage = RuntimeStage>
+inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+  // Boehm never moves anything.
+  return do_general_allocation<Stage>(the_header, size);
+}
+
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   size_t true_size = size;
 #ifdef DEBUG_GUARD
