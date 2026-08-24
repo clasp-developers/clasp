@@ -236,16 +236,17 @@
        (input (subseq sources 0 breaker))
        (output (subseq sources (1+ breaker) b2))
        (sourcepaths (subseq sources (1+ b2))))
-  (loop for inp across input
+  (loop with clean = nil
+        for inp across input
         for out across output
         for source across sourcepaths
-        do (load
-            (let ((input-date (ignore-errors (file-write-date inp)))
-                  (output-date (ignore-errors (file-write-date out))))
-              (if (and input-date output-date (> output-date input-date))
-                  out
-                  (compile-file inp :output-file out :source-debug-pathname source)))
-            :verbose t)))"))
+        do (cond ((and (not clean)
+                       (let ((input-date (ignore-errors (file-write-date inp)))                     (output-date (ignore-errors (file-write-date out))))
+                         (and input-date output-date
+                              (> output-date input-date))))
+                  (load out :verbose t))
+                 (t (setf clean t)
+                    (load (compile-file inp :output-file out :source-debug-pathname source :verbose t))))))"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
