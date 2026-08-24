@@ -34,7 +34,7 @@
   (error "You must provide a function for the process to run"))
 
 (defstruct (external-process (:constructor make-external-process ()))
-  pid
+  (%pid-cell (list nil))
   input
   output
   error-stream
@@ -42,6 +42,14 @@
   (%code nil)
   #+threads (%lock (mp:make-lock :name "external-process-lock"))
   #+threads (%pipe nil))
+
+;;; In order to synchronize with the finalizer (see finalize-external-process)
+;;; we store the PID in a cell. The finalizer can't have access to the process
+;;; itself, but it can access the cell.
+(declaim (inline external-process-pid (setf external-process-pid)))
+(defun external-process-pid (process) (car (external-process-%pid-cell process)))
+(defun (setf external-process-pid) (pid process)
+  (setf (car (external-process-%pid-cell process)) pid))
 
 ;;; ---------------------------------------------------------------------
 ;;; si:waitpid -> (values                              status  code  pid)
@@ -113,11 +121,31 @@
                               #+windows :escape-arguments #+windows nil))))
 
 ;;; We don't handle `sigchld' because we don't want races with
-;;; `external-process-wait'. Take care of forgotten processes.
+;;; `external-process-wait'. Take care of forgotten processes by waiting on them
+;;; so that the OS can clear them from the process table.
+;;; Since we're a finalizer, we know that the process object is dead, so nobody else
+;;; has access to the lock or PID. We can just waitpid directly.
+;;; But do it in a thread so that this finalizer, which is running who knows when,
+;;; can return quickly.
 (defun finalize-external-process (process)
-  (let ((wait-val (external-process-wait process nil)))
-    (unless (member wait-val '(:exited :signaled :abort :error))
-      (gctools:finalize process #'finalize-external-process))))
+  (let ((pid-cell (external-process-%pid-cell process)))
+    (labels ((waiter ()
+               (loop for r = (si:waitpid (car pid-cell) t)
+                     ;; keep waiting until the process
+                     ;; has actually ended.
+                     ;; afterwards, since the process object is dead, the pid-cell
+                     ;; is also dead, so we don't need to bother clearing it.
+                     until (member r '(:exited :signaled :abort :error))))
+             (process-finalizer (p)
+               (declare (ignore p)) ; see note on gctools:finalize: this is nothing
+               ;; It's possible that before the process object died, the process
+               ;; was properly waited on with `external-process-wait'. If so, it
+               ;; would have nulled out the cell.
+               (when (car pid-cell)
+                 ;; No wait while the process was alive set the PID to nil,
+                 ;; so it hasn't yet been waited to death. Do that.
+                 (mp:process-run-function "external-process-waiter" #'waiter))))
+      (gctools:finalize process #'process-finalizer))))
 
 #+windows
 (defun escape-arg (arg stream)
