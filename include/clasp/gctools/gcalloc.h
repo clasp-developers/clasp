@@ -198,7 +198,7 @@ template <class OT> class GCObjectAllocator {
 private:
   typedef smart_ptr<OT> OT_sp;
 
-  template <typename Stage = RuntimeStage, GCInfo_policy Policy = normal>
+  template <typename Stage = RuntimeStage, GCInfo_policy Policy = GCInfo<OT>::Policy>
   static Header_s* raw_allocate(const Header_s::BadgeStampWtagMtag& the_header, size_t size) {
     if constexpr(Policy == normal) {
       DO_DRAG_GENERAL_ALLOCATION();
@@ -212,7 +212,7 @@ private:
     }
   }
 
-  template <typename Stage, GCInfo_policy Policy = normal,
+  template <typename Stage, GCInfo_policy Policy = GCInfo<OT>::Policy,
             typename... ARGS>
   static OT_sp allocate_in_appropriate_pool_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size,
                                                  ARGS&&... args) {
@@ -223,7 +223,8 @@ private:
   }
 
 public:
-  template <typename Stage, typename... ARGS>
+  template <typename Stage, GCInfo_policy Policy = GCInfo<OT>::Policy,
+            typename... ARGS>
   static OT_sp allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
     OT_sp sp =
       allocate_in_appropriate_pool_kind<Stage, GCInfo<OT>::Policy>(the_header, size, std::forward<ARGS>(args)...);
@@ -240,14 +241,6 @@ public:
     // No initializer
     finalizeIfNeeded(sp);
     //            printf("%s:%d About to return allocate result ptr@%p\n", __FILE__, __LINE__, sp.px_ref());
-    return sp;
-  };
-
-  template <typename... ARGS>
-  static OT_sp static_allocate_kind(const Header_s::BadgeStampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    OT_sp sp = allocate_in_appropriate_pool_kind<RuntimeStage, unmanaged>(the_header, size, std::forward<ARGS>(args)...);
-    initializeIfNeeded(sp);
-    finalizeIfNeeded(sp);
     return sp;
   };
 
@@ -313,11 +306,12 @@ public:
     size_t capacity = std::abs(length);
     size_t size = sizeof_container_with_header<OT>(capacity);
     if (static_container_p)
-      return GCObjectAllocator<OT>::static_allocate_kind(
+      return GCObjectAllocator<OT>::template allocate_kind<Stage, unmanaged>(
           Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
           std::forward<ARGS>(args)...);
-    return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag), size,
-                                                                length, std::forward<ARGS>(args)...);
+    else
+      return GCObjectAllocator<OT>::template allocate_kind<Stage>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag), size,
+                                                                  length, std::forward<ARGS>(args)...);
   }
 
   template <typename Stage, typename... ARGS>
@@ -325,7 +319,7 @@ public:
     size_t capacity = length + 1;
     size_t size = sizeof_container_with_header<OT>(capacity);
     if (static_container_p)
-      return GCObjectAllocator<OT>::static_allocate_kind(
+      return GCObjectAllocator<OT>::template allocate_kind<Stage, unmanaged>(
           Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
           std::forward<ARGS>(args)...);
     else
@@ -344,8 +338,8 @@ public:
 #endif
     smart_pointer_type result;
     if (static_container_p)
-      result = GCObjectAllocator<OT>::static_allocate_kind(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
-                                                           std::forward<ARGS>(args)...);
+      result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage, unmanaged>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
+                                                                                      std::forward<ARGS>(args)...);
     else
       result = GCObjectAllocator<OT>::template allocate_kind<RuntimeStage>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
                                                                            std::forward<ARGS>(args)...);
