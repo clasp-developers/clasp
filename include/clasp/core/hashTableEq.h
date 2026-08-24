@@ -31,6 +31,12 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/corePackage.fwd.h>
 
+template <> struct gctools::GCInfo<core::HashTableEq_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 
 FORWARD(HashTableEq);
@@ -56,8 +62,3 @@ public: // Functions here
 };
 
 }; // namespace core
-template <> struct gctools::GCInfo<core::HashTableEq_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};

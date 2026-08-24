@@ -34,6 +34,12 @@ THE SOFTWARE.
 #include <clasp/core/symbolTable.h>
 #include <clasp/core/sourceFileInfo.fwd.h>
 
+template <> struct gctools::GCInfo<core::SourcePosInfo_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 namespace core {
 
 class Scope_O : public General_O {
@@ -156,11 +162,6 @@ inline core::Fixnum safe_column(T_sp spi) {
 // Pass all arguments to a FunctionClosure
 #define SOURCE_POS_INFO_FIELDS(spi) safe_fileId(spi), safe_filepos(spi), safe_lineno(spi), safe_column(spi)
 }; // namespace core
-template <> struct gctools::GCInfo<core::SourcePosInfo_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 namespace core {
 

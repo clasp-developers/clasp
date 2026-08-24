@@ -68,6 +68,18 @@ THE SOFTWARE.
 
 #if defined(__cplusplus)
 
+template <> struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = true;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
+template <> struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O> {
+  static bool constexpr NeedsInitialization = false;
+  static bool constexpr NeedsFinalization = false;
+  static GCInfo_policy constexpr Policy = normal;
+};
+
 // ---------------------------------------------------------------------------
 //   NAMESPACE
 // ---------------------------------------------------------------------------
@@ -217,13 +229,6 @@ DOCGROUP(clasp)
 CL_DEFUN core::T_sp PERCENTdlsym(core::T_sp library, core::String_sp name);
 
 }; // namespace clasp_ffi
-
-// GC Policy Info for ForeignPataPtr_O instances
-template <> struct gctools::GCInfo<clasp_ffi::ForeignData_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = true;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 namespace clasp_ffi {
 // FOREIGN MEMORY DIRECT ACCESS - MEM REF
@@ -531,13 +536,6 @@ CL_DEFUN core::T_mv PERCENTget_section_data(core::String_sp segment_name, core::
 // platform.
 
 }; // namespace clasp_ffi
-
-// GC Policy Info for ForeignTypeSpec_O instances
-template <> struct gctools::GCInfo<clasp_ffi::ForeignTypeSpec_O> {
-  static bool constexpr NeedsInitialization = false;
-  static bool constexpr NeedsFinalization = false;
-  static GCInfo_policy constexpr Policy = normal;
-};
 
 // ---------------------------------------------------------------------------
 //   END OF FILE
