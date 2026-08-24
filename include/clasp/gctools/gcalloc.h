@@ -355,9 +355,6 @@ public:
   template <typename... ARGS>
   static smart_pointer_type allocate_bitunit_container(bool static_container_p, size_t length, ARGS&&... args) {
     size_t size = sizeof_bitunit_container_with_header<OT>(length);
-#ifdef DEBUG_BITUNIT_CONTAINER
-    printf("%s:%d  In allocate_bitunit_container length = %lu  size= %lu\n", __FILE__, __LINE__, length, size);
-#endif
     smart_pointer_type result;
     if (static_container_p)
       result = GCObjectAllocator<OT>::template allocate_kind_variable<RuntimeStage, unmanaged>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
@@ -365,12 +362,6 @@ public:
     else
       result = GCObjectAllocator<OT>::template allocate_kind_variable<RuntimeStage>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
                                                                            std::forward<ARGS>(args)...);
-#if DEBUG_BITUNIT_CONTAINER
-    {
-      printf("%s:%d allocate_bitunit_container \n", __FILE__, __LINE__);
-      printf("            Allocated object tagged ptr = %p\n", (void*)result.raw_());
-    }
-#endif
 
     return result;
   }

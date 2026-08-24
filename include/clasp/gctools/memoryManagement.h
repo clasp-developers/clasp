@@ -921,12 +921,6 @@ template <typename Cont_impl> size_t sizeof_bitunit_container(size_t n) {
   size_t dataSz = Cont_impl::bitunit_array_type::sizeof_for_length(n);
   size_t totalSz = classSz + dataSz;
   size_t aligned_totalSz = AlignUp(totalSz);
-#ifdef DEBUG_BITUNIT_CONTAINER
-  printf("%s:%d classSz = %lu\n", __FILE__, __LINE__, classSz);
-  printf("%s:%d dataSz = %lu\n", __FILE__, __LINE__, dataSz);
-  printf("%s:%d totalSz = %lu\n", __FILE__, __LINE__, totalSz);
-  printf("%s:%d aligned_totalSz = %lu\n", __FILE__, __LINE__, aligned_totalSz);
-#endif
   return aligned_totalSz;
 };
 
@@ -934,12 +928,6 @@ template <class T> inline size_t sizeof_bitunit_container_with_header(size_t num
   size_t size_bitunit_container = sizeof_bitunit_container<T>(num);
   size_t size_header = sizeof(Header_s);
   size_t sum = size_bitunit_container + size_header;
-#ifdef DEBUG_BITUNIT_CONTAINER
-  printf("%s:%d  In sizeof_bitunit_container_with_header  num = %lu\n", __FILE__, __LINE__, num);
-  printf("%s:%d  In sizeof_bitunit_container_with_header   size_bitunit_container = %lu\n", __FILE__, __LINE__,
-         size_bitunit_container);
-  printf("%s:%d  In sizeof_bitunit_container_with_header   sum = %lu\n", __FILE__, __LINE__, sum);
-#endif
   return sum;
 };
 

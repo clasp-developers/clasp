@@ -79,23 +79,12 @@ public:
     // Initialize the contents from an array - but it has to be bit_array_word aligned
     // if you need other than word aligned add another parameter to this constructor
     size_t numWords = nwords_for_length(length);
-#ifdef DEBUG_BITUNIT_CONTAINER
-    printf("%s:%d ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__, (void*)&this->_Data[0]);
-    printf("%s:%d      initialContentsSize = %lu\n", __FILE__, __LINE__, initialContentsSize);
-    printf("%s:%d                 numWords = %lu\n", __FILE__, __LINE__, numWords);
-#endif
     size_t idx;
     idx = 0;
     for (; idx < initialContentsSize; ++idx)
       this->_Data[idx] = initialContents[idx];
     for (; idx < numWords; ++idx)
       this->_Data[idx] = initialValue;
-#ifdef DEBUG_BITUNIT_CONTAINER
-    printf("%s:%d done initialization of data in ctor for GCBitUnitArray_moveable _Data[0] @%p\n", __FILE__, __LINE__,
-           (void*)&this->_Data[0]);
-    printf("%s:%d      final value of idx = %lu\n", __FILE__, __LINE__, idx);
-    printf("%s:%d      wrote up to address: %p\n", __FILE__, __LINE__, (void*)&this->_Data[idx]);
-#endif
   }
   GCBitUnitArray_moveable(size_t length, bit_array_word* initialContents) : _Length(length) {
     for (size_t i = 0; i < nwords_for_length(length); ++i)
@@ -109,12 +98,6 @@ public:
   static size_t sizeof_for_length(size_t length) {
     size_t numWords = (length + number_of_bit_units_in_word - 1) / number_of_bit_units_in_word;
     size_t numBytes = numWords * sizeof(bit_array_word);
-#ifdef DEBUG_BITUNIT_CONTAINER
-    printf("%s:%d length = %lu\n", __FILE__, __LINE__, length);
-    printf("%s:%d number_of_bit_units_in_word = %lu\n", __FILE__, __LINE__, number_of_bit_units_in_word);
-    printf("%s:%d numWords = %lu\n", __FILE__, __LINE__, numWords);
-    printf("%s:%d numBytes = %lu\n", __FILE__, __LINE__, numBytes);
-#endif
     return numBytes;
   }
   // Given an initial element, replicate it into a bit_array_word. E.g. 01 becomes 01010101...01
