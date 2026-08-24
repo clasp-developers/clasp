@@ -57,11 +57,32 @@ static inline Header_s* do_generic_slow_allocation(const Header_s::StampWtagMtag
   return header;
 }
 
+template <size_t Size>
+static inline Header_s* do_generic_slow_allocation(const Header_s::StampWtagMtag& the_header, MMTkClaspAllocSemantics semantics) {
+#ifdef DEBUG_GUARD
+  // size is variable, give up
+  return do_generic_slow_allocation(the_header, Size, semantics);
+#else
+  RAIIDisableInterrupts disable_interrupts;
+  void* alloc_start;
+  alloc_start = mmtk_alloc_raw(Size, semantics);
+  mmtk_post_alloc(alloc_start, Size, semantics);
+  Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
+  my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), Size);
+  new (header) Header_s(the_header);
+  return header;
+#endif
+}
+
 // --- Atomic allocation (no pointer fields) ---
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_DEFAULT);
+}
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_generic_slow_allocation<Size>(the_header, MMTK_CLASP_ALLOC_DEFAULT);
 }
 
 // --- General allocation (contains pointers) ---
@@ -70,17 +91,29 @@ template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_DEFAULT);
 }
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_generic_slow_allocation<Size>(the_header, MMTK_CLASP_ALLOC_DEFAULT);
+}
 
 // --- Non-moving allocation ---
 template <typename Stage = RuntimeStage>
 inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_NON_MOVING);
 }
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_generic_slow_allocation<Size>(the_header, MMTK_CLASP_ALLOC_NON_MOVING);
+}
 
 // --- Uncollectable & non-moving allocation ---
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   return do_generic_slow_allocation(the_header, size, MMTK_CLASP_ALLOC_IMMORTAL);
+}
+template <size_t Size>
+inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_generic_slow_allocation<Size>(the_header, MMTK_CLASP_ALLOC_IMMORTAL);
 }
 
 // --- Zero-initialised allocation for the bytecode VM root vector ---

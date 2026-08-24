@@ -61,6 +61,10 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 #endif
   return header;
 };
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_atomic_allocation<Stage>(the_header, Size);
+}
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
@@ -91,10 +95,20 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   return header;
 };
 
+// Boehm doesn't get anything useful from constant sizes.
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_general_allocation<Stage>(the_header, Size);
+}
+
 template <typename Stage = RuntimeStage>
 inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   // Boehm never moves anything.
   return do_general_allocation<Stage>(the_header, size);
+}
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_immobile_allocation<Stage>(the_header, Size);
 }
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
@@ -121,6 +135,11 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #endif
   return header;
 };
+
+template <size_t Size>
+inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_uncollectable_allocation(the_header, Size);
+}
 
 // Allocate a blank T_O* vector. This is used for the bytecode VM.
 inline void* do_allocate_zero(size_t num) {
