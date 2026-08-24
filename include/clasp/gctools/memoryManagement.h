@@ -207,7 +207,7 @@ typedef uintptr_t UnshiftedStamp; // first 62 bits
 typedef uintptr_t ShiftedStamp;   // High 62 bits
 extern std::atomic<UnshiftedStamp> global_NextUnshiftedStamp;
 
-template <class T> inline size_t sizeof_with_header();
+template <class T> constexpr size_t sizeof_with_header();
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -889,7 +889,7 @@ namespace gctools {
 
 // ----------------------------------------------------------------------
 //! Calculate the size of an object + header for allocation
-template <class T> inline size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
+template <class T> constexpr size_t sizeof_with_header() { return AlignUp(sizeof(T)) + sizeof(Header_s); }
 
 /*! Size of containers given the number of elements */
 template <typename Cont_impl> size_t sizeof_container(size_t n) {
