@@ -152,6 +152,7 @@
                     :pool "console")
   (ninja:write-rule output-stream :compile-lisp
                     :command "$clasp --norc --non-interactive --disable-mpi --feature ignore-extension-systems --image $image --load compile-lisp.lisp --quit -- $in --output $out --sources $sources"
+                    :restat 1
                     :pool "console")
   (when (extensions configuration)
     (ninja:write-rule output-stream :snapshot-extension

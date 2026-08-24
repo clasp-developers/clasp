@@ -232,14 +232,20 @@
        (breaker (or (position \"--output\" sources :test #'string=)
                     (error \"Need --output to compile-lisp\")))
        (b2 (or (position \"--sources\" sources :test #'string=)
-               (error \"Need --sources to compile-bytecode-image\")))
+               (error \"Need --sources to compile-lisp\")))
        (input (subseq sources 0 breaker))
        (output (subseq sources (1+ breaker) b2))
        (sourcepaths (subseq sources (1+ b2))))
   (loop for inp across input
         for out across output
         for source across sourcepaths
-        do (load (compile-file inp :output-file out :source-debug-pathname source))))"))
+        do (load
+            (let ((input-date (ignore-errors (file-write-date inp)))
+                  (output-date (ignore-errors (file-write-date out))))
+              (if (and input-date output-date (> output-date input-date))
+                  out
+                  (compile-file inp :output-file out :source-debug-pathname source)))
+            :verbose t)))"))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
