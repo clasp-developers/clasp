@@ -95,13 +95,10 @@ namespace gctools {
 
 /*! Allocate regular C++ classes that are considered roots */
 template <class T> struct RootClassAllocator {
-  template <class... ARGS> static gctools::tagged_pointer<T> allocate(ARGS&&... args) {
-    return allocate_kind(Header_s::StampWtagMtag::make<T>(), sizeof_with_header<T>(), std::forward<ARGS>(args)...);
-  };
-
   template <class... ARGS>
-  static gctools::tagged_pointer<T> allocate_kind(const Header_s::StampWtagMtag& the_header, size_t size, ARGS&&... args) {
-    Header_s* base = do_uncollectable_allocation(the_header, size);
+  static gctools::tagged_pointer<T> allocate(ARGS&&... args) {
+    const Header_s::StampWtagMtag& the_header = Header_s::StampWtagMtag::make<T>();
+    Header_s* base = do_uncollectable_allocation<sizeof_with_header<T>()>(the_header);
     T* obj = HeaderPtrToGeneralPtr<T>(base);
     new (obj) T(std::forward<ARGS>(args)...);
     gctools::tagged_pointer<T> tagged_obj(obj);
@@ -118,8 +115,8 @@ template <class Stage, class Cons> struct ConsAllocator {
   static smart_ptr<Cons>
   allocate(ARGS&&... args) {
     DO_DRAG_CONS_ALLOCATION();
-    size_t cons_size = AlignUp(sizeof(Cons) + sizeof(ConsHeader_s));
-    ConsHeader_s* header = do_cons_allocation<Stage, Cons>(cons_size);
+    constexpr size_t cons_size = AlignUp(sizeof(Cons) + sizeof(ConsHeader_s));
+    ConsHeader_s* header = do_cons_allocation<Stage, Cons, cons_size>();
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
@@ -127,7 +124,7 @@ template <class Stage, class Cons> struct ConsAllocator {
 
 #ifdef USE_PRECISE_GC
   static smart_ptr<Cons> snapshot_save_load_allocate(Header_s::BadgeStampWtagMtag& the_header, core::T_sp car, core::T_sp cdr) {
-    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons>(AlignUp(sizeof(ConsHeader_s) + sizeof(Cons)));
+    ConsHeader_s* header = do_cons_allocation<SnapshotLoadStage, Cons, AlignUp(sizeof(ConsHeader_s) + sizeof(Cons))>();
     header->_badge_stamp_wtag_mtag._header_badge.store(the_header._header_badge.load());
     header->_badge_stamp_wtag_mtag._value = the_header._value;
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);

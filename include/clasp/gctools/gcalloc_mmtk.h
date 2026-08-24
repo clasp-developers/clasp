@@ -23,16 +23,16 @@ inline void mmtk_post_alloc(void* alloc_start, size_t size, MMTkClaspAllocSemant
 
 // --- Cons allocation ---
 
-template <typename Stage, typename Cons>
-inline ConsHeader_s* do_cons_allocation(size_t size) {
+template <typename Stage, typename Cons, size_t Size>
+inline ConsHeader_s* do_cons_allocation() {
   RAIIDisableInterrupts disable_interrupts;
   void* alloc_start;
-  alloc_start = mmtk_alloc_raw(size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
+  alloc_start = mmtk_alloc_raw(Size, MMTK_CLASP_ALLOC_DEFAULT);
+  mmtk_post_alloc(alloc_start, Size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
-  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
+  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, Size);
   return header;
 }
 

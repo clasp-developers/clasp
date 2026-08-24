@@ -20,20 +20,21 @@
 #endif
 
 namespace gctools {
-template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation(size_t size) {
+template <typename Stage, typename Cons, size_t Size>
+inline ConsHeader_s* do_cons_allocation() {
   RAIIDisableInterrupts disable_interrupts;
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
-      ALIGNED_GC_MALLOC_KIND(size, global_cons_kind)); // wasMTAG
+      ALIGNED_GC_MALLOC_KIND(Size, global_cons_kind)); // wasMTAG
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons);
 #endif
 #else
-  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(size));
+  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(Size));
 #endif
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
-  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
+  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, Size);
   return header;
 }
 
