@@ -19,11 +19,6 @@ size_t general_skip(core::General_O* client) {
   case Header_s::general_mtag: {
     GCStampEnum stamp_wtag = header_value.stamp_wtag();
     size_t stamp_index = header_value.stamp_();
-    if (stamp_wtag == STAMPWTAG_core__DerivableCxxObject_O) {
-      // If this is true then I think we need to call virtual functions on the client
-      // to determine the Instance_O offset and the total size of the object.
-      printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__);
-    }
     const Stamp_layout& stamp_layout = global_stamp_layout[stamp_index];
     const Container_layout* container_layout = stamp_layout.container_layout;
     if (container_layout) {
