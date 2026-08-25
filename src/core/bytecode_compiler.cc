@@ -1272,7 +1272,7 @@ static void replace_bytecode(SimpleVector_byte8_t_sp dest, ComplexVector_byte8_t
 }
 
 SimpleVector_byte8_t_sp Module_O::create_bytecode() {
-  SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make(this->bytecode_size());
+  SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make<gctools::collectable_immobile>(this->bytecode_size());
   size_t index = 0;
   ComplexVector_T_sp cfunctions = this->cfunctions();
   for (auto const& tfunction : cfunctions) {
@@ -1366,7 +1366,7 @@ void Module_O::link_load(T_sp env) {
   SimpleVector_byte8_t_sp bytecode = cmodule->create_bytecode();
   ComplexVector_T_sp cmodule_literals = cmodule->literals();
   size_t literal_length = cmodule_literals->length();
-  SimpleVector_sp literals = SimpleVector_O::make(literal_length);
+  SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(literal_length);
   SimpleVector_sp debug_info = cmodule->create_debug_info();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();

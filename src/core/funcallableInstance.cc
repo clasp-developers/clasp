@@ -510,11 +510,20 @@ GFBytecodeSimpleFun_sp GFBytecodeSimpleFun_O::make(Function_sp generic_function)
   T_sp name = generic_function->functionName();
   FunctionDescription_sp fdesc = makeFunctionDescription(name);
   T_mv compiled = eval::funcall(clos::_sym_bytecode_dtree_compile, generic_function);
-  SimpleVector_byte8_t_sp bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
+  SimpleVector_byte8_t_sp src_bytecode = gc::As<SimpleVector_byte8_t_sp>(compiled);
   MultipleValues& mv = my_thread->_MultipleValues;
   // SimpleVector_sp entryPoints = mv.second(compiled.number_of_values());
-  SimpleVector_sp literals = gc::As<SimpleVector_sp>(mv.third(compiled.number_of_values()));
+  SimpleVector_sp src_literals = gc::As<SimpleVector_sp>(mv.third(compiled.number_of_values()));
   size_t specialized_length = mv.fourth(compiled.number_of_values()).unsafe_fixnum();
+  // prepare_vm holds raw C++ pointers into _Bytecode and _Literals across GC safepoints,
+  // so they must not move. Allocate immobile copies of the Lisp-returned vectors.
+  // FIXME: Have Lisp allocate the byte vectors immobile to begin with.
+  SimpleVector_byte8_t_sp bytecode =
+      SimpleVector_byte8_t_O::make<gctools::collectable_immobile>(src_bytecode->length());
+  std::copy(src_bytecode->begin(), src_bytecode->end(), bytecode->begin());
+  SimpleVector_sp literals =
+      SimpleVector_O::make<gctools::collectable_immobile>(src_literals->length());
+  std::copy(src_literals->begin(), src_literals->end(), literals->begin());
   auto obj = gctools::GC<GFBytecodeSimpleFun_O>::allocate(fdesc, 0, bytecode, literals, generic_function, specialized_length);
 
   // Replace _EntryPoints[0] (initially set by XepStereotype to the static
@@ -597,9 +606,9 @@ CL_DEFUN T_mv core__build_single_dispatch_bytecode(List_sp call_history, size_t 
   /* get reg|read stamp|miss +  4 bytes per call history entry */
   size_t nentries = cl__length(call_history);
   size_t bytecode_length = 3 + nentries * 5;
-  SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make(bytecode_length);
+  SimpleVector_byte8_t_sp bytecode = SimpleVector_byte8_t_O::make<gctools::collectable_immobile>(bytecode_length);
   // stamp + effective method function
-  SimpleVector_sp literals = SimpleVector_O::make(nentries * 2);
+  SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(nentries * 2);
   if (dispatch_argument_index >= 5)
     SIMPLE_ERROR("Not supported dispatching on args after DTREE_OP_FARG4");
   ASSERT(DTREE_OP_FARG0 == (DTREE_OP_FARG1 - 1) == (DTREE_OP_FARG2 - 2) == (DTREE_OP_FARG3 - 3) == (DTREE_OP_FARG4 - 4));
