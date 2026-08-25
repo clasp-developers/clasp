@@ -292,52 +292,51 @@ template <class T> constexpr size_t sizeof_with_header();
 
 class BaseHeader_s {
 public:
-  // fixme2022
-  static const size_t mtag_shift = 3; // mtags are 3 bits wide
-  static const tagged_stamp_t mtag_mask = 0b111;
+  static constexpr size_t mtag_shift = 3; // mtags are 3 bits wide
+  static constexpr tagged_stamp_t mtag_mask = 0b111;
 #if 1
-  static const size_t general_mtag_width = mtag_shift;
-  static const tagged_stamp_t general_mtag_mask = 0b111;
+  static constexpr size_t general_mtag_width = mtag_shift;
+  static constexpr tagged_stamp_t general_mtag_mask = 0b111;
 #else
-  static const size_t general_mtag_width = 2;
-  static const tagged_stamp_t general_mtag_mask = 0b11;
+  static constexpr size_t general_mtag_width = 2;
+  static constexpr tagged_stamp_t general_mtag_mask = 0b11;
 #endif
-  static const size_t general_mtag_shift = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
-  static const tagged_stamp_t general_mtag = 0b000;
-  //static const tagged_stamp_t invalid_mtag = 0b001;
-  //static const tagged_stamp_t invalid_mtag = 0b010;
-  //static const tagged_stamp_t invalid_mtag = 0b011;
-  //static const tagged_stamp_t invalid_mtag = 0b100;
-  static const tagged_stamp_t fwd_mtag = 0b101;
-  //static const tagged_stamp_t invalid_mtag = 0b110;
-  //static const tagged_stamp_t invalid_mtag = 0b111;
-  static const tagged_stamp_t stamp_mtag = general_mtag;
-  static const tagged_stamp_t stamp_mask = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
-  static const tagged_stamp_t where_mask = 0b11 << general_mtag_shift;
+  static constexpr size_t general_mtag_shift = general_mtag_width; // MUST ALWAYS BE >=2 to match Fixnum shift
+  static constexpr tagged_stamp_t general_mtag = 0b000;
+  //static constexpr tagged_stamp_t invalid_mtag = 0b001;
+  //static constexpr tagged_stamp_t invalid_mtag = 0b010;
+  //static constexpr tagged_stamp_t invalid_mtag = 0b011;
+  //static constexpr tagged_stamp_t invalid_mtag = 0b100;
+  static constexpr tagged_stamp_t fwd_mtag = 0b101;
+  //static constexpr tagged_stamp_t invalid_mtag = 0b110;
+  //static constexpr tagged_stamp_t invalid_mtag = 0b111;
+  static constexpr tagged_stamp_t stamp_mtag = general_mtag;
+  static constexpr tagged_stamp_t stamp_mask = ~(tagged_stamp_t)general_mtag_mask; // 0b11...111111111111000;
+  static constexpr tagged_stamp_t where_mask = 0b11 << general_mtag_shift;
   // These MUST match the wtags used in clasp-analyzer.lisp and scraper/code-generator.lisp
-  static const tagged_stamp_t derivable_wtag = 0b00 << general_mtag_shift;
-  static const tagged_stamp_t rack_wtag = 0b01 << general_mtag_shift;
-  static const tagged_stamp_t wrapped_wtag = 0b10 << general_mtag_shift;
-  static const tagged_stamp_t header_wtag = 0b11 << general_mtag_shift;
-  static const tagged_stamp_t max_wtag = 0b11 << general_mtag_shift;
-  static const tagged_stamp_t wtag_width = 2;
-  static const size_t general_stamp_shift = general_mtag_width + wtag_width;
+  static constexpr tagged_stamp_t derivable_wtag = 0b00 << general_mtag_shift;
+  static constexpr tagged_stamp_t rack_wtag = 0b01 << general_mtag_shift;
+  static constexpr tagged_stamp_t wrapped_wtag = 0b10 << general_mtag_shift;
+  static constexpr tagged_stamp_t header_wtag = 0b11 << general_mtag_shift;
+  static constexpr tagged_stamp_t max_wtag = 0b11 << general_mtag_shift;
+  static constexpr tagged_stamp_t wtag_width = 2;
+  static constexpr size_t general_stamp_shift = general_mtag_width + wtag_width;
 
   // Must match the number of bits to describe where_mask from the 0th bit
   // This is the width of integer that llvm needs to represent the masked off part of a header stamp
-  static const tagged_stamp_t where_tag_width = wtag_width + general_mtag_width; // I'm not sure if this is right
+  static constexpr tagged_stamp_t where_tag_width = wtag_width + general_mtag_width; // I'm not sure if this is right
 
   // stamp_tag MUST be 00 so that stamps look like FIXNUMs
-  //    static const int stamp_shift = general_mtag_shift;
-  static const tagged_stamp_t largest_possible_stamp = stamp_mask >> general_mtag_shift;
+  //    static constexpr int stamp_shift = general_mtag_shift;
+  static constexpr tagged_stamp_t largest_possible_stamp = stamp_mask >> general_mtag_shift;
 
   //
   // Restrict stamps to specific ranges
   // Builtin classes are between 0...65536
   // clbind classes are between 65537...131072
   // Lisp classes are 131073 and higher
-  static const size_t max_builtin_stamp = 65536;
-  static const size_t max_clbind_stamp = 65536 + max_builtin_stamp;
+  static constexpr size_t max_builtin_stamp = 65536;
+  static constexpr size_t max_clbind_stamp = 65536 + max_builtin_stamp;
 
 public:
   //
