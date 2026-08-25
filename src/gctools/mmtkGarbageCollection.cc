@@ -81,26 +81,7 @@ CL_DEFUN size_t core__dynamic_usage() { return mmtk_clasp_total_bytes(); }
 // Uses scan::cons / scan::general.
 extern "C" void clasp_scan_object(void* client, ClaspPreciseRootCallback callback, void* data) {
   const gctools::BaseHeader_s* near = gctools::base_header_ptr(client);
-  auto scan = [&](core::T_O** field) {
-    gctools::Tagged thing = *(gctools::Tagged*)field;
-    switch (gctools::ptag(thing)) {
-    case gctools::general_tag: {
-      void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
-      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
-      if (header < (gctools::Header_s*)0x1000) gctools::wait_for_user_signal("bad object");
-      // isValidGeneralObject() cannot be checked here: with a moving GC (Immix),
-      // the object may have been evacuated and the old header overwritten with a
-      // forwarding word. MMTk's callback handles forwarding; we must not validate first.
-    } break;
-    case gctools::cons_tag: {
-      void* client = reinterpret_cast<void*>(thing & gctools::ptr_mask);
-      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
-      if (header < (gctools::ConsHeader_s*)0x1000) gctools::wait_for_user_signal("bad object");
-      // isValidConsObject() same caveat as isValidGeneralObject() above.
-    }
-    }
-    callback(static_cast<void*>(field), data);
-  };
+  auto scan = [&](core::T_O** field) { callback(static_cast<void*>(field), data); };
   if (near->_badge_stamp_wtag_mtag.consObjectP()) {
     gctools::scan::cons(static_cast<core::Cons_O*>(client), scan);
   } else {
@@ -161,37 +142,13 @@ extern "C" MMTkClaspMutator clasp_get_mutator(void* tls) {
 
 extern "C" void clasp_walk_global_roots(ClaspPreciseRootCallback callback, void* data) {
   gctools::walkGlobalRoots([&](gctools::Tagged* tp) {
-    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
-    switch (gctools::ptag(*tp)) {
-    case gctools::general_tag:
-    case gctools::cons_tag: {
-      if (client < (void*)0x1000) gctools::wait_for_user_signal("bad object");
-    } break;
-    }
     callback(static_cast<void*>(tp), data);
   });
 }
 
 extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallback callback, void* data) {
   core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
-  auto walk = [&](gctools::Tagged* tp) {
-    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
-    switch (gctools::ptag(*tp)) {
-    case gctools::general_tag: {
-      gctools::Header_s* header = (gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
-      if (header > (gctools::Header_s*)0x1000)
-        callback(static_cast<void*>(tp), data);
-      else gctools::wait_for_user_signal("bad object");
-    } break;
-    case gctools::cons_tag: {
-      gctools::ConsHeader_s* header = (gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
-      if (header > (gctools::ConsHeader_s*)0x1000)
-        callback(static_cast<void*>(tp), data);
-      else gctools::wait_for_user_signal("bad object");
-    } break;
-    }
-    //callback(static_cast<void*>(tp), data);
-  };
+  auto walk = [&](gctools::Tagged* tp) { callback(static_cast<void*>(tp), data); };
   ts->walkRoots(walk);
   ts->walkVMStack(walk);
 }

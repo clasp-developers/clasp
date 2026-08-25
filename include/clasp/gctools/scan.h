@@ -56,11 +56,6 @@ public:
     case gctools::Header_s::general_mtag: {
       gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
       const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-      if (stamp_index == STAMP_UNSHIFT_WTAG(gctools::STAMPWTAG_core__DerivableCxxObject_O)) { // wasMTAG
-        // If this is true then I think we need to call virtual functions on the client
-        // to determine the Instance_O offset and the total size of the object.
-        printf("%s:%d Handle STAMP_core__DerivableCxxObject_O\n", __FILE__, __LINE__);
-      }
       // Basic fields
       if (stamp_layout.field_layout_start) {
 #ifdef USE_PRECISE_GC
