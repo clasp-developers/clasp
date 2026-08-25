@@ -366,7 +366,7 @@
 (defun signature-return-type (signature) (first signature))
 (defun signature-argument-types (signature) (rest signature))
 
-(defun codegen-callback (signature var &key (c-name "callback"))
+(defun codegen-callback (signature literals &key (c-name "callback"))
   (let* ((rett-kw (signature-return-type signature))
          (rett (safe-translator-type rett-kw))
          (args-kws (signature-argument-types signature))
@@ -391,7 +391,9 @@
                                    (format nil "translated-~a" c-arg-name)))
                                 c-args c-argument-names args-kws))
                ;; Grab the function.
-               (closure-to-call (cmp:irc-t*-load var))
+               (closure-to-call
+                 (cmp:irc-t*-load
+                  (cmp:irc-const-gep2-64 cmp:%t*[0]% literals 0 0 "callback")))
                ;; And call.
                ;; results-in-registers keeps things in the basic tmv format,
                ;; which is all we need here, as the C function only uses
@@ -415,29 +417,24 @@
   (declare (ignorable function))
   (let* ((module (cmp::create-run-time-module-for-compile))
          (id (cmp::next-jit-compile-counter))
-         (varname (format nil "callback-lisp-function-~d" id))
-         (callback-name (format nil "callback-~d" id)))
+         (callback-name (format nil "callback-~d" id))
+         (litsname (format nil "__clasp_literals_~a" callback-name))
+         (litstype (llvm-sys:array-type-get cmp:%t*% 1))
+         ;; The Lisp function being called is stored in the generated literals.
+         ;; This is important for two reasons:
+         ;; 1. Our parseLinkGraph code expects there to be a variable named
+         ;;    __clasp_literals_whatever and we don't wanna rock the boat.
+         ;; 2. This puts the Lisp function in the ObjectFile's literals, which lets
+         ;;    it be scanned by GC properly.
+         (lits (llvm-sys:make-global-variable module litstype nil
+                                              'llvm-sys:external-linkage
+                                              (llvm-sys:undef-value-get litstype)
+                                              litsname)))
     (cmp::with-module (:module module)
-      (let ((var (llvm-sys:make-global-variable module cmp:%t*% nil
-                                                'llvm-sys:external-linkage
-                                                (llvm-sys:undef-value-get
-                                                 cmp:%t*%)
-                                                varname)))
-        (codegen-callback signature var :c-name callback-name))
-      ;; Some variables required by parseLinkGraph.
-      ;; We don't actually use them - this is a stupid sham.
-      ;; Initializers need to be put in to ensure the symbol actually
-      ;; exist in the lib - without initializers these are just declarations.
-      (llvm-sys:make-global-variable module cmp:%t*[0]% nil
-                                     'llvm-sys:external-linkage
-                                     (llvm-sys:constant-array-get
-                                      cmp:%t*[0]% nil)
-                                     (format nil "__clasp_literals_~a"
-                                             callback-name))
-      ;;(llvm-sys:dump-module module)
-      ;;(cmp:irc-verify-module-safe module)
-      (let ((dylib (llvm-sys:jit-module-to-dylib module callback-name)))
-        (setf (llvm-sys:jit-lookup-t dylib varname) function)
+      (codegen-callback signature lits :c-name callback-name)
+      (let* ((dylib (llvm-sys:jit-module-to-dylib module callback-name))
+             (lits (llvm-sys:jit-lookup dylib litsname)))
+        (setf (core:literals-vref lits 0) function)
         (llvm-sys:jit-lookup dylib callback-name)))))
 
 (defun %ensure-callback (signature function)
