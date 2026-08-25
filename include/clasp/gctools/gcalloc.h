@@ -314,9 +314,9 @@ public:
   typedef /*gctools::*/ smart_ptr<OT> smart_pointer_type;
 
 public:
-  template <typename Stage = RuntimeStage, typename... ARGS> static smart_pointer_type allocate(ARGS&&... args) {
+  template <typename Stage = RuntimeStage, GCInfo_policy Policy = GCInfo<OT>::Policy, typename... ARGS> static smart_pointer_type allocate(ARGS&&... args) {
     auto kind = Header_s::StampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag);
-    return GCObjectAllocator<OT>::template allocate_kind<Stage>(kind, std::forward<ARGS>(args)...);
+    return GCObjectAllocator<OT>::template allocate_kind<Stage, Policy>(kind, std::forward<ARGS>(args)...);
   }
 
   /*! Allocate enough space for capacity elements, but set the length to length */
@@ -324,7 +324,7 @@ public:
   // Allocates an object with proper header and everything.
   // Uses the underlying constructor. Like, GC<SimpleVector_O>::allocate_container(...)
   // ends up passing the ... to the SimpleVector_O constructor.
-  template <typename Stage, typename... ARGS>
+  template <typename Stage, GCInfo_policy Policy = GCInfo<OT>::Policy, typename... ARGS>
   static smart_pointer_type allocate_container(bool static_container_p, int64_t length, ARGS&&... args) {
     size_t capacity = std::abs(length);
     size_t size = sizeof_container_with_header<OT>(capacity);
@@ -332,11 +332,11 @@ public:
       return GCObjectAllocator<OT>::template allocate_kind_variable<Stage, unmanaged>(Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
                                                                                       std::forward<ARGS>(args)...);
     else
-      return GCObjectAllocator<OT>::template allocate_kind_variable<Stage>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag), size,
+      return GCObjectAllocator<OT>::template allocate_kind_variable<Stage, Policy>(Header_s::BadgeStampWtagMtag(OT::static_ValueStampWtagMtag), size,
                                                                            length, std::forward<ARGS>(args)...);
   }
 
-  template <typename Stage, typename... ARGS>
+  template <typename Stage, GCInfo_policy Policy = GCInfo<OT>::Policy, typename... ARGS>
   static smart_pointer_type allocate_container_null_terminated_string(bool static_container_p, size_t length, ARGS&&... args) {
     size_t capacity = length + 1;
     size_t size = sizeof_container_with_header<OT>(capacity);
@@ -345,14 +345,14 @@ public:
           Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
           std::forward<ARGS>(args)...);
     else
-      return GCObjectAllocator<OT>::template allocate_kind_variable<Stage>(
+      return GCObjectAllocator<OT>::template allocate_kind_variable<Stage, Policy>(
           Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag), size, length,
           std::forward<ARGS>(args)...);
   }
 
   /*! Allocate enough space for capacity elements, but set the length to length */
 
-  template <typename... ARGS>
+  template <GCInfo_policy Policy = GCInfo<OT>::Policy, typename... ARGS>
   static smart_pointer_type allocate_bitunit_container(bool static_container_p, size_t length, ARGS&&... args) {
     size_t size = sizeof_bitunit_container_with_header<OT>(length);
     smart_pointer_type result;
@@ -360,7 +360,7 @@ public:
       result = GCObjectAllocator<OT>::template allocate_kind_variable<RuntimeStage, unmanaged>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
                                                                                       std::forward<ARGS>(args)...);
     else
-      result = GCObjectAllocator<OT>::template allocate_kind_variable<RuntimeStage>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
+      result = GCObjectAllocator<OT>::template allocate_kind_variable<RuntimeStage, Policy>(Header_s::BadgeStampWtagMtag::make<OT>(), size, length,
                                                                            std::forward<ARGS>(args)...);
 
     return result;
