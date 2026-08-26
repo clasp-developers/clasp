@@ -56,54 +56,52 @@ public:
     case gctools::Header_s::general_mtag: {
       gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
       const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-      // Basic fields
-      if (stamp_layout.field_layout_start) {
 #ifdef USE_PRECISE_GC
-        if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
-          // This object is too big for the bitmap, or has something weird in it
-          // like weak references. Scan by iterating over the fields.
-          int num_fields = stamp_layout.number_of_fields;
-          const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-          for (int i = 0; i < num_fields; ++i, ++field_layout_cur) {
-            void* field = (void*)((const char*)client + field_layout_cur->offset);
-            switch (field_layout_cur->type) {
+      // Basic (non-container) fields
+      if (stamp_layout.flags & gctools::COMPLEX_SCAN) [[unlikely]] {
+        // This object is too big for the bitmap, or has something weird in it
+        // like weak references. Scan by iterating over the fields.
+        int num_fields = stamp_layout.number_of_fields;
+        const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
+        for (int i = 0; i < num_fields; ++i, ++field_layout_cur) {
+          void* field = (void*)((const char*)client + field_layout_cur->offset);
+          switch (field_layout_cur->type) {
+            [[unlikely]]
+          case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
               [[unlikely]]
-            case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
-                [[unlikely]]
-            case QWEAK_OFFSET:
-                queueablefix((QueueableWeakReference*)field); break;
-                [[unlikely]]
-            case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
-                [[likely]] // normal field
-            default: fix((core::T_O**)field); break;
-            }
-          }
-        } else {
-          // Use pointer bitmaps
-          uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
-          for (core::T_O** addr = (core::T_O**)client; pointer_bitmap;
-               addr++, pointer_bitmap <<= 1) {
-            if ((intptr_t)pointer_bitmap < 0) { // checking high bit
-              fix(addr);
-            }
+          case QWEAK_OFFSET:
+              queueablefix((QueueableWeakReference*)field); break;
+              [[unlikely]]
+          case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
+              [[likely]] // normal field
+          default: fix((core::T_O**)field); break;
           }
         }
-#endif // USE_PRECISE_GC
+      } else {
+        // Use pointer bitmaps
+        uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
+        for (core::T_O** addr = (core::T_O**)client; pointer_bitmap;
+             addr++, pointer_bitmap <<= 1) {
+          if ((intptr_t)pointer_bitmap < 0) { // checking high bit
+            fix(addr);
+          }
+        }
       }
+#endif // USE_PRECISE_GC
       // Container fields
       if (stamp_layout.container_layout) {
         const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
         size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
         // Use new way with pointer bitmaps
         uintptr_t start_pointer_bitmap = container_layout.container_field_pointer_bitmap;
-        if (header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) {
+        if (header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) [[unlikely]] {
           llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
           core::T_O** addr = (core::T_O**)code->literalsStart();
           core::T_O** addrEnd = addr + (code->literalsSize() / sizeof(core::T_O*));
           for (; addr < addrEnd; addr++) {
             fix(addr);
           }
-        } else if (stamp_layout.flags & gctools::COMPLEX_SCAN) {
+        } else if (stamp_layout.flags & gctools::COMPLEX_SCAN) [[unlikely]] {
           const char* element = ((const char*)client + container_layout.data_offset);
           for (int i = 0; i < end; ++i, element += container_layout.element_size) {
             size_t nfields = container_layout.number_of_fields;
