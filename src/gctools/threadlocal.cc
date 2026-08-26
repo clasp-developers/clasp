@@ -455,6 +455,17 @@ core::T_sp ThreadLocalState::dequeue_interrupt() {
   return interrupt;
 }
 
+// Check if there is anything in the interrupt queue.
+// Used in fast path polling (interrupt.cc handle_queued_interrupts)
+bool ThreadLocalState::pending_interrupts_p() {
+  // Use acquire-release since sending an interrupt synchronizes-with processing
+  // that interrupt.
+  core::Cons_sp head = _PendingInterruptsHead.load(std::memory_order_acquire);
+  if (!static_cast<bool>(head)) return false; // inline interrupt_queue_validp
+  core::T_sp next = head->cdr();
+  return !next.nilp();
+}
+
 void ThreadLocalState::startUpVM() { this->_VM.startup(); }
 
 ThreadLocalState::~ThreadLocalState() {

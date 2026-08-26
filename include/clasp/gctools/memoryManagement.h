@@ -189,10 +189,6 @@ inline constexpr uintptr_t AlignDown(uintptr_t size, size_t alignment) { return 
 
 }; // namespace gctools
 
-namespace gctools {
-class ThreadLocalState;
-};
-
 /*! Declare this in the top namespace */
 extern THREAD_LOCAL core::ThreadLocalState* my_thread;
 

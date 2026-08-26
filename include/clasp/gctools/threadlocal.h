@@ -323,6 +323,7 @@ public:
     return static_cast<bool>(_PendingInterruptsHead.load(std::memory_order_acquire));
   }
   core::T_sp dequeue_interrupt();
+  bool pending_interrupts_p();
   inline void block() { _GCState.store(GCState::Parked, std::memory_order_release); }
   inline void gcsafe() { _GCState.store(GCState::GCsafe, std::memory_order_release); }
   inline void unblock() { _GCState.store(GCState::Running, std::memory_order_release); }
