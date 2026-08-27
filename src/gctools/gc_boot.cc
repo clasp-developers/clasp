@@ -298,9 +298,6 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
     case variable_array0:
       DGC_PRINT("%s:%d   variable_array0 cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].container_layout = &local_container_layout[cur_container_layout_idx++];
-      // TODO: possible optimization: we can keep the fast scan iff the container
-      // layout lacks pointers.
-      local_stamp_bitmaps[cur_stamp] = ~(uintptr_t)0;
       GCTOOLS_ASSERT(cur_container_layout_idx <= number_of_containers);
       local_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
       container_variable_index = 0;
@@ -336,6 +333,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
                    container_variable_index++, // index,
                    data_type, field_name, field_offset);
       if (fixable_type_p(data_type)) {
+        // This is a variable array that actually contains pointers to scan,
+        // so mark the fast bitmap invalid to force the scanner to do that work.
+        local_stamp_bitmaps[cur_stamp] = ~(uintptr_t)0;
         int bit_index = bitmap_field_index(63, field_offset);
         uintptr_t field_bitmap = bitmap_field_bitmap(bit_index);
         GCTOOLS_ASSERT(cur_field_layout < max_field_layout);
