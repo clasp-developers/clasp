@@ -33,6 +33,7 @@ size_t global_stamp_max;
 Stamp_layout* global_stamp_layout;
 Field_layout* global_field_layout;
 Container_layout* global_container_layout;
+uintptr_t* global_stamp_bitmaps;
 
 void dump_data_types(std::ostream& fout, const std::string& indent) {
 #define DTNAME(_type_, _name_, _sz_)                                                                                               \
@@ -172,6 +173,8 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       new Stamp_layout[local_stamp_max + 1]; // (Stamp_layout*)malloc(sizeof(Stamp_layout)*(local_stamp_max+1));
   Field_layout* local_field_layout =
       new Field_layout[number_of_fixable_fields]; // (Field_layout*)malloc(sizeof(Field_layout)*number_of_fixable_fields);
+  // {} so they're zero initialized.
+  uintptr_t* local_stamp_bitmaps = new uintptr_t[local_stamp_max + 1]{};
   Field_layout* cur_field_layout = local_field_layout;
   Field_layout* max_field_layout = (Field_layout*)((char*)local_field_layout + sizeof(Field_layout) * number_of_fixable_fields);
   Container_layout* local_container_layout =
@@ -231,10 +234,12 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
           // Alternately we have a weak reference that needs to be
           // scanned specially.
           local_stamp_layout[cur_stamp].flags |= COMPLEX_SCAN;
+          local_stamp_bitmaps[cur_stamp] = ~(uintptr_t)0;
         } else {
           // Otherwise (normal case) just put it in the bitmap.
           field_bitmap = bitmap_field_bitmap(bit_index);
           local_stamp_layout[cur_stamp].class_field_pointer_bitmap |= field_bitmap;
+          local_stamp_bitmaps[cur_stamp] |= field_bitmap;
         }
         
         if (local_stamp_layout[cur_stamp].field_layout_start == NULL)
@@ -293,6 +298,9 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
     case variable_array0:
       DGC_PRINT("%s:%d   variable_array0 cur_stamp = %d\n", __FILE__, __LINE__, cur_stamp);
       local_stamp_layout[cur_stamp].container_layout = &local_container_layout[cur_container_layout_idx++];
+      // TODO: possible optimization: we can keep the fast scan iff the container
+      // layout lacks pointers.
+      local_stamp_bitmaps[cur_stamp] = ~(uintptr_t)0;
       GCTOOLS_ASSERT(cur_container_layout_idx <= number_of_containers);
       local_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
       container_variable_index = 0;
@@ -510,6 +518,7 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
     global_stamp_layout = local_stamp_layout;
     global_field_layout = local_field_layout;
     global_container_layout = local_container_layout;
+    global_stamp_bitmaps = local_stamp_bitmaps;
   } else {
     printf("%s:%d Illegal walk %d\n", __FILE__, __LINE__, walk);
     abort();

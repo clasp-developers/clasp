@@ -46,6 +46,24 @@ public:
     const gctools::Header_s& header = *(const gctools::Header_s*)gctools::GeneralPtrToHeaderPtr(client);
     size_t stamp_index = header._badge_stamp_wtag_mtag.stamp_();
 
+    // Try the fastest possible thing first - get the simple bitmap, and if it
+    // hasn't been set to ~0 it's valid (or is coincidentally ~0, but whatever).
+    {
+      uintptr_t fast_bitmap = gctools::global_stamp_bitmaps[stamp_index];
+      if (fast_bitmap != ~(uintptr_t)0) [[likely]] {
+        core::T_O** addr = (core::T_O**)client;
+        while (fast_bitmap) {
+          int pos = std::countl_zero(fast_bitmap); // find first 1 bit (field)
+          fix(addr + pos); // scan it
+          // Then clear that bit so we can get the next field or exit.
+          fast_bitmap ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
+        }
+        return; // done!
+      }
+    }
+
+    // Slightly slower path using the fuller stamp layouts.
+    // Ideally we can still use a bitmap but there might be a container.
     gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
 #ifdef USE_PRECISE_GC

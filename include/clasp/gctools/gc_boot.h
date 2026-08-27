@@ -180,10 +180,17 @@ struct Stamp_layout {
   Container_layout* container_layout = nullptr;
 };
 
+// In addition to all the above, we maintain global_stamp_bitmaps which is an
+// array of just the Stamp_layout class_field_pointer_bitmaps, so that the GC's
+// scanner doesn't need to index into the entire huge Stamp_layout array.
+// The bitmap is set to ~0 if there is a container layout with pointers,
+// or COMPLEX_SCAN, so that the scanner knows to fall back to the more exact scan.
+
 extern Layout_code* get_stamp_layout_codes();
 extern size_t global_stamp_max;
 extern Stamp_layout* global_stamp_layout;
 extern Field_layout* global_field_layout;
+extern uintptr_t* global_stamp_bitmaps;
 
 typedef enum { precise_info, lldb_info } WalkKind;
 void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& stream);
