@@ -164,3 +164,47 @@
                   item))
           result))
       (4))
+
+;;; DETERMINE-CLOSURE-EXTENT marked an ENCLOSE :dynamic as soon as one reader
+;;; turned out to be a dx-call, before the remaining readers were checked; a
+;;; later escaping reader then bailed out without undoing it, so a closure that
+;;; is returned got stack allocated. Cleavir sets are EQ hash tables, so which
+;;; reader came first -- and hence whether the bug fired -- varied per compile.
+;;; Repeat enough times that the old behaviour is caught with certainty.
+(test-true dynamic-extent-escaping-closure
+      (let ((src '(lambda (x)
+                    (let ((g (lambda (y) (+ x y))))
+                      (mapcar g '(1 2 3))
+                      g))))
+        (every (lambda (f)
+                 (eql 15 (handler-case (funcall (funcall f 10) 5)
+                           (error () nil))))
+               (let ((cmp:*compile-native* t))
+                 (loop repeat 30 collect (compile nil src))))))
+
+;;; A DYNAMIC-EXTENT declaration is permission to stack allocate, never proof.
+;;; Here it is simply wrong -- the local function hands the closure back out --
+;;; so the compiler has to forfeit the optimisation. Believing the declaration
+;;; would return a closure whose frame is already gone.
+(test-true dynamic-extent-wrong-declaration-is-safe
+      (let ((f (let ((cmp:*compile-native* t))
+                 (compile nil '(lambda (x k)
+                                (flet ((leak-it (g) (list g k)))
+                                  (let ((c (lambda (y) (+ x y))))
+                                    (declare (dynamic-extent c))
+                                    (values (leak-it c) (leak-it c)
+                                            (leak-it c)))))))))
+        (eql 15 (handler-case (funcall (first (funcall f 10 1)) 5)
+                  (error () nil)))))
+
+;;; The same shape with a declaration that IS correct must keep its meaning.
+(test dynamic-extent-declared-closure-value
+      (let ((f (let ((cmp:*compile-native* t))
+                 (compile nil '(lambda (x k)
+                                (flet ((use-it (g) (length (mapcar g (list k 2 3)))))
+                                  (let ((c (lambda (y) (+ x y))))
+                                    (declare (dynamic-extent c))
+                                    (values (use-it c) (use-it c)
+                                            (use-it c)))))))))
+        (funcall f 10 1))
+      (3 3 3))
