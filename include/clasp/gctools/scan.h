@@ -31,15 +31,8 @@ public:
   template <std::invocable<core::T_O**> Fixer>
   static void cons(core::Cons_O* client, Fixer&& fix) {
     gctools::ConsHeader_s& header = *(gctools::ConsHeader_s*)gctools::ConsPtrToHeaderPtr(client);
-    if (header._badge_stamp_wtag_mtag.consObjectP()) {
-      fix((core::T_O**)&client->_Car);
-      fix((core::T_O**)&client->_Cdr);
-    } else if (!header._badge_stamp_wtag_mtag.fwdP()) {
-      printf("%s:%d CONS in cons_scan client=%p\n(it's not a CONS or any of fwd car=%p "
-           "cdr=%p\n",
-             __FILE__, __LINE__, (void*)client, client->car().raw_(), client->cdr().raw_());
-      truly_abort();
-    }
+    fix((core::T_O**)&client->_Car);
+    fix((core::T_O**)&client->_Cdr);
   }
   
   template <std::invocable<core::T_O**> Fixer,
