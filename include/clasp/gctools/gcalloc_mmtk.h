@@ -28,11 +28,11 @@ inline ConsHeader_s* do_cons_allocation() {
   RAIIDisableInterrupts disable_interrupts;
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(Size, MMTK_CLASP_ALLOC_DEFAULT);
-  mmtk_post_alloc(alloc_start, Size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(alloc_start);
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
   my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, Size);
+  mmtk_post_alloc(alloc_start, Size, MMTK_CLASP_ALLOC_DEFAULT, sizeof(ConsHeader_s));
   return header;
 }
 
@@ -45,7 +45,6 @@ static inline Header_s* do_generic_slow_allocation(const Header_s::StampWtagMtag
 #endif
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(true_size, semantics);
-  mmtk_post_alloc(alloc_start, true_size, semantics);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), true_size);
 #ifdef DEBUG_GUARD
@@ -54,6 +53,7 @@ static inline Header_s* do_generic_slow_allocation(const Header_s::StampWtagMtag
 #else
   new (header) Header_s(the_header);
 #endif
+  mmtk_post_alloc(alloc_start, true_size, semantics);
   return header;
 }
 
@@ -66,10 +66,10 @@ static inline Header_s* do_generic_slow_allocation(const Header_s::StampWtagMtag
   RAIIDisableInterrupts disable_interrupts;
   void* alloc_start;
   alloc_start = mmtk_alloc_raw(Size, semantics);
-  mmtk_post_alloc(alloc_start, Size, semantics);
   Header_s* header = reinterpret_cast<Header_s*>(alloc_start);
   my_thread_low_level->_Allocations.registerAllocation(the_header.unshifted_stamp(), Size);
   new (header) Header_s(the_header);
+  mmtk_post_alloc(alloc_start, Size, semantics);
   return header;
 #endif
 }
