@@ -17,6 +17,7 @@
  * soon be invalid.
  */
 
+#include <bit>
 #include <concepts>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -71,11 +72,13 @@ public:
     } else {
         // Use pointer bitmaps
       uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
-      for (core::T_O** addr = (core::T_O**)client; pointer_bitmap;
-           addr++, pointer_bitmap <<= 1) {
-        if ((intptr_t)pointer_bitmap < 0) { // checking high bit
-          fix(addr);
-        }
+      core::T_O** addr = (core::T_O**)client;
+      while (pointer_bitmap) {
+        int pos = std::countl_zero(pointer_bitmap); // find first 1 bit (field)
+        fix(addr + pos); // scan it
+        // Then clear that bit so we can get the next field or exit.
+        pointer_bitmap
+          ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
       }
     }
 #endif // USE_PRECISE_GC
@@ -122,13 +125,15 @@ public:
         }
       } else {
         // Multiple fields we can scan with a bitmap
-        const char* element = ((const char*)client + container_layout.data_offset);
+        const char* element = (const char*)client + container_layout.data_offset;
         for (int i = 0; i < end; ++i, element += container_layout.element_size) {
+          core::T_O** addr = (core::T_O**)element;
           uintptr_t pointer_bitmap = start_pointer_bitmap;
-          for (core::T_O** addr = (core::T_O**)element; pointer_bitmap; addr++, pointer_bitmap <<= 1) {
-            if ((intptr_t)pointer_bitmap < 0) {
-              fix((core::T_O**)addr);
-            }
+          while (pointer_bitmap) {
+            int pos = std::countl_zero(pointer_bitmap);
+            fix(addr + pos);
+            pointer_bitmap
+              ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
           }
         }
       }
