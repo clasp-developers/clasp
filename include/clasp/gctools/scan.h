@@ -35,7 +35,40 @@ public:
     fix((core::T_O**)&client->_Car);
     fix((core::T_O**)&client->_Cdr);
   }
-  
+
+private:
+  template <std::invocable<core::T_O**> Fixer>
+  static void fix_bitmap(core::T_O** base, uintptr_t bitmap, Fixer&& fix) {
+    while (bitmap) {
+      int pos = std::countl_zero(bitmap); // find first 1 bit (field)
+      // optimization note: based on the disassembly, it seems clang is smart enough
+      // to see that bitmap != 0 and so it can use bsr (on x86) no problem.
+      fix(base + pos); // scan it
+      // Then clear that bit so we can get the next field or exit.
+      bitmap ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
+    }
+  }
+
+  template <std::invocable<core::T_O**> Fixer,
+            std::invocable<WeakPointer*> WeakFixer,
+            std::invocable<QueueableWeakReference*> QueueableFixer,
+            std::invocable<Ephemeron*> EphFixer>
+  static void fix_complex(core::T_O** base, int num_fields,
+                          const gctools::Field_layout* field_layout,
+                          Fixer&& fix, WeakFixer&& weakfix,
+                          QueueableFixer&& queueablefix, EphFixer&& ephfix) {
+    for (int i = 0; i < num_fields; ++i, ++field_layout) {
+      void* field = (void*)((const char*)base + field_layout->offset);
+      switch (field_layout->type) {
+      case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
+      case QWEAK_OFFSET: queueablefix((QueueableWeakReference*)field); break;
+      case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
+      default: fix((core::T_O**)field); break;
+      }
+    }
+  }
+
+public:
   template <std::invocable<core::T_O**> Fixer,
             std::invocable<WeakPointer*> WeakFixer,
             std::invocable<QueueableWeakReference*> QueueableFixer,
@@ -51,108 +84,68 @@ public:
     {
       uintptr_t fast_bitmap = gctools::global_stamp_bitmaps[stamp_index];
       if (fast_bitmap != ~(uintptr_t)0) [[likely]] {
-        core::T_O** addr = (core::T_O**)client;
-        while (fast_bitmap) {
-          int pos = std::countl_zero(fast_bitmap); // find first 1 bit (field)
-          fix(addr + pos); // scan it
-          // Then clear that bit so we can get the next field or exit.
-          fast_bitmap ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
-        }
+        fix_bitmap((core::T_O**)client, fast_bitmap, fix);
         return; // done!
       }
     }
 
     // Slightly slower path using the fuller stamp layouts.
-    // Ideally we can still use a bitmap but there might be a container.
+    // Ideally we can still use a bitmap, but there might be a container
+    // and/or weird fields.
     gctools::GCStampEnum stamp_wtag = header._badge_stamp_wtag_mtag.stamp_wtag();
     const gctools::Stamp_layout& stamp_layout = gctools::global_stamp_layout[stamp_index];
-#ifdef USE_PRECISE_GC
-      // Basic (non-container) fields
+
+    // First we check for complex scan. This is unusual so we don't care so much
+    // about its performance, we just want it out of the way so that the faster
+    // paths can be good.
+    // We only use complex scan when there are unusual fields (e.g. weak pointers)
+    // or if the object has too many fixed fields (> 63) to fit in a bitmap.
     if (stamp_layout.flags & gctools::COMPLEX_SCAN) [[unlikely]] {
-        // This object is too big for the bitmap, or has something weird in it
-        // like weak references. Scan by iterating over the fields.
-      int num_fields = stamp_layout.number_of_fields;
-      const gctools::Field_layout* field_layout_cur = stamp_layout.field_layout_start;
-      for (int i = 0; i < num_fields; ++i, ++field_layout_cur) {
-        void* field = (void*)((const char*)client + field_layout_cur->offset);
-        switch (field_layout_cur->type) {
-          [[unlikely]]
-        case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
-            [[unlikely]]
-        case QWEAK_OFFSET:
-            queueablefix((QueueableWeakReference*)field); break;
-            [[unlikely]]
-        case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
-            [[likely]] // normal field
-        default: fix((core::T_O**)field); break;
-        }
+      fix_complex((core::T_O**)client, stamp_layout.number_of_fields,
+                  stamp_layout.field_layout_start,
+                  fix, weakfix, queueablefix, ephfix);
+      // now container fields.
+      if (stamp_layout.container_layout) {
+        const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
+        size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
+        const char* element = ((const char*)client + container_layout.data_offset);
+        for (int i = 0; i < end; ++i, element += container_layout.element_size)
+          fix_complex((core::T_O**)element, container_layout.number_of_fields,
+                      container_layout.field_layout_start,
+                      fix, weakfix, queueablefix, ephfix);
       }
     } else {
-        // Use pointer bitmaps
-      uintptr_t pointer_bitmap = stamp_layout.class_field_pointer_bitmap;
-      core::T_O** addr = (core::T_O**)client;
-      while (pointer_bitmap) {
-        int pos = std::countl_zero(pointer_bitmap); // find first 1 bit (field)
-        fix(addr + pos); // scan it
-        // Then clear that bit so we can get the next field or exit.
-        pointer_bitmap
-          ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
-      }
-    }
-#endif // USE_PRECISE_GC
-      // Container fields
-    if (stamp_layout.container_layout) {
-      const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
-      size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
-      // Use new way with pointer bitmaps
-      uintptr_t start_pointer_bitmap = container_layout.container_field_pointer_bitmap;
-      if (header._badge_stamp_wtag_mtag._value == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O)) [[unlikely]] {
-        llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
-        core::T_O** addr = (core::T_O**)code->literalsStart();
-        core::T_O** addrEnd = addr + (code->literalsSize() / sizeof(core::T_O*));
-        for (; addr < addrEnd; addr++) {
-          fix(addr);
+      // Use pointer bitmaps.
+      fix_bitmap((core::T_O**)client,
+                 stamp_layout.class_field_pointer_bitmap,
+                 fix);
+      if (stamp_layout.container_layout) {
+        // evil special case. FIXME
+        if (header._badge_stamp_wtag_mtag._value
+            == DO_SHIFT_STAMP(gctools::STAMPWTAG_llvmo__ObjectFile_O))
+          [[unlikely]] {
+          llvmo::ObjectFile_O* code = (llvmo::ObjectFile_O*)client;
+          core::T_O** addr = (core::T_O**)code->literalsStart();
+          core::T_O** addrEnd = addr + (code->literalsSize() / sizeof(core::T_O*));
+          for (; addr < addrEnd; addr++) fix(addr);
+          return;
         }
-      } else if (stamp_layout.flags & gctools::COMPLEX_SCAN) [[unlikely]] {
+        // back to normal case
+        const gctools::Container_layout& container_layout = *stamp_layout.container_layout;
+        size_t end = *(size_t*)((const char*)client + container_layout.end_offset);
         const char* element = ((const char*)client + container_layout.data_offset);
-        for (int i = 0; i < end; ++i, element += container_layout.element_size) {
-          size_t nfields = container_layout.number_of_fields;
-          const gctools::Field_layout* field_layout = container_layout.field_layout_start;
-          for (size_t j = 0; j < nfields; ++j, ++field_layout) {
-            void* field = (void*)(element + field_layout->offset);
-            switch (field_layout->type) {
-              [[unlikely]]
-            case WEAK_PTR_OFFSET: weakfix((WeakPointer*)field); break;
-                [[unlikely]]
-            case QWEAK_OFFSET:
-                queueablefix((QueueableWeakReference*)field); break;
-                [[unlikely]]
-            case EPHEMERON_OFFSET: ephfix((Ephemeron*)field); break;
-                [[likely]] // normal field
-            default: fix((core::T_O**)field); break;
-            }
-          }
-        }
-      } else if (!start_pointer_bitmap) {
-        // nothing to scan
-      } else if (!(start_pointer_bitmap << 1)) {
-        // Trivial case - there is a single pointer to fix in every element and its the only element
-        const char* element = ((const char*)client + container_layout.data_offset);
-        for (int i = 0; i < end; ++i, element += container_layout.element_size) {
-          fix((core::T_O**)element);
-        }
-      } else {
-        // Multiple fields we can scan with a bitmap
-        const char* element = (const char*)client + container_layout.data_offset;
-        for (int i = 0; i < end; ++i, element += container_layout.element_size) {
-          core::T_O** addr = (core::T_O**)element;
-          uintptr_t pointer_bitmap = start_pointer_bitmap;
-          while (pointer_bitmap) {
-            int pos = std::countl_zero(pointer_bitmap);
-            fix(addr + pos);
-            pointer_bitmap
-              ^= (uintptr_t)1 << ((sizeof(uintptr_t)*CHAR_BIT) - 1 - pos);
-          }
+        uintptr_t bitmap = container_layout.container_field_pointer_bitmap;
+        if (!bitmap) [[unlikely]] { // no fields, do nothing.
+          // note that this should be covered by fast bitmaps (above)
+          // and is only included here for correctness.
+        } else if (!(bitmap << 1)) [[likely]] {
+          // only one field, which is common enough (e.g. simple vector) that
+          // we try to handle it directly.
+          for (int i = 0; i < end; ++i, element += container_layout.element_size)
+            fix((core::T_O**)element);
+        } else {
+          for (int i = 0; i < end; ++i, element += container_layout.element_size)
+            fix_bitmap((core::T_O**)element, bitmap, fix);
         }
       }
     }
