@@ -253,3 +253,29 @@
         (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
         (car place))
       ((nil nil nil nil nil nil nil)))
+
+;;; The return value must distinguish "enqueued on a live process" from "the
+;;; process was already gone". Previously both answered NIL, so the value carried
+;;; no information at all -- which is what sent a bug report after the wrong
+;;; function entirely.
+;;; Blocks in SLEEP rather than spinning: this must not depend on back-edge
+;;; safepoints, and an uncancellable spinner would burn a core for the rest of
+;;; the run.
+(test-true process-kill-returns-true-when-enqueued
+           (let ((p (mp:process-run-function nil (lambda () (sleep 30)))))
+             (loop repeat 200 until (mp:process-active-p p) do (sleep 0.01))
+             (prog1 (and (mp:process-kill p) t)
+               (loop repeat 300 while (mp:process-active-p p) do (sleep 0.01)))))
+
+(test-true process-kill-returns-false-when-already-exited
+           (let ((p (mp:process-run-function nil (lambda () t))))
+             (mp:process-join p)
+             (loop repeat 300 while (mp:process-active-p p) do (sleep 0.01))
+             (not (mp:process-kill p))))
+
+;;; PROCESS-CANCEL is the same request and answers the same way.
+(test-true process-cancel-returns-false-when-already-exited
+           (let ((p (mp:process-run-function nil (lambda () t))))
+             (mp:process-join p)
+             (loop repeat 300 while (mp:process-active-p p) do (sleep 0.01))
+             (not (mp:process-cancel p))))
