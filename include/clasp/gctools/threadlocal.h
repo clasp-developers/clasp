@@ -351,7 +351,11 @@ public:
   template <std::invocable<gctools::Tagged*> Walker>
   void walkVMStack(Walker&& walk) {
     for (core::T_O** ptr = _VM._stackBottom;
-         ptr < _VM._stackPointer; ++ptr)
+         // note the +1: *_stackPointer is an actual reference.
+         // If the thread has just started and _stackPointer = _stackBottom,
+         // the stack should be all zero, so the walker will just see a fixnum,
+         // which shouldn't be a problem.
+         ptr < _VM._stackPointer + 1; ++ptr)
       walk((gctools::Tagged*)ptr);
   }
   // Call a function on the addresses of objects in the control stack.
