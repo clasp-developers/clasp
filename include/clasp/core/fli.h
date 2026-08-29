@@ -451,6 +451,22 @@ DOCGROUP(clasp)
 CL_DEFUN core::T_sp PERCENTmem_set_unsigned_char(core::Integer_sp address, core::T_sp value);
 SYMBOL_EXPORT_SC_(Clasp_ffi_pkg, PERCENTmem_set_unsigned_char);
 
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// FOREIGN MEMORY DIRECT ACCESS - COMPARE AND SWAP
+// ---------------------------------------------------------------------------
+// MEM-CAS
+
+CL_DOCSTRING(R"dx(Atomically store DESIRED at ADDRESS if the word there is EXPECTED. Returns the prior word, so the swap happened iff that value is = to EXPECTED. ADDRESS must be aligned for the width.)dx");
+DOCGROUP(clasp)
+CL_DEFUN core::T_sp PERCENTcas_mem_uint32(core::Integer_sp address, core::T_sp expected, core::T_sp desired);
+SYMBOL_EXPORT_SC_(Clasp_ffi_pkg, PERCENTcas_mem_uint32);
+
+CL_DOCSTRING(R"dx(Atomically store DESIRED at ADDRESS if the word there is EXPECTED. Returns the prior word, so the swap happened iff that value is = to EXPECTED. ADDRESS must be aligned for the width.)dx");
+DOCGROUP(clasp)
+CL_DEFUN core::T_sp PERCENTcas_mem_uint64(core::Integer_sp address, core::T_sp expected, core::T_sp desired);
+SYMBOL_EXPORT_SC_(Clasp_ffi_pkg, PERCENTcas_mem_uint64);
+
 void* clasp_to_void_pointer(ForeignData_sp sp_lisp_value);
 
 // ---------------------------------------------------------------------------
