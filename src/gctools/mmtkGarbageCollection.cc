@@ -156,10 +156,16 @@ extern "C" void clasp_walk_thread_precise_roots(void* tls, ClaspPreciseRootCallb
 extern "C" void clasp_walk_thread_conservative_roots(void* tls, ClaspConservativeRootCallback callback, void* data) {
   core::ThreadLocalState* ts = static_cast<core::ThreadLocalState*>(tls);
   ts->walkControlStack([&](gctools::Tagged* tp) {
-    // Strip all tag bits to get a potential client pointer.  Only aligned,
-    // non-null addresses can be MMTk object references.
-    void* client = reinterpret_cast<void*>(*tp & gctools::ptr_mask);
-    if (!client)
+    gctools::Tagged raw = *tp;
+    // Skip anything that's not a tagged cons or general object
+    if (((raw & gctools::ptag_mask) != gctools::general_tag)
+        && ((raw & gctools::ptag_mask) != gctools::cons_tag))
+      return;
+    void* client = reinterpret_cast<void*>(raw & gctools::ptr_mask);
+    // Skip some obviously non-object addresses, including NULL
+    // (the only address that mmtk_clasp_is_mmtk_object can't accept)
+    if ((uintptr_t)client < 0x1000
+        || (uintptr_t)client > 0x7fff'ffff'ffff)
       return;
     // The VO bit is the authoritative check: MMTk sets it at allocation and
     // clears it at reclamation, so it is reliable without inspecting headers.
