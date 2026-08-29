@@ -114,6 +114,27 @@ const char* pointer_pool(void* pointer) {
     gctools::truly_abort();                                                                                                        \
   }
 
+// Wrap a string as a single shell-safe argument: single-quote it and escape
+// any embedded single quote as '\''. The previous `system("..." + filename)`
+// and `popen("nm \"" << filename << "\"", "r")` patterns let any shell
+// metacharacter in `filename`/`_FileName`/`_LibDir` inject commands (e.g.
+// save-lisp-and-die :executable t :file "foo; rm -rf /"). Wrapping every user-
+// controlled value with this before interpolation makes the shell treat it as
+// one literal argument, no matter what bytes it contains.
+static std::string shell_quote(const std::string& s) {
+  std::string out;
+  out.reserve(s.size() + 2);
+  out.push_back('\'');
+  for (char c : s) {
+    if (c == '\'')
+      out.append("'\\''");
+    else
+      out.push_back(c);
+  }
+  out.push_back('\'');
+  return out;
+}
+
 /*! Build a LibraryLookup by running 'nm' on one of our loaded libraries or executable.
  *  For dynamic libraries on linux (contain .so in filename) use --dynamic because regular symbols are often stripped
  *  Look for the first 'T' symbol and dlsym it to find out where the library is loaded in memory.
@@ -141,15 +162,15 @@ bool loadLibrarySymbolLookup(const std::string& filename, LibraryLookup& library
   std::string dynamic = "";
   if (filename.find(".so") != std::string::npos)
     dynamic = "--dynamic ";
-  nm_cmd << NM_BINARY << " " << dynamic << "-p --defined-only --no-sort \"" << filename << "\"";
+  nm_cmd << NM_BINARY << " " << dynamic << "-p --defined-only --no-sort " << shell_quote(filename);
 #elif defined(_TARGET_OS_DARWIN)
   gctools::clasp_ptr_t start;
   gctools::clasp_ptr_t end;
   core::executableTextSectionRange(start, end);
-  nm_cmd << NM_BINARY << " -p --defined-only \"" << filename << "\"";
+  nm_cmd << NM_BINARY << " -p --defined-only " << shell_quote(filename);
 #else
 #error "Handle other operating systems - how is main found using dlsym and in the output of nm"
-  nm_cmd << NM_BINARY << " -p --defined-only \"" << filename << "\"";
+  nm_cmd << NM_BINARY << " -p --defined-only " << shell_quote(filename);
 #endif
   if (fout)
     fprintf(fout, "# Symbols obtained by filtering: %s\n", nm_cmd.str().c_str());
@@ -1864,10 +1885,11 @@ void* snapshot_save_impl(void* data) {
 #else
 #error "snapshot_save_impl: unsupported architecture for objcopy binary wrap"
 #endif
+    // mangled_name is already restricted to [A-Za-z0-9_] above, so it stays unquoted.
     cmd = OBJCOPY_BINARY " --input-target binary --output-target " +
           std::string(snapshot_objcopy_target) + " --binary-architecture " +
           snapshot_objcopy_arch + " " +
-          filename + " " + obj_filename + " --redefine-sym _binary_" + mangled_name +
+          shell_quote(filename) + " " + shell_quote(obj_filename) + " --redefine-sym _binary_" + mangled_name +
           "_start=" CXX_MACRO_STRING(SNAPSHOT_START) " --redefine-sym _binary_" + mangled_name +
           "_end=" CXX_MACRO_STRING(SNAPSHOT_END) " --redefine-sym _binary_" + mangled_name +
           "_size=" CXX_MACRO_STRING(SNAPSHOT_SIZE);
@@ -1879,8 +1901,8 @@ void* snapshot_save_impl(void* data) {
       exit(1);
     }
 
-    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + snapshot_data->_LibDir + " -o" + snapshot_data->_FileName + " " + obj_filename +
-          " -Wl,-whole-archive -liclasp"
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + shell_quote(snapshot_data->_LibDir) + " -o" + shell_quote(snapshot_data->_FileName) +
+          " " + shell_quote(obj_filename) + " -Wl,-whole-archive -liclasp"
 #ifndef CLASP_STATIC_LINKING
           " -Wl,-no-whole-archive"
 #endif
@@ -1898,9 +1920,10 @@ void* snapshot_save_impl(void* data) {
     // only carries a RELATIVE -Lboehmprecise/lib, so without this, -lclasp resolves only when
     // save-lisp-and-die :executable is run with CWD=build/. The absolute -L makes it link from
     // any working directory (the runtime rpath is already absolute).
-    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L\"" + snapshot_data->_LibDir + "\" -o\"" + snapshot_data->_FileName +
-          "\" -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " \"" + filename + "\" -Wl,-force_load,\"" +
-          snapshot_data->_LibDir + "/libiclasp.a\" -lclasp " BUILD_LIB;
+    cmd = CXX_BINARY " " BUILD_LINKFLAGS " -L" + shell_quote(snapshot_data->_LibDir) + " -o" +
+          shell_quote(snapshot_data->_FileName) +
+          " -sectcreate " SNAPSHOT_SEGMENT " " SNAPSHOT_SECTION " " + shell_quote(filename) +
+          " -Wl,-force_load," + shell_quote(snapshot_data->_LibDir + "/libiclasp.a") + " -lclasp " BUILD_LIB;
 #endif
 
     std::cout << "Link command:" << std::endl << std::flush;
