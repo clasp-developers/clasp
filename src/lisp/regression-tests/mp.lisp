@@ -253,3 +253,63 @@
         (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
         (car place))
       ((nil nil nil nil nil nil nil)))
+
+;;; MP:CAS on an SVREF place must arbitrate between threads, not merely compile.
+;;; CORE:ACAS is reached through FDEFINITION in the "out-of-line" variants so that the
+;;; runtime implementation is exercised even in a build where the compiler inlines a
+;;; cmpxchg for the MP:CAS form instead.
+
+(defun cas-svref-contention (casser nthreads per-thread)
+  (let ((v (vector 0)))
+    (spam-processes nthreads
+                    (lambda ()
+                      (dotimes (i per-thread)
+                        (loop for old = (svref v 0)
+                              until (eql old (funcall casser v old (1+ old)))))))
+    (svref v 0)))
+
+(defun cas-svref-inline (v old new) (mp:cas (svref v 0) old new))
+
+(defun cas-svref-out-of-line (v old new)
+  (funcall (fdefinition 'core::acas) :sequentially-consistent old new v 0))
+
+(test cas-svref-single-thread
+      (cas-svref-contention #'cas-svref-inline 1 10000)
+      (10000))
+
+(test cas-svref-contended
+      (cas-svref-contention #'cas-svref-inline 4 10000)
+      (40000))
+
+(test cas-svref-out-of-line-contended
+      (cas-svref-contention #'cas-svref-out-of-line 4 10000)
+      (40000))
+
+(test cas-svref-semantics
+      (let ((v (vector 5)))
+        (list (mp:cas (svref v 0) 5 6) (svref v 0)
+              (mp:cas (svref v 0) 99 7) (svref v 0)))
+      ((5 6 6 6)))
+
+(test cas-svref-out-of-line-semantics
+      (let ((v (vector 5)))
+        (list (cas-svref-out-of-line v 5 6) (svref v 0)
+              (cas-svref-out-of-line v 99 7) (svref v 0)))
+      ((5 6 6 6)))
+
+;;; The out-of-line CAS must still honour displacement.
+(test cas-displaced-general-array
+      (let* ((base (vector 0 0 0 0))
+             (d (make-array 2 :displaced-to base :displaced-index-offset 1)))
+        (list (funcall (fdefinition 'core::acas) :sequentially-consistent 0 'x d 1)
+              (coerce base 'list)))
+      ((0 (0 0 x 0))))
+
+;;; A specialized array has no tagged word to swap, so it is refused rather than
+;;; silently swapped non-atomically.
+(test-expect-error cas-specialized-array
+                   (funcall (fdefinition 'core::acas) :sequentially-consistent 0 1
+                            (make-array 1 :element-type 'double-float
+                                          :initial-element 0d0)
+                            0)
+                   :type type-error)
