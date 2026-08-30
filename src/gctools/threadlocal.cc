@@ -220,6 +220,7 @@ ThreadLocalState::ThreadLocalState(bool dummy)
   // this point the world is not stopped. MMTk demands that the set of mutators
   // not change during a stop, and bind_mutator adds a mutator.
   _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+  _LowLevel._mmtk_default_allocator_offset = mmtk_clasp_get_default_allocator_offset();
 #endif
 
 }
@@ -318,6 +319,7 @@ ThreadLocalState::ThreadLocalState()
   gctools::stw_register_thread(this);
 #ifdef USE_MMTK
   _LowLevel._mmtk_mutator = mmtk_clasp_bind_mutator(this);
+  _LowLevel._mmtk_default_allocator_offset = mmtk_clasp_get_default_allocator_offset();
 #endif
 }
 

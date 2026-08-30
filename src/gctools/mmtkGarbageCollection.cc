@@ -38,6 +38,9 @@ THE SOFTWARE.
 
 namespace gctools {
 
+// used in gcalloc_mmtk.h
+size_t max_non_los_default_alloc_bytes;
+
 __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
   // Build and initialise the MMTk instance.
   MMTkClaspBuilder builder = mmtk_clasp_create_builder();
@@ -50,6 +53,10 @@ __attribute__((noinline)) void initializeMmtk(ClaspInfo* claspInfo) {
   my_thread = (core::ThreadLocalState*)malloc(sizeof(core::ThreadLocalState));
   new (my_thread) core::ThreadLocalState(false);
   my_thread_low_level = &my_thread->_LowLevel;
+
+  // Grab some parameters
+  max_non_los_default_alloc_bytes
+    = mmtk_clasp_max_default_alloc_bytes();
 
   // The mutator for this thread was bound by ThreadLocalState's ctor.
   mmtk_clasp_initialize_collection(my_thread);
