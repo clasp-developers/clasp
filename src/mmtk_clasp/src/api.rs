@@ -174,11 +174,10 @@ pub extern "C" fn mmtk_clasp_alloc(
     mutator: *mut Mutator<ClaspVM>,
     size: usize,
     align: usize,
-    mut semantics: AllocationSemantics,
+    semantics: AllocationSemantics,
 ) -> Address {
-    if size >= mmtk().get_plan().constraints().max_non_los_default_alloc_bytes {
-        semantics = AllocationSemantics::Los;
-    }
+    debug_assert!(semantics == AllocationSemantics::Los
+                  || size < mmtk().get_plan().constraints().max_non_los_default_alloc_bytes);
     memory_manager::alloc::<ClaspVM>(unsafe { &mut *mutator }, size, align, 0, semantics)
 }
 
@@ -187,11 +186,10 @@ pub extern "C" fn mmtk_clasp_post_alloc(
     mutator: *mut Mutator<ClaspVM>,
     object: ObjectReference,
     bytes: usize,
-    mut semantics: AllocationSemantics,
+    semantics: AllocationSemantics,
 ) {
-    if bytes >= mmtk().get_plan().constraints().max_non_los_default_alloc_bytes {
-        semantics = AllocationSemantics::Los;
-    }
+    debug_assert!(semantics == AllocationSemantics::Los
+                  || bytes < mmtk().get_plan().constraints().max_non_los_default_alloc_bytes);
     memory_manager::post_alloc::<ClaspVM>(unsafe { &mut *mutator }, object, bytes, semantics)
 }
 
