@@ -445,6 +445,7 @@ core::T_sp ThreadLocalState::dequeue_interrupt() {
   core::Cons_sp cnext;
   do {
     next = head->cdr();
+    if (!static_cast<bool>(head)) return nil<T_O>(); // not set up yet
     if (next.nilp()) return next; // nothing to dequeue
     cnext = next.as_assert<core::Cons_O>();
   } while (!_PendingInterruptsHead.compare_exchange_weak(head, cnext,

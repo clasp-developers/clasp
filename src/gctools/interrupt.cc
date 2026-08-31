@@ -200,8 +200,6 @@ static void handle_pending_signals() {
 
 // Handle just interrupts and not signals. Used in the SIGCONT handler,
 // which checks if interrupts are disabled itself.
-// Make sure to check pending_interrupts_p first, since that also checks that
-// the thread interrupt queue is set up at all.
 static void handle_queued_interrupts() {
   while (true) {
     core::T_sp i = my_thread->dequeue_interrupt();
