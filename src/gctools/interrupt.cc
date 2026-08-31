@@ -140,10 +140,9 @@ bool global_user_signal = false;
 
 // INTERRUPTS
 
-inline bool interrupts_disabled_p() {
-  return my_thread_low_level->_DisableInterrupts
-    || (my_thread->interrupt_queue_validp() // KLUDGE to not trigger problems if we do this early.
-        && core::_sym_STARinterrupts_enabledSTAR->symbolValue().nilp());
+inline bool interrupts_disabled_p(core::ThreadLocalState* thread) {
+  return thread->_LowLevel._DisableInterrupts
+    || core::_sym_STARinterrupts_enabledSTAR->symbolValue().nilp();
 }
 
 // Perform one action (presumably popped from the queue).
@@ -202,23 +201,30 @@ static void handle_pending_signals() {
 // Handle just interrupts and not signals. Used in the SIGCONT handler,
 // which checks if interrupts are disabled itself.
 static void handle_queued_interrupts() {
-  // Check that the queue has actually been created.
-  if (my_thread->interrupt_queue_validp()) {
-    while (true) {
-      core::T_sp i = my_thread->dequeue_interrupt();
-      if (i.nilp()) break;
-      handle_queued_interrupt(i);
-    }
+  while (true) {
+    core::T_sp i = my_thread->dequeue_interrupt();
+    if (i.nilp()) break;
+    handle_queued_interrupt(i);
   }
 }
 
 // Do all the queued actions, emptying the queue -
 // unless interrupts have been disabled.
 template <> void handle_all_queued_interrupts<RuntimeStage>() {
-  if (!interrupts_disabled_p()) {
-    if (my_thread->pending_signals_p())
-      handle_pending_signals();
-    handle_queued_interrupts();
+  // This function is called for basically every Lisp function call, so we want it
+  // to be very fast. So: we only check interrupts_disabled_p, which performs a
+  // relatively complicated operation (checking a dynamic variable), if there is
+  // actually anything to handle. Checking if there is anything to handle is a
+  // pretty quick operation since it's just loading from some atomics in the thread
+  // structure, none of which should be very contentious.
+  // We also make sure to only grab my_thread once in the common case of there
+  // being nothing to handle, because accessing TLS is a bit expensive.
+  core::ThreadLocalState* thread = my_thread;
+  bool signalsp = thread->pending_signals_p();
+  bool interruptsp = thread->pending_interrupts_p();
+  if ((signalsp || interruptsp) && !interrupts_disabled_p(thread)) {
+    if (signalsp) handle_pending_signals();
+    if (interruptsp) handle_queued_interrupts();
   }
 }
 
@@ -243,11 +249,12 @@ void handle_SIGUSR1(int sig) { global_user_signal = true; }
 // that are blocked on a syscall or whatever.
 void handle_SIGCONT(int sig) {
   if (my_thread) {
-    if (my_thread->blockingp() && !interrupts_disabled_p()) {
+    if (my_thread->blockingp() && !interrupts_disabled_p(my_thread)) {
       // Disable (most) async interrupts and wait for the world to be unstopped
       // before we call user code.
       call_unparked([&]() {
-        handle_queued_interrupts();
+        if (my_thread->pending_interrupts_p())
+          handle_queued_interrupts();
         handle_signal_now(sig); // pass on the SIGCONT, in case someone cares
       });
       // Nothing jumped out of there, so we're back to blocking.

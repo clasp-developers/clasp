@@ -781,7 +781,7 @@ struct loadltv {
   void op_bcmod() {
     size_t index = next_index();
     uint32_t len = read_u32();
-    SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make(len);
+    SimpleVector_byte8_t_sp bytes = SimpleVector_byte8_t_O::make<gctools::collectable_immobile>(len);
     // Read the module bytecode straight into the vector through our buffer.
     read_bytes((unsigned char*)bytes->rowMajorAddressOfElement_(0), len);
     set_ltv(BytecodeModule_O::make(bytes), index);
@@ -790,7 +790,7 @@ struct loadltv {
   void op_slits() {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     uint16_t len = read_u16();
-    SimpleVector_sp lits = SimpleVector_O::make(len);
+    SimpleVector_sp lits = SimpleVector_O::make<gctools::collectable_immobile>(len);
     mod->setf_literals(lits);
     for (size_t i = 0; i < len; ++i)
       lits[i] = get_ltv(read_index());

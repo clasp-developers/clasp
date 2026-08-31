@@ -1000,6 +1000,7 @@ std::string dump_stamp_info(size_t stamp) {
   fmt::format_to(out, "Size: {}\n", layout.size);
   // Fields
   fmt::format_to(out, "Bitmap: {:0<#16x}\n", layout.class_field_pointer_bitmap);
+  fmt::format_to(out, "Fast bitmap: {:0<#16x}\n", global_stamp_bitmaps[stamp]);
   if (layout.number_of_fields)
     fmt::format_to(out, "{} fields:\n", layout.number_of_fields);
   else fmt::format_to(out, "No fields.\n");

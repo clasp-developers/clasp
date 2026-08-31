@@ -29,6 +29,7 @@ extern bool mmtk_clasp_set_fixed_heap_size(MMTkClaspBuilder builder, size_t heap
 extern bool mmtk_clasp_set_dynamic_heap_size(MMTkClaspBuilder builder, size_t min_heap, size_t max_heap);
 extern void mmtk_clasp_init(MMTkClaspBuilder builder);
 extern void mmtk_clasp_initialize_collection(void* tls);
+extern size_t mmtk_clasp_max_default_alloc_bytes();
 
 // Fork support. Call mmtk_clasp_prepare_to_fork() in the parent before fork();
 // it stops the GC worker threads and blocks until they have exited. Call
@@ -49,6 +50,17 @@ extern void* mmtk_clasp_alloc(MMTkClaspMutator mutator, size_t size, size_t alig
                               MMTkClaspAllocSemantics semantics);
 extern void mmtk_clasp_post_alloc(MMTkClaspMutator mutator, void* object_ref, size_t bytes,
                                   MMTkClaspAllocSemantics semantics);
+
+// Fast-path allocation for Default (Immix) semantics.
+// mmtk_clasp_get_default_allocator_offset() returns the byte offset from a Mutator
+// pointer to its Immix allocator; this value is constant for all mutators — compute
+// it once when binding each mutator and cache it.  Pass it to mmtk_clasp_alloc_immix
+// and mmtk_clasp_post_alloc_immix to bypass AllocationSemantics dispatch on every call.
+extern size_t mmtk_clasp_get_default_allocator_offset(void);
+extern void*  mmtk_clasp_alloc_immix(MMTkClaspMutator mutator, size_t immix_offset,
+                                     size_t size, size_t align);
+extern void   mmtk_clasp_post_alloc_immix(MMTkClaspMutator mutator, void* object_ref,
+                                          size_t bytes);
 
 // Heap statistics
 extern size_t mmtk_clasp_used_bytes(void);

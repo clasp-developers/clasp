@@ -13,12 +13,14 @@ use crate::scanning::QWEAKS;
 use crate::scanning::QWEAKS_RESURRECT;
 use libc::c_char;
 use mmtk::memory_manager;
+use mmtk::plan::Mutator;
 use mmtk::scheduler::GCWorker;
+use mmtk::util::alloc::Allocator;
+use mmtk::util::alloc::ImmixAllocator;
 use mmtk::util::opaque_pointer::*;
 use mmtk::util::{Address, ObjectReference};
 use mmtk::AllocationSemantics;
 use mmtk::MMTKBuilder;
-use mmtk::Mutator;
 use std::ffi::CStr;
 
 #[no_mangle]
@@ -77,6 +79,12 @@ pub extern "C" fn mmtk_clasp_init(builder: *mut MMTKBuilder) {
 }
 
 #[no_mangle]
+pub extern "C" fn mmtk_clasp_max_default_alloc_bytes(
+) -> usize {
+    mmtk().get_plan().constraints().max_non_los_default_alloc_bytes
+}
+
+#[no_mangle]
 pub extern "C" fn mmtk_clasp_initialize_collection(tls: VMThread) {
     memory_manager::initialize_collection(mmtk(), tls);
 }
@@ -118,16 +126,58 @@ pub extern "C" fn mmtk_clasp_destroy_mutator(mutator: *mut Mutator<ClaspVM>) {
     let _ = unsafe { Box::from_raw(mutator) };
 }
 
+/// Returns the byte offset from a Mutator pointer to its default (Immix) allocator.
+/// This is constant for a given plan and VM binding — compute it once at mutator
+/// bind time and reuse it for every allocation to skip semantic dispatch.
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_get_default_allocator_offset() -> usize {
+    let selector = memory_manager::get_allocator_mapping(mmtk(), AllocationSemantics::Default);
+    Mutator::<ClaspVM>::get_allocator_base_offset(selector)
+}
+
+/// Fast-path alloc for Default semantics: bypasses AllocationSemantics dispatch by
+/// accessing the ImmixAllocator directly via the pre-computed offset.
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_alloc_immix(
+    mutator: *mut Mutator<ClaspVM>,
+    immix_offset: usize,
+    size: usize,
+    align: usize,
+) -> Address {
+    debug_assert!(size < mmtk().get_plan().constraints().max_non_los_default_alloc_bytes);
+    let allocator = unsafe {
+        (Address::from_ptr(mutator) + immix_offset).as_mut_ref::<ImmixAllocator<ClaspVM>>()
+    };
+    allocator.alloc(size, align, 0)
+}
+
+/// Fast-path post_alloc for Default semantics: skips the LOS redirect check in
+/// mmtk_clasp_post_alloc and calls directly with Default, relying on the caller
+/// having already verified the object is below the LOS threshold.
+#[no_mangle]
+pub extern "C" fn mmtk_clasp_post_alloc_immix(
+    mutator: *mut Mutator<ClaspVM>,
+    object: ObjectReference,
+    bytes: usize,
+) {
+    debug_assert!(bytes < mmtk().get_plan().constraints().max_non_los_default_alloc_bytes);
+    memory_manager::post_alloc::<ClaspVM>(
+        unsafe { &mut *mutator },
+        object,
+        bytes,
+        AllocationSemantics::Default,
+    );
+}
+
 #[no_mangle]
 pub extern "C" fn mmtk_clasp_alloc(
     mutator: *mut Mutator<ClaspVM>,
     size: usize,
     align: usize,
-    mut semantics: AllocationSemantics,
+    semantics: AllocationSemantics,
 ) -> Address {
-    if size >= mmtk().get_plan().constraints().max_non_los_default_alloc_bytes {
-        semantics = AllocationSemantics::Los;
-    }
+    debug_assert!(semantics == AllocationSemantics::Los
+                  || size < mmtk().get_plan().constraints().max_non_los_default_alloc_bytes);
     memory_manager::alloc::<ClaspVM>(unsafe { &mut *mutator }, size, align, 0, semantics)
 }
 
@@ -136,11 +186,10 @@ pub extern "C" fn mmtk_clasp_post_alloc(
     mutator: *mut Mutator<ClaspVM>,
     object: ObjectReference,
     bytes: usize,
-    mut semantics: AllocationSemantics,
+    semantics: AllocationSemantics,
 ) {
-    if bytes >= mmtk().get_plan().constraints().max_non_los_default_alloc_bytes {
-        semantics = AllocationSemantics::Los;
-    }
+    debug_assert!(semantics == AllocationSemantics::Los
+                  || bytes < mmtk().get_plan().constraints().max_non_los_default_alloc_bytes);
     memory_manager::post_alloc::<ClaspVM>(unsafe { &mut *mutator }, object, bytes, semantics)
 }
 

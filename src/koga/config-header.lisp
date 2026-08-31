@@ -66,7 +66,6 @@
                  "DEBUG_GUARD_BACKTRACE" (debug-guard-backtrace configuration)
                  "DEBUG_GUARD_EXHAUSTIVE_VALIDATE" (debug-guard-exhaustive-validate configuration)
                  "DEBUG_RELEASE" (debug-release configuration)
-                 "DEBUG_BITUNIT_CONTAINER" (debug-bitunit-container configuration)
                  "DEBUG_TRACK_UNWINDS" (debug-track-unwinds configuration)
                  "DEBUG_NO_UNWIND" (debug-no-unwind configuration)
                  "DEBUG_STARTUP" (debug-startup configuration)

@@ -46,6 +46,7 @@ struct ThreadLocalStateLowLevel {
   AllocationProfiler _Allocations;
 #ifdef USE_MMTK
   MMTkClaspMutator _mmtk_mutator;
+  size_t _mmtk_default_allocator_offset; // byte offset from mutator ptr to its Immix allocator; constant across mutators
 #endif
   // Time unwinds
   std::chrono::time_point<std::chrono::high_resolution_clock> _start_unwind;

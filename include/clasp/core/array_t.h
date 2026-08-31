@@ -37,9 +37,10 @@ public:
   // the length was computed by make below from the range anyway.
   SimpleVector_O(size_t length, R&& initialContents)
     : TemplatedBase(initialContents) { (void)length; };
+  template <gctools::GCInfo_policy Policy = gctools::normal>
   static SimpleVector_sp make(size_t length, T_sp initialElement = nil<T_O>(), bool initialElementSupplied = true,
                               size_t initialContentsSize = 0, const T_sp* initialContents = NULL, bool static_vector_p = false) {
-    auto bs = gctools::GC<SimpleVector_O>::allocate_container<gctools::RuntimeStage>(
+    auto bs = gctools::GC<SimpleVector_O>::allocate_container<gctools::RuntimeStage, Policy>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
     return bs;
   }

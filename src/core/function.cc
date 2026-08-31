@@ -675,14 +675,14 @@ CL_DEFUN void core__verify_global_entry_point(T_sp alist) {
 CL_LISPIFY_NAME(bytecode_closure/make);
 CL_DEF_CLASS_METHOD
 Closure_sp Closure_O::make_bytecode_closure(BytecodeSimpleFun_sp entryPoint, size_t closedOverSlots) {
-  Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, closedOverSlots, entryPoint);
+  Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage, gctools::collectable_immobile>(false, closedOverSlots, entryPoint);
   return closure;
 }
 
 CL_LAMBDA(sfun core:&va-rest closed);
 CL_DEFUN Closure_sp core__make_closure(SimpleFun_sp sfun, Vaslist_sp closed) {
   size_t nclosed = closed->nargs();
-  Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage>(false, nclosed, sfun);
+  Closure_sp closure = gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage, gctools::collectable_immobile>(false, nclosed, sfun);
   for (size_t idx = 0; idx < nclosed; ++idx)
     closure[idx] = closed->next_arg();
   return closure;

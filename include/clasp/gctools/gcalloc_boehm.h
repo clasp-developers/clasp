@@ -20,20 +20,21 @@
 #endif
 
 namespace gctools {
-template <typename Stage, typename Cons> inline ConsHeader_s* do_cons_allocation(size_t size) {
+template <typename Stage, typename Cons, size_t Size>
+inline ConsHeader_s* do_cons_allocation() {
   RAIIDisableInterrupts disable_interrupts;
 #ifdef USE_PRECISE_GC
   ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(
-      ALIGNED_GC_MALLOC_KIND(size, global_cons_kind)); // wasMTAG
+      ALIGNED_GC_MALLOC_KIND(Size, global_cons_kind)); // wasMTAG
 #ifdef DEBUG_BOEHMPRECISE_ALLOC
   printf("%s:%d:%s cons = %p\n", __FILE__, __LINE__, __FUNCTION__, cons);
 #endif
 #else
-  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(size));
+  ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(ALIGNED_GC_MALLOC(Size));
 #endif
   const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
   new (header) ConsHeader_s(stamp);
-  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, size);
+  my_thread_low_level->_Allocations.registerAllocation(STAMPWTAG_CONS, Size);
   return header;
 }
 
@@ -61,6 +62,10 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header,
 #endif
   return header;
 };
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_atomic_allocation<Stage>(the_header, Size);
+}
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
@@ -91,6 +96,22 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
   return header;
 };
 
+// Boehm doesn't get anything useful from constant sizes.
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_general_allocation<Stage>(the_header, Size);
+}
+
+template <typename Stage = RuntimeStage>
+inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
+  // Boehm never moves anything.
+  return do_general_allocation<Stage>(the_header, size);
+}
+template <typename Stage = RuntimeStage, size_t Size>
+inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_immobile_allocation<Stage>(the_header, Size);
+}
+
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   size_t true_size = size;
 #ifdef DEBUG_GUARD
@@ -115,6 +136,11 @@ inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_
 #endif
   return header;
 };
+
+template <size_t Size>
+inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header) {
+  return do_uncollectable_allocation(the_header, Size);
+}
 
 // Allocate a blank T_O* vector. This is used for the bytecode VM.
 inline void* do_allocate_zero(size_t num) {

@@ -488,22 +488,18 @@ CL_DECLARE();
 CL_DOCSTRING("eql")
 DOCGROUP(clasp)
 inline CL_DEFUN bool cl__eql(T_sp x, T_sp y) {
-  if (x.fixnump()) {
-    return x.raw_() == y.raw_();
-  } else if (x.single_floatp()) {
+  if (x.raw_() ==  y.raw_()) return true;
+  else if (x.fixnump()) return false; // raws would have been eql
+  else if (x.single_floatp()) {
     if (!y.single_floatp())
       return false;
     single_float_t xf = x.unsafe_single_float();
     single_float_t yf = y.unsafe_single_float();
     // signbit is included in the comparison because (EQL 0.0 -0.0) is non-NIL.
     return xf == yf && std::signbit(xf) == std::signbit(yf);
-  } else if (x.characterp()) {
-    return y.characterp() && x.unsafe_character() == y.unsafe_character();
-  } else if (x.consp()) {
-    return x.raw_() == y.raw_();
-  } else if (x.generalp()) {
-    if (x.raw_() == y.raw_())
-      return true;
+  } else if (x.characterp()) return false; //raws would have been eql
+  else if (x.consp()) return false; // raws would have been eql
+  else if (x.generalp()) {
     General_O* general = x.unsafe_general();
     return general->eql_(y);
   }

@@ -279,11 +279,6 @@
                   :initform nil
                   :type boolean
                   :documentation "Turn off optimization for a few C++ functions; undef this to optimize everything")
-   (debug-bitunit-container :accessor debug-bitunit-container
-                            :initarg :debug-bitunit-container
-                            :initform nil
-                            :type boolean
-                            :documentation "Prints debug info for bitunit containers")
    (debug-track-unwinds :accessor debug-track-unwinds
                         :initarg :debug-track-unwinds
                         :initform nil

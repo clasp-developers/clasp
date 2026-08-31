@@ -37,10 +37,11 @@ public:
   SimpleVector_byte8_t_O(size_t length, R&& initialContents)
     : TemplatedBase(initialContents) { (void)length; };
 
+  template <gctools::GCInfo_policy Policy = gctools::normal>
   static smart_ptr_type make(size_t length, value_type initialElement = value_type(), bool initialElementSupplied = false,
                              size_t initialContentsSize = 0, const value_type* initialContents = NULL,
                              bool static_vector_p = false) {
-    auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage>(
+    auto bs = gctools::GC<my_type>::allocate_container<gctools::RuntimeStage, Policy>(
         static_vector_p, length, initialElement, initialElementSupplied, initialContentsSize, initialContents);
     return bs;
   }
