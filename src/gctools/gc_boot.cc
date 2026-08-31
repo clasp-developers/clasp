@@ -301,6 +301,14 @@ void walk_stamp_field_layout_tables(WalkKind walk, std::ostream& fout) {
       GCTOOLS_ASSERT(cur_container_layout_idx <= number_of_containers);
       local_stamp_layout[cur_stamp].container_layout->data_offset = codes[idx].data2;
       container_variable_index = 0;
+      // KLUDGE: This should not be necessary since variable_field
+      // axes the fast bitmap if there's a scannable field.
+      // Unfortunately, ObjectFile_O is magical and needs to hit the
+      // slow path even though as far as the analyzer is concerned, it
+      // has no fixable fields.
+      // A better fix would be to make the analyzer smarter, or to make
+      // ObjectFile_O scanning less magical.
+      local_stamp_bitmaps[cur_stamp] = ~(uintptr_t)0;
       if (walk == lldb_info)
         fmt::print(fout, "{}Init__variable_array0( stamp={}, name=\"{}\", offset={} )\n", indent.c_str(), cur_stamp,
                    codes[idx].description, local_stamp_layout[cur_stamp].container_layout->data_offset);

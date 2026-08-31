@@ -137,6 +137,7 @@ public:
         uintptr_t bitmap = container_layout.container_field_pointer_bitmap;
         if (!bitmap) [[unlikely]] { // no fields, do nothing.
           // note that this should be covered by fast bitmaps (above)
+          // or the magical ObjectFile_O case
           // and is only included here for correctness.
         } else if (!(bitmap << 1)) [[likely]] {
           // only one field, which is common enough (e.g. simple vector) that
