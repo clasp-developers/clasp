@@ -7,6 +7,9 @@
 ## Changed
 * Finalizer functions passed to `gctools:finalize` are now called with an unspecified object rather than the collected object. This means finalizers can no longer resurrect objects, which improves GC efficiency. In the future, finalizers will probably have to accept zero arguments instead.
 
+## Fixed
+* `let` binds specials in parallel (#1481)
+
 ## Optimized
 * Comparisons (`eq`, `<`, etc.) are optimized out based on type information.
 * Accesses to simple arrays with upgraded types of at least (signed-byte 8) or (unsigned-byte 8) can be inlined if there is enough type information.
