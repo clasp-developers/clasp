@@ -143,17 +143,26 @@ Lexenv_sp Lexenv_O::bind_tags(List_sp tags, LexicalInfo_sp dynenv, const Context
   return this->sub_tags(new_tags);
 }
 
+VarInfoV var_info_v(Symbol_sp, Lexenv_sp);
+
 Lexenv_sp Lexenv_O::add_specials(List_sp vars) {
   if (vars.nilp())
     return this->asSmartPtr();
   List_sp new_vars = this->vars();
   for (auto cur : vars) {
     Symbol_sp var = gc::As<Symbol_sp>(oCar(cur));
-    if (this->lookupSymbolMacro(var).notnilp())
+    auto vinfo = var_info_v(var, this->asSmartPtr());
+    if (std::holds_alternative<SymbolMacroVarInfoV>(vinfo))
       SIMPLE_PROGRAM_ERROR("A symbol macro was declared SPECIAL:~%~s", var);
-    auto info = SpecialVarInfo_O::make(var->specialP());
-    Cons_sp pair = Cons_O::create(var, info);
-    new_vars = Cons_O::create(pair, new_vars);
+    // If there's already a special var info for this symbol, don't
+    // bother with making a new one. In particular we need to NOT add
+    // a new LOCAL info, if there's already a global info, since a
+    // global info has different effects on bindings.
+    else if (!std::holds_alternative<SpecialVarInfoV>(vinfo)) {
+      auto info = SpecialVarInfo_O::make(var->specialP());
+      Cons_sp pair = Cons_O::create(var, info);
+      new_vars = Cons_O::create(pair, new_vars);
+    }
   }
   return this->sub_vars(new_vars, this->frameEnd());
 }
@@ -1772,6 +1781,9 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   eval::extract_declares_docstring_code_specials(body, declares, false, docstring, code, specials);
   List_sp inlines; List_sp notinlines;
   extract_inlines(declares, inlines, notinlines);
+  Lexenv_sp post_binding_env = env->add_inlines(inlines, notinlines)
+    ->add_decls(declares)
+    ->add_specials(specials);
   size_t frame_end = env->frameEnd();
   size_t special_binding_count = 0;
   // debug info
@@ -1781,7 +1793,9 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   // lexicals get an info, specials get the variable.
   T_sp bbindings = nil<T_O>();
   // list of var infos for the environment
-  T_sp ebindings = env->vars();
+  // starting with anything add_specials added above, and then
+  // the outer environment.
+  T_sp ebindings = post_binding_env->vars();
   ql::list debug_bindings; // alist (name . LexicalInfo)
   ql::list ibindings;      // (name lex source). FIXME merge w/ above.
   // now get processing
@@ -1850,10 +1864,8 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
   }
   // All done with binding code, so now handle debugging stuff
   // and make the new environment.
-  Lexenv_sp post_binding_env = env
-    ->sub_vars(ebindings, new_frame_end)
-    ->add_inlines(inlines, notinlines)
-    ->add_decls(declares);
+  post_binding_env
+    = post_binding_env->sub_vars(ebindings, new_frame_end);
   ctxt.cfunction()->setNlocals(std::max(new_frame_end, ctxt.cfunction()->nlocals()));
   begin_label->contextualize(ctxt);
   // Output debug info before the progn to ensure sorting.
@@ -1862,7 +1874,8 @@ void compile_let(List_sp bindings, List_sp body, Lexenv_sp env, const Context ct
     ctxt.push_debug_info(BytecodeDebugVars_O::make(begin_label, end_label, dbindings));
   if (declares.notnilp())
     ctxt.push_debug_info(BytecodeAstDecls_O::make(begin_label, end_label, declares));
-  compile_progn(code, post_binding_env, ctxt.sub_de(Integer_O::create(special_binding_count)));
+  compile_progn(code, post_binding_env,
+                ctxt.sub_de(Integer_O::create(special_binding_count)));
   ctxt.emit_unbind(special_binding_count);
   end_label->contextualize(ctxt);
   // Warn about unused variables.
