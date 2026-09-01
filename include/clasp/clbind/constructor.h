@@ -218,18 +218,11 @@ public:
       gctools::GCStamp<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>::TemplatedBase>::StampWtag;
 };
 
-template <typename Sig, typename Pols, typename Pointer, typename T>
-struct gctools::Inherits<typename clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>::TemplatedBase,
-                         clbind::WRAPPER_Constructor_O<Sig, Pols, Pointer, T>> : public std::true_type {};
-
 template <typename Policies, typename T> class gctools::GCStamp<clbind::DerivableDefaultConstructorFunctor<Policies, T>> {
 public:
   static gctools::GCStampEnum const StampWtag =
       gctools::GCStamp<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase>::StampWtag;
 };
-template <typename Policies, typename T>
-struct gctools::Inherits<typename clbind::DerivableDefaultConstructorFunctor<Policies, T>::TemplatedBase,
-                         clbind::DerivableDefaultConstructorFunctor<Policies, T>> : public std::true_type {};
 
 namespace clbind {
 template <typename... SIGS> using init = constructor<SIGS...>;

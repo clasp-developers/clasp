@@ -197,10 +197,6 @@ public:
       typename clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>::TemplatedBase>::StampWtag;
 };
 
-template <typename Policies, typename OT, typename MethodPtrType>
-struct gctools::Inherits<typename clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>::TemplatedBase,
-                         clbind::WRAPPER_IndirectMethod<MethodPtrType, Policies, OT>> : public std::true_type {};
-
 namespace core {
 
 // ----------------------------------------

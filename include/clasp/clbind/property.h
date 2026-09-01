@@ -65,16 +65,8 @@ public:
 };
 
 template <typename Policies, typename OT, typename VariablePtrType>
-struct gctools::Inherits<typename clbind::WRAPPER_Getter<Policies, OT, VariablePtrType>::TemplatedBase,
-                         clbind::WRAPPER_Getter<Policies, OT, VariablePtrType>> : public std::true_type {};
-
-template <typename Policies, typename OT, typename VariablePtrType>
 class gctools::GCStamp<clbind::WRAPPER_Setter<Policies, OT, VariablePtrType>> {
 public:
   static gctools::GCStampEnum const StampWtag =
       gctools::GCStamp<typename clbind::WRAPPER_Setter<Policies, OT, VariablePtrType>::TemplatedBase>::StampWtag;
 };
-
-template <typename Policies, typename OT, typename VariablePtrType>
-struct gctools::Inherits<typename clbind::WRAPPER_Setter<Policies, OT, VariablePtrType>::TemplatedBase,
-                         clbind::WRAPPER_Setter<Policies, OT, VariablePtrType>> : public std::true_type {};
