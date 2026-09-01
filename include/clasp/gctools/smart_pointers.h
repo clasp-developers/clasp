@@ -50,7 +50,10 @@
 
 namespace gctools {
 
-#if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
+#ifdef SCRAPING
+// with scraping we don't have the above, so problems could happen (?)
+template <typename T1, typename T2> struct Inherits : std::true_type {};
+#else
 template <typename Super, typename Sub> struct Inherits : std::is_base_of<Super, Sub> {};
 /// Add special Inheritance info here
 template <> struct Inherits<core::Number_O, ::core::SingleFloat_I> : public std::true_type {};
@@ -60,10 +63,7 @@ template <> struct Inherits<core::Number_O, ::core::Fixnum_I> : public std::true
 template <> struct Inherits<core::Real_O, ::core::Fixnum_I> : public std::true_type {};
 template <> struct Inherits<core::Rational_O, ::core::Fixnum_I> : public std::true_type {};
 template <> struct Inherits<core::Integer_O, ::core::Fixnum_I> : public std::true_type {};
-
 /// Stop special Inheritance
-#else
-template <typename T1, typename T2> struct Inherits : std::true_type {};
 #endif
 
 template <typename Super, typename Sub>

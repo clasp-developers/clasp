@@ -818,16 +818,6 @@ bool debugging_configuration(bool setFeatures, bool buildReport, stringstream& s
   if (buildReport)
     ss << (fmt::format("DEBUG_VERIFY_TRANSFORMATIONS = {}\n", (debug_verify_transformations ? "**DEFINED**" : "undefined")));
 
-  bool debug_assert_type_cast = false;
-#ifdef DO_ASSERT_TYPE_CAST
-  debug_assert_type_cast = true;
-  debugging = true;
-  if (setFeatures)
-    features = core::Cons_O::create(_lisp->internKeyword("DEBUG-ASSERT-TYPE-CAST"), features);
-#endif
-  if (buildReport)
-    ss << (fmt::format("DO_ASSERT_TYPE_CAST = {}\n", (debug_assert_type_cast ? "**DEFINED**" : "undefined")));
-
   bool debug_llvm_optimization_level_0 = false;
 #ifdef DEBUG_LLVM_OPTIMIZATION_LEVEL_0
   debug_llvm_optimization_level_0 = true;
