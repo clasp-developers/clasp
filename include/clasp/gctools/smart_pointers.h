@@ -1128,11 +1128,6 @@ public:
 
 namespace gc = gctools;
 
-namespace gctools {
-// List_sp <-- T_sp
-template <> inline core::List_sp As(core::T_sp const& rhs) { return core::List_sp(rhs); }
-}; // namespace gctools
-
 namespace core {
 string _rep_(T_sp obj);
 };
