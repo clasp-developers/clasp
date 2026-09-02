@@ -530,17 +530,7 @@ public:
 
   template <class From> inline smart_ptr(smart_ptr<From> const& rhs)
     requires InheritsC<Type, From>
-  {
-    if (LIKELY(rhs.objectp())) {
-      Type* px = TaggedCast<Type*, From*>::castOrNULL(rhs.theObject);
-      if (px == 0) {
-        throw_hard_error_cast_failed(typeid(Type*).name(), typeid(From*).name());
-      }
-      this->theObject = px;
-    } else {
-      this->theObject = reinterpret_cast<Type*>(rhs.theObject);
-    }
-  }
+  : base_ptr<Type>((Tagged)rhs.raw_()) {}
 
   // specialized for List_V below.
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
