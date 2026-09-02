@@ -327,52 +327,6 @@ namespace gctools {
 static_assert(std::is_trivially_copyable_v<core::T_sp>);
 }; // namespace gctools
 
-namespace gctools {
-template <> class smart_ptr<core::Fixnum_I> {
-public:
-  typedef core::Fixnum_I Type;
-  Type* theObject;
-
-public:
-  // Default constructor, set theObject to NULL
-  smart_ptr() noexcept : theObject(NULL){};
-
-  smart_ptr(Type* fn) : theObject(fn){};
-  template <typename From> inline smart_ptr(smart_ptr<From> const& rhs) {
-    if (rhs.fixnump()) {
-      this->theObject = reinterpret_cast<Type*>(rhs.raw_());
-      return;
-    }
-    class_id from_typ = reg::registered_class<From>::id;
-    lisp_errorBadCastToFixnum(from_typ, rhs.raw_());
-  }
-  /*! Constructor that takes Tagged assumes that the pointer is tagged.
-          Any ptr passed to this constructor must have the CONS tag.
-        */
-  explicit inline smart_ptr(Tagged ptr) : theObject(reinterpret_cast<Type*>(ptr)) {
-    GCTOOLS_ASSERT(tagged_fixnump<Type*>(reinterpret_cast<Type*>(ptr)));
-  };
-
-public:
-  inline explicit operator bool() const { return this->theObject != NULL; };
-  inline operator smart_ptr<core::T_O>() const { return smart_ptr<core::T_O>((Tagged)this->theObject); };
-
-public:
-  inline return_type as_return_type() const { return return_type(this->theObject, 1); };
-  inline bool unboundp() const { return tagged_unboundp(this->theObject); };
-  inline bool boundp() const { return !tagged_unboundp(this->theObject); };
-  inline bool nilp() const { return tagged_nilp(this->theObject); }
-  inline bool notnilp() const { return (!this->nilp()); };
-  inline bool fixnump() const { return tagged_fixnump(this->theObject); };
-  inline bool generalp() const { return tagged_generalp(this->theObject); };
-  inline bool consp() const { return tagged_consp(this->theObject); };
-  inline bool objectp() const { return this->generalp() || this->consp(); };
-  inline Fixnum unsafe_fixnum() const { return untag_fixnum(this->theObject); };
-  inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); };
-  inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
-};
-}; // namespace gctools
-
 namespace core {
 typedef gctools::smart_ptr<Fixnum_I> Fixnum_sp;
 typedef gctools::smart_ptr<SingleFloat_I> SingleFloat_sp;
