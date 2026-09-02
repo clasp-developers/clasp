@@ -994,27 +994,6 @@ public:
 };     // namespace gctools
 
 namespace gctools {
-
-////////////////////////////////////////////////////////////////////////
-///
-/// Specialize type conversions to simulate Common Lisp semantics and
-/// Common Lisp type hierarchy (is that the term)
-///
-
-template <> inline smart_ptr<core::List_V> smart_ptr<core::T_O>::asOrNull<core::List_V>() const {
-  if (this->consp() || this->nilp())
-    return smart_ptr<core::List_V>((Tagged)this->theObject);
-  return smart_ptr<core::List_V>();
-};
-
-template <> inline smart_ptr<core::List_V> smart_ptr<core::Symbol_O>::asOrNull<core::List_V>() const {
-  if (this->nilp())
-    return smart_ptr<core::List_V>((Tagged)this->theObject);
-  return smart_ptr<core::List_V>();
-};
-}; // namespace gctools
-
-namespace gctools {
 // An idea suggested by Georgiy Tugai.
 // Nilable<Foo_sp> is a variable that has the type (OR NULL FOO)
 // It inherits from Foo_sp
