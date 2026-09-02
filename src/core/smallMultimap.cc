@@ -59,7 +59,7 @@ CL_DEFMETHOD void SmallMultimap_O::describe() {
 }
 
 CL_LISPIFY_NAME("small_multimap_describe_range");
-CL_DEFMETHOD void SmallMultimap_O::describeRange(T_sp key) {
+CL_DEFMETHOD void SmallMultimap_O::describeRange(Symbol_sp key) {
   pair<map_type::iterator, map_type::iterator> range = this->map.equal_range(key);
   for (auto it = range.first; it != range.second; ++it) {
     clasp_write_string(fmt::format("{}:{}  key: {}   value: {}\n", __FILE__, __LINE__, _rep_(it->first), _rep_(it->second)));
@@ -67,12 +67,12 @@ CL_DEFMETHOD void SmallMultimap_O::describeRange(T_sp key) {
 }
 
 CL_LISPIFY_NAME("small_multimap_insert");
-CL_DEFMETHOD void SmallMultimap_O::insert(T_sp key, T_sp val) {
+CL_DEFMETHOD void SmallMultimap_O::insert(Symbol_sp key, T_sp val) {
   pair<map_type::iterator, bool> found = this->map.insert(std::make_pair(key, val));
   (void)found;
 }
 
 CL_LISPIFY_NAME("small_multimap_contains");
-CL_DEFMETHOD bool SmallMultimap_O::contains(T_sp key) { return this->map.contains(key); }
+CL_DEFMETHOD bool SmallMultimap_O::contains(Symbol_sp key) { return this->map.contains(key); }
 
 }; // namespace core

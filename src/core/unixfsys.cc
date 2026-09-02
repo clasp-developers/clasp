@@ -530,7 +530,7 @@ static Symbol_sp smart_file_kind(String_sp sfilename, bool follow_links) {
       // If its a broken link return _sym_file
       Symbol_sp kind_no_follow_links = file_kind((char*)(sfilename->get_path_string().c_str()), false);
       if (kind_no_follow_links.nilp())
-        return nil<T_O>();
+        return nil<Symbol_O>();
       return kw::_sym_broken_link;
     }
   } else {

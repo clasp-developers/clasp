@@ -401,7 +401,7 @@ CL_DEFUN Symbol_sp core__magic_intern(const string& name, const string& package)
   std::string pkg;
   colon_split(pkg_sym, pkg, sym);
   Package_sp p = gc::As<Package_sp>(_lisp->findPackage(pkg));
-  return p->intern(SimpleBaseString_O::make(sym));
+  return p->intern(SimpleBaseString_O::make(sym)).as_assert<Symbol_O>();
 }
 
 CL_LAMBDA("name");
@@ -913,7 +913,7 @@ static Function_sp bytecompile_wrapper(Function_sp entry, List_sp vars, Symbol_s
   return comp::bytecompile(form, nil<T_O>());
 }
 
-void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
+void lisp_defineSingleDispatchMethod(Symbol_sp name, Symbol_sp classSymbol,
                                      Function_sp method_body, size_t TemplateDispatchOn, bool useTemplateDispatchOn,
                                      const string& raw_arguments, const string& declares, const string& docstring, bool autoExport,
                                      int number_of_required_arguments, const std::set<int> pureOutIndices) {

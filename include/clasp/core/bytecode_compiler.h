@@ -509,7 +509,7 @@ public:
    */
   CL_DEFMETHOD Lexenv_sp macroexpansion_environment();
   T_sp variableInfo(T_sp varname);
-  T_sp lookupSymbolMacro(T_sp sname);
+  T_sp lookupSymbolMacro(Symbol_sp sname);
   T_sp functionInfo(T_sp fname);
   T_sp lookupMacro(Symbol_sp mname);
   bool notinlinep(T_sp fname);

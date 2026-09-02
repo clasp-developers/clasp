@@ -406,8 +406,8 @@ core::Integer_sp ForeignData_O::PERCENTforeign_data_address(void) {
 ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind) {
   size_t n_size = 0;
 
-  if (core::cl__symbolp(kind)) {
-    n_size = foreign_type_size(kind);
+  if (kind.isA<core::Symbol_O>()) {
+    n_size = foreign_type_size(kind.as_unsafe<core::Symbol_O>());
   } else {
     // Get the size out of kind's v of form (:array n)
     core::Cons_sp ckind = gc::As<core::Cons_sp>(kind);

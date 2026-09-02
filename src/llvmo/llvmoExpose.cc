@@ -1409,7 +1409,7 @@ void convert_sequence_types_to_vector(core::T_sp elements, vector<llvm::Type*>& 
   // nil is a little stupid here but this is called from many
   // different functions and I don't want to bother adding an
   // argument just for this unlikely error message.
-  ERROR_WRONG_TYPE_NTH_ARG(nil<core::T_O>(), 0, elements, ::cl::_sym_sequence);
+  ERROR_WRONG_TYPE_NTH_ARG(nil<core::Symbol_O>(), 0, elements, ::cl::_sym_sequence);
 }
 } // namespace llvmo
 
