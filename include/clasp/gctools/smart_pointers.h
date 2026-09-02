@@ -528,7 +528,9 @@ public:
   explicit inline smart_ptr(Type* ptr) : base_ptr((Type*)ptr){};
   inline smart_ptr(base_ptr<core::Symbol_O> orig) : base_ptr<core::Symbol_O>((Tagged)orig.raw_()){};
 
-  template <class From> inline smart_ptr(smart_ptr<From> const& rhs) {
+  template <class From> inline smart_ptr(smart_ptr<From> const& rhs)
+    requires InheritsC<Type, From>
+  {
     if (LIKELY(rhs.objectp())) {
       Type* px = TaggedCast<Type*, From*>::castOrNULL(rhs.theObject);
       if (px == 0) {
