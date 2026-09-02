@@ -435,11 +435,10 @@ void ForeignData_O::PERCENTfree_foreign_object(void) { this->free_(); }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size) {
-  size_t _size = unbox_fixnum(size);
+ForeignData_sp PERCENTallocate_foreign_data(size_t size) {
   auto self = gctools::GC<ForeignData_O>::allocate();
   // foreign-alloc memory is permanent until explicit %foreign-free (CFFI/malloc contract); no GC finalizer.
-  self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::None, _size);
+  self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::None, size);
   return self;
 }
 
@@ -746,24 +745,16 @@ core::Integer_sp PERCENToffset_address_as_integer(core::T_sp address_or_foreign_
 
   // If offset is not NIL then get v
   if (offset.notnilp()) {
-    if (offset.fixnump()) {
-      n_offset = unbox_fixnum(offset);
-    } else {
-      n_offset = core::clasp_to_uintptr_t(offset);
-    }
+    n_offset = core::clasp_to_uintptr_t(offset);
   }
 
   if (address_or_foreign_data_ptr.fixnump()) {
-    n_address = unbox_fixnum(address_or_foreign_data_ptr);
+    n_address = address_or_foreign_data_ptr.unsafe_fixnum();
   } else {
     ForeignData_sp sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
     if (sp_fd && PERCENTpointerp(address_or_foreign_data_ptr)) {
       core::Integer_sp sp_address = sp_fd->PERCENTforeign_data_address();
-      if (sp_address.fixnump()) {
-        n_address = unbox_fixnum(sp_address);
-      } else {
-        n_address = core::clasp_to_uintptr_t(sp_address);
-      }
+      n_address = core::clasp_to_uintptr_t(sp_address);
     } else {
       SIMPLE_ERROR("Invalid parameter type for address!");
     }

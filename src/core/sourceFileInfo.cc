@@ -129,7 +129,7 @@ CL_LAMBDA(source-pos-info);
 CL_DECLARE();
 CL_DOCSTRING(R"dx(sourcePosInfoLineno)dx");
 DOCGROUP(clasp);
-CL_DEFUN Fixnum_sp core__source_pos_info_lineno(T_sp info) {
+CL_DEFUN Integer_sp core__source_pos_info_lineno(T_sp info) {
   if (info.nilp())
     return make_fixnum(0);
   if (gc::IsA<SourcePosInfo_sp>(info)) {

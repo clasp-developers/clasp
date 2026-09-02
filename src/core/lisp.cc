@@ -1948,8 +1948,8 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
    * it to zero instead. This does mean that if nested error handlers
    * repeatedly reset it to some non-fixnum, unchecked infinite error depth
    * could occur. FIXME. */
-  if (gc::IsA<Fixnum_sp>(objErrorDepth))
-    nestedErrorDepth = unbox_fixnum(objErrorDepth);
+  if (objErrorDepth.fixnump())
+    nestedErrorDepth = objErrorDepth.unsafe_fixnum();
   else
     nestedErrorDepth = 0;
   if (nestedErrorDepth > 10) {
