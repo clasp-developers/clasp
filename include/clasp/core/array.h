@@ -592,10 +592,7 @@ public:
     // Dynamic dispatch the common self case for speed, and also to avoid
     // any aliasing problems.
     if (source.isA<leaf_type>())
-      // KLUDGE: apparently the generic smart_ptr template does not define
-      // as_unsafe, so source.as_unsafe gets you a base_ptr, which does not
-      // fit the templates. WTF?
-      copy_n(gc::As_unsafe<leaf_smart_ptr_type>(source), dest_start, source_start, n);
+      copy_n(source.as_unsafe<leaf_type>(), dest_start, source_start, n);
     else
       for (size_t i = 0; i < n; ++i)
         // virtual dispatch is required unless we want to hardcode
