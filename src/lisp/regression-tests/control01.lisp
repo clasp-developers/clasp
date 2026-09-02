@@ -164,3 +164,13 @@
                   item))
           result))
       (4))
+
+;;; Make sure special variables in LET are bound in parallel.
+;;; See issues #69, #1481.
+(test nice-parallel-bindings
+      (let ((x 1) (y 17))
+        (declare (special x y))
+        (let ((x (1+ y)) (y (1+ x)))
+          (declare (special x y))
+          (values x y)))
+      (18 2))

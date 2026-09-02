@@ -7,19 +7,19 @@
      &body body)
   "Evaluate BODY such that STREAM tracks source locations.
 EXT:STREAM-SOURCE-LOCATION can be used to get the current source location from the stream."
-  `(let ((*compile-file-source-debug-pathname*
-           ;; (pathname stream) will signal an error if stream is not
-           ;; associated with a file. We want an error, since if a
-           ;; string-stream or something was passed in, the user needs
-           ;; to specify their own pathname.
-           ;; Maybe the error should be more specific though? FIXME
-           ,(if pathnamep
-                `(pathname ,pathname)
-                `(truename ,stream)))
-         (*compile-file-file-scope*
-           (core:file-scope *compile-file-source-debug-pathname*))
-         (*compile-file-source-debug-lineno* ,lineno)
-         (*compile-file-source-debug-offset* ,offset))
+  `(let* ((*compile-file-source-debug-pathname*
+            ;; (pathname stream) will signal an error if stream is not
+            ;; associated with a file. We want an error, since if a
+            ;; string-stream or something was passed in, the user needs
+            ;; to specify their own pathname.
+            ;; Maybe the error should be more specific though? FIXME
+            ,(if pathnamep
+                 `(pathname ,pathname)
+                 `(truename ,stream)))
+          (*compile-file-file-scope*
+            (core:file-scope *compile-file-source-debug-pathname*))
+          (*compile-file-source-debug-lineno* ,lineno)
+          (*compile-file-source-debug-offset* ,offset))
      ,@body))
 
 (defun ext:stream-source-location (stream)
