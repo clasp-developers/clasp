@@ -81,9 +81,6 @@ public:
   uintptr_t ptag() const { return reinterpret_cast<uintptr_t>(this->theObject) & ptag_mask; };
 
 public:
-  /*! Get the pointer typcast to an integer quantity for hashing */
-  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
-
   void reset_() { this->theObject = NULL; };
 
   inline void swap(base_ptr<Type>& other) {
@@ -128,14 +125,14 @@ public:
   /*! Dereferencing operator - remove the other tag */
   inline Type* operator->() const {
     GCTOOLS_ASSERT(this->theObject);
-    GCTOOLS_ASSERT(this->generalp());
-    return untag_general(this->theObject);
+    GCTOOLS_ASSERT(this->objectp());
+    return untag_object();
   };
 
   inline Type& operator*() const {
     GCTOOLS_ASSERT(this->theObject);
     GCTOOLS_ASSERT(this->objectp());
-    return *(this->untag_object());
+    return *untag_object();
   };
 
   inline Type* untag_object() const { return ::gctools::untag_object(this->theObject); }
@@ -211,14 +208,12 @@ public:
   inline core::T_O* raw_() const { return reinterpret_cast<core::T_O*>(this->theObject); }
   inline gctools::Tagged tagged_() const { return reinterpret_cast<gctools::Tagged>(this->theObject); }
 
+  /*! These two should almost never be used.
+      Generally we want to not alter an existing pointer. It's messy.
+      List actual uses here:
+       * record.h when editing an object
+   */
   inline void setRaw_(Tagged p) { this->theObject = reinterpret_cast<Type*>(p); }
-
-  /*! This should almost NEVER be used!!!!!!
-          The only reason to ever use this is when theObject will be set to NULL
-          and you are sure that it will not be interpreted as a Fixnum!!!
-
-          List actual uses here:
-        */
   Type*& rawRef_() { return this->theObject; };
 
   /*! Check if this tagged theObject matches the templated type.
@@ -420,8 +415,6 @@ public:
   void reset_() { this->theObject = NULL; };
 
 public:
-  /*! Get the pointer typcast to an integer quantity for hashing */
-  uintptr_t intptr() const { return ((uintptr_t)(this->theObject)); };
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
   bool unboundp() const { return tagged_unboundp(this->theObject); };
   bool boundp() const { return !tagged_unboundp(this->theObject); };
