@@ -201,10 +201,6 @@ public:
   bool short_floatp() const { return tagged_short_floatp<Type*>(this->theObject); };
   short_float_t unsafe_short_float() const { return untag_short_float<Type*>(this->theObject); };
 #endif
-  Fixnum asFixnum() const {
-    GCTOOLS_ASSERT(this->fixnump());
-    return untag_fixnum<Type*>(this->theObject);
-  };
   bool valistp() const { return tagged_vaslistp(this->theObject); };
   void* unsafe_valist() const { return untag_vaslist(this->theObject); };
   void* safe_valist() const {
