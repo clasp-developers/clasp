@@ -400,6 +400,9 @@ extern gctools::smart_ptr<core::Symbol_O>& _sym_expected_type;
 
 namespace gctools {
 
+// Explicit specialization is necessary for at least one basic
+// purpose: the constructor needs to do tag_cons rather than
+// tag_general, which the general template does above.
 template <> class smart_ptr<core::Cons_O> {
 public:
   typedef core::Cons_O Type;
