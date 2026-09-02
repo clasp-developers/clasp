@@ -281,49 +281,40 @@ namespace gctools {
 // Declare As converters
 //
 template <typename To_SP> inline bool IsA(return_type const& rhs) {
-  return TaggedCast<typename To_SP::Type*, typename core::T_O*>::isA(reinterpret_cast<core::T_O*>(rhs.ret0[0]));
+  return core::T_sp((Tagged)rhs.ret0[0]).isA<typename To_SP::Type>();
 };
-template <typename To_SP, typename From_SP> inline bool IsA(From_SP const& rhs) {
-  return TaggedCast<typename To_SP::Type*, typename From_SP::Type*>::isA(reinterpret_cast<typename From_SP::Type*>(rhs.raw_()));
+template <typename To_SP, typename From> inline bool IsA(smart_ptr<From> const& rhs) {
+  return rhs.template isA<typename To_SP::Type>();
 }
 
-template <typename To_SP, typename From_SP> inline To_SP As(From_SP const& rhs) {
-  if (IsA<To_SP>(rhs)) {
-    To_SP ret((Tagged)rhs.raw_());
-    return ret;
-  }
-  // If the cast didn't work then signal a type error
+template <typename To_SP, typename From> inline To_SP As(smart_ptr<From> const& rhs) {
+  if (rhs.template isA<typename To_SP::Type>())
+    return To_SP((Tagged)rhs.raw_());
+  // If the cast didn't work then signal a type error.
+  // This is why we can't just use smart_ptr::as directly: here we
+  // signal an errorBadCastStampWtag instead of the more sophisticated
+  // errorCast as() uses, and errorCast requires the type to be
+  // complete. errorBadCastStampWtag does not, and is used in a few
+  // places with incomplete types. This is the only remaining
+  // difference between as() and As() that I can see. KLUDGE, FIXME
   gctools::GCStampEnum expectedStampWtag = gctools::GCStamp<typename To_SP::Type>::StampWtag;
   lisp_errorBadCastStampWtag((size_t)expectedStampWtag, rhs.raw_());
   HARD_UNREACHABLE();
 }
 template <typename To_SP> inline To_SP As(const return_type& rhs) {
   GCTOOLS_ASSERT(rhs.nvals == 1);
-  if (IsA<To_SP>(rhs)) {
-    To_SP ret((Tagged)rhs.ret0[0]);
-    return ret;
-  }
-  class_id expected_typ = reg::registered_class<typename To_SP::Type>::id;
-  lisp_errorBadCastFromT_O(expected_typ, reinterpret_cast<core::T_O*>(rhs.ret0[0]));
-  HARD_UNREACHABLE();
+  return core::T_sp((Tagged)rhs.ret0[0]).as<typename To_SP::Type>();
 }
 
 // Cast the type without any concern if it is appropriate
-template <typename To_SP, typename From_SP> inline To_SP As_unsafe(From_SP const& rhs) {
-  To_SP ret((Tagged)rhs.raw_());
-  return ret;
+template <typename To_SP, typename From> inline To_SP As_unsafe(smart_ptr<From> const& rhs) {
+  return rhs.template as_unsafe<typename To_SP::Type>();
 }
 
 // Cast the type without any concern if it is appropriate
 // If DEBUG_ASSERT then check if the type is appropriate.
-template <typename To_SP, typename From_SP> inline To_SP As_assert(From_SP const& rhs) {
-#ifdef DEBUG_ASSERT
-  if (!gctools::IsA<To_SP>(rhs)) {
-    throw_hard_error_cast_failed(typeid(To_SP).name(), typeid(From_SP).name());
-  }
-#endif
-  To_SP ret((Tagged)rhs.raw_());
-  return ret;
+template <typename To_SP, typename From> inline To_SP As_assert(smart_ptr<From> const& rhs) {
+  return rhs.template as_assert<typename To_SP::Type>();
 }
 
 }; // namespace gctools
