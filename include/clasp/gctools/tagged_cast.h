@@ -31,12 +31,15 @@ template <typename TOPTR, typename FROMPTR> struct TaggedCast {
 }; // namespace gctools
 
 namespace core {
-class Fixnum_I {};
+// Marker classes used for defining smart "pointers" that are really
+// immediates, e.g. Character_sp = smart_ptr<Character_I>.
+// Constructors are deleted to prevent actual instantiation.
+class Fixnum_I { Fixnum_I() = delete; };
 #ifdef CLASP_SHORT_FLOAT
-class ShortFloat_I {};
+class ShortFloat_I { ShortFloat_I() = delete; };
 #endif
-class SingleFloat_I {};
-class Character_I {};
+class SingleFloat_I { SingleFloat_I() = delete; };
+class Character_I { Character_I() = delete; };
 class Integer_O;
 class Rational_O;
 class Real_O;
