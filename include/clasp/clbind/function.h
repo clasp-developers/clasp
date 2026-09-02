@@ -152,11 +152,6 @@ public:
       gctools::GCStamp<typename clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies>::TemplatedBase>::StampWtag;
 };
 
-template <typename FunctionPtrType, typename Policies>
-struct gctools::Inherits<
-    typename clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies>::TemplatedBase,
-    clbind::WRAPPER_VariadicFunction<FunctionPtrType, Policies>> : public std::true_type {};
-
 namespace clbind {
 
 namespace detail {

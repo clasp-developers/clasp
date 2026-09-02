@@ -300,10 +300,3 @@ ENTRY_POINT_MAX_ARGS_IN_REGISTER_SAVE_AREA includes the closure
 // On linux and OS X we have mkstemp so use it
 #define HAVE_MKSTEMP
 #define HAVE_MKDTEMP
-
-#if defined(DEBUG_ASSERT_TYPE_CAST) && defined(USE_PRECISE_GC)
-// DO_ASSERT_TYPE_CAST only works with USE_PRECISE_GC
-#define DO_ASSERT_TYPE_CAST 1
-#else
-                        // Do nothing - we can't DO_ASSERT_TYPE_CAST if
-#endif

@@ -36,21 +36,8 @@
 #include <type_traits> // is_base_of
 #include <ranges>
 
-#ifndef SCRAPING
-#ifdef USE_PRECISE_GC
-#define DECLARE_FORWARDS
-#include CLASP_GC_CC
-#undef DECLARE_FORWARDS
-#else
-#define DECLARE_FORWARDS
-#include INIT_CLASSES_INC_H
-#undef DECLARE_FORWARDS
-#endif
-#endif
-
 namespace gctools {
 
-#if (defined(DO_ASSERT_TYPE_CAST) && !defined(SCRAPING))
 template <typename Super, typename Sub> struct Inherits : std::is_base_of<Super, Sub> {};
 /// Add special Inheritance info here
 template <> struct Inherits<core::Number_O, ::core::SingleFloat_I> : public std::true_type {};
@@ -60,11 +47,7 @@ template <> struct Inherits<core::Number_O, ::core::Fixnum_I> : public std::true
 template <> struct Inherits<core::Real_O, ::core::Fixnum_I> : public std::true_type {};
 template <> struct Inherits<core::Rational_O, ::core::Fixnum_I> : public std::true_type {};
 template <> struct Inherits<core::Integer_O, ::core::Fixnum_I> : public std::true_type {};
-
 /// Stop special Inheritance
-#else
-template <typename T1, typename T2> struct Inherits : std::true_type {};
-#endif
 
 template <typename Super, typename Sub>
 concept InheritsC = Inherits<Super, Sub>::value;

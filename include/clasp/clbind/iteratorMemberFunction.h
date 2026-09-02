@@ -98,7 +98,3 @@ public:
   static gctools::GCStampEnum const StampWtag =
       gctools::GCStamp<typename clbind::WRAPPER_Iterator<Policies, OT, Begin, End>::TemplatedBase>::StampWtag;
 };
-
-template <typename Policies, typename OT, typename Begin, typename End>
-struct gctools::Inherits<typename clbind::WRAPPER_Iterator<Policies, OT, Begin, End>::TemplatedBase,
-                         clbind::WRAPPER_Iterator<Policies, OT, Begin, End>> : public std::true_type {};

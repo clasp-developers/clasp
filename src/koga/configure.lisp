@@ -239,11 +239,6 @@
                  :initform nil
                  :type boolean
                  :documentation "Turn on DEBUG_ASSERT")
-   (debug-assert-type-cast :accessor debug-assert-type-cast
-                           :initarg :debug-assert-type-cast
-                           :initform nil
-                           :type boolean
-                           :documentation "Turn on type checking when passing arguments")
    (source-debug :accessor source-debug
                  :initarg :source-debug
                  :initform nil
