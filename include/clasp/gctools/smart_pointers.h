@@ -92,8 +92,7 @@ public:
 
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
     o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    smart_ptr<o_class> ret((Tagged)cast);
-    return ret;
+    return smart_ptr<o_class>((Tagged)cast);
   }
 
   template <class o_class> inline smart_ptr<o_class> as() const {
@@ -104,8 +103,7 @@ public:
   }
 
   template <class o_class> inline smart_ptr<o_class> as_unsafe() const {
-    smart_ptr<o_class> ret((Tagged)this->theObject);
-    return ret;
+    return smart_ptr<o_class>((Tagged)this->theObject);
   }
 
   template <class o_class> inline smart_ptr<o_class> as_assert() const {
@@ -114,8 +112,7 @@ public:
       throw_hard_error_failed_assertion("as_assert failed!");
     }
 #endif
-    smart_ptr<o_class> ret((Tagged)this->theObject);
-    return ret;
+    return smart_ptr<o_class>((Tagged)this->theObject);
   }
 
   template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
