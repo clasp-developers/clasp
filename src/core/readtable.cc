@@ -553,7 +553,7 @@ CL_DEFUN T_mv core__sharp_asterisk(T_sp sin, Character_sp ch, T_sp num) {
     if (tch.nilp())
       break;
     ch = gc::As<Character_sp>(tch);
-    Symbol_sp syntaxType = core__syntax_type(rtbl, ch);
+    Symbol_sp syntaxType = core__syntax_type(rtbl, ch).as<core::Symbol_O>();
     if (syntaxType == kw::_sym_terminating_macro || syntaxType == kw::_sym_whitespace) {
       unread_ch(sin, ch);
       break;
@@ -961,7 +961,7 @@ string Readtable_O::__repr__() const {
 
 Symbol_sp Readtable_O::syntax_type_(Character_sp ch) const {
 
-  Symbol_sp result = this->SyntaxTypes_->gethash(ch, kw::_sym_constituent);
+  Symbol_sp result = this->SyntaxTypes_->gethash(ch, kw::_sym_constituent).as<Symbol_O>();
   LOG("character[{}] syntax_type: {}", _rep_(ch), _rep_(result));
   return result;
 }

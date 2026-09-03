@@ -1303,13 +1303,12 @@ bool Str8Ns_O::equalp(T_sp other) const {
 
 // Creators - depreciate these once the new array stuff is working better
 Str8Ns_sp Str8Ns_O::create(const string& nm) {
-  auto ss = SimpleBaseString_O::make(nm.size(), '\0', true, nm.size(), (const claspChar*)nm.c_str());
-  return Str8Ns_O::make(nm.size(), '\0', false, nil<T_O>(), ss, false, 0);
+  return Str8Ns_O::make(nm);
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm, size_t len) {
   SimpleBaseString_sp ss = SimpleBaseString_O::make(len, '\0', true, len, (const claspChar*)nm);
-  return Str8Ns_O::make(len, '\0', false, nil<T_O>(), ss, false, 0);
+  return Str8Ns_O::make(len, '\0', false, nil<T_O>(), ss, false, clasp_make_fixnum(0));
 }
 
 Str8Ns_sp Str8Ns_O::create(const char* nm) {
@@ -1317,12 +1316,12 @@ Str8Ns_sp Str8Ns_O::create(const char* nm) {
   return Str8Ns_O::create(nm, len);
 }
 
-Str8Ns_sp Str8Ns_O::create(size_t len) { return Str8Ns_O::make(len, '\0', true, nil<T_O>(), nil<T_O>(), false, 0); }
+Str8Ns_sp Str8Ns_O::create(size_t len) { return Str8Ns_O::make(len, '\0', true, nil<T_O>(), nil<T_O>(), false, clasp_make_fixnum(0)); }
 
 Str8Ns_sp Str8Ns_O::create(Str8Ns_sp other) {
   size_t len = other->length();
   SimpleBaseString_sp ss = SimpleBaseString_O::make(len, '\0', true, len, &(*other)[0]);
-  return Str8Ns_O::make(len, '\0', false, nil<T_O>(), ss, false, 0);
+  return Str8Ns_O::make(len, '\0', false, nil<T_O>(), ss, false, clasp_make_fixnum(0));
 }
 
 SimpleString_sp Str8Ns_O::asMinimalSimpleString() const {

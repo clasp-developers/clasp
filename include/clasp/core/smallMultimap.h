@@ -51,13 +51,13 @@ class SmallMultimap_O : public General_O {
   map_type map;
 
 public:
-  void insert(T_sp key, T_sp val);
+  void insert(Symbol_sp key, T_sp val);
   CL_LISPIFY_NAME("small_multimap_size");
   CL_DEFMETHOD int size() const { return this->map.size(); };
   void erase(T_sp key);
   void describe();
-  void describeRange(T_sp key);
-  bool contains(T_sp key);
+  void describeRange(Symbol_sp key);
+  bool contains(Symbol_sp key);
   DEFAULT_CTOR_DTOR(SmallMultimap_O);
 };
 }; // namespace core

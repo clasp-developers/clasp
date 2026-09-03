@@ -90,7 +90,7 @@ CL_DEFUN SingleDispatchGenericFunction_sp core__ensure_single_dispatch_generic_f
       cell->rplacd(expected);
     } while (!_lisp->_Roots._SingleDispatchGenericFunctions.compare_exchange_weak(expected, cell));
     if (gfname.consp() && CONS_CAR(gfname) == cl::_sym_setf) {
-      Symbol_sp setf_gfname = CONS_CAR(CONS_CDR(gfname));
+      Symbol_sp setf_gfname = CONS_CAR(CONS_CDR(gfname)).as<core::Symbol_O>();
       if (setf_gfname->fboundp_setf()) {
         SIMPLE_ERROR("The name {} has something bound to its setf function slot but no generic function with that name was found",
                      _rep_(gfname));

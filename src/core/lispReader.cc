@@ -208,7 +208,7 @@ void unread_ch(T_sp sin, Character_sp c) { stream_unread_char(sin, clasp_as_clas
 /*! See SACLA reader.lisp::collect-escaped-lexemes */
 List_sp collect_escaped_lexemes(Character_sp c, T_sp sin) {
   T_sp readTable = _lisp->getCurrentReadTable();
-  Symbol_sp syntax_type = core__syntax_type(readTable, c);
+  Symbol_sp syntax_type = core__syntax_type(readTable, c).as<Symbol_O>();
   if (syntax_type == kw::_sym_invalid) {
     SIMPLE_ERROR("invalid-character-error: {}", _rep_(c));
   } else if (syntax_type == kw::_sym_multiple_escape) {
@@ -229,7 +229,7 @@ List_sp collect_lexemes(/*Character_sp*/ T_sp tc, T_sp sin) {
   if (tc.notnilp()) {
     Character_sp c = gc::As<Character_sp>(tc);
     T_sp readTable = _lisp->getCurrentReadTable();
-    Symbol_sp syntax_type = core__syntax_type(readTable, c);
+    Symbol_sp syntax_type = core__syntax_type(readTable, c).as<Symbol_O>();
     if (syntax_type == kw::_sym_invalid) {
       SIMPLE_ERROR("invalid-character-error: {}", _rep_(c));
     } else if (syntax_type == kw::_sym_whitespace) {
@@ -352,7 +352,7 @@ void make_str_preserve_case(StrNs_sp sout, List_sp cur_char) {
       into a stringstream */
 void make_str(StrNs_sp sout, List_sp cur_char) {
   T_sp readtable = _lisp->getCurrentReadTable();
-  Symbol_sp case_ = cl__readtable_case(readtable);
+  Symbol_sp case_ = cl__readtable_case(readtable).as<Symbol_O>();
   if (case_ == kw::_sym_invert) {
     UnEscapedCase strcase = check_case(cur_char, undefined);
     switch (strcase) {
@@ -515,7 +515,7 @@ void token_downcase(Token& token, size_t start, size_t end) {
 
 void apply_readtable_case(Token& token, size_t start, size_t end) {
   T_sp readtable = _lisp->getCurrentReadTable();
-  Symbol_sp case_ = cl__readtable_case(readtable);
+  Symbol_sp case_ = cl__readtable_case(readtable).as<Symbol_O>();
   if (case_ == kw::_sym_invert) {
     UnEscapedCase strcase = token_check_case(token, start, end);
     switch (strcase) {
@@ -733,7 +733,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
     if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
       return nil<T_O>();
     SimpleString_sp sym_name = SimpleBaseString_O::make("");
-    Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
+    Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name).as_assert<Symbol_O>();
     return sym;
   }
     SIMPLE_ERROR("There was no token!!!!");
@@ -751,7 +751,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
       if (cl::_sym_STARread_suppressSTAR->symbolValue().isTrue())
         return nil<T_O>();
       SimpleString_sp sym_name = symbolTokenStr(sin, token, name_marker - token.data(), token.size(), only_dots_ok);
-      Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name);
+      Symbol_sp sym = _lisp->getCurrentPackage()->intern(sym_name).as_assert<Symbol_O>();
       LOG_READ(BF("sym_name = |%s| sym->symbolNameAsString() = |%s|") % _rep_(sym_name) % sym->symbolNameAsString());
       return sym;
     }
@@ -790,7 +790,7 @@ T_sp interpret_token_or_throw_reader_error(T_sp sin, Token& token, bool only_dot
                      sin);
       }
     } else {
-      sym = pkg->intern(symbol_name_str);
+      sym = pkg->intern(symbol_name_str).as_assert<Symbol_O>();
     }
     ASSERT(sym);
     return sym;
@@ -1074,7 +1074,7 @@ step1:
   }
   xxx = gc::As<Character_sp>(tx);
   LOG_READ(BF("Read character x[%d/%s]") % (int)clasp_as_claspCharacter(xxx) % (char)clasp_as_claspCharacter(xxx));
-  Symbol_sp xxx_syntax_type = core__syntax_type(readTable, xxx);
+  Symbol_sp xxx_syntax_type = core__syntax_type(readTable, xxx).as_assert<Symbol_O>();
   //    step2:
   if (xxx_syntax_type == kw::_sym_invalid) {
     LOG_READ(BF("step2 - invalid-character[%c]") % clasp_as_claspCharacter(xxx));
@@ -1154,7 +1154,7 @@ step8:
     }
     Character_sp y(gc::As_unsafe<Character_sp>(ty));
     LOG_READ(BF("Step8: Read y[%s/%c]") % clasp_as_claspCharacter(y) % (char)clasp_as_claspCharacter(y));
-    Symbol_sp y8_syntax_type = core__syntax_type(readTable, y);
+    Symbol_sp y8_syntax_type = core__syntax_type(readTable, y).as<Symbol_O>();
     LOG_READ(BF("y8_syntax_type=%s") % _rep_(y8_syntax_type));
     if ((y8_syntax_type == kw::_sym_constituent) || (y8_syntax_type == kw::_sym_non_terminating_macro)) {
       // Y = readTable->convert_case(y);
@@ -1198,7 +1198,7 @@ step9:
   LOG_READ(BF("step9"));
   {
     y = gc::As<Character_sp>(cl__read_char(sin, _lisp->_true(), nil<T_O>(), _lisp->_true()));
-    Symbol_sp y9_syntax_type = core__syntax_type(readTable, y);
+    Symbol_sp y9_syntax_type = core__syntax_type(readTable, y).as<Symbol_O>();
     LOG_READ(BF("Step9: Read y[%s] y9_syntax_type[%s]") % clasp_as_claspCharacter(y) % _rep_(y9_syntax_type));
     if ((y9_syntax_type == kw::_sym_constituent) || (y9_syntax_type == kw::_sym_non_terminating_macro) ||
         (y9_syntax_type == kw::_sym_terminating_macro) || (y9_syntax_type == kw::_sym_whitespace)) {

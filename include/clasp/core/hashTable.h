@@ -39,7 +39,7 @@ double maybeFixRehashThreshold(double rt);
 #define DEFAULT_REHASH_THRESHOLD 0.7
 
 T_sp cl__make_hash_table(T_sp test, Fixnum_sp size, Number_sp rehash_size, Real_sp orehash_threshold,
-                         Symbol_sp weakness = nil<T_O>(), T_sp debug = nil<T_O>(), T_sp thread_safe = nil<T_O>(),
+                         Symbol_sp weakness = nil<Symbol_O>(), T_sp debug = nil<T_O>(), T_sp thread_safe = nil<T_O>(),
                          T_sp hashf = nil<T_O>());
 
 size_t next_hash_table_id();

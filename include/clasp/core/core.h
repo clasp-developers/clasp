@@ -808,7 +808,7 @@ List_sp lisp_parse_arguments(const string& packageName, const string& args, int 
 List_sp lisp_lexical_variable_names(List_sp lambda_list, bool& trivial_wrapper);
 List_sp lisp_parse_declares(const string& packageName, const string& declarestring);
 
-void lisp_defineSingleDispatchMethod(T_sp name, Symbol_sp classSymbol,
+void lisp_defineSingleDispatchMethod(Symbol_sp name, Symbol_sp classSymbol,
                                      Function_sp entry, size_t TemplateDispatchOn = 0,
                                      bool useTemplateDispatchOn = false, const string& lambda_list = "",
                                      const string& declares = "", const string& docstring = "", bool autoExport = true,

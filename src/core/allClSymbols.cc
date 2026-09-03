@@ -67,7 +67,7 @@ CL_DEFUN T_sp core__calculate_missing_common_lisp_symbols() {
 void initializeAllClSymbols(Package_sp commonLispPkg) {
 #define AddClSymbol(name)                                                                                                          \
   {                                                                                                                                \
-    Symbol_sp sym = commonLispPkg->intern(SimpleBaseString_O::make(name));                                                         \
+    Symbol_sp sym = commonLispPkg->intern(SimpleBaseString_O::make(name)).as_assert<Symbol_O>();                                               \
     commonLispPkg->_export2(sym);                                                                                                  \
   }
   AddClSymbol("&ALLOW-OTHER-KEYS");

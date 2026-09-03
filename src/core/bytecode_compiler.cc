@@ -404,7 +404,7 @@ VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
   }
 }
 
-T_sp Lexenv_O::lookupSymbolMacro(T_sp sname) {
+T_sp Lexenv_O::lookupSymbolMacro(Symbol_sp sname) {
   VarInfoV info = var_info_v(sname, this->asSmartPtr());
   if (std::holds_alternative<SymbolMacroVarInfoV>(info))
     return std::get<SymbolMacroVarInfoV>(info).expander();
@@ -2035,7 +2035,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     for (auto& it : reqs) {
       // We account for special declarations in outer environments/globally
       // by checking the original environment - not our new one - for info.
-      T_sp var = it._ArgTarget;
+      Symbol_sp var = it._ArgTarget.as<core::Symbol_O>();
       auto lvinfo = gc::As_assert<LexicalVarInfo_sp>(new_env->variableInfo(var));
       if (special_binding_p(var, specials, env)) {
         sreqs << var;
@@ -2060,8 +2060,8 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     // be initialized with the unbound marker.
     context.assemble2(vm_code::bind_optional_args, min_count, optional_count);
     for (auto& it : optionals) {
-      T_sp optional_var = it._ArgTarget;
-      T_sp supplied_var = it._Sensor._ArgTarget;
+      Symbol_sp optional_var = it._ArgTarget.as<core::Symbol_O>();
+      Symbol_sp supplied_var = it._Sensor._ArgTarget.as<core::Symbol_O>();
       bool optional_special_p = special_binding_p(optional_var, specials, env);
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
       gen1default(it._Default, supplied_var.notnilp(), new_env, context);
@@ -2081,7 +2081,7 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
   }
   // &rest
   if (restarg._ArgTarget.notnilp()) {
-    Symbol_sp rest = restarg._ArgTarget;
+    Symbol_sp rest = restarg._ArgTarget.as<core::Symbol_O>();
     bool varestp = restarg.VaRest;
     if (varestp) {
       context.assemble1(vm_code::vaslistify_rest_args, max_count);
@@ -2116,8 +2116,8 @@ void compile_with_lambda_list(T_sp lambda_list, List_sp body, Lexenv_sp env, con
     context.emit_parse_key_args(max_count, keys.size(), first_key_index, aokp.notnilp());
     // Default and bind
     for (auto& it : keys) {
-      T_sp key_var = it._ArgTarget;
-      T_sp supplied_var = it._Sensor._ArgTarget;
+      Symbol_sp key_var = it._ArgTarget.as<core::Symbol_O>();
+      Symbol_sp supplied_var = it._Sensor._ArgTarget.as<core::Symbol_O>();
       bool key_special_p = special_binding_p(key_var, specials, env);
       bool supplied_special_p = supplied_var.notnilp() && special_binding_p(supplied_var, specials, env);
       gen1default(it._Default, supplied_var.notnilp(), new_env, context);

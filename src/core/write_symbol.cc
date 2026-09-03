@@ -106,7 +106,7 @@ static bool all_dots(String_sp s) {
 
 static bool needs_to_be_escaped(String_sp s, T_sp readtable) {
   ASSERT(cl__stringp(s));
-  Symbol_sp action = cl__readtable_case(readtable);
+  Symbol_sp action = cl__readtable_case(readtable).as_assert<Symbol_O>();
   if (potential_number_p(s, clasp_print_base()))
     return 1;
   /* The value of *PRINT-ESCAPE* is T. We need to check whether the
@@ -118,7 +118,7 @@ static bool needs_to_be_escaped(String_sp s, T_sp readtable) {
   for (cl_index i = 0, iEnd(s->length()); i < iEnd; i++) {
     claspCharacter c = clasp_as_claspCharacter(cl__char(s, i));
     Character_sp cc = clasp_make_character(c);
-    Symbol_sp syntax = core__syntax_type(readtable, cc);
+    Symbol_sp syntax = core__syntax_type(readtable, cc).as_assert<Symbol_O>();
     if (syntax != kw::_sym_constituent || clasp_invalid_base_char_p(c) || (c) == ':')
       return 1;
     if ((action == kw::_sym_downcase) && upper_case_p(c))
@@ -197,7 +197,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
   if (!print_readably && !clasp_print_escape()) {
     //            printf("%s:%d quick print of symbol print_readably=%d print_escape=%d\n",__FILE__,__LINE__, print_readably,
     //            clasp_print_escape());
-    write_symbol_string(name, cl__readtable_case(readtable), print_case, stream, 0);
+    write_symbol_string(name, cl__readtable_case(readtable).as_assert<Symbol_O>(), print_case, stream, 0);
     return;
   }
   /* From here on, print-escape is true which means that it should
@@ -216,19 +216,19 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
     MultipleValues& mvn = core::lisp_multipleValues();
     if (!print_package) {
       T_mv symbol_mv = cl__find_symbol(name, _lisp->getCurrentPackage());
-      Symbol_sp sym = symbol_mv;
-      Symbol_sp intern_flag = gc::As<Symbol_sp>(mvn.valueGet(1, symbol_mv.number_of_values()));
+      Symbol_sp sym = symbol_mv.as_assert<Symbol_O>();
+      Symbol_sp intern_flag = mvn.valueGet(1, symbol_mv.number_of_values()).as_assert<Symbol_O>();
       if ((sym != x) || intern_flag.nilp())
         print_package = true;
     }
     if (print_package) {
-      SimpleString_sp name = gc::As<Package_sp>(package)->name();
-      write_symbol_string(name, cl__readtable_case(readtable), print_case, stream,
+      SimpleString_sp name = package.as_assert<Package_O>()->name();
+      write_symbol_string(name, cl__readtable_case(readtable).as_assert<Symbol_O>(), print_case, stream,
                           needs_to_be_escaped(gc::As<Array_sp>(name), readtable));
       if (!x.nilp()) {
-        Symbol_mv sym2_mv = cl__find_symbol(x->symbolName(), package);
-        Symbol_sp sym2 = sym2_mv;
-        Symbol_sp intern_flag2 = gc::As<Symbol_sp>(mvn.valueGet(1, sym2_mv.number_of_values()));
+        T_mv sym2_mv = cl__find_symbol(x->symbolName(), package);
+        Symbol_sp sym2 = sym2_mv.as<Symbol_O>();
+        Symbol_sp intern_flag2 = mvn.valueGet(1, sym2_mv.number_of_values()).as<Symbol_O>();
         if (sym2 != x) {
           clasp_write_string("<UNPRINTABLE-SYMBOL@", stream);
           stringstream ss;
@@ -256,7 +256,7 @@ void clasp_write_symbol(Symbol_sp x, T_sp stream) {
       }
     }
   }
-  write_symbol_string(name, cl__readtable_case(readtable), print_case, stream,
+  write_symbol_string(name, cl__readtable_case(readtable).as_assert<Symbol_O>(), print_case, stream,
                       needs_to_be_escaped(name, readtable) || all_dots(name));
 }
 

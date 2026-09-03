@@ -85,7 +85,7 @@ CL_DEFMETHOD int SymbolToEnumConverter_O::enumIndexForSymbol(T_sp obj) {
   MultipleValues& mv = core::lisp_multipleValues();
   if (mv.second(match_mv.number_of_values()).nilp())
     TYPE_ERROR(obj, Cons_O::create(cl::_sym_member, this->enumSymbolsAsList()));
-  return unbox_fixnum(match_mv);
+  return match_mv.unsafe_fixnum();
 }
 
 Symbol_sp SymbolToEnumConverter_O::symbolForEnumIndex(int index) {

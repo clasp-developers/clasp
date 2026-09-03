@@ -643,7 +643,7 @@ struct loadltv {
     uint8_t testcode = read_u8();
     uint16_t count = read_u16();
     // Resolve test
-    T_sp test = nil<T_O>();
+    Symbol_sp test = nil<Symbol_O>();
     switch (testcode) {
     case 0b00:
       test = cl::_sym_eq;
@@ -661,7 +661,7 @@ struct loadltv {
       SIMPLE_ERROR("Unknown hash table test code {:02x}", testcode);
     }
     set_ltv(cl__make_hash_table(test, clasp_make_fixnum(count), clasp_make_single_float(2.0), clasp_make_single_float(0.7),
-                                nil<T_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>()),
+                                nil<Symbol_O>(), nil<T_O>(), nil<T_O>(), nil<T_O>()),
             index);
   }
 

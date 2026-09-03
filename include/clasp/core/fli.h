@@ -192,7 +192,7 @@ private:
 DOCGROUP(clasp)
 CL_DEFUN ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
 DOCGROUP(clasp)
-CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data(core::Integer_sp size);
+CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data(size_t size);
 ForeignData_sp allocate_foreign_data(uint64_t size);
 
 DOCGROUP(clasp)
