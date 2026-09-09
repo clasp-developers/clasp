@@ -154,9 +154,6 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
-void cc_set_breakstep() { my_thread->_Breakstep = true; }
-void cc_unset_breakstep() { my_thread->_Breakstep = false; }
-
 NOINLINE void cc_breakstep(core::T_O* source, void* frame) {
   unlikely_if(my_thread->_Breakstep)
     breakstep(T_sp((gctools::Tagged)source), frame);

@@ -95,8 +95,6 @@
          (primitive         "debug_match_two_uintptr_t" :uintptr_t (list :uintptr_t :uintptr_t))
          (primitive         "lowLevelTrace" :void (list :i32))
          (primitive         "unreachableError" :void nil)
-         (primitive         "cc_set_breakstep" :void nil)
-         (primitive         "cc_unset_breakstep" :void nil)
          (primitive-unwinds "cc_breakstep" :void (list :t* :i8*))
          (primitive         "cc_breakstep_after" :void (list :t*))
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
@@ -182,6 +180,8 @@
          (primitive         "llvm.dbg.addr" :void (list :metadata :metadata :metadata))
          (primitive         "llvm.dbg.declare" :void (list :metadata :metadata :metadata))
          (primitive         "llvm.dbg.value" :void (list :metadata :metadata :metadata))
+
+         (primitive         "llvm.threadlocal.address.p0" :i8* (list :i8*))
 
          (primitive         "llvm.lifetime.start" :void (list :i64 :i8*))
          (primitive         "llvm.lifetime.end" :void (list :i64 :i8*))

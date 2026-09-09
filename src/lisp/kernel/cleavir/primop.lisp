@@ -685,10 +685,10 @@
 ;;; Primops for debugging
 
 (defeprimop core:set-breakstep () (inst)
-  (%intrinsic-call "cc_set_breakstep" ()))
+  (cmp::set-thread-breakstep (%i8 1)))
 
 (defeprimop core:unset-breakstep () (inst)
-  (%intrinsic-call "cc_unset_breakstep" ()))
+  (cmp::set-thread-breakstep (%i8 0)))
 
 ;;; Atomics
 ;;; These have a sham first input for the order.

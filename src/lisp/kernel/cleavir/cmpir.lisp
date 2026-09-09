@@ -1276,9 +1276,32 @@ But no irbuilders or basic-blocks. Return the fn."
 (defun irc-intrinsic (function-name &rest args)
   (irc-intrinsic-call-or-invoke function-name args))
 
+(defun get-or-declare-my-thread (&optional (module *the-module*))
+  (or (llvm-sys:get-named-global module "my_thread")
+      (llvm-sys:make-global-variable module %thread-local-state*%
+                                     nil 'llvm-sys:external-linkage
+                                     nil "my_thread" nil
+                                     'llvm-sys:general-dynamic-tlsmodel)))
+
+(defun my-thread-address (&optional (module *the-module*))
+  (irc-intrinsic "llvm.threadlocal.address.p0" (get-or-declare-my-thread module)))
+
+(macrolet ((def-thread-access (index type getter &optional setter)
+             `(progn
+                (defun ,getter (&optional (thread* (my-thread-address)))
+                  (irc-typed-load
+                   ,type
+                   (irc-typed-gep %thread-local-state% (irc-typed-load %thread-local-state*% thread*) '(0 ,index))))
+                ,@(when setter
+                    `((defun ,setter (new &optional (thread* (my-thread-address)))
+                        (irc-store
+                         new
+                         (irc-typed-gep %thread-local-state% (irc-typed-load %thread-local-state*% thread*) '(0 ,index)))))))))
+  (def-thread-access 0 %t*% thread-process)
+  (def-thread-access 1 %t*% thread-dynenv-stack set-thread-dynenv-stack)
+  (def-thread-access 5 %i8% thread-breakstep set-thread-breakstep))
+
 ;; Helper functions
-
-
 
 (defun irc-verify-module (module return-action)
   (llvm-sys:verify-module module return-action))
