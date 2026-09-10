@@ -226,7 +226,11 @@
         (setf rt (cond ((null rt) real-next-rt)
                        ((null real-next-rt) rt)
                        (t (list (max-vrtype (first rt)
-                                            (first real-next-rt))))))))))
+                                            (first real-next-rt))))))
+        (when (eq (first rt) :object)
+          ;; Maximal wideness, so we can give up early.
+          ;; This helps avoid pathological analysis time in complex code.
+          (return rt))))))
 
 ;;; Given a datum, determine what rtype its use requires.
 (defgeneric use-rtype (datum))
