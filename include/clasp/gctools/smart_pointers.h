@@ -96,8 +96,16 @@ public:
   };
 
   template <class o_class> inline smart_ptr<o_class> asOrNull() const {
-    o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
-    return smart_ptr<o_class>((Tagged)cast);
+    if constexpr(std::is_same_v<o_class, core::List_V>) {
+      // special case List_V
+      if (isA<o_class>())
+        return smart_ptr<o_class>((Tagged)theObject);
+      else return smart_ptr<o_class>();
+    } else {
+      // normal non-List_V case
+      o_class* cast = TaggedCast<o_class*, Type*>::castOrNULL(this->theObject);
+      return smart_ptr<o_class>((Tagged)cast);
+    }
   }
 
   template <class o_class> inline smart_ptr<o_class> as() const {
@@ -113,14 +121,19 @@ public:
 
   template <class o_class> inline smart_ptr<o_class> as_assert() const {
 #ifdef DEBUG_ASSERT
-    if (!TaggedCast<o_class*, Type*>::isA(this->theObject)) {
+    if (!isA<o_class>()) {
       throw_hard_error_failed_assertion("as_assert failed!");
     }
 #endif
     return smart_ptr<o_class>((Tagged)this->theObject);
   }
 
-  template <class o_class> inline bool isA() const { return TaggedCast<o_class*, Type*>::isA(this->theObject); }
+  template <class o_class> inline bool isA() const {
+    if constexpr(std::is_same_v<o_class, core::List_V>)
+      return consp() || nilp();
+    else
+      return TaggedCast<o_class*, Type*>::isA(this->theObject);
+  }
 
   int number_of_values() const { return this->theObject == NULL ? 0 : 1; };
 
@@ -284,10 +297,16 @@ template <typename To_SP> inline bool IsA(return_type const& rhs) {
   return core::T_sp((Tagged)rhs.ret0[0]).isA<typename To_SP::Type>();
 };
 template <typename To_SP, typename From> inline bool IsA(smart_ptr<From> const& rhs) {
-  return rhs.template isA<typename To_SP::Type>();
+  if constexpr(std::is_same_v<To_SP, core::List_sp>)
+    // special cased since List_sp::Type is T_O. List_sp is wack.
+    return rhs.template isA<core::List_V>();
+  else return rhs.template isA<typename To_SP::Type>();
 }
 
 template <typename To_SP, typename From> inline To_SP As(smart_ptr<From> const& rhs) {
+  if constexpr(std::is_same_v<To_SP, core::List_sp>)
+    // checked in constructor. List_sp is wack.
+    return core::List_sp(rhs);
   if (rhs.template isA<typename To_SP::Type>())
     return To_SP((Tagged)rhs.raw_());
   // If the cast didn't work then signal a type error.
