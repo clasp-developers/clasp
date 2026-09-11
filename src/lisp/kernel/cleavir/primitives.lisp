@@ -249,7 +249,7 @@
          (primitive         "cc_initializeAndPushProgvDynenv" :t* (list :i8* :i8* :t* :t*))
          (primitive         "cc_initializeAndPushCatchDynenv" :t* (list :i8* :i8* :jmp-buf-tag* :t*))
          (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
-         (primitive         "cc_my_thread" :i8* (list))
+         (primitive         "cc_my_thread" :thread-local-state* (list))
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
@@ -427,6 +427,7 @@
     (:jmp-buf-tag* %jmp-buf-tag*%)
     (:ltv** %ltv**%)
     (:ltvc-return %ltvc-return%)
+    (:thread-local-state* %thread-local-state*%)
     (:metadata %metadata%)
     (:return-type %return-type%)
     (:size_t %size_t%)
