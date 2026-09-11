@@ -671,25 +671,7 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O* tfunc, gct
   return func->apply_raw(ret0.nvals, callargs->arguments(0));
 }
 
-T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
-  MultipleValues& mv = core::lisp_multipleValues();
-  ql::list result;
-  if (nret == 0)
-    return nil<T_O>().raw_();
-  else {
-    if (nstart == 0) {
-      result << gc::smart_ptr<T_O>((gc::Tagged)ret0);
-      nstart = 1;
-    }
-    for (size_t i = nstart; i < nret; ++i) {
-      T_O* tagged_obj = ENSURE_VALID_OBJECT(mv[i]);
-      result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
-    }
-    return result.result().raw_();
-  }
-}
-
-T_O* cc_mvcGatherRest2(T_O** values, size_t nvalues) {
+T_O* cc_mvcGatherRest(T_O** values, size_t nvalues) {
   if (nvalues == 0)
     return nil<T_O>().raw_();
   else {
