@@ -657,7 +657,7 @@ function-or-placeholder - the llvm function or a placeholder for
     ;; Note that we don't need to pop the dynenv, as the unwinder does so.
     (let* ((dest (cmp::thread-unwind-dest))
            (index (cmp::thread-unwind-dest-index))
-           (nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+           (nvals (cmp::thread-nvalues))
            (mv-temp (cmp:alloca-temp-values nvals)))
       (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
       (gen-call-cleanup instruction)

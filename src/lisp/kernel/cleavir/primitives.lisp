@@ -196,7 +196,6 @@
          (primitive         "restoreFromMultipleValue0" :return-type nil)
          (primitive         "cc_save_values" :void (list :size_t :t* :t**))
          (primitive         "cc_load_values" :return-type (list :size_t :t**))
-         (primitive         "cc_nvalues" :size_t nil)
          (primitive         "cc_save_all_values" :void (list :size_t :t**))
          (primitive         "cc_load_all_values" :void (list :size_t :t**))
     

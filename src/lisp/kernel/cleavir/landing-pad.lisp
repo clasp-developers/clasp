@@ -129,7 +129,7 @@
       ;; intervening exit points. And we indicate that by using for the call
       ;; to the protected thunk the same dynamic-environment that was in place
       ;; upon entry to the unwind-protect.
-      (let* ((nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+      (let* ((nvals (cmp::thread-nvalues))
              ;; NOTE that this is kind of really dumb. We save the values, i.e. alloca
              ;; a VLA, for every unwind protect executed. We could at least merge unwind
              ;; protects in the same frame - but what would be really smart would be

@@ -743,15 +743,8 @@ gctools::return_type cc_load_values(size_t nvals, T_O** vector) {
   NO_UNWIND_END();
 }
 
-// cc_nvalues and cc_{save,load}_all_values are for unwind protect cleanup.
+// cc_{save,load}_all_values are for unwind protect cleanup.
 // See analogous C++ code in evaluator.cc: sp_unwindProtect.
-size_t cc_nvalues() {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  return mv.getSize();
-  NO_UNWIND_END();
-}
-
 void cc_save_all_values(size_t nvals, T_O** vector) {
   NO_UNWIND_BEGIN();
   lisp_multipleValues().saveToTemp(nvals, vector);

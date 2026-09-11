@@ -1289,22 +1289,23 @@ But no irbuilders or basic-blocks. Return the fn."
   #+(or)
   (irc-intrinsic "llvm.threadlocal.address.p0" (get-or-declare-my-thread module)))
 
-(macrolet ((def-thread-access (index type getter &optional setter)
+(macrolet ((def-thread-access (indices type getter &optional setter)
              `(progn
                 (defun ,getter (&optional (thread* (my-thread-address)))
                   (irc-typed-load
                    ,type
-                   (irc-typed-gep %thread-local-state% thread* '(0 ,index) ,(string-downcase getter))))
+                   (irc-typed-gep %thread-local-state% thread* '(0 ,@indices) ,(string-downcase getter))))
                 ,@(when setter
                     `((defun ,setter (new &optional (thread* (my-thread-address)))
                         (irc-store
                          new
-                         (irc-typed-gep %thread-local-state% thread* '(0 ,index) ,(string-downcase getter)))))))))
-  (def-thread-access 0 %t*% thread-process)
-  (def-thread-access 1 %t*% thread-dynenv-stack set-thread-dynenv-stack)
-  (def-thread-access 2 %t*% thread-unwind-dest set-thread-unwind-dest)
-  (def-thread-access 3 %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
-  (def-thread-access 5 %i8% thread-breakstep set-thread-breakstep))
+                         (irc-typed-gep %thread-local-state% thread* '(0 ,@indices) ,(string-downcase getter)))))))))
+  (def-thread-access (0) %t*% thread-process)
+  (def-thread-access (1) %t*% thread-dynenv-stack set-thread-dynenv-stack)
+  (def-thread-access (2) %t*% thread-unwind-dest set-thread-unwind-dest)
+  (def-thread-access (3) %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
+  (def-thread-access (5) %i8% thread-breakstep set-thread-breakstep)
+  (def-thread-access (7 0) %size_t% thread-nvalues))
 
 ;; Helper functions
 
