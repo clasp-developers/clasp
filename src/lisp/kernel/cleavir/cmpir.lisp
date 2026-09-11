@@ -422,7 +422,6 @@ representing a tagged fixnum."
 
 ;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
-  (irc-intrinsic-call-or-invoke "cc_unbox_single_float" (list t*) label)
   (irc-bit-cast
    (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
    %float% label))
