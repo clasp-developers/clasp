@@ -1284,6 +1284,9 @@ But no irbuilders or basic-blocks. Return the fn."
                                      'llvm-sys:general-dynamic-tlsmodel)))
 
 (defun my-thread-address (&optional (module *the-module*))
+  (declare (ignore module))
+  (irc-intrinsic "cc_my_thread")
+  #+(or)
   (irc-intrinsic "llvm.threadlocal.address.p0" (get-or-declare-my-thread module)))
 
 (macrolet ((def-thread-access (index type getter &optional setter)
@@ -1291,12 +1294,12 @@ But no irbuilders or basic-blocks. Return the fn."
                 (defun ,getter (&optional (thread* (my-thread-address)))
                   (irc-typed-load
                    ,type
-                   (irc-typed-gep %thread-local-state% (irc-typed-load %thread-local-state*% thread*) '(0 ,index))))
+                   (irc-typed-gep %thread-local-state% thread* '(0 ,index) ,(string-downcase getter))))
                 ,@(when setter
                     `((defun ,setter (new &optional (thread* (my-thread-address)))
                         (irc-store
                          new
-                         (irc-typed-gep %thread-local-state% (irc-typed-load %thread-local-state*% thread*) '(0 ,index)))))))))
+                         (irc-typed-gep %thread-local-state% thread* '(0 ,index) ,(string-downcase getter)))))))))
   (def-thread-access 0 %t*% thread-process)
   (def-thread-access 1 %t*% thread-dynenv-stack set-thread-dynenv-stack)
   (def-thread-access 5 %i8% thread-breakstep set-thread-breakstep))

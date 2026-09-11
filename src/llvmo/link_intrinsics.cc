@@ -481,16 +481,9 @@ void cc_progvUnbind(T_O* cells, T_O* oldvals) {
   NO_UNWIND_END();
 }
 
-T_O* cc_get_dynenv_stack() {
+ThreadLocalState* cc_my_thread() {
   NO_UNWIND_BEGIN();
-  return my_thread->dynEnvStackGet().raw_();
-  NO_UNWIND_END();
-}
-
-void cc_set_dynenv_stack(T_O* dynenv_stack) {
-  NO_UNWIND_BEGIN();
-  T_sp destack((gctools::Tagged)dynenv_stack);
-  my_thread->dynEnvStackSet(destack);
+  return my_thread;
   NO_UNWIND_END();
 }
 

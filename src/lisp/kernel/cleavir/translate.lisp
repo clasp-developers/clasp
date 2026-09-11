@@ -282,12 +282,12 @@ function-or-placeholder - the llvm function or a placeholder for
   (declare (ignore tmv))
   (let ((old-de-stack (first (dynenv-storage dynenv))))
     (when old-de-stack
-      (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
+      (cmp::set-thread-dynenv-stack old-de-stack))))
 (defmethod undo-dynenv ((dynenv bir:catchi) tmv)
   (declare (ignore tmv))
   (let ((old-de-stack (dynenv-storage dynenv)))
     (when old-de-stack
-      (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
+      (cmp::set-thread-dynenv-stack old-de-stack))))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
@@ -503,7 +503,7 @@ function-or-placeholder - the llvm function or a placeholder for
       (let* ((default (cmp:irc-basic-block-create "come-from-default"))
              (old-de-stack
                (unless simplep
-                 (%intrinsic-call "cc_get_dynenv_stack" nil)))
+                 (cmp::thread-dynenv-stack)))
              (dcons-space
                (unless simplep
                  (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
@@ -517,7 +517,7 @@ function-or-placeholder - the llvm function or a placeholder for
                   (list dcons-space frame bufp))))
              (de-stack
                (unless simplep
-                 (if blockp old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))))
+                 (if blockp old-de-stack (cmp::thread-dynenv-stack))))
              ;; Set the continuation for use by bir:unwind insts.
              (_ (out
                  (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
@@ -601,7 +601,7 @@ function-or-placeholder - the llvm function or a placeholder for
 (defmethod translate-terminator ((instruction bir:catchi) abi next)
   (declare (ignore abi))
   (let* ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "catch-jmp-buf"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (old-de-stack (cmp::thread-dynenv-stack))
          (dcons-space
            (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
                                           :label "catch-cons"))
@@ -641,7 +641,7 @@ function-or-placeholder - the llvm function or a placeholder for
          (upde-mem (cmp:alloca-i8 cmp:+unwind-protect-dynenv-size+
                                   :alignment cmp:+alignment+
                                   :label "unwind-protect-dynenv-mem"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (old-de-stack (cmp::thread-dynenv-stack))
          (upde (%intrinsic-call "cc_initializeAndPushCleanupDynenv"
                                 (list upde-mem de-cons-mem bufp)
                                 "unwind-protect-dynenv"))
@@ -668,7 +668,7 @@ function-or-placeholder - the llvm function or a placeholder for
       (cmp:irc-unreachable))))
 
 (defmethod undo-dynenv ((dynenv bir:unwind-protect) tmv)
-  (%intrinsic-call "cc_set_dynenv_stack" (list (dynenv-storage dynenv)))
+  (cmp::set-thread-dynenv-stack (dynenv-storage dynenv))
   ;; We have to save values around it if we're in the middle of
   ;; returning values.
   (if tmv
@@ -706,7 +706,7 @@ function-or-placeholder - the llvm function or a placeholder for
                                                       :label "progv-dynenv-cons"))
          (pde-mem (cmp:alloca-i8 cmp:+progv-dynenv-size+ :alignment cmp:+alignment+
                                                          :label "progv-dynenv-mem"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
+         (old-de-stack (cmp::thread-dynenv-stack)))
     (%intrinsic-call "cc_initializeAndPushProgvDynenv"
                      (list pde-mem pde-cons-mem cells oldvals))
     (setf (dynenv-storage instruction) (list cells oldvals old-de-stack))
@@ -716,7 +716,7 @@ function-or-placeholder - the llvm function or a placeholder for
   (declare (ignore tmv))
   (destructuring-bind (cells oldvals oldstack) (dynenv-storage dynenv)
     (%intrinsic-call "cc_progvUnbind" (list cells oldvals))
-    (%intrinsic-call "cc_set_dynenv_stack" (list oldstack))))
+    (cmp::set-thread-dynenv-stack oldstack)))
 
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))

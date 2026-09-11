@@ -106,7 +106,7 @@
     (let ((bb (cmp:irc-basic-block-create "unprogv")))
       (cmp:irc-begin-block bb)
       (%intrinsic-call "cc_progvUnbind" (list cells oldvals))
-      (%intrinsic-call "cc_set_dynenv_stack" (list de-stack))
+      (cmp::set-thread-dynenv-stack de-stack)
       (cmp:irc-br next)
       bb)))
 
@@ -116,7 +116,7 @@
       (cmp:irc-begin-block bb)
       ;; pop the dynenv.
       (let ((de-stack (dynenv-storage u-p-instruction)))
-        (%intrinsic-call "cc_set_dynenv_stack" (list de-stack)))
+        (cmp::set-thread-dynenv-stack de-stack))
       ;; There is a subtle point here with regard to unwinding out of a cleanup
       ;; form. CLHS 5.2 specifies that when unwinding begins, exit points between
       ;; the unwind point and the destination are "abandoned" and can no longer be
@@ -283,8 +283,7 @@
                (llde (dynenv-storage dynenv))
                ;; Restore the dynenv, if there is one.
                (_1 (when llde
-                     (%intrinsic-call "cc_set_dynenv_stack"
-                                      (list (second llde)))))
+                     (cmp::set-thread-dynenv-stack (second llde))))
                ;; Restore multiple values.
                ;; Note that we do this late, after any unwind-protect cleanups,
                ;; so that we get the correct values.
