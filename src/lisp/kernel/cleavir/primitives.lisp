@@ -250,10 +250,6 @@
          (primitive         "cc_initializeAndPushCatchDynenv" :t* (list :i8* :i8* :jmp-buf-tag* :t*))
          (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
          (primitive         "cc_my_thread" :i8* (list))
-         (primitive         "cc_get_unwind_dest" :t* (list))
-         (primitive         "cc_set_unwind_dest" :void (list :t*))
-         (primitive         "cc_get_unwind_dest_index" :size_t (list))
-         (primitive         "cc_set_unwind_dest_index" :void (list :size_t))
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)

@@ -655,15 +655,15 @@ function-or-placeholder - the llvm function or a placeholder for
     (cmp:irc-begin-block cleanup)
     ;; Save values, call the cleanup, continue unwinding.
     ;; Note that we don't need to pop the dynenv, as the unwinder does so.
-    (let* ((dest (%intrinsic-call "cc_get_unwind_dest" nil "dest"))
-           (index (%intrinsic-call "cc_get_unwind_dest_index" nil "dest-index"))
+    (let* ((dest (cmp::thread-unwind-dest))
+           (index (cmp::thread-unwind-dest-index))
            (nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
            (mv-temp (cmp:alloca-temp-values nvals)))
       (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
       (gen-call-cleanup instruction)
       (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))
-      (%intrinsic-call "cc_set_unwind_dest_index" (list index))
-      (%intrinsic-call "cc_set_unwind_dest" (list dest))
+      (cmp::set-thread-unwind-dest-index index)
+      (cmp::set-thread-unwind-dest dest)
       (%intrinsic-call "cc_sjlj_continue_unwinding" nil)
       (cmp:irc-unreachable))))
 

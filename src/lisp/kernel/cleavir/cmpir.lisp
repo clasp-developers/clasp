@@ -1302,6 +1302,8 @@ But no irbuilders or basic-blocks. Return the fn."
                          (irc-typed-gep %thread-local-state% thread* '(0 ,index) ,(string-downcase getter)))))))))
   (def-thread-access 0 %t*% thread-process)
   (def-thread-access 1 %t*% thread-dynenv-stack set-thread-dynenv-stack)
+  (def-thread-access 2 %t*% thread-unwind-dest set-thread-unwind-dest)
+  (def-thread-access 3 %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
   (def-thread-access 5 %i8% thread-breakstep set-thread-breakstep))
 
 ;; Helper functions

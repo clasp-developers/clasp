@@ -504,31 +504,6 @@ T_O* cc_catch_tag(char* exceptionP) {
   NO_UNWIND_END();
 }
 
-T_O* cc_get_unwind_dest() {
-  NO_UNWIND_BEGIN();
-  return my_thread->_UnwindDest.raw_();
-  NO_UNWIND_END();
-}
-
-void cc_set_unwind_dest(T_O* dest) {
-  NO_UNWIND_BEGIN();
-  T_sp tdest((gctools::Tagged)dest);
-  my_thread->_UnwindDest = tdest;
-  NO_UNWIND_END();
-}
-
-size_t cc_get_unwind_dest_index() {
-  NO_UNWIND_BEGIN();
-  return my_thread->_UnwindDestIndex;
-  NO_UNWIND_END();
-}
-
-void cc_set_unwind_dest_index(size_t ind) {
-  NO_UNWIND_BEGIN();
-  my_thread->_UnwindDestIndex = ind;
-  NO_UNWIND_END();
-}
-
 [[noreturn]] void cc_sjlj_continue_unwinding() { sjlj_continue_unwinding(); }
 
 // used for bugged cl:catch as well
