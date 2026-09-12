@@ -1306,6 +1306,11 @@ But no irbuilders or basic-blocks. Return the fn."
   (def-thread-access (5) %i8% thread-breakstep set-thread-breakstep)
   (def-thread-access (7 0) %size_t% thread-nvalues))
 
+(defun thread-return-values (&optional (thread* (my-thread-address)))
+  ;; get a pointer into the values, so we don't need to load,
+  ;; unlike the above.
+  (irc-typed-gep %thread-local-state% thread* '(0 7 1)))
+
 ;; Helper functions
 
 (defun irc-verify-module (module return-action)

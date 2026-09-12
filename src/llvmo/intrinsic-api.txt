@@ -129,7 +129,6 @@ _cc_safe_symbol_value
 _cc_setSymbolValue
 _cc_allowOtherKeywords
 _cc_ifNotKeywordException
-_cc_multipleValuesArrayAddress
 _cc_unwind
 _cc_throw
 _cc_saveMultipleValue0

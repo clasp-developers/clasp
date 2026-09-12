@@ -228,7 +228,6 @@
 
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" :return-type (list :t* :return-type))
          (primitive-unwinds "cc_oddKeywordException" :void (list :t*))
-         (primitive         "cc_multipleValuesArrayAddress" :t*[0]* nil)
          ;; Marking setjmp as returns_twice is EXTREMELY IMPORTANT.
          ;; Without this attribute, LLVM will apply invalid optimizations.
          ;; For example, it will reuse stack space allocated before a setjmp

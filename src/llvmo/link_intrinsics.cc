@@ -689,12 +689,6 @@ void cc_oddKeywordException(core::T_O* tclosure) {
   throwOddKeywordsError(closure);
 }
 
-T_O** cc_multipleValuesArrayAddress() {
-  NO_UNWIND_BEGIN();
-  return lisp_multipleValues().returnValues(0);
-  NO_UNWIND_END();
-}
-
 void cc_saveMultipleValue0(core::T_mv result) {
   NO_UNWIND_BEGIN();
   MultipleValues& mv = lisp_multipleValues();

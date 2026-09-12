@@ -135,7 +135,7 @@ And convert everything to JIT constants."
   (unless *function-current-multiple-value-array-address*
     (with-entry-ir-builder
 	(setq *function-current-multiple-value-array-address*
-	      (%intrinsic-call "cc_multipleValuesArrayAddress" nil))))
+              (cmp::thread-return-values))))
   *function-current-multiple-value-array-address*)
 
 (defvar +pointers-returned-in-registers+ 1)
