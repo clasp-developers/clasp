@@ -29,6 +29,8 @@
 ;;;----------------------------------------------------------------------------
 ;;; MACROS
 
+;;; currently we do not support stack allocating foreign objects
+;;; but maybe someday.
 (defmacro with-foreign-object ((var type) &body body)
   `(let ((,var (%allocate-foreign-object ,type)))
      (unwind-protect
@@ -41,6 +43,14 @@
          (with-foreign-objects ,(cdr bindings)
            ,@body))
       `(progn ,@body)))
+
+(defmacro with-foreign-pointer ((var size
+                                 &optional (size-var (gensym "SIZE")))
+                                &body body)
+  `(let* ((,size-var ,size)
+          (,var (foreign-alloc ,size-var)))
+     (unwind-protect (progn ,@body)
+       (foreign-free ,var))))
 
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
@@ -508,6 +518,7 @@
 (eval-when (:load-toplevel :execute :compile-toplevel)
   (export '(with-foreign-object
             with-foreign-objects
+            with-foreign-pointer
             %foreign-alloc
             %foreign-free
             %mem-ref
