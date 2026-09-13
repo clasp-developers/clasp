@@ -168,13 +168,14 @@ argument was supplied for metaclass ~S." (class-of class))))))))
   supplied-superclasses)
 
 (defmethod validate-superclass ((class class) (superclass class))
+  ;; NOTE: runtime lookups (a #. literal never matches), deferred and errorp nil for bootstrap safety.
   (or (let ((c1 (class-of class))
 	    (c2 (class-of superclass)))
 	(or (eq c1 c2)
-	  (and (eq c1 #.(find-class 'standard-class))
-            (eq c2 #.(find-class 'funcallable-standard-class)))
-	  (and (eq c2 #.(find-class 'standard-class))
-            (eq c1 #.(find-class 'funcallable-standard-class)))))
+	    (let ((std (find-class 'standard-class nil))
+		  (fstd (find-class 'funcallable-standard-class nil)))
+	      (or (and (eq c1 std) (eq c2 fstd))
+		  (and (eq c2 std) (eq c1 fstd))))))
       (or (typep class 'forward-referenced-class)
           (typep superclass 'forward-referenced-class))))
 

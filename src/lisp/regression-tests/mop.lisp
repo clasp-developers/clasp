@@ -110,3 +110,20 @@
         (loop for n in nonwriters
               when (fboundp `(setf ,n))
                 collect n)))
+
+;;; AMOP allows a standard-class and a funcallable-standard-class in each
+;;; other's superclass chain; validate-superclass must accept both directions.
+(defclass vsc-plain () ((a :initform 1)))
+
+(test-true validate-superclass-mixed-metaclasses
+           (and (clos:validate-superclass (find-class 'standard-generic-function)
+                                          (find-class 'vsc-plain))
+                (clos:validate-superclass (find-class 'vsc-plain)
+                                          (find-class 'standard-generic-function))
+                t))
+
+(test-true validate-superclass-funcallable-from-standard
+           (progn (eval '(defclass vsc-funcallable (vsc-plain) ()
+                           (:metaclass clos:funcallable-standard-class)))
+                  (eq (class-of (find-class 'vsc-funcallable))
+                      (find-class 'clos:funcallable-standard-class))))
