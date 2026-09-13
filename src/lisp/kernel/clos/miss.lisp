@@ -263,7 +263,7 @@
                       nil
                       (list (cons key outcome)))))
                ((eq (class-of generic-function)
-                    #.(find-class 'standard-generic-function))
+                    (load-time-value (find-class 'standard-generic-function) t))
                 (memoize-eql-specialized generic-function method-combination
                                          call-history argument-classes))
                (t
