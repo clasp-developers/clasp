@@ -435,7 +435,7 @@ void ForeignData_O::PERCENTfree_foreign_object(void) { this->free_(); }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTallocate_foreign_data(size_t size) {
+ForeignData_sp foreign_alloc(size_t size) {
   auto self = gctools::GC<ForeignData_O>::allocate();
   // foreign-alloc memory is permanent until explicit %foreign-free (CFFI/malloc contract); no GC finalizer.
   self->allocate(kw::_sym_clasp_foreign_data_kind_data, core::None, size);
@@ -452,7 +452,7 @@ ForeignData_sp allocate_foreign_data(uint64_t size) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-void ForeignData_O::PERCENTfree_foreign_data(void) { this->free_(); }
+void ForeignData_O::foreign_free(void) { this->free_(); }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
@@ -475,20 +475,16 @@ ForeignData_sp ForeignData_O::create(void* p_address, size_t size) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp make_pointer(void* p_address) { return ForeignData_O::create(p_address); }
-
-// ---------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
-ForeignData_sp PERCENTmake_pointer(core::Integer_sp address) {
-  ForeignData_sp ptr = ForeignData_O::create(core::clasp_to_uintptr_t(address));
+ForeignData_sp make_pointer(uintptr_t address) {
+  ForeignData_sp ptr = ForeignData_O::create(address);
   ptr->set_kind(kw::_sym_clasp_foreign_data_kind_pointer);
   return ptr;
 }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp PERCENTmake_nullpointer(void) {
-  ForeignData_sp ptr = make_pointer(nullptr);
+ForeignData_sp null_pointer(void) {
+  ForeignData_sp ptr = ForeignData_O::create(nullptr);
   ptr->set_kind(kw::_sym_clasp_foreign_data_kind_pointer);
   return ptr;
 }
@@ -514,11 +510,11 @@ core::T_sp PERCENTforeign_data_pointerp(core::T_sp obj) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTpointerp(core::T_sp obj) { return PERCENTforeign_data_pointerp(obj); }
+core::T_sp pointerp(core::T_sp obj) { return PERCENTforeign_data_pointerp(obj); }
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-core::T_sp PERCENTnull_pointer_p(core::T_sp obj) {
+core::T_sp null_pointer_p(core::T_sp obj) {
   ForeignData_sp sp_foreign_data = obj.asOrNull<ForeignData_O>();
   if (sp_foreign_data) {
     if (sp_foreign_data->null_pointer_p()) {
@@ -533,12 +529,11 @@ core::T_sp PERCENTnull_pointer_p(core::T_sp obj) {
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTinc_pointer_in_place(core::Integer_sp offset) {
+ForeignData_sp ForeignData_O::PERCENTinc_pointer_in_place(uintptr_t offset) {
   uintptr_t new_address = 0;
   uintptr_t raw_data_address = reinterpret_cast<uintptr_t>(this->raw_data());
-  uintptr_t offset_ = core::clasp_to_uintptr_t(offset);
 
-  new_address = raw_data_address + offset_;
+  new_address = raw_data_address + offset;
   this->m_raw_data = reinterpret_cast<void*>(new_address);
 
   return this->asSmartPtr();
@@ -546,13 +541,12 @@ ForeignData_sp ForeignData_O::PERCENTinc_pointer_in_place(core::Integer_sp offse
 
 // ---------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-ForeignData_sp ForeignData_O::PERCENTinc_pointer(core::Integer_sp offset) {
+ForeignData_sp ForeignData_O::inc_pointer(uintptr_t offset) {
   uintptr_t new_address = 0;
   uintptr_t raw_data_address = reinterpret_cast<uintptr_t>(this->raw_data());
-  uintptr_t offset_ = core::clasp_to_uintptr_t(offset);
 
-  new_address = raw_data_address + offset_;
-  return (make_pointer(reinterpret_cast<void*>(new_address)))->asSmartPtr();
+  new_address = raw_data_address + offset;
+  return ForeignData_O::create(reinterpret_cast<void*>(new_address));
 }
 
 // ---------------------------------------------------------------------------
@@ -752,7 +746,7 @@ core::Integer_sp PERCENToffset_address_as_integer(core::T_sp address_or_foreign_
     n_address = address_or_foreign_data_ptr.unsafe_fixnum();
   } else {
     ForeignData_sp sp_fd = address_or_foreign_data_ptr.asOrNull<ForeignData_O>();
-    if (sp_fd && PERCENTpointerp(address_or_foreign_data_ptr)) {
+    if (sp_fd && pointerp(address_or_foreign_data_ptr)) {
       core::Integer_sp sp_address = sp_fd->PERCENTforeign_data_address();
       n_address = core::clasp_to_uintptr_t(sp_address);
     } else {

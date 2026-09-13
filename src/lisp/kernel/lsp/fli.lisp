@@ -156,25 +156,31 @@
 ;;; === P O I N T E R   O P E R A T I O N S ===
 
 ;;; Implemented directly in C++:
-;;; - %pointerp
-;;; - %null-pointer
-;;; - %null-pointer-p
-;;; - %make-pointer
-;;; - %inc-pointer
+;;; - pointerp
+;;; - null-pointer
+;;; - null-pointer-p
+;;; - make-pointer
+;;; - inc-pointer
+;;; - foreign-alloc
+;;; - foreign-free
+
+;;; They used to have different names, so these are provided for
+;;; compatibility. The new names match CFFI-SYS.
+(declaim (inline %pointerp %make-nullpointer %null-pointer-p
+                 %make-pointer %inc-pointer))
+(defun %pointerp (obj) (pointerp obj))
+(defun %make-nullpointer () (null-pointer))
+(defun %null-pointer-p (obj) (null-pointer-p obj))
+(defun %make-pointer (address) (make-pointer address))
+(defun %inc-pointer (pointer offset) (inc-pointer pointer offset))
 
 ;;; === F O R E I G N - A L L O C / - F R E E ===
 
 (declaim (inline %foreign-alloc))
-(defun %foreign-alloc (size)
-  (let ((result (%allocate-foreign-data size)))
-    #+clasp-ffi.debug (format *error-output* "*** clasp-ffi::%foreign-alloc - size = ~S, allocated ptr = ~S.~%" size result)
-    result))
+(defun %foreign-alloc (size) (foreign-alloc size))
 
 (declaim (inline %foreign-free))
-(defun %foreign-free (ptr)
-  #+clasp-ffi.debug (format *error-output* "*** clasp-ffi::%foreign-free - freeing ~S.~%" ptr)
-  (%free-foreign-data ptr)
-  nil)
+(defun %foreign-free (ptr) (foreign-free ptr))
 
 ;;; These code lines were debugged with the help of drneister, stassats and
 ;;; Shinmera on 2016-09-22 as a joint effort on IRC channel #clasp. Thx again!!
@@ -189,11 +195,14 @@
 
 ;;; === M E M - S E T ===
 
-(defgeneric %mem-set (ptr type value &optional offset))
+(declaim (inline %mem-set))
+(defun %mem-set (ptr type value &optional (offset 0))
+  (setf (%mem-ref ptr type offset) value))
+(defgeneric (setf %mem-ref) (value ptr type &optional offset))
 
-(defmethod %mem-set (ptr type value &optional offset)
+(defmethod (setf %mem-ref) (value ptr type &optional offset)
   (declare (ignore ptr offset value))
-  (error "Unknown lisp type ~S for %mem-set." type))
+  (error "Unknown lisp type ~S for ~a." type '(setf %mem-ref)))
 
 ;;; === F O R E I G N   F U N C T I O N  C A L L I N G ===
 
@@ -308,10 +317,11 @@
 
 ;;; === F O R E I G N   G L O B A L S ===
 
-(declaim (inline %foreign-symbol-pointer))
+(declaim (inline %foreign-symbol-pointer foreign-symbol-pointer))
 (defun %foreign-symbol-pointer (name &optional module)
   "Return a pointer (of type ForeignData_sp / FOREIGN_DATA to a foreign symbol."
   (%dlsym (or module :rtld-default) name))
+(defun foreign-symbol-pointer (name) (%foreign-symbol-pointer name))
 
 ;;;----------------------------------------------------------------------------
 ;;;
@@ -343,7 +353,7 @@
                             (%offset-address-as-integer ptr offset)))
                         unless (eq type :void)
                           collect
-                        `(defmethod %mem-set (ptr (type (eql ',type)) value &optional offset)
+                        `(defmethod (setf %mem-ref) (value ptr (type (eql ',type)) &optional offset)
                            (,(intern (concatenate 'string "%MEM-SET-" (string type))
                                      "CLASP-FFI")
                             (%offset-address-as-integer ptr offset) value))))))
@@ -363,9 +373,8 @@
             form))
       form))
 
-(define-compiler-macro %mem-set (&whole form
-                                 ptr type value &optional (offset 0)
-                                 &environment env)
+(define-compiler-macro (setf %mem-ref)
+    (&whole form ptr type value &optional (offset 0) &environment env)
   (if (constantp type env)
       (let* ((type (ext:constant-form-value type env))
              (sname (concatenate 'string "%MEM-SET-" (string type)))
@@ -508,6 +517,7 @@
             %load-foreign-library
             %close-foreign-library
             %foreign-symbol-pointer
+            foreign-symbol-pointer
             %foreign-type-size
             %foreign-type-alignment
             %defcallback

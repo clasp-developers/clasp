@@ -163,11 +163,11 @@ public:
   static ForeignData_sp create(void* p_address = nullptr, size_t size = 0);
 
   CL_DEFMETHOD void PERCENTfree_foreign_object();
-  CL_DEFMETHOD void PERCENTfree_foreign_data();
+  CL_DEFMETHOD void foreign_free();
 
   // POINTER ADDRESS MANIPULATION
-  CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer_in_place(core::Integer_sp offset);
-  CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer(core::Integer_sp offset);
+  CL_DEFMETHOD ForeignData_sp PERCENTinc_pointer_in_place(uintptr_t offset);
+  CL_DEFMETHOD ForeignData_sp inc_pointer(uintptr_t offset);
 
   // OBJECT PRINTING
   string __repr__() const;
@@ -192,19 +192,18 @@ private:
 DOCGROUP(clasp)
 CL_DEFUN ForeignData_sp PERCENTallocate_foreign_object(core::T_sp kind);
 DOCGROUP(clasp)
-CL_DEFUN ForeignData_sp PERCENTallocate_foreign_data(size_t size);
+CL_DEFUN ForeignData_sp foreign_alloc(size_t size);
 ForeignData_sp allocate_foreign_data(uint64_t size);
 
 DOCGROUP(clasp)
-CL_DEFUN ForeignData_sp PERCENTmake_pointer(core::Integer_sp address);
-ForeignData_sp make_pointer(void* p_address);
+CL_DEFUN ForeignData_sp make_pointer(uintptr_t address);
 DOCGROUP(clasp)
-CL_DEFUN core::T_sp PERCENTpointerp(core::T_sp obj);
+CL_DEFUN core::T_sp pointerp(core::T_sp obj);
 
 DOCGROUP(clasp)
-CL_DEFUN ForeignData_sp PERCENTmake_nullpointer();
+CL_DEFUN ForeignData_sp null_pointer();
 DOCGROUP(clasp)
-CL_DEFUN core::T_sp PERCENTnull_pointer_p(core::T_sp obj);
+CL_DEFUN core::T_sp null_pointer_p(core::T_sp obj);
 
 DOCGROUP(clasp)
 CL_DEFUN core::Integer_sp PERCENToffset_address_as_integer(core::T_sp address_or_foreign_data_ptr, core::Integer_sp offset);
@@ -346,9 +345,6 @@ template <typename T> T mem_set(uintptr_t address, T value);
 ptrdiff_t clasp_to_ptrdiff(core::T_sp sp_lisp_value);
 char clasp_to_char(core::T_sp sp_lisp_value);
 unsigned char clasp_to_unsigned_char(core::T_sp sp_lisp_value);
-
-// FOREIGN MEMORY DIRECT ACCESS - MEM SET
-template <typename T> T mem_set(uintptr_t address, T value);
 
 // MEM-SET
 
