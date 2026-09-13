@@ -351,6 +351,33 @@
 
 (init-translators)
 
+(define-compiler-macro %mem-ref (&whole form
+                                 ptr type &optional (offset 0)
+                                 &environment env)
+  (if (constantp type env)
+      (let* ((type (ext:constant-form-value type env))
+             (sname (concatenate 'string "%MEM-REF-" (string type)))
+             (fname (find-symbol sname "CLASP-FFI")))
+        (if (and fname (fboundp fname))
+            `(,fname (%offset-address-as-integer ,ptr ,offset))
+            form))
+      form))
+
+(define-compiler-macro %mem-set (&whole form
+                                 ptr type value &optional (offset 0)
+                                 &environment env)
+  (if (constantp type env)
+      (let* ((type (ext:constant-form-value type env))
+             (sname (concatenate 'string "%MEM-SET-" (string type)))
+             (fname (find-symbol sname "CLASP-FFI")))
+        (if (and fname (fboundp fname))
+            `(,fname (%offset-address-as-integer ,ptr ,offset) ,value)
+            form))
+      form))
+
+;;; optimization note: the other generics above are just marked as
+;;; constant foldable (cleavir/fold.lisp).
+
 ;;;----------------------------------------------------------------------------
 ;;;----------------------------------------------------------------------------
 ;;; C A L L B A C K  S U P P O R T
