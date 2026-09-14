@@ -276,6 +276,26 @@
 
 (test ash-1 (ash -4294967296 -4294967296) (-1))
 
+;; some rotate-byte tests, copied from SBCL
+;; note that (byte 32 0) is optimized by compiler so should be
+;; tested in particular. Add more once we do 64 bits as well.
+(test rotate-byte-1
+      (values (ext:rotate-byte 0 (byte 32 0) 3)
+              (ext:rotate-byte 3 (byte 32 0) 3)
+              (ext:rotate-byte 3 (byte 16 0) 3)
+              (ext:rotate-byte 3 (byte 2 0) 3)
+              (ext:rotate-byte 3 (byte 5 5) 3)
+              (ext:rotate-byte 6 (byte 8 0) -3))
+      (3 24 24 3 3 -129))
+
+(test rotate-byte-2
+      (values (ext:rotate-byte -3 (byte 32 0) 3)
+              (ext:rotate-byte -3 (byte 16 0) 3)
+              (ext:rotate-byte -3 (byte 2 0) 3)
+              (ext:rotate-byte -3 (byte 5 5) 3)
+              (ext:rotate-byte -6 (byte 8 0) -3))
+      (1610612736 24576 3 3 -9))
+
 (test-true logbitp-1 (LOGBITP MOST-POSITIVE-FIXNUM -1))
 (test logbitp-2 (LOGBITP (1+ MOST-POSITIVE-FIXNUM) 0) (nil))
 (test-expect-error logbitp-3
