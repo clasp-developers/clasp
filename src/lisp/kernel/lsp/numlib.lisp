@@ -348,6 +348,17 @@ specified bits of INTEGER2 with the specified bits of INTEGER1."
                           (logior (ash field count)
                                   (ash field (+ count size)))))))))
 
+;; used in transforms; these functions should not actually be called
+;; unless you pass bignums but (byte 32 0) for some reason
+(defun %rotate-byte32-left (count integer)
+  (declare (type (integer 0) count))
+  (let ((rcount (mod count 32)))
+    (logior (ldb (byte 32 0) (ash integer rcount))
+            (ash integer (- 32 rcount)))))
+(defun %rotate-byte32-right (count integer)
+  (declare (type (integer 0) count))
+  (%rotate-byte32-left (- 32 count) integer))
+
 (defun ext:rotate-byte (count bytespec integer)
   "Rotates a field of bits within INTEGER; specifically, returns an
 integer that contains the bits of INTEGER rotated COUNT times

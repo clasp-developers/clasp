@@ -319,6 +319,11 @@
 (deftransform core:ash-right core::fixnum-ashr-min
   fixnum (and fixnum (integer 0)))
 
+(deftransform core::%rotate-byte32-left core::%rotate-byte32-left
+  (and fixnum (integer 0)) fixnum)
+(deftransform core::%rotate-byte32-right core::%rotate-byte32-right
+  (and fixnum (integer 0)) fixnum)
+
 ;;(deftransform car cleavir-primop:car cons)
 ;;(deftransform cdr cleavir-primop:cdr cons)
 

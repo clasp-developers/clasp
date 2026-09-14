@@ -80,9 +80,10 @@
     lognot logorc1 logorc2 logxor logbitp logcount logtest
     core:logand-2op core:logeqv-2op core:logior-2op core:logxor-2op
     byte byte-size byte-position
-    deposit-field dpb ldb ldb-test mask-field
+    deposit-field dpb ldb ldb-test mask-field ext:rotate-byte
     core::%ldb core::%ldb-test core::%mask-field
-    core::%dpb core::%deposit-field
+    core::%dpb core::%deposit-field core::%rotate-byte
+    core::%rotate-byte32-left core::%rotate-byte32-right
     decode-float scale-float float-radix float-sign float-digits
     float-precision integer-decode-float
     float floatp

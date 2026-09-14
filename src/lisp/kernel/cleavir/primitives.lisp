@@ -121,6 +121,8 @@
          (primitive         "llvm.ssub.with.overflow.i32" :{i32.i1} (list :i32 :i32))
          (primitive         "llvm.ssub.with.overflow.i64" :{i64.i1} (list :i64 :i64))
          (primitive         "llvm.ctpop.i64" :i64 (list :i64))
+         (primitive         "llvm.fshl.i32" :i32 (list :i32 :i32 :i32))
+         (primitive         "llvm.fshr.i32" :i32 (list :i32 :i32 :i32))
          ;; NOTE: FP primitives may signal a floating point exception but this
          ;; is not the same as raising an exception. I think. FIXME: Check.
          (primitive         "llvm.cos.f32" :single-float (list :single-float))

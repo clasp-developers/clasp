@@ -666,6 +666,22 @@ Optimizations are available for any of:
   ;; full call to ash-right. Which would be pretty subpar.
   '(core:ash-right int (- 0 count)))
 
+;; similar for rotate-byte
+(deftransform core::%rotate-byte (((count (and fixnum (integer 0)))
+                                   (size (eql 32)) (position (eql 0))
+                                   (integer fixnum)))
+  `(core::%rotate-byte32-left count integer))
+(deftransform core::%rotate-byte (((count (and fixnum (integer * 0)))
+                                   (size (eql 32)) (position (eql 0))
+                                   (integer fixnum)))
+  `(core::%rotate-byte32-right (- 0 count) integer))
+(deftransform core::%rotate-byte (((count (eql 0))
+                                   (size (integer 0))
+                                   (position (integer 0))
+                                   (integer integer)))
+  ;; unlikely gimme: 0 rotate is identity
+  'integer)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (13) CHARACTERS
