@@ -227,7 +227,7 @@
 ;;; from the funmap.
 ;;; This has to be called after bir-transformations, or more
 ;;; specifically, after determine-function-environments.
-;;; (simple example: (lambda (x) (flet ((foo () x)) (lambda () foo)))
+;;; (simple example: (lambda (x) (flet ((foo () x)) (lambda () (foo))))
 ;;;  the inner lambda is optimized to close over x not #'foo.)
 (defun dissociate-inappropriate-closures (fmap)
   (loop for entry in fmap
