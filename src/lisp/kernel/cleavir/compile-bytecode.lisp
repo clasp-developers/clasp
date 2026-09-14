@@ -157,6 +157,16 @@
       (build:begin inserter (binfo-irblock binfo))
       (context-new-block context (binfo-context binfo)))))
 
+;;; Note a function as a module entry point.
+;;; KLUDGE: this should just be an nadjoinf, but Cleavir behaves poorly
+;;; if a closure is an entry point and its parent is not.
+;;; That's a FIXME for Cleavir.
+(defun mark-entry-point (function)
+  (cleavir-set:nadjoinf (bir:entry-points (bir:module function))
+                        function)
+  (when (bir:enclose function)
+    (mark-entry-point (bir:function (bir:enclose function)))))
+
 ;;; Given a bytecode function, return a compiled native function.
 ;;; Used for CL:COMPILE.
 (defun compile-function (function
@@ -166,7 +176,7 @@
   (multiple-value-bind (module funmap)
       (compile-bcmodule (core:simple-fun-code function))
     (let ((bir (finfo-irfun (find-bcfun function funmap))))
-      (cleavir-set:nadjoinf (bir:entry-points module) bir)
+      (mark-entry-point bir)
       (bir:remove-unused-values module)
       (bir:verify module)
       (when disassemble
@@ -191,8 +201,7 @@
           when (typep info 'core:bytecode-simple-fun)
             do (let ((finfo (find-bcfun info funmap)))
                  (when finfo
-                   (cleavir-set:nadjoinf (bir:entry-points irmodule)
-                                         (finfo-irfun finfo)))))
+                   (mark-entry-point (finfo-irfun finfo)))))
     (bir:remove-unused-values irmodule)
     (clasp-cleavir::bir-transformations irmodule system)
     (dissociate-inappropriate-closures (fmap funmap))
@@ -1739,8 +1748,7 @@
           when (typep info 'cmp:cfunction)
             do (let ((finfo (find-bcfun info funmap)))
                  (when finfo
-                   (cleavir-set:nadjoinf (bir:entry-points irmodule)
-                                         (finfo-irfun finfo)))))
+                   (mark-entry-point (finfo-irfun finfo)))))
     (bir:remove-unused-values irmodule)
     (bir:verify irmodule)
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
