@@ -147,9 +147,8 @@
  (:name :cl-ppcre
   :extension :cando
   :directory "src/lisp/kernel/contrib/cl-ppcre/"
-  :repository "https://github.com/edicl/cl-ppcre.git"
+  :repository "https://github.com/clasp-developers/cl-ppcre.git"
   :branch "master"
-  :commit "a2ea581c23fdc184168423adbd4b4c1f48d42743"
   :pin 1)
  (:name :cl-svg
   :extension :cando
