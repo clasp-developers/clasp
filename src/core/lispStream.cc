@@ -49,6 +49,9 @@ THE SOFTWARE.
 
 // #define DEBUG_LEVEL_FULL
 #include <stdio.h>
+#if defined(__GLIBC__)
+#include <stdio_ext.h> // __fpurge
+#endif
 #include <bitset>
 #include <fcntl.h>
 #include <unistd.h>
@@ -5051,20 +5054,38 @@ cl_index CFileStream_O::read_byte8(unsigned char* c, cl_index n) {
 
   unlikely_if(_byte_stack.notnilp()) return consume_byte_stack(c, n);
 
-  gctools::Fixnum out = 0;
-  // POSIX defines fread to (unlike C) report a bunch of different errors
-  // in errno. These errors are the same as for fgetc and include basically
-  // the same stuff you can get from read(2).
+  cl_index out = 0;
+  int read_errno = 0;
+  bool read_failed = false;
+
   BEGIN_PARK {
-    do {
-      out = fread(c, sizeof(char), n, _file);
-    } while (out < 0 && ferror(_file) && errno == EINTR);
+    while (out < n) {
+      size_t count = fread(c + out, sizeof(char), n - out, _file);
+      int saved_errno = errno;
+      out += count;
+
+      if (ferror(_file)) {
+        if (saved_errno == EINTR) {
+          // Preserve any bytes already read and retry the remainder.
+          clearerr(_file);
+          continue;
+        }
+        read_errno = saved_errno;
+        read_failed = true;
+        break;
+      }
+
+      // A short read without an error indicates EOF.
+      if (out < n) break;
+    }
   } END_PARK;
-  // note: EOF we leave to the caller to figure out,
-  // though we do clear it in case there's more reading to do later.
-  if (out < n) {
-    if (ferror(_file)) io_error("fread");
-    else clearerr(_file);
+
+  if (read_failed) {
+    errno = read_errno;
+    io_error("fread");
+  } else if (out < n) {
+    // Preserve the existing behavior of clearing EOF.
+    clearerr(_file);
   }
   return out;
 }
@@ -5204,8 +5225,21 @@ T_sp CFileStream_O::close(T_sp abort) {
     unlikely_if(_file == stdout) FEerror("Cannot close the standard output", 0);
     unlikely_if(_file == stdin) FEerror("Cannot close the standard input", 0);
     unlikely_if(_file == NULL) wrong_file_handler(asSmartPtr());
-    if (output_p())
-      force_output();
+    if (output_p()) {
+      if (abort.notnilp()) {
+        // Discard pending output: fclose would otherwise flush it.
+#if defined(__GLIBC__)
+        __fpurge(_file);
+#elif defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
+        if (fpurge(_file) != 0)
+          io_error("fpurge");
+#else
+#error "Abort-close needs a stdio buffer-discard implementation"
+#endif
+      } else {
+        force_output();
+      }
+    }
     failed = safe_fclose(_file);
     unlikely_if(failed) cannot_close(asSmartPtr());
     gctools::clasp_dealloc(_buffer);

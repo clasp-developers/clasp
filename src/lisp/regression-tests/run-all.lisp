@@ -65,7 +65,9 @@
     "extensions"
     "cltl2"
     "run-program"
-    "snapshot"))
+    "snapshot"
+    ;; Loads a temporary native fixture; run after tests that save images.
+    #+linux "cfile-stream"))
 
 (loop with requested-suites = (core:split (or (ext:getenv "TEST_SUITES") "") ",")
       for suite in *suites*
