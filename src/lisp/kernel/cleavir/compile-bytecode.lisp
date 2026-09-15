@@ -161,11 +161,20 @@
 ;;; KLUDGE: this should just be an nadjoinf, but Cleavir behaves poorly
 ;;; if a closure is an entry point and its parent is not.
 ;;; That's a FIXME for Cleavir.
-(defun mark-entry-point (function)
-  (cleavir-set:nadjoinf (bir:entry-points (bir:module function))
-                        function)
-  (when (bir:enclose function)
-    (mark-entry-point (bir:function (bir:enclose function)))))
+(defun mark-entry-point (irfun funmap
+                         &optional (bcfun
+                                    (finfo-bcfun
+                                     (find-irfun irfun funmap))))
+  (cleavir-set:nadjoinf (bir:entry-points (bir:module irfun))
+                        irfun)
+  (when (and (bir:enclose irfun)
+             ;; if it doesn't actually close over anything
+             ;; we don't need the parent.
+             ;; This is an important case for e.g. DEFUN'd functions,
+             ;; which in bytecode are closed over by the function
+             ;; that does (setf fdefinition).
+             (> (length (bcfun/nvars bcfun)) 0))
+    (mark-entry-point (bir:function (bir:enclose irfun)) funmap)))
 
 ;;; Given a bytecode function, return a compiled native function.
 ;;; Used for CL:COMPILE.
@@ -176,7 +185,7 @@
   (multiple-value-bind (module funmap)
       (compile-bcmodule (core:simple-fun-code function))
     (let ((bir (finfo-irfun (find-bcfun function funmap))))
-      (mark-entry-point bir)
+      (mark-entry-point bir funmap function)
       (bir:remove-unused-values module)
       (bir:verify module)
       (when disassemble
@@ -201,7 +210,9 @@
           when (typep info 'core:bytecode-simple-fun)
             do (let ((finfo (find-bcfun info funmap)))
                  (when finfo
-                   (mark-entry-point (finfo-irfun finfo)))))
+                   (mark-entry-point (finfo-irfun finfo)
+                                     funmap
+                                     (finfo-bcfun finfo)))))
     (bir:remove-unused-values irmodule)
     (clasp-cleavir::bir-transformations irmodule system)
     (dissociate-inappropriate-closures (fmap funmap))
@@ -1748,7 +1759,9 @@
           when (typep info 'cmp:cfunction)
             do (let ((finfo (find-bcfun info funmap)))
                  (when finfo
-                   (mark-entry-point (finfo-irfun finfo)))))
+                   (mark-entry-point (finfo-irfun finfo)
+                                     funmap
+                                     (finfo-bcfun finfo)))))
     (bir:remove-unused-values irmodule)
     (bir:verify irmodule)
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
