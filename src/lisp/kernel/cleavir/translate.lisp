@@ -17,38 +17,8 @@
    ;; NIL if there's no XEP.
    (%prototype :initarg :prototype :reader prototype)))
 
-(defun lambda-list-too-hairy-p (lambda-list)
-  (multiple-value-bind (reqargs optargs rest-var key-flag keyargs aok aux varest-p)
-      (cmp:process-bir-lambda-list lambda-list)
-    (declare (ignore reqargs optargs keyargs aok aux rest-var varest-p))
-    key-flag))
-
-(defun nontrivial-mv-local-call-p (call)
-  (cond ((typep call 'cc-bmir:fixed-mv-local-call)
-         ;; Could still be nontrivial if the number of arguments is wrong
-         (multiple-value-bind (req opt rest)
-             (cmp:process-bir-lambda-list (bir:lambda-list (bir:callee call)))
-           (let ((lreq (length (cc-bmir:rtype (second (bir:inputs call))))))
-             (or (< lreq (car req))
-                 (and (not rest) (> lreq (+ (car req) (car opt))))))))
-        ((typep call 'bir:mv-local-call) t)
-        (t nil)))
-
 (defun xep-needed-p (function)
-  (or (bir:enclose function)
-      ;; We need a XEP for more involved lambda lists.
-      (lambda-list-too-hairy-p (bir:lambda-list function))
-      ;; or for mv-calls that might need to signal an error.
-      (and (cleavir-set:some #'nontrivial-mv-local-call-p
-                             (bir:local-calls function))
-           (multiple-value-bind (req opt rest)
-               (cmp:process-bir-lambda-list (bir:lambda-list function))
-             (declare (ignore opt))
-             (or (plusp (car req)) (not rest))))
-      ;; Assume that a function with no enclose and no local calls is
-      ;; toplevel and needs an XEP. Else it would have been removed or
-      ;; deleted as it is unreferenced otherwise.
-      (cleavir-set:empty-set-p (bir:local-calls function))))
+  (or (bir:enclose function) (bir:entry-point-p function)))
 
 (defun argument-rtype->llvm (arg)
   (let ((rtype (cc-bmir:rtype arg)))
@@ -935,56 +905,63 @@ function-or-placeholder - the llvm function or a placeholder for
       :vaslist
       :object))
 
-(defun gen-local-call (callee arguments outputrt)
-  (let ((callee-info (find-llvm-function-info callee)))
-    (cond ((lambda-list-too-hairy-p (bir:lambda-list callee))
-           ;; Has &key or something, so use the normal call protocol.
-           ;; We allocate a fresh closure for every call. Hopefully this
-           ;; isn't too expensive. We can always use stack allocation since
-           ;; there's no possibility of this closure being stored in a closure
-           ;; (If we local-call a self-referencing closure, the closure cell
-           ;;  will get its value from some enclose.
-           ;;  FIXME we could use that instead?)
-           (translate-cast (closure-call-or-invoke
-                            (enclose callee :dynamic nil)
-                            arguments)
-                           :multiple-values outputrt))
-          (t
-           ;; Call directly.
-           (multiple-value-bind (req opt rest-var key-flag keyargs aok aux
-                                 varest-p)
-               (cmp:process-bir-lambda-list (bir:lambda-list callee))
-             (declare (ignore keyargs aok aux))
-             (assert (not key-flag))
-             (let ((largs (length arguments)))
-               (when (or (< largs (car req))
-                         (and (not rest-var)
-                              (> largs (+ (car req) (car opt)))))
-                 ;; too many or too few args; we can get here from
-                 ;; fixed-mv-local-calls for instance.
-                 (return-from gen-local-call
-                   (translate-cast (closure-call-or-invoke
-                                    (enclose callee :dynamic nil)
-                                    arguments)
-                                   :multiple-values outputrt))))
-             (let* ((rest-id (cond ((null rest-var) nil)
-                                   ((bir:unused-p rest-var) :unused)
-                                   (varest-p :va-rest)
-                                   (t t)))
-                    (rest-vrtype (rest-vrtype rest-var))
-                    (subargs
-                      (parse-local-call-arguments
-                       req opt rest-id rest-vrtype arguments))
-                    (args (append (environment-arguments
-                                   (environment callee-info))
-                                  subargs))
-                    (function (main-function callee-info))
-                    (function-type (llvm-sys:get-function-type function))
-                    (result-in-registers
-                      (cmp::irc-call-or-invoke function-type function args)))
-               #+(or)
-               (llvm-sys:set-calling-conv result-in-registers 'llvm-sys:fastcc)
-               (local-call-rv->inputs result-in-registers outputrt)))))))
+(defun gen-local-call (callee arguments output-name outputrt)
+  ;; LLVM whines if we provide a name for a call returning void FIXME
+  (declare (ignore output-name))
+  (let* ((callee-info (find-llvm-function-info callee))
+         (parameters (arguments callee-info))
+         (environment (environment callee-info))
+         (function (main-function callee-info))
+         (function-type (llvm-sys:get-function-type function))
+         (ll-analysis (cmp:calculate-cleavir-lambda-list-analysis
+                       (bir:lambda-list callee)))
+         (calling-convention
+           (cmp:make-calling-convention
+            :rest-alloc (compute-rest-alloc ll-analysis)
+            :cleavir-lambda-list-analysis ll-analysis
+            :register-args arguments
+            :nargs (%size_t (length arguments))
+            :closure (literal (bir:name callee))))
+         (paramvalues ())
+         (ll-result
+           (cmp:compile-lambda-list-code
+            ll-analysis calling-convention
+            (length arguments)
+            :argument-out (lambda (value param)
+                            (push (cons param value) paramvalues))))
+         (_
+           (when (not ll-result)
+             ;; compile-lambda-list-code returned nil, which means we
+             ;; have an argcount mismatch and it has inserted an error
+             ;; call. Everything past this is unreachable, so don't
+             ;; call the function. TODO: poison instead of undef?
+             ;; also TODO: just delete these calls
+             (cmp:irc-begin-block
+              (cmp:irc-basic-block-create "unreachable"))
+             (return-from gen-local-call
+               (local-call-rv->inputs
+                (llvm-sys:undef-value-get
+                 (llvm-sys:function-type-return-type function-type))
+                outputrt))))
+         (arguments
+           (nconc (environment-arguments environment)
+                  (loop with nreq = (cmp::cleavir-lambda-list-analysis-min-nargs ll-analysis)
+                        for param in parameters
+                        for i from 0
+                        for v = (cdr (assoc param paramvalues))
+                        unless v
+                          do (error "BUG: Missing argument ~a" param)
+                        collect (if (< i nreq)
+                                    ;; required argument, so the param
+                                    ;; is just the argument and thus
+                                    ;; of the correct rtype already
+                                    v
+                                    (translate-cast v '(:object)
+                                                    (cc-bmir:rtype param))))))
+         (call
+           (cmp:irc-call-or-invoke function-type function arguments)))
+    (declare (ignore _))
+    (local-call-rv->inputs call outputrt)))
 
 (defmethod translate-simple-instruction ((instruction bir:local-call)
                                          abi)
@@ -992,7 +969,9 @@ function-or-placeholder - the llvm function or a placeholder for
   (let* ((callee (bir:callee instruction))
          (args (mapcar #'in (rest (bir:inputs instruction))))
          (output (bir:output instruction))
-         (call (gen-local-call callee args (cc-bmir:rtype output))))
+         (call (gen-local-call callee args
+                               (datum-name-as-string output)
+                               (cc-bmir:rtype output))))
     (out call output)))
 
 (defmethod translate-simple-instruction ((instruction bir:call) abi)
@@ -1006,123 +985,6 @@ function-or-placeholder - the llvm function or a placeholder for
           :label (datum-name-as-string output))
          output)))
 
-(defun general-mv-local-call-vas (callee vaslist label outputrt)
-  (translate-cast (cmp:irc-apply (enclose callee :dynamic nil)
-                                 (cmp:irc-vaslist-nvals vaslist)
-                                 (cmp:irc-vaslist-values vaslist)
-                                 label)
-                  :multiple-values outputrt))
-
-(defun direct-mv-local-call-vas (vaslist callee req opt rest-var varest-p
-                                 label outputrt)
-  (let* ((callee-info (find-llvm-function-info callee))
-         (nreq (car req))
-         (nopt (car opt))
-         (rnret (cmp:irc-vaslist-nvals vaslist))
-         (rvalues (cmp:irc-vaslist-values vaslist))
-         (nfixed (+ nreq nopt))
-         (mismatch
-           (unless (and (zerop nreq) rest-var)
-             (cmp:irc-basic-block-create "lmvc-arg-mismatch")))
-         (mte (if rest-var
-                  (cmp:irc-basic-block-create "lmvc-more-than-enough")
-                  mismatch))
-         (merge (cmp:irc-basic-block-create "lmvc-after"))
-         (sw (cmp:irc-switch rnret mte (+ 1 nreq nopt)))
-         (environment (environment callee-info))
-         (rest-vaboxp (not (eq (rest-vrtype rest-var) :vaslist))))
-    (labels ((load-return-value (n)
-               (cmp:irc-t*-load (cmp:irc-typed-gep cmp:%t*% rvalues (list n))))
-             (load-return-values (low high)
-               (loop for i from low below high
-                     collect (load-return-value i)))
-             (optionals (n)
-               (parse-local-call-optional-arguments
-                opt (load-return-values nreq (+ nreq n)))))
-      ;; Generate phis for the merge block's call.
-      (cmp:irc-begin-block merge)
-      (let ((opt-phis
-              (loop for (op s-p) on (rest opt) by #'cdddr
-                    for op-ty = (argument-rtype->llvm op)
-                    for s-p-ty = (argument-rtype->llvm s-p)
-                    collect (cmp:irc-phi op-ty (1+ nopt))
-                    collect (cmp:irc-phi s-p-ty (1+ nopt))))
-            (rest-phi
-              (cond ((null rest-var) nil)
-                    ((bir:unused-p rest-var)
-                     (cmp:irc-undef-value-get cmp:%t*%))
-                    (t (cmp:irc-phi (argument-rtype->llvm rest-var)
-                                    (1+ nopt))))))
-        ;; Generate the mismatch block, if it exists.
-        (when mismatch
-          (cmp:irc-begin-block mismatch)
-          (cmp::irc-intrinsic-call-or-invoke
-           "cc_wrong_number_of_arguments"
-           (list (enclose callee :indefinite nil) rnret
-                 (%size_t nreq) (%size_t nfixed)))
-          (cmp:irc-unreachable))
-        ;; Generate not-enough-args cases.
-        (loop for i below nreq
-              do (cmp:irc-add-case sw (%size_t i) mismatch))
-        ;; Generate optional arg cases, including the exactly-enough case.
-        (loop for i upto nopt
-              for b = (cmp:irc-basic-block-create
-                       (format nil "lmvc-optional-~d" i))
-              do (cmp:irc-add-case sw (%size_t (+ nreq i)) b)
-                 (cmp:irc-begin-block b)
-                 (loop for phi in opt-phis
-                       for val in (optionals i)
-                       do (cmp:irc-phi-add-incoming phi val b))
-                 (when (and rest-var (not (bir:unused-p rest-var)))
-                   (cmp:irc-phi-add-incoming
-                    rest-phi
-                    (if varest-p
-                        (maybe-boxed-vaslist
-                         rest-vaboxp (%size_t 0)
-                         (llvm-sys:constant-pointer-null-get cmp:%t**%))
-                        (%nil))
-                    b))
-                 (cmp:irc-br merge))
-        ;; If there's a &rest, generate the more-than-enough arguments case.
-        (when rest-var
-          (cmp:irc-begin-block mte)
-          (loop for phi in opt-phis
-                for val in (optionals nopt)
-                do (cmp:irc-phi-add-incoming phi val mte))
-          (unless (bir:unused-p rest-var)
-            (cmp:irc-phi-add-incoming
-             rest-phi
-             (if varest-p
-                 (maybe-boxed-vaslist
-                  rest-vaboxp
-                  (cmp:irc-sub rnret (%size_t nfixed))
-                  (cmp:irc-typed-gep cmp:%t*% rvalues (list nfixed)))
-                 (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_mvcGatherRest2"
-                  (list (cmp:irc-typed-gep cmp:%t*% rvalues (list nfixed))
-                        (cmp:irc-sub rnret (%size_t nfixed)))))
-             mte))
-          (cmp:irc-br merge))
-        ;; Generate the call, in the merge block.
-        (cmp:irc-begin-block merge)
-        (let* ((arguments
-                 (nconc
-                  (environment-arguments environment)
-                  (loop for r in (rest req)
-                        for j from 0
-                        collect (translate-cast (load-return-value j) '(:object)
-                                                (cc-bmir:rtype r)))
-                  opt-phis
-                  (when rest-var (list rest-phi))))
-               (function (main-function callee-info))
-               (function-type (llvm-sys:get-function-type function))
-               (call
-                 (cmp:irc-call-or-invoke function-type function arguments
-                                         cmp:*current-unwind-landing-pad-dest*
-                                         label)))
-          #+(or)(llvm-sys:set-calling-conv call 'llvm-sys:fastcc)
-          (local-call-rv->inputs call outputrt))))))
-
 (defmethod translate-simple-instruction
     ((instruction bir:mv-local-call) abi)
   (declare (ignore abi))
@@ -1130,20 +992,55 @@ function-or-placeholder - the llvm function or a placeholder for
          (outputrt (cc-bmir:rtype output))
          (oname (datum-name-as-string output))
          (callee (bir:callee instruction))
+         (callee-info (find-llvm-function-info callee))
          (mvarg (second (bir:inputs instruction)))
-         (mvargrt (cc-bmir:rtype mvarg))
-         (mvargi (in mvarg)))
-    (assert (eq mvargrt :vaslist))
-    (out
-     (multiple-value-bind (req opt rest-var key-flag keyargs
-                           aok aux varest-p)
-         (cmp::process-bir-lambda-list (bir:lambda-list callee))
-       (declare (ignore keyargs aok aux))
-       (if key-flag
-           (general-mv-local-call-vas callee mvargi oname outputrt)
-           (direct-mv-local-call-vas
-            mvargi callee req opt rest-var varest-p oname outputrt)))
-     output)))
+         (_1 (assert (eq (cc-bmir:rtype mvarg) :vaslist)))
+         (mvargi (in mvarg))
+         (nargs (cmp:irc-vaslist-nvals mvargi))
+         (ll-analysis (cmp:calculate-cleavir-lambda-list-analysis
+                       (bir:lambda-list callee)))
+         (vaslist* (cmp:alloca-vaslist))
+         (calling-convention
+           (cmp:make-calling-convention
+            :rest-alloc (compute-rest-alloc ll-analysis)
+            :cleavir-lambda-list-analysis ll-analysis
+            :vaslist* vaslist*
+            :register-args ()
+            ;; FIXME: the vaslist already has this so what gives
+            :nargs nargs
+            :closure (literal (bir:name callee))))
+         ;; An alist from BIR:ARGUMENTs to LLVM values for them.
+         ;; We use this instead of going through OUT/IN as we do for
+         ;; XEPs because there may be multiple calls to the same
+         ;; function (which thus use the same ARGUMENTs).
+         (argvalues ())
+         (arglist (arguments callee-info))
+         (environment (environment callee-info))
+         (_2
+           (cmp:vaslist-start vaslist* nargs
+                              (cmp:irc-vaslist-values mvargi)))
+         (_3
+           (cmp:compile-lambda-list-code
+            ll-analysis calling-convention
+            :general-entry
+            :argument-out (lambda (value arg)
+                            (push (cons arg value) argvalues))))
+         (arguments
+           (nconc (environment-arguments environment)
+                  (loop for arg in arglist
+                        for v = (cdr (assoc arg argvalues))
+                        unless v
+                          do (error "BUG: Missing argument ~a" arg)
+                        collect (translate-cast v '(:object)
+                                                (cc-bmir:rtype arg)))))
+         (function (main-function callee-info))
+         (function-type (llvm-sys:get-function-type function))
+         (call
+           (cmp:irc-call-or-invoke function-type function arguments
+                                   cmp:*current-unwind-landing-pad-dest*
+                                   oname)))
+    (declare (ignore _1 _2 _3))
+    (out (local-call-rv->inputs call outputrt) output)))
 
 (defmethod translate-simple-instruction
     ((instruction cc-bmir:fixed-mv-local-call) abi)
@@ -1159,6 +1056,7 @@ function-or-placeholder - the llvm function or a placeholder for
      (gen-local-call callee (if (= (length mvargrt) 1)
                                 (list mvargi)
                                 mvargi)
+                     (datum-name-as-string output)
                      (cc-bmir:rtype output))
      output)))
 
@@ -2343,6 +2241,7 @@ function-or-placeholder - the llvm function or a placeholder for
                   :name (make-symbol (format nil "~a-CALLER-START" signature))
                   :function caller :dynamic-environment caller)))
     (cleavir-set:nadjoinf (bir:functions module) caller)
+    (cleavir-set:nadjoinf (bir:entry-points module) caller)
     (setf (bir:start caller) iblock
           (bir:lambda-list caller) arguments)
     (build:begin inserter iblock)

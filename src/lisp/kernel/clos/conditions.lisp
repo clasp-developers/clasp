@@ -1079,7 +1079,11 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
              (let* ((min (min-nargs condition))
                     (max (max-nargs condition))
                     (function (called-function condition))
-                    (name (and function (core:function-name function)))
+                    (name (typecase function
+                            (null 'cl:lambda)
+                            (function (core:function-name function))
+                            ;; assume it's a name, e.g. symbol
+                            (t function)))
                     (dname (if (eq name 'cl:lambda) "anonymous function" name)))
                (format stream "~@[Calling ~a - ~]Got ~d arguments, but expected ~@?"
                        dname (given-nargs condition)
@@ -1115,18 +1119,24 @@ The conflict resolver must be one of ~s" chosen-symbol candidates))
 (define-condition core:odd-keywords (program-error)
   ((%called-function :initarg :called-function :reader called-function))
   (:report (lambda (condition stream)
-             (format stream "Odd number of keyword arguments~:[~; for ~s~]."
-                     (called-function condition)
-                     (core:function-name (called-function condition))))))
+             (let* ((function (called-function condition))
+                    (name (if (functionp function)
+                              (core:function-name function)
+                              function)))
+               (format stream "Odd number of keyword arguments~@[ for ~s~]."
+                       name)))))
 
 (define-condition core:unrecognized-keyword-argument-error (program-error)
   ((called-function :initarg :called-function :reader called-function :initform nil)
    (unrecognized-keywords :initarg :unrecognized-keywords :reader unrecognized-keywords))
   (:report (lambda (condition stream)
-             (format stream "Unrecognized keyword arguments ~S~:[~; for ~S~]."
-                     (unrecognized-keywords condition)
-                     (called-function condition)
-                     (core:function-name (called-function condition))))))
+             (let* ((function (called-function condition))
+                    (name (if (functionp function)
+                              (core:function-name function)
+                              function)))
+               (format stream "Unrecognized keyword arguments ~S~@[ for ~S~]."
+                       (unrecognized-keywords condition)
+                       name)))))
 
 (define-condition print-not-readable (error)
   ((object :INITARG :OBJECT :READER print-not-readable-object))

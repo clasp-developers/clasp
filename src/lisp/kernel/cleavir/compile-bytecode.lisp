@@ -157,6 +157,25 @@
       (build:begin inserter (binfo-irblock binfo))
       (context-new-block context (binfo-context binfo)))))
 
+;;; Note a function as a module entry point.
+;;; KLUDGE: this should just be an nadjoinf, but Cleavir behaves poorly
+;;; if a closure is an entry point and its parent is not.
+;;; That's a FIXME for Cleavir.
+(defun mark-entry-point (irfun funmap
+                         &optional (bcfun
+                                    (finfo-bcfun
+                                     (find-irfun irfun funmap))))
+  (cleavir-set:nadjoinf (bir:entry-points (bir:module irfun))
+                        irfun)
+  (when (and (bir:enclose irfun)
+             ;; if it doesn't actually close over anything
+             ;; we don't need the parent.
+             ;; This is an important case for e.g. DEFUN'd functions,
+             ;; which in bytecode are closed over by the function
+             ;; that does (setf fdefinition).
+             (> (length (bcfun/nvars bcfun)) 0))
+    (mark-entry-point (bir:function (bir:enclose irfun)) funmap)))
+
 ;;; Given a bytecode function, return a compiled native function.
 ;;; Used for CL:COMPILE.
 (defun compile-function (function
@@ -165,18 +184,20 @@
                            (disassemble nil))
   (multiple-value-bind (module funmap)
       (compile-bcmodule (core:simple-fun-code function))
-    (bir:verify module)
-    (when disassemble
-      (cleavir-bir-disassembler:display module))
-    (clasp-cleavir::bir-transformations module system)
-    (dissociate-inappropriate-closures (fmap funmap))
-    (let (;; Ensure any closures have the same layout as original
-          ;; bytecode closures, so the simple fun can be swapped
-          ;; out transparently.
-          (clasp-cleavir::*fixed-closures*
-            (fixed-closures-map (fmap funmap)))
-          (bir (finfo-irfun (find-bcfun function funmap))))
-      (clasp-cleavir::bir->function bir :abi abi))))
+    (let ((bir (finfo-irfun (find-bcfun function funmap))))
+      (mark-entry-point bir funmap function)
+      (bir:remove-unused-values module)
+      (bir:verify module)
+      (when disassemble
+        (cleavir-bir-disassembler:display module))
+      (clasp-cleavir::bir-transformations module system)
+      (dissociate-inappropriate-closures (fmap funmap))
+      (let (;; Ensure any closures have the same layout as original
+            ;; bytecode closures, so the simple fun can be swapped
+            ;; out transparently.
+            (clasp-cleavir::*fixed-closures*
+              (fixed-closures-map (fmap funmap))))
+        (clasp-cleavir::bir->function bir :abi abi)))))
 
 ;;; Given a bytecode module, compute native functions for all bytecode functions
 ;;; in it, and install them as new simple funs. Return value irrelevant.
@@ -185,6 +206,14 @@
                        &key (abi clasp-cleavir::*abi-x86-64*)
                          (system clasp-cleavir:*clasp-system*))
   (multiple-value-bind (irmodule funmap) (compile-bcmodule module)
+    (loop for info across (core:bytecode-module/debug-info module)
+          when (typep info 'core:bytecode-simple-fun)
+            do (let ((finfo (find-bcfun info funmap)))
+                 (when finfo
+                   (mark-entry-point (finfo-irfun finfo)
+                                     funmap
+                                     (finfo-bcfun finfo)))))
+    (bir:remove-unused-values irmodule)
     (clasp-cleavir::bir-transformations irmodule system)
     (dissociate-inappropriate-closures (fmap funmap))
     (multiple-value-bind (function-infos constants ctable fvector)
@@ -218,7 +247,7 @@
 ;;; from the funmap.
 ;;; This has to be called after bir-transformations, or more
 ;;; specifically, after determine-function-environments.
-;;; (simple example: (lambda (x) (flet ((foo () x)) (lambda () foo)))
+;;; (simple example: (lambda (x) (flet ((foo () x)) (lambda () (foo))))
 ;;;  the inner lambda is optimized to close over x not #'foo.)
 (defun dissociate-inappropriate-closures (fmap)
   (loop for entry in fmap
@@ -426,8 +455,7 @@
                      :policy cmp:*policy* ; FIXME
                      :attributes nil
                      :module module))
-         (start (make-start-block inserter function bytecode-function)))
-    (setf (bir:start function) start)
+         (start (make-start-block function bytecode-function)))
     (set:nadjoinf (bir:functions module) function)
     function))
 
@@ -462,12 +490,11 @@
   (assert (stack context))
   (pop (stack context)))
 
-(defun make-start-block (inserter irfun bcfun)
-  (build:make-iblock
-   inserter
+(defun make-start-block (irfun bcfun)
+  (build:make-start-iblock
+   irfun
    :name (symbolicate (write-to-string (bcfun/fname bcfun))
-                      '#:-start)
-   :function irfun :dynamic-environment irfun))
+                      '#:-start)))
 
 (defun symbolicate (&rest components)
   ;; FIXME: Probably just use concatenate
@@ -1728,6 +1755,15 @@
   (let* ((irmodule (make-instance 'bir:module))
          (literals (compute-compiled-literals literals-info irmodule))
          (funmap (compile-bytecode-into bytecode debug-info literals irmodule)))
+    (loop for info across debug-info
+          when (typep info 'cmp:cfunction)
+            do (let ((finfo (find-bcfun info funmap)))
+                 (when finfo
+                   (mark-entry-point (finfo-irfun finfo)
+                                     funmap
+                                     (finfo-bcfun finfo)))))
+    (bir:remove-unused-values irmodule)
+    (bir:verify irmodule)
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
     (clasp-cleavir::bir-transformations irmodule clasp-cleavir:*clasp-system*)
     (dissociate-inappropriate-closures (fmap funmap))
