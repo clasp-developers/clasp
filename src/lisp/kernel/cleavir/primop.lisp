@@ -644,6 +644,44 @@
          (fixn (cmp:irc-and shifted demask)))
     fixn))
 
+;;; for ext:rotate-byte
+(defvprimop (core::%rotate-byte32-left :flags (:flushable))
+    ((:utfixnum) :utfixnum :utfixnum) (inst)
+  (let* ((count (in (first (bir:inputs inst))))
+         ;; all args to fshl must be same type
+         ;; note that fshl is defined to use the count modulo
+         ;; the bitwidth, so it's ok if count is huge.
+         ;; It must be positive though and is treated as such.
+         (tcount (cmp:irc-trunc count cmp:%i32% "count"))
+         (int (in (second (bir:inputs inst))))
+         ;; Mask out the top of the int to reinstall afterwards
+         (high (cmp:irc-and (%i64 #xffffffff00000000) int "high"))
+         (low (cmp:irc-trunc int cmp:%i32% "low"))
+         (rotated (%intrinsic-call "llvm.fshl.i32"
+                                   (list low low tcount)))
+         ;; expand out to an i64 again
+         (zrotated (cmp:irc-zext rotated cmp:%i64%
+                                 "rotated-b32-left")))
+    ;; Now just combine the rotated low bytes with the high.
+    (cmp:irc-or high zrotated "rotated-b32-left")))
+
+(defvprimop (core::%rotate-byte32-right :flags (:flushable))
+    ((:utfixnum) :utfixnum :utfixnum) (inst)
+  (let* ((count (in (first (bir:inputs inst))))
+         ;; all args to fshl must be same type
+         (tcount (cmp:irc-trunc count cmp:%i32% "count"))
+         (int (in (second (bir:inputs inst))))
+         ;; Mask out the top of the int to reinstall afterwards
+         (high (cmp:irc-and (%i64 #xffffffff00000000) int "high"))
+         (low (cmp:irc-trunc int cmp:%i32% "low"))
+         (rotated (%intrinsic-call "llvm.fshr.i32"
+                                   (list low low tcount)))
+         ;; expand out to an i64 again
+         (zrotated (cmp:irc-zext rotated cmp:%i64%
+                                 "rotated-b32-left")))
+    ;; Now just combine the rotated low bytes with the high.
+    (cmp:irc-or high zrotated "rotated-b32-left")))
+
 ;;; Primops for debugging
 
 (defeprimop core:set-breakstep () (inst)

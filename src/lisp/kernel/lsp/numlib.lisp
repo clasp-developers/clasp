@@ -334,6 +334,38 @@ Returns an integer represented by the bit sequence obtained by replacing the
 specified bits of INTEGER2 with the specified bits of INTEGER1."
   (%deposit-field newbyte (byte-size bytespec) (byte-position bytespec) integer))
 
+;; from SBCL
+;; calls to this function may be optimized by clasp-cleavir.
+(defun %rotate-byte (count size position integer)
+  (let ((count (nth-value 1 (round count size)))
+        (mask (1- (ash 1 size))))
+    (logior (logand integer (lognot (ash mask position)))
+            (let ((field (logand (ash mask position) integer)))
+              (logand (ash mask position)
+                      (if (> count 0)
+                          (logior (ash field count)
+                                  (ash field (- count size)))
+                          (logior (ash field count)
+                                  (ash field (+ count size)))))))))
+
+;; used in transforms; these functions should not actually be called
+;; unless you pass bignums but (byte 32 0) for some reason
+(defun %rotate-byte32-left (count integer)
+  (declare (type (integer 0) count))
+  (let ((rcount (mod count 32)))
+    (logior (ldb (byte 32 0) (ash integer rcount))
+            (ash integer (- 32 rcount)))))
+(defun %rotate-byte32-right (count integer)
+  (declare (type (integer 0) count))
+  (%rotate-byte32-left (- 32 count) integer))
+
+(defun ext:rotate-byte (count bytespec integer)
+  "Rotates a field of bits within INTEGER; specifically, returns an
+integer that contains the bits of INTEGER rotated COUNT times
+leftwards within the byte specified by BYTESPEC, and elsewhere
+contains the bits of INTEGER."
+  (%rotate-byte count (byte-size bytespec) (byte-position bytespec) integer))
+
 ;;; Look for an explicit (byte ...) form as is usually used in ldb etc.
 ;;; return NIL if it's not a (byte ...) form.
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -368,6 +400,12 @@ specified bits of INTEGER2 with the specified bits of INTEGER1."
   (multiple-value-bind (size position) (parse-bytespec bytespec)
     (if size
         `(%deposit-field ,newbyte ,size ,position ,integer)
+        whole)))
+
+(define-compiler-macro ext:rotate-byte (&whole whole count bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%rotate-byte ,count ,size ,position ,integer)
         whole))))
 
 ;;; Hooks called from C++ core_float_to_string_free in print/Float_O.cc

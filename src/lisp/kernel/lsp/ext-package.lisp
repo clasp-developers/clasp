@@ -63,6 +63,7 @@
           integer32
           byte64
           integer64
+          rotate-byte
           assume-no-errors
           all-encodings
           make-encoding

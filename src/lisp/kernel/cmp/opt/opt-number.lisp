@@ -134,3 +134,9 @@
     (if size
         `(%deposit-field ,newbyte ,size ,position ,integer)
         whole)))
+
+(define-compiler-macro ext:rotate-byte (&whole whole count bytespec integer)
+  (multiple-value-bind (size position) (parse-bytespec bytespec)
+    (if size
+        `(%rotate-byte ,count ,size ,position ,integer)
+        whole)))
