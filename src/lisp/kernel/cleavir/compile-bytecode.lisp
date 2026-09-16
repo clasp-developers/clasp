@@ -173,7 +173,7 @@
              ;; This is an important case for e.g. DEFUN'd functions,
              ;; which in bytecode are closed over by the function
              ;; that does (setf fdefinition).
-             (> (length (bcfun/nvars bcfun)) 0))
+             (> (bcfun/nvars bcfun) 0))
     (mark-entry-point (bir:function (bir:enclose irfun)) funmap)))
 
 ;;; Given a bytecode function, return a compiled native function.
@@ -1729,6 +1729,11 @@
 (defgeneric compute-compiled-literal (info module))
 (defmethod compute-compiled-literal ((info cmp:constant-info) module)
   (cons info (bir:constant-in-module (cmp:constant-info/value info) module)))
+(defmethod compute-compiled-literal ((info cmp:named-constant-info) module)
+  (assert (null *environment*)) ; FIXME
+  (cons info (bir:constant-in-module
+              (symbol-value (cmp:named-constant-info/name info))
+              module)))
 (defmethod compute-compiled-literal ((info cmp:cfunction) module)
   (declare (ignore module))
   (cons info :cfunction))

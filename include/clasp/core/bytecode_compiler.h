@@ -551,6 +551,7 @@ public:
 
 public:
   size_t literal_index(T_sp literal) const;
+  size_t named_constant_index(Symbol_sp name) const;
   size_t new_literal_index(T_sp literal) const;
   size_t ltv_index(T_sp form, bool read_only_p) const;
   size_t cfunction_index(Cfunction_sp fun) const;
@@ -934,6 +935,30 @@ public:
   CL_LISPIFY_NAME(ConstantInfo/value)
   CL_DEFMETHOD T_sp value() { return this->_value; }
 };
+
+// Literals marker for a constant variable lookup (as by symbol-value).
+// This is used so that constant variables can be referred to without being
+// serializable. Also avoids redundancy across FASLs.
+FORWARD(NamedConstantInfo)
+class NamedConstantInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, NamedConstantInfo_O, "NamedConstantInfo", General_O);
+
+public:
+  NamedConstantInfo_O(Symbol_sp name) : _name(name) {}
+
+public:
+  // the name of the constant variable.
+  Symbol_sp _name;
+public:
+  CL_LISPIFY_NAME(NamedConstantInfo/make)
+  CL_DEF_CLASS_METHOD
+  static NamedConstantInfo_sp make(Symbol_sp name) { return gctools::GC<NamedConstantInfo_O>::allocate<gctools::RuntimeStage>(name); }
+
+public:
+  CL_LISPIFY_NAME(NamedConstantInfo/name)
+  CL_DEFMETHOD Symbol_sp name() { return this->_name; }
+};
+
 
 // Compiler literals marker representing the load-time lookup of a
 // function cell. (Clasp doesn't currently have function cells, so the

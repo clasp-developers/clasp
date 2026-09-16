@@ -1435,6 +1435,11 @@
 (defmethod ensure-module-literal ((info cmp:constant-info))
   (ensure-constant (cmp:constant-info/value info)))
 
+(defmethod ensure-module-literal ((info cmp:named-constant-info))
+  (let ((name (cmp:named-constant-info/name info)))
+    (or (find-oob name)
+        (add-oob name (make-instance 'vdefinition :name (ensure-constant name))))))
+
 (defun ensure-function (cfunction)
   (or (find-oob cfunction) (add-function cfunction)))
 
