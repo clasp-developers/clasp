@@ -524,23 +524,6 @@ void cc_safepoint() {
 }
 };
 
-extern "C" {
-void saveToMultipleValue0(core::T_mv* mvP) {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  mv.saveToMultipleValue0(*mvP);
-  NO_UNWIND_END();
-}
-
-gctools::return_type restoreFromMultipleValue0() {
-  NO_UNWIND_BEGIN();
-  core::MultipleValues& mv = core::lisp_multipleValues();
-  gctools::return_type result(mv.operator[](0), mv.getSize());
-  return result;
-  NO_UNWIND_END();
-}
-};
-
 // -----------------------------------------------------------
 // -----------------------------------------------------------
 // -----------------------------------------------------------
