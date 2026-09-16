@@ -668,6 +668,18 @@ size_t Context::literal_index(T_sp literal) const {
   return nind.unsafe_fixnum();
 }
 
+size_t Context::named_constant_index(Symbol_sp name) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = literals[i];
+    if (slit.isA<NamedConstantInfo_O>()
+        && slit.as_unsafe<NamedConstantInfo_O>()->name() == name)
+      return i;
+  }
+  auto nind = literals->vectorPushExtend(NamedConstantInfo_O::make(name));
+  return nind.unsafe_fixnum();
+}
+
 // Like literal-index, but forces insertion. This is used when generating
 // a keyword argument parser, since the keywords must be sequential even if
 // they've previously appeared in the literals vector.
@@ -1421,7 +1433,18 @@ void Module_O::link_load(T_sp env) {
         mutableLTVs << Integer_O::create(i);
     } else if (gc::IsA<ConstantInfo_sp>(lit))
       literals[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
-    else if (gc::IsA<FunctionCellInfo_sp>(lit)) {
+    else if (gc::IsA<NamedConstantInfo_sp>(lit)) {
+      NamedConstantInfo_sp ncinfo = lit.as_unsafe<NamedConstantInfo_O>();
+      Symbol_sp name = ncinfo->name().as_assert<Symbol_O>();
+      VariableCell_sp cell;
+      if (env.nilp())
+        cell = name->ensureVariableCell();
+      else {
+        T_sp tcell = eval::funcall(core::_sym_fcge_ensure_vcell, env, name);
+        cell = tcell.as<VariableCell_O>();
+      }
+      literals[i] = cell->value();
+    } else if (gc::IsA<FunctionCellInfo_sp>(lit)) {
       if (env.nilp())
         literals[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
       else
@@ -1488,6 +1511,29 @@ void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
   default:
     // FIXME: Just need to pad in some NILs.
     SIMPLE_ERROR("BUG: Don't know how to compile literal returning %" PFixnum " values", context.receiving());
+  }
+}
+
+void compile_named_constant(Symbol_sp name, Lexenv_sp env, const Context context) {
+  (void)env;
+  if (context.receiving() == 0)
+    return; // No value required, so do nothing
+  // Otherwise we need at least one value
+  // FIXME: hardcodes that nil is bound to nil, which it might not be in some
+  // bizarre FCGE
+  if (name.nilp())
+    context.assemble0(vm_code::nil);
+  else
+    context.assemble1(vm_code::_const, context.named_constant_index(name));
+  // now handle values
+  switch (context.receiving()) {
+  case 1: break; // already on the stack, we're good
+  case -1: // values
+    context.assemble0(vm_code::pop);
+    break;
+  default:
+    // FIXME: Just need to pad in some NILs.
+    SIMPLE_ERROR("BUG: Don't know how to compile named constant returning %" PFixnum " values", context.receiving());
   }
 }
 
@@ -1569,7 +1615,7 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
       context.assemble1(vm_code::symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
-      compile_literal(std::get<ConstantVarInfoV>(info).value(), env, context);
+      compile_named_constant(sym, env, context);
       // Avoid the pop code below - compile-literal handles it.
       return;
     } else if (std::holds_alternative<NoVarInfoV>(info)) {
