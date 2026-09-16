@@ -1344,6 +1344,8 @@ But no irbuilders or basic-blocks. Return the fn."
         (varargs (getf (primitive-properties primitive-info) :varargs))
         (does-not-throw (getf (primitive-properties primitive-info) :does-not-throw))
         (does-not-return (getf (primitive-properties primitive-info) :does-not-return))
+        #-llvm15
+        (memory (getf (primitive-properties primitive-info) :memory))
         (returns-twice (getf (primitive-properties primitive-info) :returns-twice))
         (will-return (getf (primitive-properties primitive-info) :will-return))
         (speculatable (getf (primitive-properties primitive-info) :speculatable))
@@ -1359,6 +1361,10 @@ But no irbuilders or basic-blocks. Return the fn."
                                              dispatch-name
                                              module
                                              :function-attributes function-attributes)))
+      ;; TODO: more complex memory behavior
+      #-llvm15
+      (when (eq memory :none) ; memory(none)
+        (llvm-sys:add-memory-attribute function 'llvm-sys:mod-ref-none))
       #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)

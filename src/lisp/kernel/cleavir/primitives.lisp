@@ -12,7 +12,7 @@
   (let ((props (primitive-properties prim)))
     (getf props :varargs)))
 
-(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return returns-twice speculatable will-return ltvc)
+(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return memory returns-twice speculatable will-return ltvc)
   (declare (ignore name))
   (let (reversed-argument-types
         return-attributes
@@ -39,6 +39,7 @@
        :properties (list :varargs varargs
                          :does-not-throw does-not-throw
                          :does-not-return does-not-return
+                         :memory memory
                          :returns-twice returns-twice
                          :speculatable speculatable
                          :will-return will-return
@@ -46,8 +47,8 @@
 
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
-(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return returns-twice speculatable will-return ltvc)
-  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return returns-twice speculatable will-return ltvc)))
+(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return memory returns-twice speculatable will-return ltvc)
+  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return memory returns-twice speculatable will-return ltvc)))
     (setf (gethash name *primitives*) info)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,13 +60,13 @@
 ;;;     and nothing that it calls throws an exception
 ;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
 ;;;
-(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return returns-twice speculatable will-return ltvc )
+(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return memory returns-twice speculatable will-return ltvc )
   "Define primitives that can unwind the stack, either directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :returns-twice returns-twice :speculatable speculatable :will-return will-return :ltvc ltvc))
+  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :memory memory :returns-twice returns-twice :speculatable speculatable :will-return will-return :ltvc ltvc))
 
-(defun primitive         (name return-ty args-ty &key varargs does-not-return returns-twice speculatable will-return ltvc)
+(defun primitive         (name return-ty args-ty &key varargs does-not-return memory returns-twice speculatable will-return ltvc)
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :returns-twice returns-twice :speculatable speculatable :will-return will-return :ltvc ltvc))
+  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :memory memory :returns-twice returns-twice :speculatable speculatable :will-return will-return :ltvc ltvc))
 
 (defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
@@ -251,7 +252,12 @@
          ;; In particular, we want it to keep the result in a register
          ;; if there are enough, while being willing to "spill" by
          ;; calling the function again.
-         (primitive         "cc_my_thread" :thread-local-state* (list) :speculatable t :will-return t)
+         ;; memory(none) is sort of untrue - we access thread-local memory.
+         ;; But nothing in it should change after initialization so there should
+         ;; be no problem reordering calls around memory accesses.
+         ;; It might be a problem if it was used in a coroutine that was resumed
+         ;; from another thread, but we don't use coroutines.
+         (primitive         "cc_my_thread" :thread-local-state* (list) :speculatable t :will-return t :memory :none)
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)

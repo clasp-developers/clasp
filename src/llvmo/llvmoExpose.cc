@@ -1258,6 +1258,32 @@ Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_sy
 }
 #endif
 
+#if LLVM_VERSION_MAJOR > 15
+SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefNone);
+SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefRead);
+SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefWrite);
+SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefReadWrite);
+SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefEnum);
+CL_BEGIN_ENUM(llvm::ModRefInfo, _sym_ModRefEnum, "ModRef");
+CL_VALUE_ENUM(_sym_ModRefNone, llvm::ModRefInfo::NoModRef);
+CL_VALUE_ENUM(_sym_ModRefRead, llvm::ModRefInfo::Ref);
+CL_VALUE_ENUM(_sym_ModRefWrite, llvm::ModRefInfo::Mod);
+CL_VALUE_ENUM(_sym_ModRefReadWrite, llvm::ModRefInfo::ModRef);
+CL_END_ENUM(_sym_ModRefEnum);
+SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationArgMem);
+SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationInaccessibleMem);
+SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationErrnoMem);
+SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationOther);
+// also TargetMem0 etc, but we don't use those and they may have been added later?
+SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationEnum);
+CL_BEGIN_ENUM(llvm::IRMemLocation, _sym_MemLocationEnum, "IRMemLocation");
+CL_VALUE_ENUM(_sym_MemLocationArgMem, llvm::IRMemLocation::ArgMem);
+CL_VALUE_ENUM(_sym_MemLocationInaccessibleMem, llvm::IRMemLocation::InaccessibleMem);
+CL_VALUE_ENUM(_sym_MemLocationErrnoMem, llvm::IRMemLocation::ErrnoMem);
+CL_VALUE_ENUM(_sym_MemLocationOther, llvm::IRMemLocation::Other);
+CL_END_ENUM(_sym_MemLocationEnum);
+#endif // LLVM_VERSION_MAJOR > 15
+
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeZExt);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeSExt);
@@ -1338,6 +1364,35 @@ CL_BEGIN_ENUM(llvmo::ClaspCallingConv, _sym_CallingConv, "CallingConv");
 CL_VALUE_ENUM(_sym_C, llvmo::ClaspCallingConv::C);
 CL_VALUE_ENUM(_sym_fastcc, llvmo::ClaspCallingConv::Fast);
 CL_END_ENUM(_sym_CallingConv)
+
+#if LLVM_VERSION_MAJOR > 15
+// Make a memory attribute and apply it to a function declaration.
+// The first argument is the function.
+// The second is the ModRef enum symbol for any location.
+// Subsequent arguments are in pairs. The first is a location,
+// i.e. an IRMemLocation enum symbol, and the second is the ModRef enum symbol.
+CL_LAMBDA(function global-effects core:&va-rest locations-effects);
+DOCGROUP(clasp);
+CL_DEFUN void llvm_sys__add_memory_attribute(llvm::Function* func,
+                                             core::Symbol_sp global_effects,
+                                             core::Vaslist_sp more) {
+  if (more->nargs() % 2 != 0)
+    SIMPLE_ERROR("Odd number of arguments to llvm-sys:add-memory-attribute");
+  core::SymbolToEnumConverter_sp modref_converter = _sym_ModRefEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+  llvm::MemoryEffects me{modref_converter->enumForSymbol<llvm::ModRefInfo>(global_effects)};
+  core::SymbolToEnumConverter_sp loc_converter = _sym_MemLocationEnum->symbolValue().as<core::SymbolToEnumConverter_O>();
+  for (size_t i = 0; i < more->nargs(); i += 2) {
+    core::Symbol_sp loc = more->next_arg().as<core::Symbol_O>();
+    core::Symbol_sp modref = more->next_arg().as<core::Symbol_O>();
+    llvm::MemoryEffects nme{loc_converter->enumForSymbol<llvm::IRMemLocation>(loc),
+        modref_converter->enumForSymbol<llvm::ModRefInfo>(modref)};
+    me |= nme; // add on the new effects
+  }
+  // Done producing the effects, so apply it
+  llvm::Attribute memattr = llvm::Attribute::getWithMemoryEffects(func->getContext(), me);
+  func->addFnAttr(memattr);
+}
+#endif // LLVM_VERSION_MAJOR > 15
 
 CL_LAMBDA(module value &optional label);
 DOCGROUP(clasp);
