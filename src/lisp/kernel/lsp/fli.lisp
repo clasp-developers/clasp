@@ -343,7 +343,7 @@
                             (%offset-address-as-integer ptr offset)))
                         unless (eq type :void)
                           collect
-                        `(defmethod %mem-set (ptr (type (eql ',type)) value &optional offset)
+                        `(defmethod %mem-set (ptr (type (eql ',type)) value &optional (offset 0))
                            (,(intern (concatenate 'string "%MEM-SET-" (string type))
                                      "CLASP-FFI")
                             (%offset-address-as-integer ptr offset) value))))))

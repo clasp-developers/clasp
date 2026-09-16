@@ -34,3 +34,12 @@
                      collect (clasp-ffi:%mem-ref array :int (* i intsize))))
           (clasp-ffi:%foreign-free array)))
       ((1 2 3 4 5 6 7 8 9 10)))
+
+;;; %mem-set must default OFFSET to 0, the way %mem-ref already does.
+(test mem-set-default-offset
+      (let ((p (clasp-ffi:%foreign-alloc (clasp-ffi:%foreign-type-size :int))))
+        (unwind-protect
+             (progn (clasp-ffi:%mem-set p :int 42)
+                    (clasp-ffi:%mem-ref p :int))
+          (clasp-ffi:%foreign-free p)))
+      (42))
