@@ -645,15 +645,6 @@ void cc_initialize_closure(core::T_O* functoid, std::size_t numCells, ...) {
   va_end(argp);
 }
 
-LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O* tfunc, gctools::return_type ret0) {
-  ASSERTF(gctools::tagged_generalp(tfunc), "The argument {} does not have a general tag!", (void*)tfunc);
-  MAKE_STACK_FRAME(callargs, ret0.nvals);
-  size_t idx(0);
-  gctools::fill_frame_multiple_value_return(callargs, idx, ret0);
-  core::Function_sp func((gctools::Tagged)tfunc);
-  return func->apply_raw(ret0.nvals, callargs->arguments(0));
-}
-
 T_O* cc_mvcGatherRest(T_O** values, size_t nvalues) {
   if (nvalues == 0)
     return nil<T_O>().raw_();

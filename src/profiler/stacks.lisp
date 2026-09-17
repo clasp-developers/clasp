@@ -107,7 +107,6 @@ exec sbcl --noinform --dynamic-space-size 2048 --disable-ldb --lose-on-corruptio
                          (search "FuncallableInstance_O::entry_point" line)
                          (search "standard_dispatch" line)
                          (search "funcall_frame" line)
-                         (search "cc_call_multipleValueOneFormCall" line)
                          (search "core::core__funwind_protect" line)
                          (search "core::core__multiple_value_prog1_function" line)
                          (search "INVALIDATED-DISPATCH-FUNCTION^CLOS" line)

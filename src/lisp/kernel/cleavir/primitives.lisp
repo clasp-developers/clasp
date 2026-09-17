@@ -222,7 +222,6 @@
          (primitive         "cc_specialBind" :t* (list :i32 :t*))
          (primitive         "cc_specialUnbind" :void (list :i32 :t*))
 
-         (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" :return-type (list :t* :return-type))
          (primitive-unwinds "cc_oddKeywordException" :void (list :t*))
          ;; Marking setjmp as returns_twice is EXTREMELY IMPORTANT.
          ;; Without this attribute, LLVM will apply invalid optimizations.
