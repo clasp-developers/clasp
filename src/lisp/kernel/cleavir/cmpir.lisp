@@ -1288,31 +1288,45 @@ But no irbuilders or basic-blocks. Return the fn."
   #+(or)
   (irc-intrinsic "llvm.threadlocal.address.p0" (get-or-declare-my-thread module)))
 
-(macrolet ((def-thread-access (indices type getter &optional setter)
+(macrolet ((def-thread-access (field more-indices type getter &optional setter)
              `(progn
                 (defun ,getter (&optional (thread* (my-thread-address)))
                   (irc-typed-load
                    ,type
-                   (irc-typed-gep %thread-local-state% thread* '(0 ,@indices) ,(string-downcase getter))))
+                   (irc-typed-gep %thread-local-state% thread*
+                                  (list 0 (c++-field-index ',field info.%thread-local-state%)
+                                        ,@more-indices)
+                                  ,(string-downcase getter))))
                 ,@(when setter
                     `((defun ,setter (new &optional (thread* (my-thread-address)))
                         (irc-store
                          new
-                         (irc-typed-gep %thread-local-state% thread* '(0 ,@indices) ,(string-downcase getter)))))))))
-  (def-thread-access (0) %t*% thread-process)
-  (def-thread-access (1) %t*% thread-dynenv-stack set-thread-dynenv-stack)
-  (def-thread-access (2) %t*% thread-unwind-dest set-thread-unwind-dest)
-  (def-thread-access (3) %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
-  (def-thread-access (5) %i8% thread-breakstep set-thread-breakstep)
-  (def-thread-access (7 0) %size_t% thread-nvalues set-thread-nvalues))
+                         (irc-typed-gep %thread-local-state% thread*
+                                        (list 0 (c++-field-index ',field info.%thread-local-state%)
+                                              ,@more-indices)
+                                        ,(string-downcase getter)))))))))
+  (def-thread-access :process () %t*% thread-process)
+  (def-thread-access :dyn-env-stack-bottom ()
+    %t*% thread-dynenv-stack set-thread-dynenv-stack)
+  (def-thread-access :unwind-dest () %t*% thread-unwind-dest set-thread-unwind-dest)
+  (def-thread-access :unwind-dest-index ()
+    %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
+  (def-thread-access :breakstep () %i8% thread-breakstep set-thread-breakstep)
+  (def-thread-access :multiple-values (0) %size_t% thread-nvalues set-thread-nvalues))
 
 (defun thread-return-values (&optional (thread* (my-thread-address)))
   ;; get a pointer into the values, so we don't need to load,
   ;; unlike the above.
-  (irc-typed-gep %thread-local-state% thread* '(0 7 1) "return-values"))
+  (irc-typed-gep %thread-local-state% thread*
+                 (list 0 (c++-field-index :multiple-values info.%thread-local-state%)
+                       1)
+                 "return-values"))
 
 (defun thread-return-value* (index &optional (thread* (my-thread-address)))
-  (irc-typed-gep %thread-local-state% thread* (list 0 7 1 index) "return-value*"))
+  (irc-typed-gep %thread-local-state% thread*
+                 (list 0 (c++-field-index :multiple-values info.%thread-local-state%)
+                       1 index)
+                 "return-value*"))
 
 (defun thread-return-value (index &optional (thread* (my-thread-address)))
   (irc-typed-load %t*% (thread-return-value* index thread*)))
