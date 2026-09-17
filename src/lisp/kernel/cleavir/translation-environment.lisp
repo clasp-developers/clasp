@@ -174,8 +174,10 @@
              (let* ((alloca (or (gethash variable *datum-values*)
                                 (error "BUG: Variable missing: ~a" variable)))
                     (rtype (first (cc-bmir:rtype variable)))
-                    (alloca-type (vrtype->llvm rtype)))
-               (cmp:irc-typed-load alloca-type alloca)))
+                    (alloca-type (vrtype->llvm rtype))
+                    (volatile (needs-volatile-loads-p
+                               (bir:function (bir:binder variable)))))
+               (cmp:irc-typed-load alloca-type alloca "" volatile)))
             (:dynamic
              (let ((alloca (or (gethash variable *datum-values*)
                                (error "BUG: DX cell missing: ~a" variable)))
