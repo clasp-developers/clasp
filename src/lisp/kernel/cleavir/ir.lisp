@@ -214,6 +214,18 @@ And convert everything to JIT constants."
       (cmp:irc-begin-block merge)
       (cmp:irc-make-tmv nret phi))))
 
+(defun save-all-values (nret storage)
+  (%intrinsic-call "llvm.memcpy.p0.p0.i64"
+                   (list storage (cmp::thread-return-values)
+                         (cmp::irc-shl nret 3 :nuw t)
+                         (%i1 0))))
+
+(defun load-all-values (nret storage)
+  (%intrinsic-call "llvm.memcpy.p0.p0.i64"
+                   (list (cmp::thread-return-values) storage
+                         (cmp::irc-shl nret 3 :nuw t)
+                         (%i1 0))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; APPLY-CC-CALLING-CONVENTION

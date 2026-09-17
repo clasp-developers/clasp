@@ -193,9 +193,6 @@
 
          (primitive         "llvm.memcpy.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
          (primitive         "llvm.memmove.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
-
-         (primitive         "cc_save_all_values" :void (list :size_t :t**))
-         (primitive         "cc_load_all_values" :void (list :size_t :t**))
     
          ;; Primitives for Cleavir code
 

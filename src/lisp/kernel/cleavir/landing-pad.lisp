@@ -137,9 +137,9 @@
              ;; global (thread-local) values with impunity while unwinding.
              ;; Probably challenging to arrange in C++, though.
              (mv-temp (cmp:alloca-temp-values nvals)))
-        (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
+        (save-all-values nvals mv-temp)
         (gen-call-cleanup u-p-instruction)
-        (%intrinsic-call "cc_load_all_values" (list nvals mv-temp)))
+        (load-all-values nvals mv-temp))
       (cmp:irc-br next)
       bb)))
 

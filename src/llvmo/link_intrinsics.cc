@@ -672,20 +672,6 @@ void cc_oddKeywordException(core::T_O* tclosure) {
   throwOddKeywordsError(closure);
 }
 
-// cc_{save,load}_all_values are for unwind protect cleanup.
-// See analogous C++ code in evaluator.cc: sp_unwindProtect.
-void cc_save_all_values(size_t nvals, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  lisp_multipleValues().saveToTemp(nvals, vector);
-  NO_UNWIND_END();
-}
-
-void cc_load_all_values(size_t nvals, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  lisp_multipleValues().loadFromTemp(nvals, vector);
-  NO_UNWIND_END();
-}
-
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, void* thisFrame) {
   core::Unwind* unwindP = reinterpret_cast<core::Unwind*>(exceptionP);
   if (unwindP->getFrame() == thisFrame) {

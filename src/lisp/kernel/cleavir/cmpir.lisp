@@ -1309,7 +1309,7 @@ But no irbuilders or basic-blocks. Return the fn."
 (defun thread-return-values (&optional (thread* (my-thread-address)))
   ;; get a pointer into the values, so we don't need to load,
   ;; unlike the above.
-  (irc-typed-gep %thread-local-state% thread* '(0 7 1)))
+  (irc-typed-gep %thread-local-state% thread* '(0 7 1) "return-values"))
 
 (defun thread-return-value* (index &optional (thread* (my-thread-address)))
   (irc-typed-gep %thread-local-state% thread* (list 0 7 1 index) "return-value*"))
