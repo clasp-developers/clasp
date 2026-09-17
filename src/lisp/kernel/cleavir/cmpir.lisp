@@ -1356,6 +1356,31 @@ But no irbuilders or basic-blocks. Return the fn."
             (break "Error when trying to verify-function")
             (error "Failed function verify"))))))
 
+#-llvm15
+(defun add-memory-attribute (function spec)
+  (flet ((modref (kw)
+           (ecase kw
+             ((:none) 'llvm-sys:mod-ref-none)
+             ((:read) 'llvm-sys:mod-ref-read)
+             ((:write) 'llvm-sys:mod-ref-write)
+             ((:readwrite) 'llvm-sys:mod-ref-read-write)))
+         (loc (kw)
+           (ecase kw
+             ((:arg) 'llvm-sys:mem-location-arg-mem)
+             ((:inaccessible) 'llvm-sys:mem-location-inaccessible-mem)
+             ((:other) 'llvm-sys:mem-location-other))))
+    (etypecase spec
+      (keyword (llvm-sys:add-memory-attribute function (modref spec)))
+      (cons
+       ;; otherwise it's a complex spec.
+       ;; This is (modref (location modref)*), where the first modref is for all
+       ;; locations, and the subsequent modrefs are for that particular loaction.
+       ;; locations can be :arg, :inaccessible, :other. (errno later i guess)
+       (let ((most (modref (first spec)))
+             (rest (loop for (loc mr) in (rest spec)
+                         collect (loc loc) collect (modref mr))))
+         (apply #'llvm-sys:add-memory-attribute function most rest))))))
+
 (defun declare-function-in-module (module dispatch-name primitive-info)
   (let ((return-ty (primitive-return-type primitive-info))
         (argument-types (primitive-argument-types primitive-info))
@@ -1381,10 +1406,8 @@ But no irbuilders or basic-blocks. Return the fn."
                                              dispatch-name
                                              module
                                              :function-attributes function-attributes)))
-      ;; TODO: more complex memory behavior
       #-llvm15
-      (when (eq memory :none) ; memory(none)
-        (llvm-sys:add-memory-attribute function 'llvm-sys:mod-ref-none))
+      (when memory (add-memory-attribute function memory))
       #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
