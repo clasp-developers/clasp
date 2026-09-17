@@ -672,21 +672,6 @@ void cc_oddKeywordException(core::T_O* tclosure) {
   throwOddKeywordsError(closure);
 }
 
-void cc_saveMultipleValue0(core::T_mv result) {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  mv.saveToMultipleValue0(result);
-  NO_UNWIND_END();
-}
-
-gctools::return_type cc_restoreMultipleValue0() {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  size_t nret = mv.getSize();
-  return gctools::return_type((nret == 0) ? nil<T_O>().raw_() : mv[0], nret);
-  NO_UNWIND_END();
-}
-
 // cc_{save,load}_values are intended for code that does something,
 // then some other things, then returns values from the first thing.
 // e.g. multiple-value-prog1, unwind-protect without nonlocal exit

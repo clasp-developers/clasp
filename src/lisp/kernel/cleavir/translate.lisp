@@ -470,17 +470,21 @@ function-or-placeholder - the llvm function or a placeholder for
 
 ;; also used for catch!
 (defun phi-out-for-come-from (phi block)
+  (declare (ignore block)) ; block is seriously unneeded, FIXME
   (let ((rt (cc-bmir:rtype phi)))
     (cond ((null rt))
           ((equal rt '(:object))
-           (phi-out (cmp:irc-tmv-primary (restore-multiple-value-0)) phi block))
-          ((eq rt :multiple-values) (phi-out (restore-multiple-value-0) phi block))
+           (phi-out (cmp:irc-tmv-primary (restore-multiple-value-0))
+                    ;; block may have been changed by restore-m-v-0
+                    phi (cmp:irc-get-insert-block)))
+          ((eq rt :multiple-values) (phi-out (restore-multiple-value-0)
+                                             phi (cmp:irc-get-insert-block)))
           ((every (lambda (x) (eq x :object)) rt)
            (phi-out
             (list* (cmp:irc-tmv-primary (restore-multiple-value-0))
                    (loop for i from 1 below (length rt)
                          collect (cmp:irc-t*-load (return-value-elt i))))
-            phi block))
+            phi (cmp:irc-get-insert-block)))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
 

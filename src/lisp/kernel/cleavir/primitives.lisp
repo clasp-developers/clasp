@@ -265,8 +265,6 @@
          (primitive-unwinds "cc_progvSetValues" :t* (list :t* :t*))
          (primitive         "cc_progvUnbind" :void (list :t* :t*))
          (primitive-unwinds "cc_safepoint" :void (list))
-         (primitive         "cc_saveMultipleValue0" :void (list :tmv))
-         (primitive         "cc_restoreMultipleValue0" :return-type nil)
          (primitive         "llvm.frameaddress.p0" :i8* (list :i32))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" :size_t (list :i8* :i8*))
 

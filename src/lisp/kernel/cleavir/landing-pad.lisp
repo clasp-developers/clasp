@@ -328,7 +328,8 @@
                              (error "BUG: Duplicated ID in landing-pad.lisp"))))
                   and do (when tv
                            (phi-out
-                            tv (first (cleavir-bir:inputs dest)) bb))
+                            tv (first (cleavir-bir:inputs dest))
+                            (cmp:irc-get-insert-block)))
                   and collect (cons jump-id tag-block) into used-ids)
           bb))))
 

@@ -147,12 +147,27 @@ And convert everything to JIT constants."
   (let ((multiple-value-pointer (multiple-value-array-address)))
     (%gep cmp:%t*[0]% multiple-value-pointer (list 0 idx))))
 
-;;; These functions are like cc_{save,restore}MultipleValue0
-;; FIXME: we don't really need intrinsics for these - they're easy
+;;; Save a T_mv to multiple values, or restore one.
 (defun save-multiple-value-0 (tmv)
-  (%intrinsic-call "cc_saveMultipleValue0" (list tmv)))
+  (cmp::set-thread-return-value (cmp:irc-tmv-primary tmv) 0)
+  (cmp::set-thread-nvalues (cmp:irc-tmv-nret tmv)))
 (defun restore-multiple-value-0 ()
-  (%intrinsic-call "cc_restoreMultipleValue0" nil))
+  (let* ((nret (cmp::thread-nvalues))
+         (zero (cmp:irc-basic-block-create "zero-values"))
+         (some (cmp:irc-basic-block-create "some-values"))
+         (merge (cmp:irc-basic-block-create "restore-multiple-value-0"))
+         (cmp (cmp:irc-icmp-eq (%size_t 0) nret)))
+    (cmp:irc-cond-br cmp zero some)
+    (cmp:irc-begin-block merge)
+    (let ((phi (cmp:irc-phi cmp:%t*% 2 "primary-value")))
+      (cmp:irc-begin-block zero)
+      (cmp:irc-phi-add-incoming phi (%nil) zero)
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block some)
+      (cmp:irc-phi-add-incoming phi (cmp::thread-return-value 0) some)
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block merge)
+      (cmp:irc-make-tmv nret phi))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

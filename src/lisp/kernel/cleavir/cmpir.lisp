@@ -1304,12 +1304,20 @@ But no irbuilders or basic-blocks. Return the fn."
   (def-thread-access (2) %t*% thread-unwind-dest set-thread-unwind-dest)
   (def-thread-access (3) %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
   (def-thread-access (5) %i8% thread-breakstep set-thread-breakstep)
-  (def-thread-access (7 0) %size_t% thread-nvalues))
+  (def-thread-access (7 0) %size_t% thread-nvalues set-thread-nvalues))
 
 (defun thread-return-values (&optional (thread* (my-thread-address)))
   ;; get a pointer into the values, so we don't need to load,
   ;; unlike the above.
   (irc-typed-gep %thread-local-state% thread* '(0 7 1)))
+
+(defun thread-return-value* (index &optional (thread* (my-thread-address)))
+  (irc-typed-gep %thread-local-state% thread* (list 0 7 1 index) "return-value*"))
+
+(defun thread-return-value (index &optional (thread* (my-thread-address)))
+  (irc-typed-load %t*% (thread-return-value* index thread*)))
+(defun set-thread-return-value (new index &optional (thread* (my-thread-address)))
+  (irc-store new (thread-return-value* index thread*)))
 
 ;; Helper functions
 
