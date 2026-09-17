@@ -1272,14 +1272,18 @@ CL_VALUE_ENUM(_sym_ModRefReadWrite, llvm::ModRefInfo::ModRef);
 CL_END_ENUM(_sym_ModRefEnum);
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationArgMem);
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationInaccessibleMem);
+#if LLVM_VERSION_MAJOR > 20
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationErrnoMem);
+#endif
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationOther);
 // also TargetMem0 etc, but we don't use those and they may have been added later?
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationEnum);
 CL_BEGIN_ENUM(llvm::IRMemLocation, _sym_MemLocationEnum, "IRMemLocation");
 CL_VALUE_ENUM(_sym_MemLocationArgMem, llvm::IRMemLocation::ArgMem);
 CL_VALUE_ENUM(_sym_MemLocationInaccessibleMem, llvm::IRMemLocation::InaccessibleMem);
+#if LLVM_VERSION_MAJOR > 20
 CL_VALUE_ENUM(_sym_MemLocationErrnoMem, llvm::IRMemLocation::ErrnoMem);
+#endif
 CL_VALUE_ENUM(_sym_MemLocationOther, llvm::IRMemLocation::Other);
 CL_END_ENUM(_sym_MemLocationEnum);
 #endif // LLVM_VERSION_MAJOR > 15
