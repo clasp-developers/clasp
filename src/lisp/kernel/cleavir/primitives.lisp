@@ -12,7 +12,7 @@
   (let ((props (primitive-properties prim)))
     (getf props :varargs)))
 
-(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return returns-twice ltvc)
+(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return memory returns-twice speculatable will-return ltvc)
   (declare (ignore name))
   (let (reversed-argument-types
         return-attributes
@@ -39,13 +39,16 @@
        :properties (list :varargs varargs
                          :does-not-throw does-not-throw
                          :does-not-return does-not-return
+                         :memory memory
                          :returns-twice returns-twice
+                         :speculatable speculatable
+                         :will-return will-return
                          :ltvc ltvc)))))
 
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
-(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return returns-twice ltvc)
-  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return returns-twice ltvc)))
+(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return memory returns-twice speculatable will-return ltvc)
+  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return memory returns-twice speculatable will-return ltvc)))
     (setf (gethash name *primitives*) info)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,13 +60,13 @@
 ;;;     and nothing that it calls throws an exception
 ;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
 ;;;
-(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return returns-twice ltvc )
+(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return memory returns-twice speculatable will-return ltvc )
   "Define primitives that can unwind the stack, either directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :returns-twice returns-twice :ltvc ltvc))
+  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :memory memory :returns-twice returns-twice :speculatable speculatable :will-return will-return :ltvc ltvc))
 
-(defun primitive         (name return-ty args-ty &key varargs does-not-return returns-twice ltvc)
+(defun primitive         (name return-ty args-ty &key varargs does-not-return memory returns-twice speculatable will-return ltvc)
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :returns-twice returns-twice :ltvc ltvc))
+  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :memory memory :returns-twice returns-twice :speculatable speculatable :will-return will-return :ltvc ltvc))
 
 (defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
@@ -95,15 +98,12 @@
          (primitive         "debug_match_two_uintptr_t" :uintptr_t (list :uintptr_t :uintptr_t))
          (primitive         "lowLevelTrace" :void (list :i32))
          (primitive         "unreachableError" :void nil)
-         (primitive         "cc_set_breakstep" :void nil)
-         (primitive         "cc_unset_breakstep" :void nil)
          (primitive-unwinds "cc_breakstep" :void (list :t* :i8*))
          (primitive         "cc_breakstep_after" :void (list :t*))
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
           :does-not-return t)
          (primitive         "cc_list" :t* (list :size_t) :varargs t)
-         (primitive         "cc_mvcGatherRest" :t* (list :size_t :t* :size_t))
-         (primitive         "cc_mvcGatherRest2" :t* (list :t** :size_t))
+         (primitive         "cc_mvcGatherRest" :t* (list :t** :size_t))
          (primitive         "cc_gatherRestArguments" :t* (list :vaslist* :size_t))
          (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
@@ -183,6 +183,8 @@
          (primitive         "llvm.dbg.declare" :void (list :metadata :metadata :metadata))
          (primitive         "llvm.dbg.value" :void (list :metadata :metadata :metadata))
 
+         (primitive         "llvm.threadlocal.address.p0" :i8* (list :i8*))
+
          (primitive         "llvm.lifetime.start" :void (list :i64 :i8*))
          (primitive         "llvm.lifetime.end" :void (list :i64 :i8*))
 
@@ -191,14 +193,6 @@
 
          (primitive         "llvm.memcpy.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
          (primitive         "llvm.memmove.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
-
-         (primitive         "saveToMultipleValue0" :void (list :tmv*))
-         (primitive         "restoreFromMultipleValue0" :return-type nil)
-         (primitive         "cc_save_values" :void (list :size_t :t* :t**))
-         (primitive         "cc_load_values" :return-type (list :size_t :t**))
-         (primitive         "cc_nvalues" :size_t nil)
-         (primitive         "cc_save_all_values" :void (list :size_t :t**))
-         (primitive         "cc_load_all_values" :void (list :size_t :t**))
     
          ;; Primitives for Cleavir code
 
@@ -230,7 +224,6 @@
 
          (primitive-unwinds "cc_call_multipleValueOneFormCallWithRet0" :return-type (list :t* :return-type))
          (primitive-unwinds "cc_oddKeywordException" :void (list :t*))
-         (primitive         "cc_multipleValuesArrayAddress" :t*[0]* nil)
          ;; Marking setjmp as returns_twice is EXTREMELY IMPORTANT.
          ;; Without this attribute, LLVM will apply invalid optimizations.
          ;; For example, it will reuse stack space allocated before a setjmp
@@ -248,13 +241,18 @@
          (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :i8* :t* :t*))
          (primitive         "cc_initializeAndPushProgvDynenv" :t* (list :i8* :i8* :t* :t*))
          (primitive         "cc_initializeAndPushCatchDynenv" :t* (list :i8* :i8* :jmp-buf-tag* :t*))
-         (primitive         "cc_get_dynenv_stack" :t* (list))
-         (primitive         "cc_set_dynenv_stack" :void (list :t*))
          (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
-         (primitive         "cc_get_unwind_dest" :t* (list))
-         (primitive         "cc_set_unwind_dest" :void (list :t*))
-         (primitive         "cc_get_unwind_dest_index" :size_t (list))
-         (primitive         "cc_set_unwind_dest_index" :void (list :size_t))
+         ;; This function is called in compiled code VERY frequently
+         ;; so we want LLVM to optimize as much as possible.
+         ;; In particular, we want it to keep the result in a register
+         ;; if there are enough, while being willing to "spill" by
+         ;; calling the function again.
+         ;; memory(none) is sort of untrue - we access thread-local memory.
+         ;; But nothing in it should change after initialization so there should
+         ;; be no problem reordering calls around memory accesses.
+         ;; It might be a problem if it was used in a coroutine that was resumed
+         ;; from another thread, but we don't use coroutines.
+         (primitive         "cc_my_thread" :thread-local-state* (list) :speculatable t :will-return t :memory :none)
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)
@@ -262,14 +260,11 @@
          (primitive-unwinds "cc_progvSetValues" :t* (list :t* :t*))
          (primitive         "cc_progvUnbind" :void (list :t* :t*))
          (primitive-unwinds "cc_safepoint" :void (list))
-         (primitive         "cc_saveMultipleValue0" :void (list :tmv))
-         (primitive         "cc_restoreMultipleValue0" :return-type nil)
          (primitive         "llvm.frameaddress.p0" :i8* (list :i32))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" :size_t (list :i8* :i8*))
 
          ;; Compiler translators (calls generated by Cleavir)
 
-         (primitive-unwinds "cc_unbox_single_float" :single-float (list :t*))
          (primitive-unwinds "cc_unbox_double_float" :double-float (list :t*))
 
          ;; === CLASP-FFI TRANSLATORS ===
@@ -432,6 +427,7 @@
     (:jmp-buf-tag* %jmp-buf-tag*%)
     (:ltv** %ltv**%)
     (:ltvc-return %ltvc-return%)
+    (:thread-local-state* %thread-local-state*%)
     (:metadata %metadata%)
     (:return-type %return-type%)
     (:size_t %size_t%)

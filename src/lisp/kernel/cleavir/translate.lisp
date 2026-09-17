@@ -268,7 +268,7 @@ function-or-placeholder - the llvm function or a placeholder for
          (label (datum-name-as-string outp))
          (s2 (cmp::irc-make-vaslist nvals mv-temp label)))
     (setf (dynenv-storage inst) save)
-    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+    (save-values nvals primary mv-temp)
     (out s2 outp))
   ;; Continue
   (cmp:irc-br (first next)))
@@ -282,12 +282,12 @@ function-or-placeholder - the llvm function or a placeholder for
   (declare (ignore tmv))
   (let ((old-de-stack (first (dynenv-storage dynenv))))
     (when old-de-stack
-      (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
+      (cmp::set-thread-dynenv-stack old-de-stack))))
 (defmethod undo-dynenv ((dynenv bir:catchi) tmv)
   (declare (ignore tmv))
   (let ((old-de-stack (dynenv-storage dynenv)))
     (when old-de-stack
-      (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))))
+      (cmp::set-thread-dynenv-stack old-de-stack))))
 (defmethod undo-dynenv ((dynenv bir:values-save) tmv)
   (declare (ignore tmv))
   (%intrinsic-call cmp:+intrinsic/llvm.stackrestore.p0+
@@ -470,17 +470,21 @@ function-or-placeholder - the llvm function or a placeholder for
 
 ;; also used for catch!
 (defun phi-out-for-come-from (phi block)
+  (declare (ignore block)) ; block is seriously unneeded, FIXME
   (let ((rt (cc-bmir:rtype phi)))
     (cond ((null rt))
           ((equal rt '(:object))
-           (phi-out (cmp:irc-tmv-primary (restore-multiple-value-0)) phi block))
-          ((eq rt :multiple-values) (phi-out (restore-multiple-value-0) phi block))
+           (phi-out (cmp:irc-tmv-primary (restore-multiple-value-0))
+                    ;; block may have been changed by restore-m-v-0
+                    phi (cmp:irc-get-insert-block)))
+          ((eq rt :multiple-values) (phi-out (restore-multiple-value-0)
+                                             phi (cmp:irc-get-insert-block)))
           ((every (lambda (x) (eq x :object)) rt)
            (phi-out
             (list* (cmp:irc-tmv-primary (restore-multiple-value-0))
                    (loop for i from 1 below (length rt)
                          collect (cmp:irc-t*-load (return-value-elt i))))
-            phi block))
+            phi (cmp:irc-get-insert-block)))
           (t (error "BUG: Bad rtype ~a" rt)))))
 
 
@@ -503,7 +507,7 @@ function-or-placeholder - the llvm function or a placeholder for
       (let* ((default (cmp:irc-basic-block-create "come-from-default"))
              (old-de-stack
                (unless simplep
-                 (%intrinsic-call "cc_get_dynenv_stack" nil)))
+                 (cmp::thread-dynenv-stack)))
              (dcons-space
                (unless simplep
                  (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
@@ -517,7 +521,7 @@ function-or-placeholder - the llvm function or a placeholder for
                   (list dcons-space frame bufp))))
              (de-stack
                (unless simplep
-                 (if blockp old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))))
+                 (if blockp old-de-stack (cmp::thread-dynenv-stack))))
              ;; Set the continuation for use by bir:unwind insts.
              (_ (out
                  (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
@@ -601,7 +605,7 @@ function-or-placeholder - the llvm function or a placeholder for
 (defmethod translate-terminator ((instruction bir:catchi) abi next)
   (declare (ignore abi))
   (let* ((bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "catch-jmp-buf"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (old-de-stack (cmp::thread-dynenv-stack))
          (dcons-space
            (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
                                           :label "catch-cons"))
@@ -641,7 +645,7 @@ function-or-placeholder - the llvm function or a placeholder for
          (upde-mem (cmp:alloca-i8 cmp:+unwind-protect-dynenv-size+
                                   :alignment cmp:+alignment+
                                   :label "unwind-protect-dynenv-mem"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (old-de-stack (cmp::thread-dynenv-stack))
          (upde (%intrinsic-call "cc_initializeAndPushCleanupDynenv"
                                 (list upde-mem de-cons-mem bufp)
                                 "unwind-protect-dynenv"))
@@ -655,29 +659,29 @@ function-or-placeholder - the llvm function or a placeholder for
     (cmp:irc-begin-block cleanup)
     ;; Save values, call the cleanup, continue unwinding.
     ;; Note that we don't need to pop the dynenv, as the unwinder does so.
-    (let* ((dest (%intrinsic-call "cc_get_unwind_dest" nil "dest"))
-           (index (%intrinsic-call "cc_get_unwind_dest_index" nil "dest-index"))
-           (nvals (%intrinsic-call "cc_nvalues" nil "nvals"))
+    (let* ((dest (cmp::thread-unwind-dest))
+           (index (cmp::thread-unwind-dest-index))
+           (nvals (cmp::thread-nvalues))
            (mv-temp (cmp:alloca-temp-values nvals)))
-      (%intrinsic-call "cc_save_all_values" (list nvals mv-temp))
+      (save-all-values nvals mv-temp)
       (gen-call-cleanup instruction)
-      (%intrinsic-call "cc_load_all_values" (list nvals mv-temp))
-      (%intrinsic-call "cc_set_unwind_dest_index" (list index))
-      (%intrinsic-call "cc_set_unwind_dest" (list dest))
+      (load-all-values nvals mv-temp)
+      (cmp::set-thread-unwind-dest-index index)
+      (cmp::set-thread-unwind-dest dest)
       (%intrinsic-call "cc_sjlj_continue_unwinding" nil)
       (cmp:irc-unreachable))))
 
 (defmethod undo-dynenv ((dynenv bir:unwind-protect) tmv)
-  (%intrinsic-call "cc_set_dynenv_stack" (list (dynenv-storage dynenv)))
+  (cmp::set-thread-dynenv-stack (dynenv-storage dynenv))
   ;; We have to save values around it if we're in the middle of
   ;; returning values.
   (if tmv
       (let* ((nvals (cmp:irc-tmv-nret tmv))
              (primary (cmp:irc-tmv-primary tmv))
              (mv-temp (cmp:alloca-temp-values nvals)))
-        (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+        (save-values nvals primary mv-temp)
         (gen-call-cleanup dynenv)
-        (%intrinsic-call "cc_load_values" (list nvals mv-temp)))
+        (load-tmv nvals mv-temp))
       (gen-call-cleanup dynenv)))
 
 (defmethod translate-terminator ((instruction bir:constant-bind) abi next)
@@ -706,7 +710,7 @@ function-or-placeholder - the llvm function or a placeholder for
                                                       :label "progv-dynenv-cons"))
          (pde-mem (cmp:alloca-i8 cmp:+progv-dynenv-size+ :alignment cmp:+alignment+
                                                          :label "progv-dynenv-mem"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil)))
+         (old-de-stack (cmp::thread-dynenv-stack)))
     (%intrinsic-call "cc_initializeAndPushProgvDynenv"
                      (list pde-mem pde-cons-mem cells oldvals))
     (setf (dynenv-storage instruction) (list cells oldvals old-de-stack))
@@ -716,7 +720,7 @@ function-or-placeholder - the llvm function or a placeholder for
   (declare (ignore tmv))
   (destructuring-bind (cells oldvals oldstack) (dynenv-storage dynenv)
     (%intrinsic-call "cc_progvUnbind" (list cells oldvals))
-    (%intrinsic-call "cc_set_dynenv_stack" (list oldstack))))
+    (cmp::set-thread-dynenv-stack oldstack)))
 
 (defmethod translate-simple-instruction ((instruction bir:thei) abi)
   (declare (ignore abi))
@@ -1291,9 +1295,8 @@ function-or-placeholder - the llvm function or a placeholder for
                               collect (cast-one :object ort val))))))
         ((eq inputrt :vaslist)
          (cond ((eq outputrt :multiple-values)
-                (%intrinsic-call "cc_load_values"
-                                 (list (cmp:irc-vaslist-nvals inputv)
-                                       (cmp:irc-vaslist-values inputv))))
+                (load-tmv (cmp:irc-vaslist-nvals inputv)
+                          (cmp:irc-vaslist-values inputv)))
                ((and (listp outputrt) (= (length outputrt) 1))
                 (cast-one :object (first outputrt)
                           (cmp:irc-vaslist-nth (%size_t 0) inputv (%nil))))
@@ -1518,10 +1521,8 @@ function-or-placeholder - the llvm function or a placeholder for
          (let* ((in (in input))
                 (irt (cc-bmir:rtype input)))
            (cond ((eq irt :vaslist)
-                  (%intrinsic-call "cc_load_values"
-                                   (list
-                                    (cmp:irc-vaslist-nvals in)
-                                    (cmp:irc-vaslist-values in))))
+                  (load-tmv (cmp:irc-vaslist-nvals in)
+                            (cmp:irc-vaslist-values in)))
                  ((listp irt)
                   (let* ((lirt (length irt)))
                     ;; FIXME: In safe code, we might want to check that the
@@ -1678,11 +1679,7 @@ function-or-placeholder - the llvm function or a placeholder for
                                                    nil))
                             (values (cmp:alloca-temp-values nret)))
                        (setf (dynenv-storage inst) save)
-                       (%intrinsic-call "cc_save_values"
-                                        (list
-                                         nret
-                                         (cmp:irc-tmv-primary in)
-                                         values))
+                       (save-values nret (cmp:irc-tmv-primary in) values)
                        (cmp:irc-make-vaslist nret values)))
                     ;; Fixed values would have been lowered away in
                     ;; insert-casts.

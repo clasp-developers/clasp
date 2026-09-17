@@ -422,7 +422,6 @@ representing a tagged fixnum."
 
 ;;; NOTE: Unsafe. Cleavir inserts this only after type checks on safety > 0.
 (defun irc-unbox-single-float (t* &optional (label "single-float"))
-  (irc-intrinsic-call-or-invoke "cc_unbox_single_float" (list t*) label)
   (irc-bit-cast
    (irc-trunc (irc-lshr (irc-ptr-to-int t* %i64%) +single-float-shift+) %i32%)
    %float% label))
@@ -1276,9 +1275,65 @@ But no irbuilders or basic-blocks. Return the fn."
 (defun irc-intrinsic (function-name &rest args)
   (irc-intrinsic-call-or-invoke function-name args))
 
+(defun get-or-declare-my-thread (&optional (module *the-module*))
+  (or (llvm-sys:get-named-global module "my_thread")
+      (llvm-sys:make-global-variable module %thread-local-state*%
+                                     nil 'llvm-sys:external-linkage
+                                     nil "my_thread" nil
+                                     'llvm-sys:general-dynamic-tlsmodel)))
+
+(defun my-thread-address (&optional (module *the-module*))
+  (declare (ignore module))
+  (irc-intrinsic "cc_my_thread")
+  #+(or)
+  (irc-intrinsic "llvm.threadlocal.address.p0" (get-or-declare-my-thread module)))
+
+(macrolet ((def-thread-access (field more-indices type getter &optional setter)
+             `(progn
+                (defun ,getter (&optional (thread* (my-thread-address)))
+                  (irc-typed-load
+                   ,type
+                   (irc-typed-gep %thread-local-state% thread*
+                                  (list 0 (c++-field-index ',field info.%thread-local-state%)
+                                        ,@more-indices)
+                                  ,(string-downcase getter))))
+                ,@(when setter
+                    `((defun ,setter (new &optional (thread* (my-thread-address)))
+                        (irc-store
+                         new
+                         (irc-typed-gep %thread-local-state% thread*
+                                        (list 0 (c++-field-index ',field info.%thread-local-state%)
+                                              ,@more-indices)
+                                        ,(string-downcase getter)))))))))
+  (def-thread-access :process () %t*% thread-process)
+  (def-thread-access :dyn-env-stack-bottom ()
+    %t*% thread-dynenv-stack set-thread-dynenv-stack)
+  (def-thread-access :unwind-dest () %t*% thread-unwind-dest set-thread-unwind-dest)
+  (def-thread-access :unwind-dest-index ()
+    %size_t% thread-unwind-dest-index set-thread-unwind-dest-index)
+  (def-thread-access :breakstep () %i8% thread-breakstep set-thread-breakstep)
+  (def-thread-access :multiple-values (0) %size_t% thread-nvalues set-thread-nvalues))
+
+(defun thread-return-values (&optional (thread* (my-thread-address)))
+  ;; get a pointer into the values, so we don't need to load,
+  ;; unlike the above.
+  (irc-typed-gep %thread-local-state% thread*
+                 (list 0 (c++-field-index :multiple-values info.%thread-local-state%)
+                       1)
+                 "return-values"))
+
+(defun thread-return-value* (index &optional (thread* (my-thread-address)))
+  (irc-typed-gep %thread-local-state% thread*
+                 (list 0 (c++-field-index :multiple-values info.%thread-local-state%)
+                       1 index)
+                 "return-value*"))
+
+(defun thread-return-value (index &optional (thread* (my-thread-address)))
+  (irc-typed-load %t*% (thread-return-value* index thread*)))
+(defun set-thread-return-value (new index &optional (thread* (my-thread-address)))
+  (irc-store new (thread-return-value* index thread*)))
+
 ;; Helper functions
-
-
 
 (defun irc-verify-module (module return-action)
   (llvm-sys:verify-module module return-action))
@@ -1311,17 +1366,27 @@ But no irbuilders or basic-blocks. Return the fn."
         (varargs (getf (primitive-properties primitive-info) :varargs))
         (does-not-throw (getf (primitive-properties primitive-info) :does-not-throw))
         (does-not-return (getf (primitive-properties primitive-info) :does-not-return))
+        #-llvm15
+        (memory (getf (primitive-properties primitive-info) :memory))
         (returns-twice (getf (primitive-properties primitive-info) :returns-twice))
+        (will-return (getf (primitive-properties primitive-info) :will-return))
+        (speculatable (getf (primitive-properties primitive-info) :speculatable))
         function-attributes)
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind function-attributes))
     (when does-not-return (push 'llvm-sys:attribute-no-return function-attributes))
     (when returns-twice (push 'llvm-sys:attribute-returns-twice function-attributes))
+    (when will-return (push 'llvm-sys:attribute-will-return function-attributes))
+    (when speculatable (push 'llvm-sys:attribute-speculatable function-attributes))
     (push '("frame-pointer" "all") function-attributes)
     (let ((function (irc-function-create (llvm-sys:function-type-get return-ty argument-types varargs)
                                              'llvm-sys::External-linkage
                                              dispatch-name
                                              module
                                              :function-attributes function-attributes)))
+      ;; TODO: more complex memory behavior
+      #-llvm15
+      (when (eq memory :none) ; memory(none)
+        (llvm-sys:add-memory-attribute function 'llvm-sys:mod-ref-none))
       #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)

@@ -225,8 +225,20 @@ struct VirtualMachine {
 };
 
 struct ThreadLocalState {
-
+  // Must match definition in cmpintrinsics.lisp.
   mp::Process_sp _Process;
+  // Stuff for SJLJ unwinding
+  List_sp _DynEnvStackBottom;
+  T_sp _UnwindDest;
+  size_t _UnwindDestIndex;
+  size_t _unwinds;
+  // Should we check for breaks?
+  bool _Breakstep;
+  // What frame are we stepping over? NULL means step-into mode.
+  void* _BreakstepFrame;
+  MultipleValues _MultipleValues;
+  // cmpintrinsics doesn't know about anything past this line.
+
   DynamicBindingStack _Bindings;
   std::atomic<core::Cons_sp> _PendingInterruptsHead;
   std::atomic<core::Cons_sp> _PendingInterruptsTail;
@@ -238,26 +250,11 @@ struct ThreadLocalState {
   List_sp _BufferStrWNsPool;
   StringOutputStream_sp _BFormatStringOutputStream;
   StringOutputStream_sp _WriteToStringOutputStream;
-  MultipleValues _MultipleValues;
-  void* _sigaltstack_buffer;
-  size_t _unwinds;
-  stack_t _original_stack;
-  std::string _initializer_symbol;
-  void* _object_file_start;
-  size_t _object_file_size;
-  bool _Breakstep; // Should we check for breaks?
-  // What frame are we stepping over? NULL means step-into mode.
-  void* _BreakstepFrame;
-  // Stuff for SJLJ unwinding
-  List_sp _DynEnvStackBottom;
-  T_sp _UnwindDest;
-  size_t _UnwindDestIndex;
   size_t _xorshf_x; // Marsaglia's xorshf generator
   size_t _xorshf_y;
   size_t _xorshf_z;
   uint64_t _BytesAllocated;
   uint64_t _Tid;
-  uintptr_t _BacktraceBasePointer;
   uint64_t _DtreeInterpreterCallCount;
   gctools::ThreadLocalStateLowLevel _LowLevel;
   VirtualMachine _VM;

@@ -273,7 +273,7 @@
          (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
                                  :alignment cmp:+alignment+
                                  :label "binding-dynenv-mem"))
-         (old-de-stack (%intrinsic-call "cc_get_dynenv_stack" nil))
+         (old-de-stack (cmp::thread-dynenv-stack))
          (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
          (old (%intrinsic-call "cc_specialBind" (list ind value))))
     (%intrinsic-call "cc_initializeAndPushBindingDynenv"
@@ -282,7 +282,7 @@
 
 (defun unbind-special (index old-value old-de-stack)
   (%intrinsic-call "cc_specialUnbind" (list index old-value))
-  (%intrinsic-call "cc_set_dynenv_stack" (list old-de-stack)))
+  (cmp::set-thread-dynenv-stack old-de-stack))
 
 (defun gen-call-cleanup (uwprotect-inst)
   (let (;; KLUDGE: In order to reenable interrupts when throwing

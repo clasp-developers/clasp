@@ -125,10 +125,6 @@ extern "C" {
  * actually have the same requirements (I don't know if this is the case).
  */
 
-float cc_unbox_single_float(core::T_O* box) {
-  T_sp tbox((gctools::Tagged)box);
-  return gc::As<SingleFloat_sp>(tbox).unsafe_single_float();
-}
 double cc_unbox_double_float(core::T_O* box) {
   T_sp tbox((gctools::Tagged)box);
   return gc::As<DoubleFloat_sp>(tbox)->get();

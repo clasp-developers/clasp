@@ -154,9 +154,6 @@ void dumpLowLevelTrace(int numLowLevels) {
 
 extern "C" {
 
-void cc_set_breakstep() { my_thread->_Breakstep = true; }
-void cc_unset_breakstep() { my_thread->_Breakstep = false; }
-
 NOINLINE void cc_breakstep(core::T_O* source, void* frame) {
   unlikely_if(my_thread->_Breakstep)
     breakstep(T_sp((gctools::Tagged)source), frame);
@@ -484,16 +481,9 @@ void cc_progvUnbind(T_O* cells, T_O* oldvals) {
   NO_UNWIND_END();
 }
 
-T_O* cc_get_dynenv_stack() {
+ThreadLocalState* cc_my_thread() {
   NO_UNWIND_BEGIN();
-  return my_thread->dynEnvStackGet().raw_();
-  NO_UNWIND_END();
-}
-
-void cc_set_dynenv_stack(T_O* dynenv_stack) {
-  NO_UNWIND_BEGIN();
-  T_sp destack((gctools::Tagged)dynenv_stack);
-  my_thread->dynEnvStackSet(destack);
+  return my_thread;
   NO_UNWIND_END();
 }
 
@@ -514,31 +504,6 @@ T_O* cc_catch_tag(char* exceptionP) {
   NO_UNWIND_END();
 }
 
-T_O* cc_get_unwind_dest() {
-  NO_UNWIND_BEGIN();
-  return my_thread->_UnwindDest.raw_();
-  NO_UNWIND_END();
-}
-
-void cc_set_unwind_dest(T_O* dest) {
-  NO_UNWIND_BEGIN();
-  T_sp tdest((gctools::Tagged)dest);
-  my_thread->_UnwindDest = tdest;
-  NO_UNWIND_END();
-}
-
-size_t cc_get_unwind_dest_index() {
-  NO_UNWIND_BEGIN();
-  return my_thread->_UnwindDestIndex;
-  NO_UNWIND_END();
-}
-
-void cc_set_unwind_dest_index(size_t ind) {
-  NO_UNWIND_BEGIN();
-  my_thread->_UnwindDestIndex = ind;
-  NO_UNWIND_END();
-}
-
 [[noreturn]] void cc_sjlj_continue_unwinding() { sjlj_continue_unwinding(); }
 
 // used for bugged cl:catch as well
@@ -556,23 +521,6 @@ void debugFileScopeHandle(int* sourceFileInfoHandleP) {
 void cc_safepoint() {
   gctools::gc_yield();
   gctools::handle_all_queued_interrupts();
-}
-};
-
-extern "C" {
-void saveToMultipleValue0(core::T_mv* mvP) {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  mv.saveToMultipleValue0(*mvP);
-  NO_UNWIND_END();
-}
-
-gctools::return_type restoreFromMultipleValue0() {
-  NO_UNWIND_BEGIN();
-  core::MultipleValues& mv = core::lisp_multipleValues();
-  gctools::return_type result(mv.operator[](0), mv.getSize());
-  return result;
-  NO_UNWIND_END();
 }
 };
 
@@ -706,25 +654,7 @@ LCC_RETURN cc_call_multipleValueOneFormCallWithRet0(core::Function_O* tfunc, gct
   return func->apply_raw(ret0.nvals, callargs->arguments(0));
 }
 
-T_O* cc_mvcGatherRest(size_t nret, T_O* ret0, size_t nstart) {
-  MultipleValues& mv = core::lisp_multipleValues();
-  ql::list result;
-  if (nret == 0)
-    return nil<T_O>().raw_();
-  else {
-    if (nstart == 0) {
-      result << gc::smart_ptr<T_O>((gc::Tagged)ret0);
-      nstart = 1;
-    }
-    for (size_t i = nstart; i < nret; ++i) {
-      T_O* tagged_obj = ENSURE_VALID_OBJECT(mv[i]);
-      result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
-    }
-    return result.result().raw_();
-  }
-}
-
-T_O* cc_mvcGatherRest2(T_O** values, size_t nvalues) {
+T_O* cc_mvcGatherRest(T_O** values, size_t nvalues) {
   if (nvalues == 0)
     return nil<T_O>().raw_();
   else {
@@ -740,63 +670,6 @@ T_O* cc_mvcGatherRest2(T_O** values, size_t nvalues) {
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   throwOddKeywordsError(closure);
-}
-
-T_O** cc_multipleValuesArrayAddress() {
-  NO_UNWIND_BEGIN();
-  return lisp_multipleValues().returnValues(0);
-  NO_UNWIND_END();
-}
-
-void cc_saveMultipleValue0(core::T_mv result) {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  mv.saveToMultipleValue0(result);
-  NO_UNWIND_END();
-}
-
-gctools::return_type cc_restoreMultipleValue0() {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  size_t nret = mv.getSize();
-  return gctools::return_type((nret == 0) ? nil<T_O>().raw_() : mv[0], nret);
-  NO_UNWIND_END();
-}
-
-// cc_{save,load}_values are intended for code that does something,
-// then some other things, then returns values from the first thing.
-// e.g. multiple-value-prog1, unwind-protect without nonlocal exit
-void cc_save_values(size_t nvals, T_O* primary, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  returnTypeSaveToTemp(nvals, primary, vector);
-  NO_UNWIND_END();
-}
-
-gctools::return_type cc_load_values(size_t nvals, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  return returnTypeLoadFromTemp(nvals, vector);
-  NO_UNWIND_END();
-}
-
-// cc_nvalues and cc_{save,load}_all_values are for unwind protect cleanup.
-// See analogous C++ code in evaluator.cc: sp_unwindProtect.
-size_t cc_nvalues() {
-  NO_UNWIND_BEGIN();
-  MultipleValues& mv = lisp_multipleValues();
-  return mv.getSize();
-  NO_UNWIND_END();
-}
-
-void cc_save_all_values(size_t nvals, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  lisp_multipleValues().saveToTemp(nvals, vector);
-  NO_UNWIND_END();
-}
-
-void cc_load_all_values(size_t nvals, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  lisp_multipleValues().loadFromTemp(nvals, vector);
-  NO_UNWIND_END();
 }
 
 size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, void* thisFrame) {

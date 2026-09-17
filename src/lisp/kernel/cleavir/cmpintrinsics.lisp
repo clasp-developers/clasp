@@ -60,9 +60,11 @@ Set this to other IRBuilders to make code go where you want")
   
 (defmacro define-c++-struct (name tag fields)
   "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
-names to offsets."
+names to offsets.
+TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to this struct are assumed to be untagged."
   (let ((layout (gensym))
-        (context (gensym)))
+        (context (gensym))
+        (tag (or tag 0)))
     (let ((define-symbol-macro `(define-symbol-macro ,name
                                     (cmp:with-thread-safe-context (,context)
                                       (llvm-sys:struct-type-get ,context
@@ -516,15 +518,25 @@ Boehm and MPS use a single pointer"
 
 (define-symbol-macro %mv-limit% +multiple-values-limit+)
 (define-symbol-macro %mv-values-array% (llvm-sys:array-type-get %t*% %mv-limit%))
+
+;;; Matches MultipleValues (core/multipleValues.h)
 (define-symbol-macro %mv-struct%
     (cmp:with-thread-safe-context (context)
       (llvm-sys:struct-type-get context (list %size_t% %mv-values-array%) nil #|| is-packed ||#)))
 (define-symbol-macro %mv-struct*% (llvm-sys:type-get-pointer-to %mv-struct%))
-(define-symbol-macro %thread-info-struct%
-    (cmp:with-thread-safe-context (context)
-      (llvm-sys:struct-type-get context (list %mv-struct%) nil)))
 
-
+;;; Matches a prefix of ThreadLocalState (gctools/threadlocal.h.)
+;;; Not the whole thing because we don't need all of it, but stay tuned.
+(define-c++-struct %thread-local-state% nil
+  ((%t*% :process)
+   (%t*% :dyn-env-stack-bottom)
+   (%t*% :unwind-dest)
+   (%size_t% :unwind-dest-index)
+   (%size_t% :unwinds)
+   (%i8% :breakstep)
+   (%void*% :breakstep-frame)
+   (%mv-struct% :multiple-values)))
+(define-symbol-macro %thread-local-state*% (llvm-sys:type-get-pointer-to %thread-local-state%))
 
 #+(or)(progn
         (defvar +af+
