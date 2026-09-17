@@ -123,7 +123,6 @@
 (defparameter *jit-lock* (mp:make-recursive-mutex 'jit-lock))
 
 (defun jit-add-module (module startup-shutdown-id ctable-name fvector-name)
-  (cmp:irc-verify-module-safe module)
   (let ((jit-engine (llvm-sys:clasp-jit)))
     (cmp:with-track-llvm-time
         (when *dump-compile-module*
