@@ -579,7 +579,7 @@ namespace core {
 SMART(DoubleFloat);
 class DoubleFloat_O : public Float_O {
   LISP_CLASS(core, ClPkg, DoubleFloat_O, "double-float", Float_O);
-
+  // Layout of this class must sync with the Lisp compiler (cmpintrinsics.lisp).
 private:
   double _Value;
 

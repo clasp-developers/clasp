@@ -184,6 +184,9 @@ TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to th
 (define-symbol-macro %double%
     (cmp:with-thread-safe-context (context)
       (llvm-sys:type-get-double-ty context)))
+(define-c++-struct %boxed-double% +general-tag+ ; DoubleFloat_O
+  ((%i8*%    :vtable)
+   (%double% :double)))
 #+long-float/binary80
 (define-symbol-macro %long-float%
     (cmp:with-thread-safe-context (context)

@@ -435,11 +435,9 @@ representing a tagged fixnum."
     +single-float-tag+ "")
    %t*% label))
 
-;;; TODO: Should be unsafe for the same reason as above.
-;;;       Checking here is redundant.
-;;; TODO: Inline this - it's just a memory load, unlike boxing
 (defun irc-unbox-double-float (t* &optional (label "double-float"))
-  (irc-intrinsic-call-or-invoke "cc_unbox_double_float" (list t*) label))
+  (irc-typed-load %double%
+                  (c++-field-ptr info.%boxed-double% t* :double label)))
 (defun irc-box-double-float (double &optional (label "double-float"))
   (irc-intrinsic-call-or-invoke "to_object_double" (list double) label))
 
