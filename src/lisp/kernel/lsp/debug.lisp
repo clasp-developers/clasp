@@ -230,7 +230,9 @@ If the arguments are not available, returns NIL NIL."
 ;;; them. I think the current code does this but only kinda?
 
 (declaim (notinline call-with-truncated-stack))
-(defun call-with-truncated-stack (function) (funcall function))
+(defun call-with-truncated-stack (function)
+  (declare (optimize debug)) ; make sure we're visible on the stack.
+  (funcall function))
 
 (defmacro with-truncated-stack ((&key) &body body)
   "Execute the body such that WITH-STACK and derived tools will not see frames below this form's continuation, unless they are passed :delimited nil.
@@ -243,7 +245,9 @@ Only the innermost WITH-TRUNCATED-STACK matters for this purpose."
   (eq (frame-function-name frame) 'call-with-truncated-stack))
 
 (declaim (notinline call-with-capped-stack))
-(defun call-with-capped-stack (function) (funcall function))
+(defun call-with-capped-stack (function)
+  (declare (optimize debug))
+  (funcall function))
 
 (defmacro with-capped-stack ((&key) &body body)
   "Execute the body such that WITH-STACK and derived tools will not see frames above this form's continuation, unless they are passed :delimited nil.

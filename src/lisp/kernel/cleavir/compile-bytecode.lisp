@@ -1843,11 +1843,11 @@
           (clasp-cleavir::with-constants (ctable ctable-name)
             (allocate-module-constants cmap)
             (force-function-literals fmap)
-            (clasp-cleavir::layout-module ir abi)
-            (cmp::potentially-save-module)))
+            (clasp-cleavir::layout-module ir abi)))
         (clasp-cleavir::gen-function-vector fvector fvector-name))
-      ;;(llvm-sys:dump-module module)
-      (cmp:irc-verify-module-safe module))
+      (cmp:irc-verify-module-safe module)
+      (llvm-sys:optimize-module module cmp:*optimization-level*)
+      (cmp::potentially-save-module))
     (make-instance 'nmodule
       :code (cmp::generate-obj-asm-stream module :simple-vector-byte8
                                           'llvm-sys:code-gen-file-type-object-file

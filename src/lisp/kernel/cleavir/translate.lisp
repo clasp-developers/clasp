@@ -2147,12 +2147,13 @@ function-or-placeholder - the llvm function or a placeholder for
                (*function-info* function-info))
           (allocate-llvm-function-infos bir-module fvector)
           (with-constants (ctable ctable-name)
-            (layout-module bir-module abi)
-            (llvm-sys:optimize-module module cmp:*optimization-level*)
-            (cmp::potentially-save-module))
-          (gen-function-vector fvector fvector-name)
-          (values module function-info ctable
-                  ctable-name fvector-name))))))
+            (layout-module bir-module abi))
+          (gen-function-vector fvector fvector-name)))
+      (cmp:irc-verify-module-safe module)
+      (llvm-sys:optimize-module module cmp:*optimization-level*)
+      (cmp::potentially-save-module)
+      (values module function-info ctable
+              ctable-name fvector-name))))
 
 (defun jit-bir (bir-module &key (abi *abi-x86-64*) (pathname "repl-code"))
   (let ((id (core:next-jit-compile-counter)))

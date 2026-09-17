@@ -4233,7 +4233,6 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
 #endif
 
   llvm::PassBuilder PB(NULL, pipeline_opts);
-  llvm::ModulePassManager MPM;
 
   PB.registerModuleAnalyses(MAM);
   PB.registerCGSCCAnalyses(CGAM);
@@ -4257,7 +4256,7 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   }
 #endif
 
-  PB.buildPerModuleDefaultPipeline(opt_level);
+  llvm::ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(opt_level);
 
   MPM.run(*module, MAM);
 }
