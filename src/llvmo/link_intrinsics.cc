@@ -672,21 +672,6 @@ void cc_oddKeywordException(core::T_O* tclosure) {
   throwOddKeywordsError(closure);
 }
 
-// cc_{save,load}_values are intended for code that does something,
-// then some other things, then returns values from the first thing.
-// e.g. multiple-value-prog1, unwind-protect without nonlocal exit
-void cc_save_values(size_t nvals, T_O* primary, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  returnTypeSaveToTemp(nvals, primary, vector);
-  NO_UNWIND_END();
-}
-
-gctools::return_type cc_load_values(size_t nvals, T_O** vector) {
-  NO_UNWIND_BEGIN();
-  return returnTypeLoadFromTemp(nvals, vector);
-  NO_UNWIND_END();
-}
-
 // cc_{save,load}_all_values are for unwind protect cleanup.
 // See analogous C++ code in evaluator.cc: sp_unwindProtect.
 void cc_save_all_values(size_t nvals, T_O** vector) {

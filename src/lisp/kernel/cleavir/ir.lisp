@@ -169,6 +169,51 @@ And convert everything to JIT constants."
       (cmp:irc-begin-block merge)
       (cmp:irc-make-tmv nret phi))))
 
+(defun save-values (nvals primary storage)
+  (let ((zero? (cmp:irc-icmp-eq nvals (%size_t 0)))
+        (mergeb (cmp:irc-basic-block-create "save-values-merge"))
+        (storeb (cmp:irc-basic-block-create "save-values")))
+    (cmp:irc-cond-br zero? mergeb storeb)
+    (cmp:irc-begin-block storeb)
+    (cmp:irc-store primary storage)
+    (%intrinsic-call "llvm.memcpy.p0.p0.i64"
+                     (list (cmp:irc-typed-gep cmp:%t*[0]% storage '(0 1)
+                                              "subsequent-values")
+                           (cmp::thread-return-value* 1)
+                           ;; copy (nvals-1)*sizeof(T*) bytes.
+                           (cmp:irc-shl (cmp:irc-sub nvals (%size_t 1)) 3 :nuw t)
+                           ;; not volatile
+                           (%i1 0)))
+    (cmp:irc-br mergeb)
+    (cmp:irc-begin-block mergeb)))
+(defun save-tmv (tmv storage)
+  (save-values (cmp:irc-tmv-nret tmv) (cmp:irc-tmv-result tmv) storage))
+
+(defun load-tmv (nret storage)
+  (let ((zero (cmp:irc-basic-block-create "zero-values"))
+        (some (cmp:irc-basic-block-create "some-values"))
+        (merge (cmp:irc-basic-block-create "load-T_mv"))
+        (cmp (cmp:irc-icmp-eq (%size_t 0) nret)))
+    (cmp:irc-cond-br cmp zero some)
+    (cmp:irc-begin-block merge)
+    (let ((phi (cmp:irc-phi cmp:%t*% 2 "primary-value")))
+      (cmp:irc-begin-block zero)
+      (cmp:irc-phi-add-incoming phi (%nil) zero)
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block some)
+      ;; load primary value
+      (cmp:irc-phi-add-incoming phi (cmp:irc-typed-load cmp:%t*% storage) some)
+      ;; copy subsequent values
+      (%intrinsic-call "llvm.memcpy.p0.p0.i64"
+                       (list (cmp::thread-return-value* 1)
+                             (cmp:irc-typed-gep cmp:%t*[0]% storage '(0 1)
+                                                "subsequent-values")
+                             (cmp:irc-shl (cmp:irc-sub nret (%size_t 1)) 3 :nuw t)
+                             (%i1 0)))
+      (cmp:irc-br merge)
+      (cmp:irc-begin-block merge)
+      (cmp:irc-make-tmv nret phi))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; APPLY-CC-CALLING-CONVENTION

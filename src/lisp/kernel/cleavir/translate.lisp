@@ -268,7 +268,7 @@ function-or-placeholder - the llvm function or a placeholder for
          (label (datum-name-as-string outp))
          (s2 (cmp::irc-make-vaslist nvals mv-temp label)))
     (setf (dynenv-storage inst) save)
-    (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+    (save-values nvals primary mv-temp)
     (out s2 outp))
   ;; Continue
   (cmp:irc-br (first next)))
@@ -679,9 +679,9 @@ function-or-placeholder - the llvm function or a placeholder for
       (let* ((nvals (cmp:irc-tmv-nret tmv))
              (primary (cmp:irc-tmv-primary tmv))
              (mv-temp (cmp:alloca-temp-values nvals)))
-        (%intrinsic-call "cc_save_values" (list nvals primary mv-temp))
+        (save-values nvals primary mv-temp)
         (gen-call-cleanup dynenv)
-        (%intrinsic-call "cc_load_values" (list nvals mv-temp)))
+        (load-tmv nvals mv-temp))
       (gen-call-cleanup dynenv)))
 
 (defmethod translate-terminator ((instruction bir:constant-bind) abi next)
@@ -1295,9 +1295,8 @@ function-or-placeholder - the llvm function or a placeholder for
                               collect (cast-one :object ort val))))))
         ((eq inputrt :vaslist)
          (cond ((eq outputrt :multiple-values)
-                (%intrinsic-call "cc_load_values"
-                                 (list (cmp:irc-vaslist-nvals inputv)
-                                       (cmp:irc-vaslist-values inputv))))
+                (load-tmv (cmp:irc-vaslist-nvals inputv)
+                          (cmp:irc-vaslist-values inputv)))
                ((and (listp outputrt) (= (length outputrt) 1))
                 (cast-one :object (first outputrt)
                           (cmp:irc-vaslist-nth (%size_t 0) inputv (%nil))))
@@ -1522,10 +1521,8 @@ function-or-placeholder - the llvm function or a placeholder for
          (let* ((in (in input))
                 (irt (cc-bmir:rtype input)))
            (cond ((eq irt :vaslist)
-                  (%intrinsic-call "cc_load_values"
-                                   (list
-                                    (cmp:irc-vaslist-nvals in)
-                                    (cmp:irc-vaslist-values in))))
+                  (load-tmv (cmp:irc-vaslist-nvals in)
+                            (cmp:irc-vaslist-values in)))
                  ((listp irt)
                   (let* ((lirt (length irt)))
                     ;; FIXME: In safe code, we might want to check that the
@@ -1682,11 +1679,7 @@ function-or-placeholder - the llvm function or a placeholder for
                                                    nil))
                             (values (cmp:alloca-temp-values nret)))
                        (setf (dynenv-storage inst) save)
-                       (%intrinsic-call "cc_save_values"
-                                        (list
-                                         nret
-                                         (cmp:irc-tmv-primary in)
-                                         values))
+                       (save-values nret (cmp:irc-tmv-primary in) values)
                        (cmp:irc-make-vaslist nret values)))
                     ;; Fixed values would have been lowered away in
                     ;; insert-casts.
