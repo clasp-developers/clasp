@@ -103,7 +103,6 @@
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
           :does-not-return t)
          (primitive         "cc_list" :t* (list :size_t) :varargs t)
-         (primitive         "cc_mvcGatherRest" :t* (list :t** :size_t))
          (primitive         "cc_gatherRestArguments" :t* (list :vaslist* :size_t))
          (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))

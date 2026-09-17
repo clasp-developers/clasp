@@ -645,19 +645,6 @@ void cc_initialize_closure(core::T_O* functoid, std::size_t numCells, ...) {
   va_end(argp);
 }
 
-T_O* cc_mvcGatherRest(T_O** values, size_t nvalues) {
-  if (nvalues == 0)
-    return nil<T_O>().raw_();
-  else {
-    ql::list result;
-    for (size_t i = 0; i < nvalues; ++i) {
-      T_O* tagged_obj = ENSURE_VALID_OBJECT(values[i]);
-      result << gc::smart_ptr<T_O>((gc::Tagged)tagged_obj);
-    }
-    return result.result().raw_();
-  }
-}
-
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   throwOddKeywordsError(closure);
