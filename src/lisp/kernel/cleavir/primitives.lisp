@@ -198,6 +198,8 @@
          (primitive         +intrinsic/llvm.stacksave.p0+ :i8* nil)
          (primitive         +intrinsic/llvm.stackrestore.p0+ :void (list :i8*))
 
+         (primitive         "llvm.ptrmask.p0.i64" :t* (list :t* :i64))
+
          (primitive         "llvm.memcpy.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
          (primitive         "llvm.memmove.p0.p0.i64" :void (list :i8* :i8* :i64 :i1))
     

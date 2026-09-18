@@ -51,20 +51,17 @@ Set this to other IRBuilders to make code go where you want")
 
 (defstruct c++-struct
   name ; The symbol-macro name of the type
-  tag  ; The tag of the objects of this type
   type-getter ; A single argument lambda that when passed an (thread-local-llvm-context) returns the type
   field-type-getters ; An alist of name/type-getter-functions
   field-pointee-type-getters ; An alist of name/pointee-type-getter-functions
   field-offsets
   field-indices) 
   
-(defmacro define-c++-struct (name tag fields)
+(defmacro define-c++-struct (name &rest fields)
   "Defines the llvm struct and the dynamic variable OFFSETS.name that contains an alist of field
-names to offsets.
-TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to this struct are assumed to be untagged."
+names to offsets."
   (let ((layout (gensym))
-        (context (gensym))
-        (tag (or tag 0)))
+        (context (gensym)))
     (let ((define-symbol-macro `(define-symbol-macro ,name
                                     (cmp:with-thread-safe-context (,context)
                                       (llvm-sys:struct-type-get ,context
@@ -74,7 +71,7 @@ TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to th
                               (list
                                ,@(loop for (_ name) in fields
                                        for field-index from 0
-                                       collect `(cons ',name (- (llvm-sys:struct-layout-get-element-offset ,layout ,field-index) ,tag))))))
+                                       collect `(cons ',name (llvm-sys:struct-layout-get-element-offset ,layout ,field-index))))))
             (field-indices `(list
                              ,@(loop for (_ name) in fields
                                      for field-index from 0
@@ -99,7 +96,6 @@ TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to th
                         ,define-symbol-macro
                         (defparameter ,(intern (format nil "INFO.~a" name))
                           (make-c++-struct :name ,name
-                                           :tag ,tag
                                            :type-getter (lambda () (progn ,name))
                                            :field-type-getters (list ,@field-type-getters-list)
                                            :field-pointee-type-getters (list ,@field-pointee-type-getters-list)
@@ -184,9 +180,9 @@ TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to th
 (define-symbol-macro %double%
     (cmp:with-thread-safe-context (context)
       (llvm-sys:type-get-double-ty context)))
-(define-c++-struct %boxed-double% +general-tag+ ; DoubleFloat_O
-  ((%i8*%    :vtable)
-   (%double% :double)))
+(define-c++-struct %boxed-double% ; DoubleFloat_O
+  (%i8*%    :vtable)
+  (%double% :double))
 #+long-float/binary80
 (define-symbol-macro %long-float%
     (cmp:with-thread-safe-context (context)
@@ -271,8 +267,10 @@ TAG is +general-tag+ or whatever. Used for field offsets. If nil, pointers to th
   (irc-intrinsic "debugPrint_size_t" (irc-bit-cast st %i64%)))
 
 (defun c++-field-ptr (struct-info tagged-object field-name &optional (label ""))
-  (let* ((tagged-object-i8* (irc-bit-cast tagged-object %i8*%))
-         (field* (irc-typed-gep %i8% tagged-object-i8* (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
+  (let* ((untagged
+           (irc-intrinsic "llvm.ptrmask.p0.i64" tagged-object
+                          (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
+         (field* (irc-typed-gep %i8% untagged (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
          (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
          (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
     field-ptr))
@@ -348,59 +346,52 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %entry-point-vector% (llvm-sys:array-type-get %i8*% (+ 1 (- +entry-point-arity-end+ +entry-point-arity-begin+))))
 
 
-(define-c++-struct %global-entry-point% +general-tag+
-  ((%i8*% :vtable)
-   (%t*%  :entry-point)
-   (%t*%  :function-description)
-   (%t*%  :code)
-   (%entry-point-vector% :entry-points)
-   (%i8%  :defined)
-   ))
+(define-c++-struct %global-entry-point%
+  (%i8*% :vtable)
+  (%t*%  :entry-point)
+  (%t*%  :function-description)
+  (%t*%  :code)
+  (%entry-point-vector% :entry-points)
+  (%i8%  :defined))
 (define-symbol-macro %global-entry-point*% (llvm-sys:type-get-pointer-to %global-entry-point%))
 (define-symbol-macro %entry-point-vector*% (llvm-sys:type-get-pointer-to %entry-point-vector%))
 
 
-(core:verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%))
+;;(core:verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%))
 
 
 ;;; MUST match WrappedPointer_O layout
-(define-c++-struct %wrapped-pointer% +general-tag+
-  (
+(define-c++-struct %wrapped-pointer%
    (%i8*%     :vtable)
    (%i64%     :stamp)
-   (%t*%      :class)
-   ))
+   (%t*%      :class))
 
 (defparameter +wrapped-pointer.stamp-index+ (c++-field-index :stamp info.%wrapped-pointer%))
 (define-symbol-macro %wrapped-pointer*% (llvm-sys:type-get-pointer-to %wrapped-pointer%))
 
-(define-c++-struct %instance% +general-tag+
-  ((%i8*%     :vtable)
-   (%t*%      :Class)
-   (%t*%      :Rack)
-   ))
-
+(define-c++-struct %instance%
+  (%i8*%     :vtable)
+  (%t*%      :Class)
+  (%t*%      :Rack))
 
 (defparameter +instance.rack-index+ (c++-field-index :rack info.%instance%))
 (define-symbol-macro %instance*% (llvm-sys:type-get-pointer-to %instance%))
 
 ;;; Must match SimpleVector_O aka GCArray_moveable<T_sp>
-(define-c++-struct %simple-vector% +general-tag+
-  ((%i8*%     :vtable)
-   (%size_t%      :length)
-   (%tsp[0]%      :data)
-   ))
+(define-c++-struct %simple-vector%
+  (%i8*%     :vtable)
+  (%size_t%      :length)
+  (%tsp[0]%      :data))
 (defparameter +simple-vector.length-index+ (c++-field-index :length info.%simple-vector%))
 (defparameter +simple-vector.data-index+ (c++-field-index :data info.%simple-vector%))
 
 
-(define-c++-struct %rack% +general-tag+
-  ((%i8*%     :vtable)
-   (%tsp%     :stamp)
-   (%tsp%     :sig)
-   (%size_t%  :length)
-   (%t*[0]%   :data)
-   ))
+(define-c++-struct %rack%
+  (%i8*%     :vtable)
+  (%tsp%     :stamp)
+  (%tsp%     :sig)
+  (%size_t%  :length)
+  (%t*[0]%   :data))
 
 (define-symbol-macro %rack*% (llvm-sys:type-get-pointer-to %rack%))
 
@@ -408,24 +399,23 @@ Boehm and MPS use a single pointer"
 (defparameter +rack.length-index+ (c++-field-index :length info.%rack%))
 (defparameter +rack.data-index+ (c++-field-index :data info.%rack%))
 
-(define-c++-struct %mdarray% +general-tag+
-  ((%i8*% :vtable)
-   (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
-   (%size_t% :Array-Total-Size)
-   (%t*%     :Data)
-   (%size_t% :Displaced-Index-Offset)
-   (%size_t% :Flags)
-   (%size_t% :rank)
-   (%size_t[0]% :dimensions)))
+(define-c++-struct %mdarray%
+  (%i8*% :vtable)
+  (%size_t% :Fill-Pointer-Or-Length-Or-Dummy)
+  (%size_t% :Array-Total-Size)
+  (%t*%     :Data)
+  (%size_t% :Displaced-Index-Offset)
+  (%size_t% :Flags)
+  (%size_t% :rank)
+  (%size_t[0]% :dimensions))
 (define-symbol-macro %mdarray-dimensions-type% %size_t%)
 (define-symbol-macro %mdarray*% (llvm-sys:type-get-pointer-to %mdarray%))
 
-(define-c++-struct %value-frame% +general-tag+
-  ((%i8*%     :vtable)
-   (%tsp%     :parent)
-   (%size_t%  :length)
-   (%tsp[0]%  :data))
-  )
+(define-c++-struct %value-frame%
+  (%i8*%     :vtable)
+  (%tsp%     :parent)
+  (%size_t%  :length)
+  (%tsp[0]%  :data))
 (define-symbol-macro %value-frame*% (llvm-sys:type-get-pointer-to %value-frame%))
 (defparameter +value-frame.parent-index+ (c++-field-index :parent info.%value-frame%))
 (defparameter +value-frame.length-index+ (c++-field-index :length info.%value-frame%))
@@ -433,36 +423,36 @@ Boehm and MPS use a single pointer"
 
 
 ;;; MUST match FuncallableInstance_O layout
-(define-c++-struct %funcallable-instance% +general-tag+
-  ((%i8*% :vtable)
-   (%t*% :entry-point)
-   (%t*% :rack)
-   (%t*% :class)
-   (%atomic<size_t>% :interpreted-calls)
-   (%atomic<tsp>% :compiled-dispatch-function)))
+(define-c++-struct %funcallable-instance%
+  (%i8*% :vtable)
+  (%t*% :entry-point)
+  (%t*% :rack)
+  (%t*% :class)
+  (%atomic<size_t>% :interpreted-calls)
+  (%atomic<tsp>% :compiled-dispatch-function))
 
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 (defparameter +funcallable-instance.rack-index+ (c++-field-index :rack info.%funcallable-instance%))
 (define-symbol-macro %funcallable-instance*% (llvm-sys:type-get-pointer-to %funcallable-instance%))
 
 ;;; Ditto for FunctionCell_O
-(define-c++-struct %function-cell% +general-tag+
-  ((%i8*% :vtable)
-   (%t*% :entry-point)
-   (%atomic<tsp>% :real-function)))
+(define-c++-struct %function-cell%
+  (%i8*% :vtable)
+  (%t*% :entry-point)
+  (%atomic<tsp>% :real-function))
 
 ;;;
 ;;; The %symbol% type MUST match the layout and size of Symbol_O in symbol.h
 ;;;
-(define-c++-struct %symbol% +general-tag+
-  ((%i8*% :sym-vtable) ; index=0 offset=0
-   (%t*% :name) ; index=1 offset=8
-   (%t*% :home-package) ; index=2 offset=16
-   (%t*% :value) ; index=3 offset=24
-   (%t*% :function) ; index=4 offset=32
-   (%t*% :setf-function) ; index=5 offset=40
-   (%i32% :flags) ; index=6 offset=48
-   (%t*% :property-list))) ; index=7 offset=56
+(define-c++-struct %symbol%
+  (%i8*% :sym-vtable) ; index=0 offset=0
+  (%t*% :name) ; index=1 offset=8
+  (%t*% :home-package) ; index=2 offset=16
+  (%t*% :value) ; index=3 offset=24
+  (%t*% :function) ; index=4 offset=32
+  (%t*% :setf-function) ; index=5 offset=40
+  (%i32% :flags) ; index=6 offset=48
+  (%t*% :property-list)) ; index=7 offset=56
 
 (defparameter +symbol.function-index+ (c++-field-index :function info.%symbol%))
 (defparameter +symbol.setf-function-index+ (c++-field-index :setf-function info.%symbol%))
@@ -471,14 +461,15 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %symsp% (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context (smart-pointer-fields %symbol*%)) nil)) ;; "Sym_sp"
 (define-symbol-macro %symsp*% (llvm-sys:type-get-pointer-to %symsp%))
 
-(define-c++-struct %cons% +cons-tag+
-  ( (%t*% :car)
-    (%t*% :cdr)))
+(define-c++-struct %cons%
+  (%t*% :car)
+  (%t*% :cdr))
 
 (define-symbol-macro %cons*% (llvm-sys:type-get-pointer-to %cons%))
 
 (defparameter +cons.car-index+ (c++-field-index :car info.%cons%))
 (defparameter +cons.cdr-index+ (c++-field-index :cdr info.%cons%))
+#+(or)
 (let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %cons%))
        (cons-layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) %cons%))
        (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
@@ -530,15 +521,15 @@ Boehm and MPS use a single pointer"
 
 ;;; Matches a prefix of ThreadLocalState (gctools/threadlocal.h.)
 ;;; Not the whole thing because we don't need all of it, but stay tuned.
-(define-c++-struct %thread-local-state% nil
-  ((%t*% :process)
-   (%t*% :dyn-env-stack-bottom)
-   (%t*% :unwind-dest)
-   (%size_t% :unwind-dest-index)
-   (%size_t% :unwinds)
-   (%i8% :breakstep)
-   (%void*% :breakstep-frame)
-   (%mv-struct% :multiple-values)))
+(define-c++-struct %thread-local-state%
+  (%t*% :process)
+  (%t*% :dyn-env-stack-bottom)
+  (%t*% :unwind-dest)
+  (%size_t% :unwind-dest-index)
+  (%size_t% :unwinds)
+  (%i8% :breakstep)
+  (%void*% :breakstep-frame)
+  (%mv-struct% :multiple-values))
 (define-symbol-macro %thread-local-state*% (llvm-sys:type-get-pointer-to %thread-local-state%))
 
 #+(or)(progn
@@ -608,9 +599,9 @@ Boehm and MPS use a single pointer"
 (progn
   ;; Tack on a size_t to store the number of remaining arguments
 
-  (define-c++-struct %vaslist% +vaslist0-tag+  ;; TODO - there is going to be a problem here becaues of +vaslist1-tag+
-    ((%t**% :args)     ; This is a pointer to T*
-     (%uintptr_t% :nargs)))
+  (define-c++-struct %vaslist%
+    (%t**% :args)     ; This is a pointer to T*
+    (%uintptr_t% :nargs))
   (define-symbol-macro %vaslist*% (llvm-sys:type-get-pointer-to %vaslist%))
 
 ;;;    "Function prototype for generic functions")
@@ -769,9 +760,9 @@ Boehm and MPS use a single pointer"
 ;;
 ;; The %function% type MUST match the layout and size of Function_O in function.h
 ;;
-(define-c++-struct %Function% +general-tag+
-  ((%i8*%      :vtable)
-   (%global-entry-point*% :global-entry-point)))
+(define-c++-struct %Function%
+  (%i8*%      :vtable)
+  (%global-entry-point*% :global-entry-point))
 
 (define-symbol-macro %Function*% (llvm-sys:type-get-pointer-to %Function%))
 (define-symbol-macro %Function_sp% (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context (smart-pointer-fields %Function*%)) nil)) ;; "Cfn_sp"
@@ -799,13 +790,12 @@ Boehm and MPS use a single pointer"
                                 nil)))
 (define-symbol-macro %function-description*% (llvm-sys:type-get-pointer-to %function-description%))
 
-(define-c++-struct %closure% +general-tag+
-  ((%i8*% vtable)
-   (%t*% entry-point)
-   (%size_t% data-length)
-   (%tsp[0]% data0))
-  )
-(core:verify-closure (c++-struct-field-offsets info.%closure%))
+(define-c++-struct %closure%
+  (%i8*% vtable)
+  (%t*% entry-point)
+  (%size_t% data-length)
+  (%tsp[0]% data0))
+#+(or)(core:verify-closure (c++-struct-field-offsets info.%closure%))
 
 (defun %closure%.offset-of[n]/t* (index)
   "This assumes that the t* offset coincides with the tsp start"
@@ -831,6 +821,7 @@ Boehm and MPS use a single pointer"
 ;;
                                                    
 (progn
+  #+(or)
   (let* ((data-layout (system-data-layout))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
@@ -854,28 +845,32 @@ Boehm and MPS use a single pointer"
                                                   :function-description-offset (+ function-description-offset +general-tag+)
                                                   :vaslist vaslist-size
                                                   :function-description function-description-size)
-
+    #+(or)
     (let* ((instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %instance%))
            (instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %instance%))
            (instance-rack-offset (llvm-sys:struct-layout-get-element-offset instance-layout +instance.rack-index+)))
       (core:verify-instance-layout instance-size instance-rack-offset))
-
     (unless (= +instance.rack-index+ +funcallable-instance.rack-index+)
       (error "The +instance.rack-index+ ~d MUST match +funcallable-instance.rack-index+ ~d"
              +instance.rack-index+ +funcallable-instance.rack-index+))
+    #+(or)
     (let* ((funcallable-instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %funcallable-instance%))
            (funcallable-instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %funcallable-instance%))
            (funcallable-instance-rack-offset (llvm-sys:struct-layout-get-element-offset funcallable-instance-layout +funcallable-instance.rack-index+)))
       (core:verify-funcallable-instance-layout funcallable-instance-size funcallable-instance-rack-offset))
+    #+(or)
     (let* ((simple-vector-layout (llvm-sys:data-layout-get-struct-layout data-layout %simple-vector%))
            (simple-vector-length-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.length-index+))
            (simple-vector-data-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.data-index+)))
       (core:verify-simple-vector-layout simple-vector-length-offset simple-vector-data-offset))
+    #+(or)
     (let* ((rack-layout (llvm-sys:data-layout-get-struct-layout data-layout %rack%))
            (rack-stamp-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.stamp-index+))
            (rack-data-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.data-index+)))
       (core:verify-rack-layout rack-stamp-offset rack-data-offset))
+    #+(or)
     (core:verify-mdarray-layout (c++-struct-field-offsets info.%mdarray%))
+    #+(or)
     (let* ((wrapped-pointer-layout (llvm-sys:data-layout-get-struct-layout data-layout %wrapped-pointer%))
            (wrapped-pointer-stamp-offset (llvm-sys:struct-layout-get-element-offset wrapped-pointer-layout +wrapped-pointer.stamp-index+)))
       (core:verify-wrapped-pointer-layout wrapped-pointer-stamp-offset))

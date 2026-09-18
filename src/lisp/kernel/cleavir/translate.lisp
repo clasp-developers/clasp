@@ -1834,12 +1834,13 @@ function-or-placeholder - the llvm function or a placeholder for
       (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
              (llvm-function-info (find-llvm-function-info ir))
              (environment-values
-               (loop for import in (environment llvm-function-info)
+               (loop with uclosure-vec = (cmp:irc-untag-general closure-vec)
+                     for import in (environment llvm-function-info)
                      for i from 0
                      for offset = (cmp:%closure%.offset-of[n]/t* i)
                      when import ; skip unused fixed closure entries
                        collect (cmp:irc-t*-load-atomic
-                                (cmp::gen-memref-address closure-vec offset))))
+                                (cmp::gen-memref-address uclosure-vec offset))))
              (source-pos-info (function-source-pos-info ir)))
         ;; Tail call the real function.
         (cmp:with-debug-info-source-position (source-pos-info)
