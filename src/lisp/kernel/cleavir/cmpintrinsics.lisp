@@ -266,14 +266,15 @@ names to offsets."
   (llvm-print msg)
   (irc-intrinsic "debugPrint_size_t" (irc-bit-cast st %i64%)))
 
-(defun c++-field-ptr (struct-info tagged-object field-name &optional (label ""))
+(defun c++-field-ptr (struct-info tagged-object field-name
+                      &optional (label (string-downcase field-name)))
   (let* ((untagged
            (irc-intrinsic "llvm.ptrmask.p0.i64" tagged-object
                           (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
-         (field* (irc-typed-gep %i8% untagged (list (jit-constant-i64 (c++-field-offset field-name struct-info)))))
-         (field-type-getter (cdr (assoc field-name (c++-struct-field-type-getters struct-info))))
-         (field-ptr (irc-bit-cast field* (funcall field-type-getter) label)))
-    field-ptr))
+         (type (funcall (c++-struct-type-getter struct-info)))
+         (index (or (cdr (assoc field-name (c++-struct-field-indices struct-info)))
+                    (error "Could not find field ~a in ~s" field-name struct-info))))
+    (irc-typed-gep type untagged (list 0 index) label)))
 
 ;;; DO NOT CHANGE THE FOLLOWING STRUCT!!! IT MUST MATCH vaslist
 
