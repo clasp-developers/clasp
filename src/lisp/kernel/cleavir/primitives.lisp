@@ -213,7 +213,7 @@
                                                     :i8*
                                                     :t*
                                                     :size_t ))
-         (primitive-unwinds "cc_initialize_closure" :void (list :t*
+         (primitive         "cc_initialize_closure" :void (list :t*
                                                            :size_t ) :varargs t)
          (primitive-unwinds "cc_variableCellValue" :t* (list :t*))
          (primitive         "cc_set_variableCellValue" :void (list :t* :t*))
