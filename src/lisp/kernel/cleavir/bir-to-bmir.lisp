@@ -324,9 +324,6 @@
 (deftransform core::%rotate-byte32-right core::%rotate-byte32-right
   (and fixnum (integer 0)) fixnum)
 
-;;(deftransform car cleavir-primop:car cons)
-;;(deftransform cdr cleavir-primop:cdr cons)
-
 ;;; We can't use %DISPLACEMENT here because it will return the underlying
 ;;; simple array even when there isn't one as far as standard lisp is concerned,
 ;;; e.g. for a simple mdarray, or an undisplaced adjustable array.
@@ -368,10 +365,6 @@
 (deftransform length core::vector-length (simple-array * (*)))
 
 (deftransform consp consp t)
-(deftransform car cleavir-primop:car cons)
-(deftransform cdr cleavir-primop:cdr cons)
-(deftransform rplaca cleavir-primop:rplaca cons t)
-(deftransform rplacd cleavir-primop:rplacd cons t)
 
 (deftransform core:set-breakstep core:set-breakstep)
 (deftransform core:unset-breakstep core:unset-breakstep)

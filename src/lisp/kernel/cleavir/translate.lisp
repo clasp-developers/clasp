@@ -1357,36 +1357,6 @@ function-or-placeholder - the llvm function or a placeholder for
                     (bir:origin instr) inputrt outputrt)
     (out (translate-cast (in input) inputrt outputrt) output)))
 
-(defmethod translate-simple-instruction ((inst cc-blir:memref2) abi)
-  (declare (ignore abi))
-  (out (cmp::gen-memref-address (in (first (bir:inputs inst)))
-                                (cc-blir:offset inst))
-       (bir:output inst)))
-
-(defmethod translate-simple-instruction ((inst cc-blir:load) abi)
-  (declare (ignore abi))
-  (out (cmp:irc-t*-load-atomic (in (first (bir:inputs inst)))
-                            :order (cmp::order-spec->order (cc-bir:order inst))
-                            :label (datum-name-as-string
-                                    (bir:output inst)))
-       (bir:output inst)))
-
-(defmethod translate-simple-instruction ((inst cc-blir:store) abi)
-  (declare (ignore abi))
-  (cmp:irc-store-atomic
-   (in (first (bir:inputs inst)))
-   (in (second (bir:inputs inst)))
-   :order (cmp::order-spec->order (cc-bir:order inst))))
-
-(defmethod translate-simple-instruction ((inst cc-blir:cas) abi)
-  (declare (ignore abi))
-  (out (cmp:irc-cmpxchg (in (first (bir:inputs inst)))
-                        (in (second (bir:inputs inst)))
-                        (in (third (bir:inputs inst)))
-                        :order (cmp::order-spec->order (cc-bir:order inst))
-                        :label (datum-name-as-string (bir:output inst)))
-       (bir:output inst)))
-
 (defmethod translate-simple-instruction ((inst cc-vaslist:values-list) abi)
   (declare (ignore abi))
   ;; This is just a change in rtype, from (:vaslist) to :vaslist,
@@ -2113,7 +2083,6 @@ function-or-placeholder - the llvm function or a placeholder for
   (cc-vaslist:maybe-transform-module module)
   (bir-transformations:module-generate-type-checks module system)
   (cc-bir-to-bmir:reduce-module-instructions module)
-  (cc-bmir-to-blir:reduce-module-instructions module)
   ;; These should happen after higher level optimizations since they are like
   ;; "post passes" which do not modify the flow graph.
   ;; NOTE: These must come in this order to maximize analysis.

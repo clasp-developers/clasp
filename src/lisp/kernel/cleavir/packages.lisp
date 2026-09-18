@@ -59,11 +59,6 @@
   (:export #:reduce-module-instructions)
   (:export #:assign-module-rtypes #:insert-casts-into-module))
 
-(defpackage #:cc-bmir-to-blir
-  (:use #:cl)
-  (:local-nicknames (#:bir #:cleavir-bir))
-  (:export #:reduce-module-instructions))
-
 (defpackage #:clasp-cleavir-bmir
   (:use #:cl)
   (:nicknames #:cc-bmir)
@@ -76,15 +71,6 @@
   (:export #:datum)
   (:export #:rtype)
   (:export #:cast-one))
-
-(defpackage #:clasp-cleavir-blir
-  (:use #:cl)
-  (:nicknames #:cc-blir)
-  (:local-nicknames (#:bir #:cleavir-bir))
-  ;; Shadowing cl:load isn't strictly necessary, but will keep it from
-  ;; showing up in M-. or the like.
-  (:shadow #:load)
-  (:export #:memref2 #:offset #:load #:store #:cas))
 
 (defpackage #:clasp-cleavir-vaslist
   (:use #:cl)
