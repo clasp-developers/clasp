@@ -335,26 +335,20 @@ local-function - the lcl function that all of the xep functions call."
   (if (member :check-tags *features*)
       (irc-intrinsic "cc_verify_tag" (jit-constant-i64 (core:next-jit-unique-counter)) tagged-ptr (jit-constant-i64 tag))))
 
-(defun irc-untag-general (tagged-ptr &optional (type %t**%))
-  #+(or)(let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-               (ptr-untagged (irc-typed-gep %i8*% ptr-i8* (list (- +general-tag+)))))
-          (irc-bit-cast ptr-untagged type))
+(defun irc-untag-general (tagged-ptr)
   (irc-maybe-check-tag tagged-ptr +general-tag+)
-  (let* ((ptr-int (irc-ptr-to-int tagged-ptr %uintptr_t%))
-         (ptr-adjusted (irc-sub ptr-int (jit-constant-i64 1))))
-    (irc-int-to-ptr ptr-adjusted type)))
+  (irc-intrinsic "llvm.ptrmask.p0.i64"
+                 tagged-ptr (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
 
-(defun irc-untag-cons (tagged-ptr &optional (type %cons*%))
+(defun irc-untag-cons (tagged-ptr)
   (irc-maybe-check-tag tagged-ptr +cons-tag+)
-  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-         (ptr-untagged (irc-typed-gep %i8% ptr-i8* (list (- +cons-tag+)))))
-    (irc-bit-cast ptr-untagged type)))
+  (irc-intrinsic "llvm.ptrmask.p0.i64"
+                 tagged-ptr (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
 
-(defun irc-untag-vaslist (tagged-ptr &optional (type %vaslist*%))
+(defun irc-untag-vaslist (tagged-ptr)
   (irc-maybe-check-tag tagged-ptr +vaslist0-tag+)
-  (let* ((ptr-i8* (irc-bit-cast tagged-ptr %i8*%))
-         (ptr-untagged (irc-typed-gep %i8% ptr-i8* (list (- +vaslist0-tag+)))))
-    (irc-bit-cast ptr-untagged type)))
+  (irc-intrinsic "llvm.ptrmask.p0.i64"
+                 tagged-ptr (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
 
 (defun irc-int-to-ptr (val ptr-type &optional (label "inttoptr"))
   (llvm-sys:create-int-to-ptr *irbuilder* val ptr-type label))
@@ -408,7 +402,6 @@ representing a tagged fixnum."
                   %t*% label))
 
 (defun irc-unbox-vaslist (t* &optional (label "vaslist-v*"))
-  ;; FIXME: Probably we should untag by masking instead of subttraction
   (let* ((vaslist* (irc-untag-vaslist t*)))
     (irc-typed-load %vaslist% vaslist* label)))
 
@@ -451,7 +444,7 @@ representing a tagged fixnum."
 
 
 (defun irc-rack-address (instance-tagged)
-  (let ((instance* (irc-untag-general instance-tagged %instance*%)))
+  (let ((instance* (irc-untag-general instance-tagged)))
     (irc-struct-gep %instance% instance* +instance.rack-index+)))
 
 (defun irc-rack (instance-tagged)
@@ -461,7 +454,7 @@ representing a tagged fixnum."
   (irc-store-atomic rack (irc-rack-address instance-tagged)))
 
 (defun irc-rack-slot-address (rack-tagged index)
-  (let* ((rack* (irc-untag-general rack-tagged %rack*%))
+  (let* ((rack* (irc-untag-general rack-tagged))
          ;; Address of the start of the data vector.
          (data0* (irc-struct-gep %rack% rack* +rack.data-index+)))
     (irc-typed-gep %t*[0]% data0* (list 0 index))))
@@ -540,7 +533,7 @@ representing a tagged fixnum."
          (instance* (irc-bit-cast instance %instance*%))
          (racks* (irc-struct-gep %instance% instance* +instance.rack-index+))
          (rack (irc-t*-load racks* "rack-tagged"))
-         (rack* (irc-untag-general rack %rack*%))
+         (rack* (irc-untag-general rack))
          (stamp* (irc-struct-gep %rack% rack* +rack.stamp-index+))
          (stamp-fixnum* (irc-bit-cast stamp* %t**%)))
     (irc-typed-load %t*% stamp-fixnum*)))
