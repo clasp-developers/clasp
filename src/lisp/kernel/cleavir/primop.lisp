@@ -385,8 +385,7 @@
 
 (defun %vector-element-address (vec element-type index)
   (let* ((vtype (cmp::simple-vector-llvm-type element-type))
-         (type (llvm-sys:type-get-pointer-to vtype))
-         (cvec (cmp:irc-bit-cast vec type))
+         (cvec (cmp:irc-untag-general vec))
          (gep-indices (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index)))
     (cmp:irc-typed-gep-variable vtype cvec gep-indices)))
 

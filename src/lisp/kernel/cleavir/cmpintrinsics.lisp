@@ -578,7 +578,7 @@ Boehm and MPS use a single pointer"
      context
      (list
       ;; Spacer to get to the stuff that matters
-      (llvm-sys:array-type-get %i8% (- +simple-vector._length-offset+ +general-tag+))
+      (llvm-sys:array-type-get %i8% +simple-vector._length-offset+)
       ;; The length, an untagged integer
       %size_t%
       ;; The data, a flexible member
