@@ -1103,6 +1103,8 @@ But no irbuilders or basic-blocks. Return the fn."
          (ep-arity-i8*  (irc-typed-load %i8*% ep-arity-i8** (format nil "xep-~a-i8*" arity))))
     (irc-bit-cast ep-arity-i8* function-type "ep")))
 
+(defun irc-closure-cells (closure &optional (label "closure-cells"))
+  (c++-field-ptr info.%closure% closure 'data0 label))
 
 ;;; Our present convention is that Lisp functions uniformly have
 ;;; (closure nargs arg0 .. argm ...) as parameters, where m is
@@ -1113,7 +1115,6 @@ But no irbuilders or basic-blocks. Return the fn."
 ;;; ignore anything past, undef is fine. (NULL results in pointless
 ;;; register zeroing.)
 
-                  
 (defun irc-calculate-real-args (arity closure arguments)
   (if (eq arity :general-entry)
       (let ((arg-buffer (alloca-arguments (length arguments) "call-args"))

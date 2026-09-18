@@ -631,22 +631,6 @@ core::T_O* cc_enclose(core::T_O* simpleFunInfo, std::size_t numCells) {
   return functoid.raw_();
 }
 
-void cc_initialize_closure(core::T_O* functoid, std::size_t numCells, ...) {
-  NO_UNWIND_BEGIN();
-  core::T_O* p;
-  va_list argp;
-  va_start(argp, numCells);
-  int idx = 0;
-  Closure_sp closure((gctools::Tagged)functoid);
-  for (; numCells; --numCells) {
-    p = ENSURE_VALID_OBJECT(va_arg(argp, core::T_O*));
-    (*closure)[idx] = gctools::smart_ptr<core::T_O>((gc::Tagged)p);
-    ++idx;
-  }
-  va_end(argp);
-  NO_UNWIND_END();
-}
-
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   throwOddKeywordsError(closure);

@@ -796,12 +796,6 @@ Boehm and MPS use a single pointer"
   (%tsp[0]% data0))
 (core:verify-closure (c++-struct-field-offsets info.%closure%))
 
-(defun %closure%.offset-of[n]/t* (index)
-  "This assumes that the t* offset coincides with the tsp start"
-  (let* ((offset-of-data (cdr (assoc 'data0 (c++-struct-field-offsets info.%closure%))))
-         (sizeof-element (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %tsp%)))
-    (+ (* sizeof-element index) offset-of-data)))
-
 #|
   (defun make-gv-file-scope-handle (module &optional handle)
     (if (null handle) (setq handle -1))

@@ -860,6 +860,16 @@ function-or-placeholder - the llvm function or a placeholder for
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (info-literal info)))
 
+;;; Generate code to initialize a closure('s cells) after cc_enclose.
+(defun initialize-closure (closure closed)
+  (loop with cells = (cmp::irc-closure-cells closure)
+        for i from 0
+        for close in closed
+        for addr = (cmp:irc-typed-gep cmp:%t*% cells (list i) "closure-cell")
+        ;; FIXME: not sure this needs to be atomic. better safe than sorry.
+        ;; it's just monotonic anyway.
+        do (cmp:irc-store-atomic close addr)))
+
 (defun enclose (function extent &optional (delay t))
   (let* ((code-info (find-llvm-function-info function))
          (environment (environment code-info))
@@ -887,14 +897,10 @@ function-or-placeholder - the llvm function or a placeholder for
           (if delay
               (delay-initializer
                (lambda ()
-                 (%intrinsic-invoke-if-landing-pad-or-call
-                  "cc_initialize_closure"
-                  (list* enclose sninputs
-                         (mapcar #'variable-as-argument environment)))))
-              (%intrinsic-invoke-if-landing-pad-or-call
-               "cc_initialize_closure"
-               (list* enclose sninputs
-                      (mapcar #'variable-as-argument environment))))
+                 (initialize-closure
+                  enclose (mapcar #'variable-as-argument environment))))
+              (initialize-closure
+               enclose (mapcar #'variable-as-argument environment)))
           enclose)
         ;; When the function has no environment, it can be compiled and
         ;; referenced as literal.
@@ -1831,16 +1837,16 @@ function-or-placeholder - the llvm function or a placeholder for
         (unless ret
           (error "cmp:compile-lambda-list-code returned NIL which means this is not a function that should be generated")))
       ;; Import cells.
-      (let* ((closure-vec (first (llvm-sys:get-argument-list the-function)))
+      (let* ((closure (first (llvm-sys:get-argument-list the-function)))
              (llvm-function-info (find-llvm-function-info ir))
              (environment-values
-               (loop with uclosure-vec = (cmp:irc-untag-general closure-vec)
+               (loop with closure-vec = (cmp::irc-closure-cells closure)
                      for import in (environment llvm-function-info)
                      for i from 0
-                     for offset = (cmp:%closure%.offset-of[n]/t* i)
+                     for addr = (cmp:irc-typed-gep cmp:%t*% closure-vec (list i)
+                                                   "closure-cell")
                      when import ; skip unused fixed closure entries
-                       collect (cmp:irc-t*-load-atomic
-                                (cmp::gen-memref-address uclosure-vec offset))))
+                       collect (cmp:irc-t*-load-atomic addr)))
              (source-pos-info (function-source-pos-info ir)))
         ;; Tail call the real function.
         (cmp:with-debug-info-source-position (source-pos-info)

@@ -224,8 +224,6 @@
            (list :i8* 'llvm-sys:attribute-write-only)
            (list :t* 'llvm-sys:attribute-read-only)
            :size_t))
-         (primitive         "cc_initialize_closure" :void
-          (list (list :t* 'llvm-sys:attribute-write-only) :size_t ) :varargs t)
          (primitive-unwinds "cc_variableCellValue" :t* (list (list :t* 'llvm-sys:attribute-read-only)))
          (primitive         "cc_set_variableCellValue" :void (list :t* :t*))
          (primitive         "cc_getCellTLIndex" :i32 (list :t*))

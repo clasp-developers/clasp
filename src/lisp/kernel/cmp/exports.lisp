@@ -333,7 +333,6 @@
           c++-struct-type
           c++-struct*-type
           c++-field-ptr
-          %closure%.offset-of[n]/t*
           with-debug-info-generator
           with-irbuilder
           with-landing-pad
