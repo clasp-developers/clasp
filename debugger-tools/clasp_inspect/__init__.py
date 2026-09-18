@@ -354,7 +354,7 @@ class Character:
     def value(self):
         return self._Value
     def __repr__(self):
-        return "#\[%s]" % str(self._Value)
+        return "#\\[%s]" % str(self._Value)
     def shallowString(self):
         return self.__repr__()
     def consp(self):
