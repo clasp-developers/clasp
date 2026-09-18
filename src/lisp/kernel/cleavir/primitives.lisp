@@ -259,7 +259,14 @@
          ;; be no problem reordering calls around memory accesses.
          ;; It might be a problem if it was used in a coroutine that was resumed
          ;; from another thread, but we don't use coroutines.
-         (primitive         "cc_my_thread" :thread-local-state* (list) :speculatable t :will-return t :memory :none)
+         (primitive         "cc_my_thread"
+          (list :thread-local-state* '(:align 8)
+           ;; KLUDGE: ideally this would be the actual size of a ThreadLocalState
+           ;; but we don't actually have that atm (and getting type sizes out of LLVM
+           ;;  is pretty confusing because it can differ by target)
+           ;; This is everything in thread-local-state, with 8192 multiple values.
+           '(:dereferenceable 65586))
+          (list) :speculatable t :will-return t :memory :none)
          ;; While this obviously unwinds, it does so by SJLJ and will
          ;; never throw an exception.
          (primitive         "cc_sjlj_continue_unwinding" :void nil :does-not-return t)

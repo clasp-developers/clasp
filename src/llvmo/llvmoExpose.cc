@@ -3399,6 +3399,13 @@ CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::DISubprogram*)) &
 CL_LISPIFY_NAME("addRetAttr");
 CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::Attribute::AttrKind))&llvm::Function::addRetAttr);
 
+CL_DEFUN void llvm_sys__add_ret_align_attr(llvm::Function* func, uint64_t align) {
+  func->addRetAttr(llvm::Attribute::getWithAlignment(func->getContext(), llvm::Align(align)));
+}
+CL_DEFUN void llvm_sys__add_ret_dereferenceable_attr(llvm::Function* func, uint64_t dereferenceable) {
+  func->addRetAttr(llvm::Attribute::getWithDereferenceableBytes(func->getContext(), dereferenceable));
+}
+
 CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
   return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));
 }

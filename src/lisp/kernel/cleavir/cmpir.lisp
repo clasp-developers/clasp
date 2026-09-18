@@ -1381,6 +1381,14 @@ But no irbuilders or basic-blocks. Return the fn."
                          collect (loc loc) collect (modref mr))))
          (apply #'llvm-sys:add-memory-attribute function most rest))))))
 
+(defun add-ret-attr (function attribute)
+  (etypecase attribute
+    (symbol (llvm-sys:add-ret-attr function attribute))
+    ((cons (eql :align) (cons (unsigned-byte 64) null))
+     (llvm-sys:add-ret-align-attr function (second attribute)))
+    ((cons (eql :dereferenceable) (cons (unsigned-byte 64) null))
+     (llvm-sys:add-ret-dereferenceable-attr function (second attribute)))))
+
 (defun declare-function-in-module (module dispatch-name primitive-info)
   (let ((return-ty (primitive-return-type primitive-info))
         (argument-types (primitive-argument-types primitive-info))
@@ -1411,7 +1419,7 @@ But no irbuilders or basic-blocks. Return the fn."
       #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
-          (llvm-sys:add-ret-attr function attribute)))
+          (add-ret-attr function attribute)))
       (dolist (index-attributes argument-attributes)
         (let ((index (car index-attributes))
               (attributes (cdr index-attributes)))
