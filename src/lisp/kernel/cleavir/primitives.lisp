@@ -105,9 +105,14 @@
          (primitive         "cc_list" (list :t* 'llvm-sys:attribute-no-alias)
           (list :size_t) :varargs t)
          (primitive         "cc_gatherRestArguments"
-          (list :t* 'llvm-sys:attribute-no-alias) (list :vaslist* :size_t))
-         (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
-         (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
+          (list :t* 'llvm-sys:attribute-no-alias)
+          (list (list :vaslist* 'llvm-sys:attribute-read-only) :size_t))
+         (primitive         "cc_gatherDynamicExtentRestArguments" :t*
+          (list (list :vaslist* 'llvm-sys:attribute-read-only) :size_t
+           (list :t** 'llvm-sys:attribute-write-only)))
+         (primitive         "cc_gatherVaRestArguments" :t*
+          (list (list :vaslist* 'llvm-sys:attribute-read-only) :size_t
+           (list :vaslist* 'llvm-sys:attribute-write-only)))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
          (primitive-unwinds "cc_error_bugged_come_from" :void (list :size_t) :does-not-return t)
     
@@ -198,31 +203,32 @@
     
          ;; Primitives for Cleavir code
 
-         (primitive         "cm_vref" :return-type (list :t* :t*))
+         (primitive         "cm_vref" :return-type (list (list :t* 'llvm-sys:attribute-read-only) :t*))
          (primitive         "cm_vset" :return-type (list :t* :t* :t*))
          (primitive         "cc_ensure_valid_object" :t* (list :t*))
-         (primitive         "cc_getPointer" :i8* (list :t*))
+         (primitive         "cc_getPointer" :i8* (list (list :t* 'llvm-sys:attribute-read-only)))
          (primitive-unwinds "cc_makeCell"
           (list :t* 'llvm-sys:attribute-no-alias) nil)
-         (primitive-unwinds "cc_checkBound" :size_t (list :t* :size_t :t*))
-         (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
-         (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i64))
+         (primitive-unwinds "cc_checkBound" :size_t (list (list :t* 'llvm-sys:attribute-read-only) :size_t :t*))
+         (primitive         "cc_simpleBitVectorAref" :i8 (list (list :t* 'llvm-sys:attribute-read-only) :size_t))
+         (primitive         "cc_simpleBitVectorAset" :void (list (list :t* 'llvm-sys:attribute-read-only) :size_t :i64))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 
          (primitive-unwinds "cc_enclose" (list :t* 'llvm-sys:attribute-no-alias)
-          (list :t* :size_t))
-         (primitive         "cc_stack_enclose" :t* (list
-                                                    :i8*
-                                                    :t*
-                                                    :size_t ))
-         (primitive         "cc_initialize_closure" :void (list :t*
-                                                           :size_t ) :varargs t)
-         (primitive-unwinds "cc_variableCellValue" :t* (list :t*))
+          (list (list :t* 'llvm-sys:attribute-read-only) :size_t))
+         (primitive         "cc_stack_enclose" :t*
+          (list
+           (list :i8* 'llvm-sys:attribute-write-only)
+           (list :t* 'llvm-sys:attribute-read-only)
+           :size_t))
+         (primitive         "cc_initialize_closure" :void
+          (list (list :t* 'llvm-sys:attribute-write-only) :size_t ) :varargs t)
+         (primitive-unwinds "cc_variableCellValue" :t* (list (list :t* 'llvm-sys:attribute-read-only)))
          (primitive         "cc_set_variableCellValue" :void (list :t* :t*))
          (primitive         "cc_getCellTLIndex" :i32 (list :t*))
-         (primitive         "cc_specialBind" :t* (list :i32 :t*))
-         (primitive         "cc_specialUnbind" :void (list :i32 :t*))
+         (primitive         "cc_specialBind" :t* (list :i32 (list :t* 'llvm-sys:attribute-read-only)))
+         (primitive         "cc_specialUnbind" :void (list :i32 (list :t* 'llvm-sys:attribute-read-only)))
 
          (primitive-unwinds "cc_oddKeywordException" :void (list :t*))
          ;; Marking setjmp as returns_twice is EXTREMELY IMPORTANT.
