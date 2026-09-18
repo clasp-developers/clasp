@@ -1082,13 +1082,13 @@ SYMBOL_EXPORT_SC_(KeywordPkg, Dimensions);
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_mdarray_layout(T_sp alist) {
   expect_offset(kw::_sym_FillPointerOrLengthOrDummy, alist,
-                offsetof(MDArray_O, _FillPointerOrLengthOrDummy) - gctools::general_tag);
-  expect_offset(kw::_sym_ArrayTotalSize, alist, offsetof(MDArray_O, _ArrayTotalSize) - gctools::general_tag);
-  expect_offset(kw::_sym_Data, alist, offsetof(MDArray_O, _Data) - gctools::general_tag);
-  expect_offset(kw::_sym_DisplacedIndexOffset, alist, offsetof(MDArray_O, _DisplacedIndexOffset) - gctools::general_tag);
-  expect_offset(kw::_sym_Flags, alist, offsetof(MDArray_O, _Flags) - gctools::general_tag);
-  expect_offset(kw::_sym_Rank, alist, offsetof(MDArray_O, _Dimensions._MaybeSignedLength) - gctools::general_tag);
-  expect_offset(kw::_sym_Dimensions, alist, offsetof(MDArray_O, _Dimensions._Data) - gctools::general_tag);
+                offsetof(MDArray_O, _FillPointerOrLengthOrDummy));
+  expect_offset(kw::_sym_ArrayTotalSize, alist, offsetof(MDArray_O, _ArrayTotalSize));
+  expect_offset(kw::_sym_Data, alist, offsetof(MDArray_O, _Data));
+  expect_offset(kw::_sym_DisplacedIndexOffset, alist, offsetof(MDArray_O, _DisplacedIndexOffset));
+  expect_offset(kw::_sym_Flags, alist, offsetof(MDArray_O, _Flags));
+  expect_offset(kw::_sym_Rank, alist, offsetof(MDArray_O, _Dimensions._MaybeSignedLength));
+  expect_offset(kw::_sym_Dimensions, alist, offsetof(MDArray_O, _Dimensions._Data));
 }
 
 SYMBOL_SC_(CorePkg, make_vector);

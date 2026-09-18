@@ -655,9 +655,9 @@ SYMBOL_SC_(CompPkg, data0);
 
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_closure(T_sp alist) {
-  expect_offset(core::_sym_entry_point, alist, offsetof(Closure_O, _TheSimpleFun) - gctools::general_tag);
-  expect_offset(comp::_sym_data_length, alist, offsetof(Closure_O, _Slots._MaybeSignedLength) - gctools::general_tag);
-  expect_offset(comp::_sym_data0, alist, offsetof(Closure_O, _Slots._Data) - gctools::general_tag);
+  expect_offset(core::_sym_entry_point, alist, offsetof(Closure_O, _TheSimpleFun));
+  expect_offset(comp::_sym_data_length, alist, offsetof(Closure_O, _Slots._MaybeSignedLength));
+  expect_offset(comp::_sym_data0, alist, offsetof(Closure_O, _Slots._Data));
 }
 
 SYMBOL_EXPORT_SC_(KeywordPkg, function_description);
@@ -667,9 +667,9 @@ SYMBOL_EXPORT_SC_(KeywordPkg, required_args);
 
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_global_entry_point(T_sp alist) {
-  expect_offset(kw::_sym_function_description, alist, offsetof(SimpleCoreFun_O, _FunctionDescription) - gctools::general_tag);
-  expect_offset(kw::_sym_code, alist, offsetof(SimpleCoreFun_O, _Code) - gctools::general_tag);
-  expect_offset(kw::_sym_entry_points, alist, offsetof(SimpleCoreFun_O, _EntryPoints._EntryPoints) - gctools::general_tag);
+  expect_offset(kw::_sym_function_description, alist, offsetof(SimpleCoreFun_O, _FunctionDescription));
+  expect_offset(kw::_sym_code, alist, offsetof(SimpleCoreFun_O, _Code));
+  expect_offset(kw::_sym_entry_points, alist, offsetof(SimpleCoreFun_O, _EntryPoints._EntryPoints));
 }
 
 CL_LISPIFY_NAME(bytecode_closure/make);

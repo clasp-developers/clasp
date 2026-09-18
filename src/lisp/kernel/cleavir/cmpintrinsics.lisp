@@ -357,7 +357,7 @@ Boehm and MPS use a single pointer"
 (define-symbol-macro %entry-point-vector*% (llvm-sys:type-get-pointer-to %entry-point-vector%))
 
 
-;;(core:verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%))
+(core:verify-global-entry-point (c++-struct-field-offsets info.%global-entry-point%))
 
 
 ;;; MUST match WrappedPointer_O layout
@@ -469,7 +469,6 @@ Boehm and MPS use a single pointer"
 
 (defparameter +cons.car-index+ (c++-field-index :car info.%cons%))
 (defparameter +cons.cdr-index+ (c++-field-index :cdr info.%cons%))
-#+(or)
 (let* ((cons-size (llvm-sys:data-layout-get-type-alloc-size (system-data-layout) %cons%))
        (cons-layout (llvm-sys:data-layout-get-struct-layout (system-data-layout) %cons%))
        (cons-car-offset (llvm-sys:struct-layout-get-element-offset cons-layout +cons.car-index+))
@@ -795,7 +794,7 @@ Boehm and MPS use a single pointer"
   (%t*% entry-point)
   (%size_t% data-length)
   (%tsp[0]% data0))
-#+(or)(core:verify-closure (c++-struct-field-offsets info.%closure%))
+(core:verify-closure (c++-struct-field-offsets info.%closure%))
 
 (defun %closure%.offset-of[n]/t* (index)
   "This assumes that the t* offset coincides with the tsp start"
@@ -821,7 +820,6 @@ Boehm and MPS use a single pointer"
 ;;
                                                    
 (progn
-  #+(or)
   (let* ((data-layout (system-data-layout))
          (tsp-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tsp%))
          (tmv-size (llvm-sys:data-layout-get-type-alloc-size data-layout %tmv%))
@@ -842,10 +840,9 @@ Boehm and MPS use a single pointer"
                                                   :symbol-function-offset symbol-function-offset
                                                   :symbol-setf-function-offset symbol-setf-function-offset
                                                   :function function-size
-                                                  :function-description-offset (+ function-description-offset +general-tag+)
+                                                  :function-description-offset function-description-offset
                                                   :vaslist vaslist-size
                                                   :function-description function-description-size)
-    #+(or)
     (let* ((instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %instance%))
            (instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %instance%))
            (instance-rack-offset (llvm-sys:struct-layout-get-element-offset instance-layout +instance.rack-index+)))
@@ -853,24 +850,19 @@ Boehm and MPS use a single pointer"
     (unless (= +instance.rack-index+ +funcallable-instance.rack-index+)
       (error "The +instance.rack-index+ ~d MUST match +funcallable-instance.rack-index+ ~d"
              +instance.rack-index+ +funcallable-instance.rack-index+))
-    #+(or)
     (let* ((funcallable-instance-size (llvm-sys:data-layout-get-type-alloc-size data-layout %funcallable-instance%))
            (funcallable-instance-layout (llvm-sys:data-layout-get-struct-layout data-layout %funcallable-instance%))
            (funcallable-instance-rack-offset (llvm-sys:struct-layout-get-element-offset funcallable-instance-layout +funcallable-instance.rack-index+)))
       (core:verify-funcallable-instance-layout funcallable-instance-size funcallable-instance-rack-offset))
-    #+(or)
     (let* ((simple-vector-layout (llvm-sys:data-layout-get-struct-layout data-layout %simple-vector%))
            (simple-vector-length-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.length-index+))
            (simple-vector-data-offset (llvm-sys:struct-layout-get-element-offset simple-vector-layout +simple-vector.data-index+)))
       (core:verify-simple-vector-layout simple-vector-length-offset simple-vector-data-offset))
-    #+(or)
     (let* ((rack-layout (llvm-sys:data-layout-get-struct-layout data-layout %rack%))
            (rack-stamp-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.stamp-index+))
            (rack-data-offset (llvm-sys:struct-layout-get-element-offset rack-layout +rack.data-index+)))
       (core:verify-rack-layout rack-stamp-offset rack-data-offset))
-    #+(or)
     (core:verify-mdarray-layout (c++-struct-field-offsets info.%mdarray%))
-    #+(or)
     (let* ((wrapped-pointer-layout (llvm-sys:data-layout-get-struct-layout data-layout %wrapped-pointer%))
            (wrapped-pointer-stamp-offset (llvm-sys:struct-layout-get-element-offset wrapped-pointer-layout +wrapped-pointer.stamp-index+)))
       (core:verify-wrapped-pointer-layout wrapped-pointer-stamp-offset))

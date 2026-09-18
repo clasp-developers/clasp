@@ -730,13 +730,13 @@ SYMBOL_EXPORT_SC_(KeywordPkg, property_list);
 
 DOCGROUP(clasp);
 CL_DEFUN void core__verify_symbol_layout(T_sp alist) {
-  expect_offset(kw::_sym_name, alist, offsetof(Symbol_O, _Name) - gctools::general_tag);
-  expect_offset(kw::_sym_home_package, alist, offsetof(Symbol_O, _HomePackage) - gctools::general_tag);
-  expect_offset(kw::_sym_value, alist, offsetof(Symbol_O, _Value) - gctools::general_tag);
-  expect_offset(kw::_sym_function, alist, offsetof(Symbol_O, _Function) - gctools::general_tag);
-  expect_offset(kw::_sym_setf_function, alist, offsetof(Symbol_O, _SetfFunction) - gctools::general_tag);
-  expect_offset(kw::_sym_flags, alist, offsetof(Symbol_O, _Flags) - gctools::general_tag);
-  expect_offset(kw::_sym_property_list, alist, offsetof(Symbol_O, _PropertyList) - gctools::general_tag);
+  expect_offset(kw::_sym_name, alist, offsetof(Symbol_O, _Name));
+  expect_offset(kw::_sym_home_package, alist, offsetof(Symbol_O, _HomePackage));
+  expect_offset(kw::_sym_value, alist, offsetof(Symbol_O, _Value));
+  expect_offset(kw::_sym_function, alist, offsetof(Symbol_O, _Function));
+  expect_offset(kw::_sym_setf_function, alist, offsetof(Symbol_O, _SetfFunction));
+  expect_offset(kw::_sym_flags, alist, offsetof(Symbol_O, _Flags));
+  expect_offset(kw::_sym_property_list, alist, offsetof(Symbol_O, _PropertyList));
 }
 
 }; // namespace core
