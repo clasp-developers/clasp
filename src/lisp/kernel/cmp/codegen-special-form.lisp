@@ -42,18 +42,6 @@
     (error "Can't generate a fence with ~a ordering" order-spec))
   (irc-fence (order-spec->order order-spec)))
 
-;;; CLEAVIR-PRIMOP:CAR, CLEAVIR-PRIMOP:CDR
-
-(defun gen-memref-address (tpointer offset)
-  (irc-bit-cast
-   ;; memref/set use byte addressing, so treat these as i8 arrays
-   (irc-typed-gep-variable %i8%
-                     (irc-bit-cast tpointer %i8*%)
-                     ;; llvm doesn't actually have signed types,
-                     ;; so the u is a misnomer - don't sweat it.
-                     (list (cmp:make-uintptr_t offset)))
-   %t**% "memref-set-addr"))
-
 ;;; CORE:VASLIST-LENGTH
 ;;; Get the count of remaining args in a vaslist.
 

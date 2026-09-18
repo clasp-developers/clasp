@@ -186,9 +186,8 @@
                (cmp:irc-t*-load (cmp:irc-bit-cast alloca cmp:%t**%) "" volatile)))
             (:indefinite
              (let ((cell (or (gethash variable *datum-values*)
-                             (error "BUG: Cell missing: ~a" variable)))
-                   (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-               (cmp:irc-t*-load-atomic (cmp::gen-memref-address cell offset))))))))
+                             (error "BUG: Cell missing: ~a" variable))))
+               (cmp:irc-cons-car-atomic cell)))))))
 
 (defun out (value datum)
   (check-type datum bir:ssa)
@@ -234,11 +233,8 @@
                (cmp:irc-store value (cmp:irc-bit-cast alloca cmp:%t**%))))
             (:indefinite
              (let ((cell (or (gethash variable *datum-values*)
-                             (error "BUG: Cell missing: ~a" variable)))
-                   (offset (- cmp:+cons-car-offset+ cmp:+cons-tag+)))
-               (cmp:irc-store-atomic
-                value
-                (cmp::gen-memref-address cell offset))))))))
+                             (error "BUG: Cell missing: ~a" variable))))
+               (cmp:irc-rplaca-atomic cell value)))))))
 
 (defun dynenv-storage (dynenv)
   (check-type dynenv bir:dynamic-environment)

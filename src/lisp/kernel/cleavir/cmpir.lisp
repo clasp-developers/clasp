@@ -345,6 +345,36 @@ local-function - the lcl function that all of the xep functions call."
   (irc-intrinsic "llvm.ptrmask.p0.i64"
                  tagged-ptr (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
 
+(defun irc-cons-car* (cons) (c++-field-ptr info.%cons% cons :car))
+(defun irc-cons-cdr* (cons) (c++-field-ptr info.%cons% cons :cdr))
+
+(defun irc-cons-car (cons) (irc-typed-load %t*% (irc-cons-car* cons) "car"))
+(defun irc-cons-cdr (cons) (irc-typed-load %t*% (irc-cons-cdr* cons) "cdr"))
+(defun irc-cons-car-atomic (cons &key (label "car") (order 'llvm-sys:monotonic))
+  (irc-typed-load-atomic %t*% (irc-cons-car* cons) :label label :order order))
+(defun irc-cons-cdr-atomic (cons &key (label "cdr") (order 'llvm-sys:monotonic))
+  (irc-typed-load-atomic %t*% (irc-cons-cdr* cons) :label label :order order))
+
+;; note: unlike cl:rplaca/d, these do not return a value.
+(defun irc-rplaca (cons val &key (is-volatile nil))
+  (irc-store val (irc-cons-car* cons) is-volatile))
+(defun irc-rplaca-atomic (cons val
+                          &key (is-volatile nil) (align 8)
+                            (order 'llvm-sys:monotonic))
+  (let ((inst (irc-store val (irc-cons-car* cons) is-volatile)))
+    (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
+    inst))
+(defun irc-rplacd (cons val &key (is-volatile nil))
+  (irc-store val (irc-cons-cdr* cons) is-volatile))
+(defun irc-rplacd-atomic (cons val
+                          &key (is-volatile nil) (align 8)
+                            (order 'llvm-sys:monotonic))
+  (let ((inst (irc-store val (irc-cons-cdr* cons) is-volatile)))
+    (llvm-sys:set-alignment inst align) ; atomic stores require an explicit alignment.
+    (llvm-sys:set-atomic inst order 1 #+(or)'llvm-sys:system)
+    inst))
+
 (defun irc-untag-vaslist (tagged-ptr)
   (irc-maybe-check-tag tagged-ptr +vaslist0-tag+)
   (irc-intrinsic "llvm.ptrmask.p0.i64"

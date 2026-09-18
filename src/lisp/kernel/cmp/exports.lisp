@@ -247,6 +247,10 @@
           irc-store-atomic
           irc-cmpxchg
           irc-struct-gep
+          irc-cons-car irc-cons-cdr
+          irc-cons-car-atomic irc-cons-cdr-atomic
+          irc-rplaca irc-rplacd
+          irc-rplaca-atomic irc-rplacd-atomic
           vaslist-start
           irc-read-slot
           irc-write-slot
