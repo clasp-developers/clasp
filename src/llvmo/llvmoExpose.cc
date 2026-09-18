@@ -3394,8 +3394,8 @@ CL_EXTERN_DEFMETHOD(Function_O,
 CL_LISPIFY_NAME("setSubprogram");
 CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::DISubprogram*)) & llvm::Function::setSubprogram);
 
-CL_LISPIFY_NAME("addReturnAttr");
-CL_DEFMETHOD void Function_O::addReturnAttr(typename llvm::Attribute::AttrKind Attr) {}
+CL_LISPIFY_NAME("addRetAttr");
+CL_EXTERN_DEFMETHOD(Function_O, (void(llvm::Function::*)(llvm::Attribute::AttrKind))&llvm::Function::addRetAttr);
 
 CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
   return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));

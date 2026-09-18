@@ -1411,7 +1411,7 @@ But no irbuilders or basic-blocks. Return the fn."
       #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
-          (llvm-sys:add-return-attr function attribute)))
+          (llvm-sys:add-ret-attr function attribute)))
       (dolist (index-attributes argument-attributes)
         (let ((index (car index-attributes))
               (attributes (cdr index-attributes)))

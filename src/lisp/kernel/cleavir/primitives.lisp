@@ -102,8 +102,10 @@
          (primitive         "cc_breakstep_after" :void (list :t*))
          (primitive-unwinds "cc_wrong_number_of_arguments" :void (list :t* :size_t :size_t :size_t)
           :does-not-return t)
-         (primitive         "cc_list" :t* (list :size_t) :varargs t)
-         (primitive         "cc_gatherRestArguments" :t* (list :vaslist* :size_t))
+         (primitive         "cc_list" (list :t* 'llvm-sys:attribute-no-alias)
+          (list :size_t) :varargs t)
+         (primitive         "cc_gatherRestArguments"
+          (list :t* 'llvm-sys:attribute-no-alias) (list :vaslist* :size_t))
          (primitive         "cc_gatherDynamicExtentRestArguments" :t* (list :vaslist* :size_t :t**))
          (primitive         "cc_gatherVaRestArguments" :t* (list :vaslist* :size_t :vaslist*))
          (primitive-unwinds "cc_ifBadKeywordArgumentException" :void (list :t* :t* :t*))
@@ -114,7 +116,8 @@
          (primitive-unwinds "__cxa_end_catch" :void nil)
          (primitive-unwinds "__cxa_rethrow" :void nil :does-not-return t)
          (primitive         +intrinsic/llvm.eh.typeid.for.p0+ :i32 (list :i8*))
-         (primitive-unwinds "cc_overflowed_signed_bignum" :t* (list :i64))
+         (primitive-unwinds "cc_overflowed_signed_bignum"
+          (list :t* 'llvm-sys:attribute-no-alias) (list :i64))
          (primitive         "llvm.sadd.with.overflow.i32" :{i32.i1} (list :i32 :i32))
          (primitive         "llvm.sadd.with.overflow.i64" :{i64.i1} (list :i64 :i64))
          (primitive         "llvm.ssub.with.overflow.i32" :{i32.i1} (list :i32 :i32))
@@ -199,16 +202,16 @@
          (primitive         "cm_vset" :return-type (list :t* :t* :t*))
          (primitive         "cc_ensure_valid_object" :t* (list :t*))
          (primitive         "cc_getPointer" :i8* (list :t*))
-         (primitive-unwinds "cc_makeCell" :t* nil)
+         (primitive-unwinds "cc_makeCell"
+          (list :t* 'llvm-sys:attribute-no-alias) nil)
          (primitive-unwinds "cc_checkBound" :size_t (list :t* :size_t :t*))
          (primitive         "cc_simpleBitVectorAref" :i8 (list :t* :size_t))
          (primitive         "cc_simpleBitVectorAset" :void (list :t* :size_t :i64))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 
-         (primitive-unwinds "cc_enclose" :t* (list
-                                              :t*
-                                              :size_t))
+         (primitive-unwinds "cc_enclose" (list :t* 'llvm-sys:attribute-no-alias)
+          (list :t* :size_t))
          (primitive         "cc_stack_enclose" :t* (list
                                                     :i8*
                                                     :t*
@@ -233,8 +236,8 @@
          (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32) :does-not-return t)
          (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
          (primitive         "cc_catch_tag" :t* (list :t*))
-         (primitive-unwinds "cc_createAndPushBlockDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
-         (primitive-unwinds "cc_createAndPushTagbodyDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
+         (primitive-unwinds "cc_createAndPushBlockDynenv" (list :t* 'llvm-sys:attribute-no-alias) (list :i8* :i8* :jmp-buf-tag*))
+         (primitive-unwinds "cc_createAndPushTagbodyDynenv" (list :t* 'llvm-sys:attribute-no-alias) (list :i8* :i8* :jmp-buf-tag*))
          (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
          (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :i8* :t* :t*))
          (primitive         "cc_initializeAndPushProgvDynenv" :t* (list :i8* :i8* :t* :t*))
@@ -364,7 +367,7 @@
          (primitive-unwinds "from_object_float" :single-float (list :t*))
          (primitive-unwinds "to_object_float" :t* (list :single-float))
          (primitive-unwinds "from_object_double" :double-float (list :t*))
-         (primitive-unwinds "to_object_double" :t* (list :double-float))
+         (primitive-unwinds "to_object_double" (list :t* 'llvm-sys:attribute-no-alias) (list :double-float))
          #+long-float (primitive "from_object_long_double" :long-float (list :t*))
          #+long-float (primitive "to_object_long_double" :t* (list :long-float))
 
