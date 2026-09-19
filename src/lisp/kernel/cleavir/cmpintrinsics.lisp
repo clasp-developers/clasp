@@ -128,9 +128,12 @@ names to offsets."
 (define-symbol-macro %i1%
     (cmp:with-thread-safe-context (context)
       (llvm-sys:type-get-int1-ty context)))
-(define-symbol-macro %i3%
-    (cmp:with-thread-safe-context (context)
-      (llvm-sys:type-get-int-nty context 3)))
+(define-symbol-macro %i2%
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:type-get-int-nty context 2)))
+(define-symbol-macro %i4%
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:type-get-int-nty context 4)))
 
 (define-symbol-macro %i8%
     (cmp:with-thread-safe-context (context)

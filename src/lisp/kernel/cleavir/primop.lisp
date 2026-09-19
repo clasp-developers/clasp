@@ -401,7 +401,7 @@
     ((ext:byte32) :ub32) ((ext:integer32) :sb32)
     ((ext:byte64) :ub64) ((ext:integer64) :sb64)
     ((fixnum) :utfixnum)
-    ((bit) :utfixnum))) ;; see KLUDGE in vref
+    ((bit) :ub1)))
 
 (cleavir-primop-info:defprimop core:vref 2 :value :flushable)
 (cleavir-primop-info:defprimop core::vset 3 :value :flushable)
@@ -425,11 +425,11 @@
          ;; FIXME: atomicity? probably needs a lock or some crap
          (let* ((vec (in (first (bir:inputs inst))))
                 (index (in (second (bir:inputs inst)))))
-           ;; KLUDGE cc_simpleBitVectorAref returns an i8, but we need a utfixnum
-           ;; better would be to have it return an i1 (if that's possible in C++)
-           ;; and to have an rtype for that, or failing that an rtype for i8.
-           (cmp:irc-zext
-            (%intrinsic-call "cc_simpleBitVectorAref" (list vec index))))
+           ;; KLUDGE cc_simpleBitVectorAref returns an i8, but we need an i1
+           ;; don't think a C++ function can return an i1.
+           (cmp:irc-trunc
+            (%intrinsic-call "cc_simpleBitVectorAref" (list vec index))
+            cmp:%i1% "bit" t))
          ;; for normal element types, just get the address and load from there.
          (let* ((vec (in (first (bir:inputs inst))))
                 (index (in (second (bir:inputs inst))))
@@ -448,7 +448,8 @@
           (vec (in (second (bir:inputs inst))))
           (index (in (third (bir:inputs inst)))))
       (if (member element-type '(bit))
-          (%intrinsic-call "cc_simpleBitVectorAset" (list vec index val))
+          (%intrinsic-call "cc_simpleBitVectorAset"
+                           (list vec index (cmp:irc-zext val cmp:%i8%)))
           (let ((addr (%vector-element-address vec element-type index)))
             (if order
                 (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))

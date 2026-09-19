@@ -96,6 +96,8 @@
           +void*-size+
           %void%
           %i1%
+          %i2%
+          %i4%
           %exception-struct%
           %i16%
           %i32%

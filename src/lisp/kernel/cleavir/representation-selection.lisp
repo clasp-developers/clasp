@@ -23,6 +23,7 @@
 ;;;   being a fixnum without losing any bits
 ;;; * :ub8, :ub16, :ub32, :ub64, meaning unsigned untagged bytes
 ;;; * :sb8, :sb16, :sb32, :sb64, corresponding signed but still untagged bytes
+;;; * :ub1, :sb1, :ub2, :sb2, :ub4, :sb4 ditto sub-byte integers
 ;;; * :vaslist, meaning an unboxed vaslist
 ;;; So e.g. (:object :object) means a pair of T_O*.
 
