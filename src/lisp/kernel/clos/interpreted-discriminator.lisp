@@ -518,9 +518,8 @@
                                         (literalify-arguments instr literals coallesce-indexes)
                                       (if long-arg
                                           (progn
-                                            (format t "Dealing with long instruction ~s~%" instr)
                                             (setf (elt longs index) long-arg)
-                                            (longify-instruction annotated-op instr))
+                                            (list* (longify-instruction annotated-op instr) new-args))
                                           (list* annotated-op new-args))))))
     (values new-program literals longs)))
 
