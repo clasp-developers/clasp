@@ -395,7 +395,7 @@ public:
         + ((ssize_t)o.offset - (ssize_t)offset) / bit_unit_bit_width;
     }
     value_type operator[](size_t i) const {
-      const bit_array_word* nword = word + i / bits_in_word;
+      const bit_array_word* nword = word + i / number_of_bit_units_in_word;
       if ((i * bit_unit_bit_width) % bits_in_word > offset) ++nword;
       size_t noffset = (offset - (i * bit_unit_bit_width)) % bits_in_word;
       bit_array_word mask = bit_unit_mask << noffset;
