@@ -758,3 +758,32 @@
         (cmp:irc-phi-add-incoming phi (%i1 0) curb)
         (cmp:irc-phi-add-incoming phi hedp hedb)
         (out phi (first (bir:outputs inst))))))))
+
+(defvprimop core::cons-car ((:object) :object) (inst)
+  (cmp:irc-cons-car (in (first (bir:inputs inst)))))
+(defvprimop core::cons-cdr ((:object) :object) (inst)
+  (cmp:irc-cons-cdr (in (first (bir:inputs inst)))))
+
+;;; KLUDGE: doing this instead of anything reasonable because thinking is annoying
+;; here "anything reasonable" would mean defining one in terms of the other
+;; and inlining.
+(defvprimop core::setf-car ((:object) :object :object) (inst)
+  (let ((val (in (first (bir:inputs inst))))
+        (cons (in (second (bir:inputs inst)))))
+    (cmp:irc-rplaca cons val)
+    val))
+(defvprimop core::setf-cdr ((:object) :object :object) (inst)
+  (let ((val (in (first (bir:inputs inst))))
+        (cons (in (second (bir:inputs inst)))))
+    (cmp:irc-rplacd cons val)
+    val))
+(defvprimop rplaca ((:object) :object :object) (inst)
+  (let ((cons (in (first (bir:inputs inst))))
+        (val (in (second (bir:inputs inst)))))
+    (cmp:irc-rplaca cons val)
+    cons))
+(defvprimop rplacd ((:object) :object :object) (inst)
+  (let ((cons (in (first (bir:inputs inst))))
+        (val (in (second (bir:inputs inst)))))
+    (cmp:irc-rplacd cons val)
+    cons))

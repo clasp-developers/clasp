@@ -366,6 +366,13 @@
 
 (deftransform consp consp t)
 
+(deftransform car core::cons-car cons)
+(deftransform cdr core::cons-cdr cons)
+(deftransform (setf car) core::setf-car t cons)
+(deftransform (setf cdr) core::setf-cdr t cons)
+(deftransform rplaca rplaca cons t)
+(deftransform rplacd rplacd cons t)
+
 (deftransform core:set-breakstep core:set-breakstep)
 (deftransform core:unset-breakstep core:unset-breakstep)
 
