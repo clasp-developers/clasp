@@ -1687,11 +1687,12 @@ CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLine
   std::string line;
   // Use get() - character at a time
   std::ifstream myfile(filename);
-  char c;
+  // Preserve EOF separately from all possible input bytes, regardless of char signedness.
+  std::ifstream::int_type c;
   if (myfile.is_open()) {
     do {
       c = myfile.get();
-      if (c == EOF) {
+      if (c == std::ifstream::traits_type::eof()) {
         numberOfLines += ((charsSinceLastEol > 0) ? 1 : 0);
         break;
       }
@@ -1713,7 +1714,7 @@ CL_DEFUN T_mv core__countLinesInFile(const std::string& filename, size_t maxLine
     struct stat stat_buf;
     int rc = stat(filename.c_str(), &stat_buf);
     sizeOfFile = rc == 0 ? stat_buf.st_size : -1;
-    if (c != EOF) {
+    if (c != std::ifstream::traits_type::eof()) {
       currentFilePos = myfile.tellg();
     } else {
       currentFilePos = sizeOfFile;

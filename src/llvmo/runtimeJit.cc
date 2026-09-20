@@ -618,7 +618,12 @@ ClaspJIT_O::ClaspJIT_O() {
             return ObjLinkingLayer;
           })
 #else
+#if LLVM_VERSION_MAJOR >= 23
+          .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES, jitlink::JITLinkMemoryManager&) {
+#else
           .setObjectLinkingLayerCreator([this, &ExitOnErr](ExecutionSession& ES) {
+#endif
+            // Clasp requires its own allocator, rather than LLJIT's default memory manager.
             auto ObjLinkingLayer = std::make_unique<ObjectLinkingLayer>(ES, std::make_unique<ClaspAllocator>());
             // issue #1782: On MachO (Apple) native code unwinds via compact-unwind/__unwind_info, NOT eh-frame
             // (clasp's arm64-darwin objects carry no __eh_frame). EHFrameRegistrationPlugin's MachO path inserts a

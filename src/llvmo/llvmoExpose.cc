@@ -2248,9 +2248,17 @@ namespace llvmo {
 CL_LISPIFY_NAME(constantFpGet);
 CL_EXTERN_DEFUN((llvm::ConstantFP * (*)(llvm::LLVMContext&, const llvm::APFloat&)) & llvm::ConstantFP::get);
 CL_LISPIFY_NAME(constantFpGetTypeDouble);
+#if LLVM_VERSION_MAJOR >= 23
+CL_EXTERN_DEFUN((llvm::ConstantFP * (*)(llvm::Type*, double)) & llvm::ConstantFP::get);
+#else
 CL_EXTERN_DEFUN((llvm::Constant * (*)(llvm::Type*, double)) & llvm::ConstantFP::get);
+#endif
 CL_LISPIFY_NAME(constantFpGetTypeStringref);
+#if LLVM_VERSION_MAJOR >= 23
+CL_EXTERN_DEFUN((llvm::ConstantFP * (*)(llvm::Type * type, llvm::StringRef label)) & llvm::ConstantFP::get);
+#else
 CL_EXTERN_DEFUN((llvm::Constant * (*)(llvm::Type * type, llvm::StringRef label)) & llvm::ConstantFP::get);
+#endif
 
 ;
 
@@ -2991,7 +2999,12 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
                     (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Value * Ptr, unsigned Idx, const llvm::Twine&)) &
                         IRBuilderBase_O::ExternalType::CreateStructGEP);
 CL_LISPIFY_NAME(CreateGlobalStringPtr);
+#if LLVM_VERSION_MAJOR >= 23
+// With opaque pointers, the global itself is the pointer to the string data.
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateGlobalString);
+#else
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateGlobalStringPtr);
+#endif
 CL_LISPIFY_NAME(CreateTrunc);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateTrunc);
 CL_LISPIFY_NAME(CreateZExt);
@@ -3124,7 +3137,14 @@ CL_DEFUN llvm::Value* llvm_sys__CreateIsNotNull(llvmo::IRBuilderBase_O::External
 }
 
 CL_LISPIFY_NAME(CreatePtrDiff);
+#if LLVM_VERSION_MAJOR >= 23
+CL_EXTERN_DEFMETHOD(IRBuilderBase_O,
+                    (llvm::Value * (IRBuilderBase_O::ExternalType::*)(llvm::Type*, llvm::Value*, llvm::Value*,
+                                                                     const llvm::Twine&)) &
+                        IRBuilderBase_O::ExternalType::CreatePtrDiff);
+#else
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreatePtrDiff);
+#endif
 CL_LISPIFY_NAME(CreateShl_value_value);
 // CL_EXTERN_DEFMETHOD(IRBuilderBase_O,(llvm::Value *(IRBuilderBase_O::ExternalType::*) (llvm::Value *, llvm::Value *, const
 // llvm::Twine &, bool, bool) )&IRBuilderBase_O::ExternalType::CreateShl);
@@ -3844,7 +3864,11 @@ CL_LISPIFY_NAME(TargetRegistryLookupTarget.string);
 DOCGROUP(clasp);
 CL_DEFUN core::T_mv TargetRegistryLookupTarget_string(const std::string& Triple) {
   string message;
+#if LLVM_VERSION_MAJOR >= 23
+  llvm::Target* target = const_cast<llvm::Target*>(llvm::TargetRegistry::lookupTarget(llvm::Triple(Triple), message));
+#else
   llvm::Target* target = const_cast<llvm::Target*>(llvm::TargetRegistry::lookupTarget(Triple, message));
+#endif
   if (target == NULL) {
     return Values(nil<core::T_O>(), core::SimpleBaseString_O::make(message));
   }

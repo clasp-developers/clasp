@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/mman.h>
 #include <dlfcn.h>
 #ifdef _TARGET_OS_DARWIN
@@ -298,7 +299,7 @@ CL_DEFUN void core__help_booting() {
          "(default-epilogue-form) - Returns an epilogue form for link-system\n");
 }
 
-CL_DOCSTRING(R"dx(Return the rdtsc performance timer value)dx");
+CL_DOCSTRING(R"dx(Return a performance timer value: timestamp-counter ticks on x86, monotonic nanoseconds on other architectures. Only differences are meaningful; units are architecture-dependent.)dx");
 DOCGROUP(clasp);
 CL_DEFUN Fixnum core__rdtsc() {
 #if defined(__i386__) || defined(__x86_64__)
@@ -306,7 +307,10 @@ CL_DEFUN Fixnum core__rdtsc() {
   __asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
   return ((uint64_t)hi << 32) | lo;
 #else
-  SIMPLE_ERROR("No support for RDTSC on this architecture");
+  struct timespec now;
+  if (clock_gettime(CLOCK_MONOTONIC, &now) != 0)
+    SIMPLE_ERROR("Could not read the monotonic performance timer");
+  return static_cast<uint64_t>(now.tv_sec) * 1000000000ULL + now.tv_nsec;
 #endif
 }
 

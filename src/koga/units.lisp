@@ -1,7 +1,7 @@
 (in-package #:koga)
 
 (defparameter +llvm-major-version+
-  '((15 . 20) (22 . 22))
+  '((15 . 20) (22 . 24))
   "The required LLVM version.")
 
 (defparameter +llvm-config-candidates+
@@ -49,6 +49,66 @@
     (when (ld configuration)
       (append-ldflags configuration (format nil "-fuse-ld=~(~a~)" (ld configuration))))
     (append-ldflags configuration "-pthread -fvisibility=default -rdynamic")))
+
+(defun linker-library-directories (flags)
+  "Return directories from both -Ldir and -L dir forms, preserving order."
+  (loop for args on (split-command-flags flags)
+        for arg = (car args)
+        when (string= arg "-L")
+          collect (or (cadr args) (error "Missing directory after -L"))
+          and do (setf args (cdr args))
+        else when (uiop:string-prefix-p "-L" arg)
+          collect (subseq arg 2)))
+
+(defun configure-runtime-paths (configuration)
+  "Record this local build's dependency paths, independently of CPU/LLVM version.
+Reproducible builds leave runtime paths to their packaging configuration."
+  (unless (reproducible-build configuration)
+    (let ((llvm-libdir (run-program-capture
+                       (list (llvm-config configuration) "--libdir"))))
+      (unless (and llvm-libdir (probe-file llvm-libdir))
+        (error "Unable to locate the selected LLVM library directory"))
+      (dolist (variant (variants configuration))
+        (let* ((compiler-flags
+                 (split-command-flags
+                  (format nil "~a ~a" (or (cxxflags variant) "")
+                          (or (cxxflags configuration) ""))))
+               ;; Explicit library search paths take precedence over compiler
+               ;; defaults, just as they do at link time.
+               (directories
+                 (append (linker-library-directories (ldflags variant))
+                         (linker-library-directories (ldflags configuration))
+                         (list llvm-libdir))))
+          #+(or linux freebsd)
+          (dolist (library '("libstdc++.so.6" "libc++.so.1" "libgcc_s.so.1"))
+            (let ((path (run-program-capture
+                         (append (list (cxx configuration)) compiler-flags
+                                 (list (format nil "-print-file-name=~a" library))))))
+              ;; An unresolved query returns the bare filename; never turn
+              ;; that into an accidental search of the working directory.
+              (when (and path (uiop:absolute-pathname-p path) (probe-file path))
+                (setf directories
+                      (append directories
+                              (list (namestring
+                                     (uiop:pathname-directory-pathname
+                                      (truename path)))))))))
+          ;; ELF RUNPATH is not inherited by indirect dependencies. External
+          ;; LLVM/toolchain DSOs need not carry their own runtime paths.
+          #+linux (append-ldflags variant "-Wl,--disable-new-dtags")
+          (dolist (directory
+                    (remove-duplicates
+                     (mapcar (lambda (path)
+                               (normalize-directory
+                                (uiop:ensure-absolute-pathname
+                                 (uiop:ensure-directory-pathname path)
+                                 (uiop:ensure-absolute-pathname
+                                  (build-path configuration) (uiop:getcwd)))))
+                             directories)
+                     :test #'string= :from-end t))
+            ;; -Xlinker avoids treating commas in a directory as separators.
+            (append-ldflags variant
+                            (format nil "-Xlinker -rpath -Xlinker ~a"
+                                    (uiop:escape-sh-token directory)))))))))
 
 (defmethod configure-unit (configuration (unit (eql :ar)))
   "Find the ar binary."

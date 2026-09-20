@@ -162,6 +162,9 @@ Environment variables:
       Generate files that lldb/gdb/udb can use to debug clasp.
   CLASP_ENABLE_TRAMPOLINES=1
       Set this environment variable if you want good profiling.
+  CLASP_TRACE_INITIAL_ERROR=1
+      Log the first condition in an error chain before invoking Lisp condition
+      handling. Useful for diagnosing failures during early startup.
   CLASP_SNAPSHOT=1
       Debug snapshot generation.
   CLASP_DONT_HANDLE_CRASH_SIGNALS=1

@@ -213,6 +213,9 @@ accumulated plists from each PRINT-VARIANT-TARGET-SOURCE is passed as keys."))
         while script
         do (message :info "Loading script ~a" script)
            (load script))
+  ;; All cscript libraries and variant flags must be known before collecting
+  ;; runtime paths, including dependencies supplied by extensions.
+  (configure-runtime-paths *configuration*)
   (message :emph "~%Writing build files")
   (loop for name being the hash-keys in (outputs *configuration*)
         do (write-build-output *configuration* name))

@@ -58,6 +58,7 @@
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/sampling_profiler.h>
+#include <clasp/core/profilerStack.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/threadlocal.fwd.h>
 #include <clasp/llvmo/trampoline_arena.h>   // arena_lookup_by_pc
@@ -247,52 +248,22 @@ static inline uint64_t now_ns_signal_safe() {
 }
 
 // Read the interrupted instruction pointer out of the context structure.
-// x86_64 only for now — portable to arm64 when we need it.
+// Linux AArch64 stores the interrupted PC and frame pointer in pc and x29.
 static inline uintptr_t ucontext_rip(void* ucptr) {
-#if defined(__x86_64__)
-#  if defined(__linux__)
-  ucontext_t* uc = (ucontext_t*)ucptr;
-  return (uintptr_t)uc->uc_mcontext.gregs[REG_RIP];
-#  elif defined(__APPLE__)
-  ucontext_t* uc = (ucontext_t*)ucptr;
-  return (uintptr_t)uc->uc_mcontext->__ss.__rip;
-#  else
-  (void)ucptr; return 0;
-#  endif
-#else
-  (void)ucptr; return 0;  // TODO: arm64 x29+x30
-#endif
+  return profiler_detail::context_pc(ucptr);
 }
 
-// Read the frame-base-pointer register (rbp) out of the ucontext.
+// Read the frame-pointer register (rbp on x86_64, x29 on AArch64).
 static inline uintptr_t ucontext_rbp(void* ucptr) {
-#if defined(__x86_64__)
-#  if defined(__linux__)
-  ucontext_t* uc = (ucontext_t*)ucptr;
-  return (uintptr_t)uc->uc_mcontext.gregs[REG_RBP];
-#  elif defined(__APPLE__)
-  ucontext_t* uc = (ucontext_t*)ucptr;
-  return (uintptr_t)uc->uc_mcontext->__ss.__rbp;
-#  else
-  (void)ucptr; return 0;
-#  endif
-#else
-  (void)ucptr; return 0;  // TODO: arm64 x29
-#endif
+  return profiler_detail::context_fp(ucptr);
 }
 
 // ---------------------------------------------------------------------------
 // Per-thread stack-bounds cache. Used by the walker to bound frame-pointer
-// chasing: any rbp outside [stack_lo, stack_hi) is treated as end-of-stack.
-// Populated lazily on first entry per thread via pthread_getattr_np — which
-// is NOT async-signal-safe, so we do it outside the handler by gating on
-// thread_local flags and catching up on the first non-handler call, or at
-// start-of-profile. To keep Phase 2 simple and always-safe, the handler
-// self-populates the cache the first time it fires on a thread: it calls
-// pthread_getattr_np (which on Linux+glibc is safe-enough in practice — it
-// doesn't allocate for the already-initialized thread). On macOS we use
-// pthread_get_stackaddr_np + pthread_get_stacksize_np which are simple
-// accessors and signal-safe in practice.
+// chasing: any frame outside [stack_lo, stack_hi) ends the walk. Populate
+// only during thread registration, outside the signal handler: pthread
+// stack queries are not async-signal-safe. Unregistered threads get a
+// sample of the interrupted PC only.
 // ---------------------------------------------------------------------------
 
 struct ThreadStackBounds {
@@ -310,8 +281,9 @@ static void populate_stack_bounds_for_this_thread() {
   if (pthread_getattr_np(pthread_self(), &attr) != 0) return;
   void* addr = nullptr;
   size_t size = 0;
-  pthread_attr_getstack(&attr, &addr, &size);
+  int status = pthread_attr_getstack(&attr, &addr, &size);
   pthread_attr_destroy(&attr);
+  if (status != 0) return;
   t_stack_bounds.lo = (uintptr_t)addr;
   t_stack_bounds.hi = (uintptr_t)addr + size;
 #elif defined(__APPLE__)
@@ -330,10 +302,7 @@ static void populate_stack_bounds_for_this_thread() {
 static inline bool plausible_rbp(uintptr_t rbp,
                                  uintptr_t stack_lo,
                                  uintptr_t stack_hi) {
-  if ((rbp & 7) != 0) return false;
-  if (stack_hi < stack_lo || stack_hi - stack_lo < 16)
-    return false;
-  return rbp >= stack_lo && rbp <= stack_hi - 16;
+  return profiler_detail::valid_frame_pointer(rbp, stack_lo, stack_hi);
 }
 
 // Walk the frame-pointer chain starting at (rip, rbp) and fill `out` with
@@ -347,27 +316,12 @@ static inline bool plausible_rbp(uintptr_t rbp,
 // walk before it follows garbage.
 //
 // Safety: uses only register-read + bounded pointer walk + plausibility
-// checks + out-of-process writes. No libc calls, no allocation, no locks.
+// checks + writes to the caller's buffer. No libc calls, allocation, or locks.
 static uint32_t walk_fp(uintptr_t rip_top, uintptr_t rbp_top,
                         uint64_t* out, uint32_t max_depth,
                         uintptr_t stack_lo, uintptr_t stack_hi) {
-  if (max_depth == 0) return 0;
-  uint32_t d = 0;
-  out[d++] = (uint64_t)rip_top;
-  uintptr_t rbp = rbp_top;
-  while (d < max_depth &&
-         plausible_rbp(rbp, stack_lo, stack_hi)) {
-    uintptr_t saved_rbp = *((uintptr_t*)rbp);
-    uintptr_t saved_rip = *((uintptr_t*)(rbp + 8));
-    if (!plausible_rip(saved_rip)) break;
-    out[d++] = (uint64_t)saved_rip;
-    // In stack-grows-down SysV ABI the caller's rbp lives at a higher
-    // address than the callee's. A non-advancing (or going-down) saved_rbp
-    // means the chain is broken or we hit a leaf without a frame.
-    if (saved_rbp <= rbp) break;
-    rbp = saved_rbp;
-  }
-  return d;
+  return profiler_detail::walk_frame_chain(rip_top, rbp_top, out, max_depth,
+                                          stack_lo, stack_hi, plausible_rip);
 }
 
 // Reserve `bytes` from the bump buffer. Returns nullptr when the buffer is
@@ -438,7 +392,8 @@ static void sigprof_handler(int /*sig*/, siginfo_t* /*info*/, void* ucptr) {
   uint32_t depth;
   if (t_stack_bounds.populated) {
     depth = walk_fp(rip, rbp, pcs, cap,
-                    t_stack_bounds.lo, t_stack_bounds.hi);
+                    std::max(t_stack_bounds.lo, profiler_detail::context_sp(ucptr)),
+                    t_stack_bounds.hi);
   } else {
     pcs[0] = (uint64_t)rip;
     depth = 1;

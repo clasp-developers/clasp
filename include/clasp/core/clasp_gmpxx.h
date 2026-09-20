@@ -37,7 +37,7 @@ THE SOFTWARE.
 #endif
 #include <gmpxx.h>
 
-#ifdef __arch64__
+#ifdef __aarch64__
 #pragma clang diagnostic pop
 #endif
 

@@ -67,6 +67,33 @@ into a list of values and values that are lists will be appended."
       (when (zerop code)
         standard-output))))
 
+(defun split-command-flags (flags)
+  "Split shell-quoted compiler flags without executing shell expansions."
+  (let ((words nil) (word nil) (quote-char nil) (escaped nil) (started nil))
+    (labels ((finish-word ()
+               (when started
+                 (push (coerce (nreverse word) 'string) words)
+                 (setf word nil started nil))))
+      (loop for char across (or flags "")
+            do (cond (escaped
+                      (push char word)
+                      (setf escaped nil))
+                     ((and (char= char #\\) (not (eql quote-char #\')))
+                      (setf escaped t started t))
+                     (quote-char
+                      (if (char= char quote-char)
+                          (setf quote-char nil)
+                          (push char word)))
+                     ((find char '(#\' #\"))
+                      (setf quote-char char started t))
+                     ((find char '(#\Space #\Tab #\Newline #\Return))
+                      (finish-word))
+                     (t (push char word) (setf started t))))
+      (when (or quote-char escaped)
+        (error "Unterminated quoting in compiler flags: ~s" flags))
+      (finish-word))
+    (nreverse words)))
+
 (defun git-commit (configuration &key short directory)
   "Get the current commit. SHORT specifies to use a short commit style."
   (run-program-capture (format nil "~A rev-parse~:[~; --short~] HEAD"

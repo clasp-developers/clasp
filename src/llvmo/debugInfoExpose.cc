@@ -294,7 +294,14 @@ CL_EXTERN_DEFMETHOD(DIBuilder_O,
 CL_LISPIFY_NAME(createLexicalBlock);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createLexicalBlock);
 CL_LISPIFY_NAME(createBasicType);
+#if LLVM_VERSION_MAJOR >= 23
+CL_EXTERN_DEFMETHOD(DIBuilder_O,
+                    (llvm::DIBasicType * (llvm::DIBuilder::*)(llvm::StringRef, uint64_t, unsigned,
+                                                             llvm::DINode::DIFlags, uint32_t, uint32_t)) &
+                        llvm::DIBuilder::createBasicType);
+#else
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createBasicType);
+#endif
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createTypedef);
 CL_EXTERN_DEFMETHOD(DIBuilder_O, &llvm::DIBuilder::createPointerType);
 
@@ -380,7 +387,7 @@ CL_DEFMETHOD DITypeRefArray_sp DIBuilder_O::getOrCreateTypeArray(core::List_sp e
     }
   }
   llvm::ArrayRef<llvm::Metadata*> array(vector_values);
-  llvm::DITypeRefArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
+  DebugTypeArray diarray = this->wrappedPtr()->getOrCreateTypeArray(array);
   auto obj = gctools::GC<llvmo::DITypeRefArray_O>::allocate(diarray);
   return obj;
 }

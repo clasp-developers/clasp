@@ -1952,10 +1952,32 @@ CL_DEFUN void cl__error(T_sp datum, List_sp initializers) {
     nestedErrorDepth = objErrorDepth.unsafe_fixnum();
   else
     nestedErrorDepth = 0;
+
+  // The normal condition machinery can itself fail during very early startup.
+  // In that case the recursive error eventually hides the condition that
+  // started the chain.  Record it before invoking any Lisp error handler.
+  // _safe_rep_ uses the low-level debugger printer and does not call the Lisp
+  // printer, which may not be usable yet.
+  const char* traceInitialError = getenv("CLASP_TRACE_INITIAL_ERROR");
+  if (nestedErrorDepth == 0 && traceInitialError &&
+      traceInitialError[0] != '\0' && traceInitialError[0] != '0') {
+    try {
+      fprintf(stderr,
+              "[clasp-initial-error] pid=%d datum=%s initializers=%s\n",
+              getpid(), _safe_rep_(datum).c_str(),
+              _safe_rep_(initializers).c_str());
+    } catch (...) {
+      fprintf(stderr,
+              "[clasp-initial-error] pid=%d datum@%p initializers@%p "
+              "(safe rendering failed)\n",
+              getpid(), (void*)datum.raw_(), (void*)initializers.raw_());
+    }
+    fflush(stderr);
+  }
   if (nestedErrorDepth > 10) {
-    fprintf(stderr, "%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _rep_(datum).c_str());
+    fprintf(stderr, "%s:%d -- *nested-error-depth* --> %d  datum: %s\n", __FILE__, __LINE__, nestedErrorDepth, _safe_rep_(datum).c_str());
     if (initializers.notnilp()) {
-      fprintf(stderr, "               initializers: %s\n", _rep_(initializers).c_str());
+      fprintf(stderr, "               initializers: %s\n", _safe_rep_(initializers).c_str());
     }
     fprintf(stderr, "Dumping backtrace\n");
     dbg_safe_backtrace();

@@ -244,31 +244,46 @@ template <> struct from_object<llvm::DINodeArray> {
 }; // namespace translate
 
 namespace llvmo {
+// LLVM 23 uses DITypeArray for subroutine parameter types as well.
+#if LLVM_VERSION_MAJOR >= 23
+using DebugTypeArray = llvm::DITypeArray;
+#else
+using DebugTypeArray = llvm::DITypeRefArray;
+#endif
+
 FORWARD(DITypeRefArray);
 class DITypeRefArray_O : public core::CxxObject_O {
   LISP_CLASS(llvmo, LlvmoPkg, DITypeRefArray_O, "DITypeRefArray", core::CxxObject_O);
 
 private:
-  dont_expose<llvm::DITypeRefArray> _Val;
+  dont_expose<llvmo::DebugTypeArray> _Val;
 
 public:
-  llvm::DITypeRefArray& get() { return this->_Val._value; };
-  DITypeRefArray_O(const llvm::DITypeRefArray& val) : _Val(val) {};
-  DITypeRefArray_O() : Base(), _Val((llvm::DITypeRefArray)NULL) {};
+  llvmo::DebugTypeArray& get() { return this->_Val._value; };
+  DITypeRefArray_O(const llvmo::DebugTypeArray& val) : _Val(val) {};
+  DITypeRefArray_O() : Base(), _Val(llvmo::DebugTypeArray(nullptr)) {};
 }; // DITypeRefArray_O
 }; // namespace llvmo
 
 namespace translate {
-template <> struct to_object<llvm::DITypeRefArray> {
-  static core::T_sp convert(const llvm::DITypeRefArray& val) {
+template <> struct to_object<llvmo::DebugTypeArray> {
+  static core::T_sp convert(const llvmo::DebugTypeArray& val) {
     auto obj = gctools::GC<llvmo::DITypeRefArray_O>::allocate(val);
     return ((obj));
   };
 };
-template <> struct from_object<llvm::DITypeRefArray> {
-  typedef llvm::DITypeRefArray& DeclareType;
+template <> struct from_object<llvmo::DebugTypeArray> {
+#if LLVM_VERSION_MAJOR >= 23
+  // Preserve NIL support for arguments such as ThrownTypes.
+  typedef llvmo::DebugTypeArray DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object)
+      : _v(object.nilp() ? DeclareType(nullptr) : gc::As<llvmo::DITypeRefArray_sp>(object)->get()) {};
+#else
+  typedef llvmo::DebugTypeArray& DeclareType;
   DeclareType _v;
   from_object(core::T_sp object) : _v(gc::As<llvmo::DITypeRefArray_sp>(object)->get()) {};
+#endif
 };
 }; // namespace translate
 

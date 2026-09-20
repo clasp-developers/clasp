@@ -115,6 +115,7 @@ template <> struct from_object<llvm::DITemplateParameterArray> {
   }
 };
 
+#if LLVM_VERSION_MAJOR < 23
 template <> struct from_object<llvm::DITypeArray> {
   typedef llvm::DITypeArray DeclareType;
   DeclareType _v;
@@ -126,6 +127,7 @@ template <> struct from_object<llvm::DITypeArray> {
     SIMPLE_ERROR("Only NIL is supported for DITypeArray at this point");
   }
 };
+#endif
 
 template <> struct from_object<llvm::DICompileUnit::DebugEmissionKind> {
   typedef llvm::DICompileUnit::DebugEmissionKind DeclareType;
