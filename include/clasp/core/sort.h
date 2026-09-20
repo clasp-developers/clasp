@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <string>
 #include <vector>
 #include <set>
+#include <utility>
 #include <clasp/core/object.h>
 
 // #define	DEBUG_SORT
@@ -53,12 +54,6 @@ template <typename _RandomAccessIterator> struct SortWork {
   _RandomAccessIterator _End;
   SortWork(_RandomAccessIterator b, _RandomAccessIterator e) : _Begin(b), _End(e){};
   SortWork(){};
-};
-
-template <typename Oelement> void swap(Oelement& x, Oelement& y) {
-  Oelement t(x);
-  x = y;
-  y = t;
 };
 
 template <typename _RandomAccessIterator, typename Ocomp>
@@ -86,7 +81,7 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
       ssize_t half = (n - m);
       half = half / 2;
       k = m + half; // pivot
-      swap<_ValueType>(*m, *k);
+      std::swap(*m, *k);
 #ifdef DEBUG_SORT
       LOG(("Sorting list pivot is now first element: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
@@ -107,10 +102,10 @@ void quickSort(_RandomAccessIterator m, _RandomAccessIterator en, Ocomp comparer
         if (i < j) {
           LOG(("swapping value lower index: %d value: %s"), (i - m), _rep_((*i)));
           LOG(("swapping value upper index: %d value: %s"), (j - m), _rep_((*j)));
-          swap<_ValueType>(*i, *j);
+          std::swap(*i, *j);
         }
       }
-      swap<_ValueType>(*m, *j);
+      std::swap(*m, *j);
 #ifdef DEBUG_SORT
       LOG(("After pivot list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
@@ -163,7 +158,7 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
       ssize_t half = (n - m);
       half = half / 2;
       k = m + half; // pivot
-      swap<_ValueType>(*m, *k);
+      std::swap(*m, *k);
 #ifdef DEBUG_SORT
       LOG(("Sorting list pivot is now first element: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
@@ -180,10 +175,10 @@ void quickSortFirstCheckOrder(_RandomAccessIterator m, _RandomAccessIterator en,
           j--;
         }
         if (i < j) {
-          swap<_ValueType>(*i, *j);
+          std::swap(*i, *j);
         }
       }
-      swap<_ValueType>(*m, *j);
+      std::swap(*m, *j);
 #ifdef DEBUG_SORT
       LOG(("After pivot list is now: "));
       for (_RandomAccessIterator ii = m; ii <= n; ii++) {
@@ -228,7 +223,7 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
     ssize_t half = (n - m);
     half = half / 2;
     k = m + half; // pivot
-    swap<_ValueType>(*m, *k);
+    std::swap(*m, *k);
 #ifdef DEBUG_SORT
     LOG(("Sorting list pivot is now first element: "));
     for (_RandomAccessIterator ii = m; ii <= n; ii++) {
@@ -249,10 +244,10 @@ void quickSortDebugDepth(_RandomAccessIterator m, _RandomAccessIterator en, Ocom
       if (i < j) {
         LOG(("swapping value lower index: %d value: %s") , (i - m) , _rep_((*i)));
         LOG(("swapping value upper index: %d value: %s") , (j - m) , _rep_((*j)));
-        swap<_ValueType>(*i, *j);
+        std::swap(*i, *j);
       }
     }
-    swap<_ValueType>(*m, *j);
+    std::swap(*m, *j);
 #ifdef DEBUG_SORT
     LOG(("After pivot list is now: "));
     for (_RandomAccessIterator ii = m; ii <= n; ii++) {
@@ -289,7 +284,7 @@ template <typename _RandomAccessIterator> void quickSort(_RandomAccessIterator m
       ssize_t half = (n - m);
       half = half / 2;
       k = m + half; // pivot
-      swap<_ValueType>(*m, *k);
+      std::swap(*m, *k);
       _RandomAccessIterator i = m + 1;
       _RandomAccessIterator j = n;
       while (i <= j) {
@@ -298,10 +293,10 @@ template <typename _RandomAccessIterator> void quickSort(_RandomAccessIterator m
         while ((j >= m) && ((*j) > (*m)))
           j--;
         if (i < j) {
-          swap<_ValueType>(*i, *j);
+          std::swap(*i, *j);
         }
       }
-      swap<_ValueType>(*m, *j);
+      std::swap(*m, *j);
       work.emplace_back(m, j);
       work.emplace_back(j + 1, n + 1);
     }
@@ -311,7 +306,7 @@ template <typename _RandomAccessIterator> void quickSort(_RandomAccessIterator m
 template <class Oit> void reverse(Oit m, Oit n) {
   n--;
   while (m < n) {
-    swap(*m, *n);
+    std::swap(*m, *n);
     m++;
     n--;
   }
@@ -341,7 +336,7 @@ void quickSortVec0(gctools::Vec0<ValueType>& array, ssize_t m, ssize_t en, Ocomp
       ssize_t half = (n - m);
       half = half / 2;
       k = m + half; // pivot
-      swap<ValueType>(array[m], array[k]);
+      std::swap(array[m], array[k]);
       ssize_t i = m + 1;
       ssize_t j = n;
       while (i <= j) {
@@ -350,9 +345,9 @@ void quickSortVec0(gctools::Vec0<ValueType>& array, ssize_t m, ssize_t en, Ocomp
         while ((j >= i) && (!comparer(array[j], array[m])))
           j--;
         if (i < j)
-          swap<ValueType>(array[i], array[j]);
+          std::swap(array[i], array[j]);
       }
-      swap<ValueType>(array[m], array[j]);
+      std::swap(array[m], array[j]);
 #if 0
       printf("%s:%d  After separate from m=%d j=%d n=%d\n", __FILE__, __LINE__, m, j,  n);
       for (ssize_t ii = m; ii <= n; ii++) {
@@ -383,7 +378,7 @@ template <typename ValueType> void quickSortVec0(gctools::Vec0<ValueType>& array
       ssize_t half = (n - m);
       half = half / 2;
       k = m + half; // pivot
-      swap<ValueType>(array[m], array[k]);
+      std::swap(array[m], array[k]);
       ssize_t i = m + 1;
       ssize_t j = n;
       while (i <= j) {
@@ -392,9 +387,9 @@ template <typename ValueType> void quickSortVec0(gctools::Vec0<ValueType>& array
         while ((j >= i) && (!(array[j] < array[m])))
           j--;
         if (i < j)
-          swap<ValueType>(array[i], array[j]);
+          std::swap(array[i], array[j]);
       }
-      swap<ValueType>(array[m], array[j]);
+      std::swap(array[m], array[j]);
       work.emplace_back(m, j);
       work.emplace_back(j + 1, n + 1);
     }
@@ -419,7 +414,7 @@ template <typename ValueType> void quickSortMemory(ValueType* array, ssize_t m, 
       ssize_t half = (n - m);
       half = half / 2;
       k = m + half; // pivot
-      swap<ValueType>(array[m], array[k]);
+      std::swap(array[m], array[k]);
       ssize_t i = m + 1;
       ssize_t j = n;
       while (i <= j) {
@@ -428,9 +423,9 @@ template <typename ValueType> void quickSortMemory(ValueType* array, ssize_t m, 
         while ((j >= i) && (!(array[j] < array[m])))
           j--;
         if (i < j)
-          swap<ValueType>(array[i], array[j]);
+          std::swap(array[i], array[j]);
       }
-      swap<ValueType>(array[m], array[j]);
+      std::swap(array[m], array[j]);
       work.emplace_back(m, j);
       work.emplace_back(j + 1, n + 1);
     }
