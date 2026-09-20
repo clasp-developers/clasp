@@ -247,6 +247,7 @@
           irc-undef-value-get
           irc-store
           irc-store-atomic
+          irc-atomicrmw
           irc-cmpxchg
           irc-struct-gep
           irc-cons-car irc-cons-cdr

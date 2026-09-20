@@ -483,6 +483,48 @@
                (cmp:irc-typed-load (vrtype->llvm vrtype) addr))))
      (first (bir:outputs inst)))))
 
+(defun %atomic-write-bit (bit-array-word* order nval val)
+  (declare (ignore order)) ; FIXME
+  (let ((one (cmp:irc-basic-block-create "atomic-write-one"))
+        (zero (cmp:irc-basic-block-create "atomic-write-zero"))
+        (merge (cmp:irc-basic-block-create "atomic-write-merge")))
+    (cmp:irc-cond-br val one zero)
+    (cmp:irc-begin-block one)
+    (cmp:irc-atomicrmw bit-array-word* nval :or "atomic-write")
+    (cmp:irc-br merge)
+    (cmp:irc-begin-block zero)
+    (cmp:irc-atomicrmw bit-array-word* (cmp:irc-not nval) :and "atomic-write")
+    (cmp:irc-br merge)
+    (cmp:irc-begin-block merge)))
+
+(defun %atomic-write-sub-byte (bit-array-word* order mask nval)
+  #|
+  old_baw = bit_array_word.load(relaxed);
+  do {
+    new_baw = old_baw & ~mask | nval;
+  } while (!bit_array_word.compare_exchange_weak(old_baw, new_baw, coders_choice, relaxed);
+|#
+  (let* ((curb (cmp:irc-get-insert-block))
+         (body (cmp:irc-basic-block-create "atomic-write-body"))
+         (after (cmp:irc-basic-block-create "atomic-write-after"))
+         (old (cmp:irc-typed-load-atomic cmp:%i64% bit-array-word*
+                                         :label "bit-array-word"))
+         (_ (progn (cmp:irc-br body) (cmp:irc-begin-block body)))
+         (old_baw (cmp:irc-phi cmp:%i64% 2 "old_baw"))
+         (new_baw (cmp:irc-and old_baw
+                               (cmp:irc-or (cmp:irc-not mask "antimask") nval
+                                           "masked")
+                               "new_baw"))
+         ;; FIXME: export, weak
+         (cmpxchg (cmp::irc-%cmpxchg bit-array-word* old_baw new_baw order))
+         (new_old_baw (cmp:irc-extract-value cmpxchg '(0) "new_old_baw"))
+         (flag (cmp:irc-extract-value cmpxchg '(1) "baw-xchg-success")))
+    (declare (ignore _))
+    (cmp:irc-phi-add-incoming old_baw old curb)
+    (cmp:irc-phi-add-incoming old_baw new_old_baw body)
+    (cmp:irc-cond-br flag after body)
+    (cmp:irc-begin-block after)))
+
 (defmethod translate-primop ((nsym (eql 'core::vset)) inst)
   (destructuring-bind (element-type &optional order)
       (cleavir-primop-info:arguments (bir:info inst))
@@ -490,8 +532,32 @@
           (vec (in (second (bir:inputs inst))))
           (index (in (third (bir:inputs inst)))))
       (if (member element-type '(bit))
-          (%intrinsic-call "cc_simpleBitVectorAset"
-                           (list vec index (cmp:irc-zext val cmp:%i8%)))
+          ;; sub-byte arrays: complicated
+          (let* ((bit-unit-width (bit-unit-width element-type))
+                 (bit-array-word*
+                   (%bit-array-word-address vec bit-unit-width index))
+                 (offset (%bit-array-word-offset bit-unit-width index))
+                 (mask (%bit-unit-mask bit-unit-width offset))
+                 (nval (cmp:irc-shl (cmp:irc-zext val cmp:%i64% "shifted-bit-unit")
+                                    offset)))
+            (if order
+                ;; atomic write. In general this entails a CAS loop which is not
+                ;; lock-free, but them's the breaks.
+                ;; BEWARE: UNTESTED
+                (ecase element-type
+                  ((bit)
+                   ;; for bit however, we can use atomicrmw AND or OR.
+                   (%atomic-write-bit bit-array-word* order val nval))
+                  ((ext:byte2 ext:byte4 ext:integer2 ext:integer4)
+                   (%atomic-write-sub-byte bit-array-word* order mask nval)))
+                ;; non-atomic, "easy"
+                (let* ((bit-array-word (cmp:irc-typed-load cmp:%i64% bit-array-word*
+                                                           "bit-array-word"))
+                       (masked (cmp:irc-and bit-array-word
+                                            (cmp:irc-not mask "antimask")))
+                       (new-word (cmp:irc-or masked nval)))
+                  (cmp:irc-store new-word bit-array-word*))))
+          ;; normal byte-or-more arrays
           (let ((addr (%vector-element-address vec element-type index)))
             (if order
                 (cmp:irc-store-atomic val addr :order (cmp::order-spec->order order))

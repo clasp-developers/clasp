@@ -356,6 +356,8 @@
   (define-vector-transforms ext:byte16) (define-vector-transforms ext:integer16)
   (define-vector-transforms ext:byte8) (define-vector-transforms ext:integer8)
   (define-vector-transforms fixnum)
+  (define-vector-transforms ext:byte4) (define-vector-transforms ext:integer4)
+  (define-vector-transforms ext:byte2) (define-vector-transforms ext:integer2)
   (define-vector-transforms bit))
 
 (deftransform array-total-size core::vector-length (simple-array * (*)))

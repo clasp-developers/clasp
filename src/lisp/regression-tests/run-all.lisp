@@ -37,6 +37,7 @@
     "string-comparison0"
     "bit-array0"
     "bit-array1"
+    "sub-byte-array"
     "character0"
     #+unicode "unicode"
     "hash-tables0"
