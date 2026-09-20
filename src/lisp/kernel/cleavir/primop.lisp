@@ -406,6 +406,38 @@
 (cleavir-primop-info:defprimop core:vref 2 :value :flushable)
 (cleavir-primop-info:defprimop core::vset 3 :value :flushable)
 
+(defun bit-unit-width (element-type)
+  (ecase element-type
+    ((bit) 1)
+    ((ext:byte2 ext:integer2) 2)
+    ((ext:byte4 ext:integer4) 4)))
+
+(defun bit-unit-llvm-type (bit-unit-width)
+  (cmp:with-thread-safe-context (context)
+    (llvm-sys:type-get-int-nty context bit-unit-width)))
+
+(defun %bit-array-word-address (vec bit-unit-width index)
+  (let* ((n-of-bit-units-in-word (/ 64 bit-unit-width))
+         ;; fixme: seriously don't hardcode bit array word length,
+         ;; especially not in this stupid way
+         (vtype (cmp::simple-vector-llvm-type 'ext:byte64))
+         (uvec (cmp:irc-untag-general vec))
+         (index (cmp:irc-udiv index (%size_t n-of-bit-units-in-word)
+                              :label "bit-array-word-index")))
+    (cmp:irc-typed-gep-variable
+     vtype uvec (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index))))
+
+(defun %bit-array-word-offset (bit-unit-width index)
+  (let* ((n-of-bit-units-in-word (/ 64 bit-unit-width))
+         (shift-to-0 (- n-of-bit-units-in-word 1)))
+    (cmp:irc-mul (cmp:irc-sub (%size_t shift-to-0)
+                              (cmp:irc-urem index (%size_t n-of-bit-units-in-word)))
+                 (%size_t bit-unit-width))))
+
+(defun %bit-unit-mask (bit-unit-width offset)
+  (let ((unshifted-mask (ldb (byte bit-unit-width 0) -1)))
+    (cmp:irc-shl (%size_t unshifted-mask) offset)))
+
 (defmethod %primop-rtype-info ((name (eql 'core:vref)) info)
   (let ((vrtype (element-type->vrtype
                  (first (cleavir-primop-info:arguments info)))))
@@ -424,12 +456,22 @@
          ;; since they don't use addressing
          ;; FIXME: atomicity? probably needs a lock or some crap
          (let* ((vec (in (first (bir:inputs inst))))
-                (index (in (second (bir:inputs inst)))))
-           ;; KLUDGE cc_simpleBitVectorAref returns an i8, but we need an i1
-           ;; don't think a C++ function can return an i1.
-           (cmp:irc-trunc
-            (%intrinsic-call "cc_simpleBitVectorAref" (list vec index))
-            cmp:%i1% "bit" t))
+                (index (in (second (bir:inputs inst))))
+                (bit-unit-width (bit-unit-width element-type))
+                (bit-array-word*
+                  (%bit-array-word-address vec bit-unit-width index))
+                (bit-array-word
+                  (if order
+                      (cmp:irc-typed-load-atomic cmp:%i64% bit-array-word*
+                                                 :label "bit-array-word"
+                                                 :align 8
+                                                 :order (cmp::order-spec->order order))
+                      (cmp:irc-typed-load cmp:%i64% bit-array-word*
+                                          "bit-array-word")))
+                (offset (%bit-array-word-offset bit-unit-width index))
+                (mask (%bit-unit-mask bit-unit-width offset))
+                (shifted (cmp:irc-lshr (cmp:irc-and bit-array-word mask) offset)))
+           (cmp:irc-trunc shifted (bit-unit-llvm-type bit-unit-width) "bit-unit"))
          ;; for normal element types, just get the address and load from there.
          (let* ((vec (in (first (bir:inputs inst))))
                 (index (in (second (bir:inputs inst))))

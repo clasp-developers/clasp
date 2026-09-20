@@ -554,11 +554,6 @@ size_t cc_checkBound(core::T_O* array, size_t bound, core::T_O* index) {
     TYPE_ERROR(tindex, cl::_sym_fixnum);
 }
 
-unsigned char cc_simpleBitVectorAref(core::T_O* tarray, size_t index) {
-  core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
-  return (*array)[index];
-}
-
 void cc_simpleBitVectorAset(core::T_O* tarray, size_t index, unsigned char v) {
   core::SimpleBitVector_O* array = reinterpret_cast<core::SimpleBitVector_O*>(gctools::untag_general<core::T_O*>(tarray));
   (*array)[index] = v;

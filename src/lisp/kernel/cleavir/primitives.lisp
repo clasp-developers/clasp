@@ -212,7 +212,6 @@
          (primitive-unwinds "cc_makeCell"
           (list :t* 'llvm-sys:attribute-no-alias) nil)
          (primitive-unwinds "cc_checkBound" :size_t (list (list :t* 'llvm-sys:attribute-read-only) :size_t :t*))
-         (primitive         "cc_simpleBitVectorAref" :i8 (list (list :t* 'llvm-sys:attribute-read-only) :size_t))
          (primitive         "cc_simpleBitVectorAset" :void (list (list :t* 'llvm-sys:attribute-read-only) :size_t :i8))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
