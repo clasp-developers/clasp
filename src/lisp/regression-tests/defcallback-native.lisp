@@ -34,3 +34,25 @@
                      collect (clasp-ffi:%mem-ref array :int (* i intsize))))
           (clasp-ffi:%foreign-free array)))
       ((1 2 3 4 5 6 7 8 9 10)))
+
+(test callback-cache-reuses-structurally-equal-signatures
+      (let* ((function (lambda (a b) (declare (ignore a b)) 0))
+             (signature '(:int :pointer :pointer))
+             (first (clasp-ffi::%ensure-callback signature function))
+             (second (clasp-ffi::%ensure-callback (copy-list signature) function)))
+        (eq first second))
+      (t))
+
+(test callback-recipe-restoration
+      (let* ((old (clasp-ffi:%get-callback '<))
+             (alias 'callback-recipe-restoration-alias))
+        (setf (gethash alias clasp-ffi::*callbacks-by-name*) old)
+        (clasp-ffi::prepare-callbacks-for-snapshot)
+        (let ((cleared (and (zerop (hash-table-count clasp-ffi::*callbacks*))
+                            (zerop (hash-table-count clasp-ffi::*callbacks-by-name*)))))
+          (clasp-ffi:restore-callbacks)
+          (let ((restored (clasp-ffi:%get-callback '<)))
+            (list cleared
+                  (not (eq old restored))
+                  (eq restored (clasp-ffi:%get-callback alias))))))
+      ((t t t)))

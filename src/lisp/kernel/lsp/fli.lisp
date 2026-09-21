@@ -358,10 +358,14 @@
 ;;; Mapping from (Lisp-function . signature) to callbacks (pointers)
 ;;; Besides its importance for caching, this is also important for ensuring
 ;;; that Lisp functions with C callbacks are not collected by GC.
-(defvar *callbacks* (make-hash-table :test 'eq))
+(defvar *callbacks* (make-hash-table :test 'equal))
 
 ;;; Mapping from callback names to callbacks (pointers)
 (defvar *callbacks-by-name* (make-hash-table :test 'equal))
+
+;;; Pure Lisp recipes for regenerating callbacks after snapshot load.
+;;; Each entry is (function signature names), with no native pointer.
+(defvar *callback-snapshot-descriptors* nil)
 
 (defun signature-return-type (signature) (first signature))
 (defun signature-argument-types (signature) (rest signature))
@@ -432,7 +436,7 @@
                                               litsname)))
     (cmp::with-module (:module module)
       (codegen-callback signature lits :c-name callback-name)
-      (let* ((dylib (llvm-sys:jit-module-to-dylib module callback-name))
+      (let* ((dylib (llvm-sys:jit-transient-module-to-dylib module callback-name))
              (lits (llvm-sys:jit-lookup dylib litsname)))
         (setf (core:literals-vref lits 0) function)
         (llvm-sys:jit-lookup dylib callback-name)))))
@@ -445,6 +449,54 @@
 
 (defmacro ensure-callback (signature function)
   `(%ensure-callback ',signature ,function))
+
+(defun prepare-callbacks-for-snapshot ()
+  "Record callback recipes and clear all cached native callback pointers.
+
+After SAVE-LISP-AND-DIE with :EXIT NIL, call RESTORE-CALLBACKS before using
+callbacks again. Applications must also re-register the new pointers with any
+foreign libraries that retained the old addresses."
+  (when (plusp (hash-table-count *callbacks*))
+    (let ((descriptors nil)
+          (descriptors-by-pointer (make-hash-table :test 'eq)))
+      (maphash (lambda (key pointer)
+                 (let ((descriptor (list (car key) (cdr key) nil)))
+                   (push descriptor descriptors)
+                   (setf (gethash pointer descriptors-by-pointer) descriptor)))
+               *callbacks*)
+      (maphash (lambda (name pointer)
+                 (let ((descriptor (gethash pointer descriptors-by-pointer)))
+                   (unless descriptor
+                     (error "No callback recipe for named callback ~s" name))
+                   (push name (third descriptor))))
+               *callbacks-by-name*)
+      (setf *callback-snapshot-descriptors* descriptors)
+      (clrhash *callbacks*)
+      (clrhash *callbacks-by-name*))))
+
+(defun restore-callbacks ()
+  "Regenerate callbacks invalidated while preparing a snapshot.
+
+This rebuilds Lisp callback caches. Applications remain responsible for
+re-registering the new callback pointers with foreign libraries."
+  (when *callback-snapshot-descriptors*
+    ;; Build complete replacement tables before publishing either one.
+    (multiple-value-bind (callbacks callbacks-by-name)
+        (let ((*callbacks* (make-hash-table :test 'equal))
+              (*callbacks-by-name* (make-hash-table :test 'equal)))
+          (dolist (descriptor *callback-snapshot-descriptors*)
+            (destructuring-bind (function signature names) descriptor
+              (let ((pointer (%ensure-callback signature function)))
+                (dolist (name names)
+                  (setf (gethash name *callbacks-by-name*) pointer)))))
+          (values *callbacks* *callbacks-by-name*))
+      (setf *callbacks* callbacks
+            *callbacks-by-name* callbacks-by-name
+            *callback-snapshot-descriptors* nil))))
+
+(eval-when (:load-toplevel :execute)
+  (cmp:register-save-hook 'prepare-callbacks-for-snapshot)
+  (pushnew 'restore-callbacks core:*initialize-hooks*))
 
 (defun %get-callback (name)
   (or (gethash name *callbacks-by-name*)
@@ -486,4 +538,5 @@
             %defcallback
             %callback
             %get-callback
+            restore-callbacks
             safe-translator-type)))

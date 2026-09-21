@@ -654,6 +654,10 @@ namespace llvmo {
 // Compile callbacks for FFI.
 CL_DEFUN JITDylib_sp jit_module_to_dylib(Module_sp module, const std::string& libname) { return loadModule(module, 0, libname); }
 
+CL_DEFUN JITDylib_sp jit_transient_module_to_dylib(Module_sp module, const std::string& libname) {
+  return loadModule(module, 0, libname, true);
+}
+
 CL_DEFUN core::Pointer_sp jit_lookup(JITDylib_sp dylib, const std::string& name) {
   return llvm_sys__clasp_jit()->lookup(dylib, name);
 }
