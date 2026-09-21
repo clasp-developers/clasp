@@ -4460,11 +4460,12 @@ CL_DEFUN std::string llvm_sys__getDefaultTargetTriple() {
   return triple;
 }
 
-JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname) {
+JITDylib_sp loadModule(llvmo::Module_sp module, size_t startupID, const std::string& libname, bool transient) {
   ClaspJIT_sp jit = llvm_sys__clasp_jit();
   JITDylib_sp jitDylib = jit->createAndRegisterJITDylib(libname);
   ThreadSafeContext_sp tsc = gc::As<ThreadSafeContext_sp>(comp::_sym_STARthread_safe_contextSTAR->symbolValue());
-  jit->addIRModule(jitDylib, module, tsc, startupID);
+  ObjectFile_sp objectFile = jit->addIRModule(jitDylib, module, tsc, startupID);
+  if (transient) objectFile->_TransientSkipSnapshot = true;
   return jitDylib;
 }
 
