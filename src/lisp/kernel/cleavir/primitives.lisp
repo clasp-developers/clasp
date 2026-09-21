@@ -1,5 +1,8 @@
 (in-package #:cmp)
 
+;;; see declare-function-in-module (cmpir.lisp) for interpretation of function
+;;; attributes and such.
+
 (defstruct primitive
   return-type-name
   argument-type-names
@@ -7,12 +10,11 @@
   argument-attributes
   properties)
 
-
 (defun primitive-varargs (prim)
   (let ((props (primitive-properties prim)))
     (getf props :varargs)))
 
-(defun define-primitive-info (name return-ty-attributes passed-args-ty varargs does-not-throw does-not-return memory returns-twice speculatable will-return)
+(defun define-primitive-info (name return-ty-attributes passed-args-ty &rest function-attrs &key &allow-other-keys)
   (declare (ignore name))
   (let (reversed-argument-types
         return-attributes
@@ -36,18 +38,12 @@
        :argument-type-names argument-types
        :return-attributes return-attributes
        :argument-attributes argument-attributes
-       :properties (list :varargs varargs
-                         :does-not-throw does-not-throw
-                         :does-not-return does-not-return
-                         :memory memory
-                         :returns-twice returns-twice
-                         :speculatable speculatable
-                         :will-return will-return)))))
+       :properties function-attrs))))
 
 (defvar *primitives* (make-hash-table :test 'equal :thread-safe t))
 
-(defun define-primitive (name return-ty-attr args-ty-attr &key varargs does-not-throw does-not-return memory returns-twice speculatable will-return)
-  (let ((info (define-primitive-info name return-ty-attr args-ty-attr varargs does-not-throw does-not-return memory returns-twice speculatable will-return)))
+(defun define-primitive (name return-ty-attr args-ty-attr &rest function-attrs &key &allow-other-keys)
+  (let ((info (apply #'define-primitive-info name return-ty-attr args-ty-attr function-attrs)))
     (setf (gethash name *primitives*) info)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,13 +55,13 @@
 ;;;     and nothing that it calls throws an exception
 ;;; + primitive-unwinds means that the intrinsic can throw an exception and should be called with INVOKE
 ;;;
-(defun primitive-unwinds (name return-ty args-ty &key varargs does-not-return memory returns-twice speculatable will-return)
+(defun primitive-unwinds (name return-ty args-ty &rest function-attrs &key &allow-other-keys)
   "Define primitives that can unwind the stack, either directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw nil :does-not-return does-not-return :memory memory :returns-twice returns-twice :speculatable speculatable :will-return will-return))
+  (apply #'define-primitive name return-ty args-ty :does-not-throw nil function-attrs))
 
-(defun primitive         (name return-ty args-ty &key varargs does-not-return memory returns-twice speculatable will-return)
+(defun primitive         (name return-ty args-ty &rest function-attrs &key &allow-other-keys)
   "Define primitives that do NOT unwind the stack directly or through transitive calls"
-  (define-primitive name return-ty args-ty :varargs varargs :does-not-throw t :does-not-return does-not-return :memory memory :returns-twice returns-twice :speculatable speculatable :will-return will-return))
+  (apply #'define-primitive name return-ty args-ty :does-not-throw t function-attrs))
 
 (defun general-entry-point-redirect-name (arity)
   "Return the name of the wrong-number-of-arguments function for the arity"
