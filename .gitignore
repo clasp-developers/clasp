@@ -9,6 +9,8 @@ GPATH
 GRTAGS
 GTAGS
 TAGS
+.claude/
+.undo-ai/
 .lock-waf_darwin_build
 .waf*/
 .svn/

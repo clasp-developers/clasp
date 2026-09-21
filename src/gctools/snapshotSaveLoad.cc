@@ -1047,6 +1047,44 @@ struct prepare_for_snapshot_save_t : public walker_callback_t {
   }
   prepare_for_snapshot_save_t(Fixup* fixup, ISLInfo* info) : walker_callback_t(info), _fixup(fixup){};
 };
+static void validate_object_file_literals_symbol(llvmo::ObjectFile_O* code, llvmo::JITDylib_sp jitDylib, const char* stage) {
+  const std::string codeName = code->_CodeName->get_std_string();
+  const std::string jitDylibName = jitDylib->_name->get_std_string();
+  const std::string expectedSymbol = fmt::format("{}{}", llvmo::literals_name, code->_ObjectId);
+
+  if (!code->memoryBufferValid()) {
+    ISL_ERROR("%s ObjectFile objectId=%zu codeName=%s: memory buffer is NULL while checking for %s",
+              stage, code->_ObjectId, codeName.c_str(), expectedSymbol.c_str());
+  }
+
+  auto objectFile = code->getObjectFile();
+  if (!objectFile) {
+    std::string error = llvm::toString(objectFile.takeError());
+    ISL_ERROR("%s ObjectFile objectId=%zu codeName=%s: could not parse object buffer while checking for %s: %s",
+              stage, code->_ObjectId, codeName.c_str(), expectedSymbol.c_str(), error.c_str());
+  }
+
+  for (const llvm::object::SymbolRef& symbol : (*objectFile)->symbols()) {
+    auto symbolName = symbol.getName();
+    if (!symbolName) {
+      std::string error = llvm::toString(symbolName.takeError());
+      ISL_ERROR("%s ObjectFile objectId=%zu codeName=%s: could not read an object symbol while checking for %s: %s",
+                stage, code->_ObjectId, codeName.c_str(), expectedSymbol.c_str(), error.c_str());
+    }
+    if (*symbolName == expectedSymbol) {
+      if (getenv("CLASP_SNAPSHOT_OBJECT_FILE")) {
+        printf("[%s] ObjectFile objectId=%zu codeName=%s jitDylibId=%zu jitDylibName=%s literalsSymbol=%s\n",
+               stage, code->_ObjectId, codeName.c_str(), jitDylib->_Id, jitDylibName.c_str(), symbolName->str().c_str());
+        fflush(stdout);
+      }
+      return;
+    }
+  }
+
+  ISL_ERROR("%s ObjectFile objectId=%zu codeName=%s: required literals symbol %s is missing",
+            stage, code->_ObjectId, codeName.c_str(), expectedSymbol.c_str());
+}
+
 struct calculate_size_t {
   size_t _TotalSize = 0;
   size_t _ObjectFileTotalSize = 0;
@@ -1072,6 +1110,7 @@ struct calculate_size_t {
         if (code->_TransientSkipSnapshot) {
           return;
         }
+        validate_object_file_literals_symbol(code, code->_TheJITDylib, "snapshot-save");
         this->_CodeCount++;
         //
         // Calculate the size of a Code_O object keeping only the literals vector
@@ -2464,6 +2503,7 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                   (llvmo::JITDylib_O*)snapshot_JITDylib_O_header->_badge_stamp_wtag_mtag.fwdPointer();
               llvmo::JITDylib_sp memory_JITDylib_sp_((gctools::Tagged)gctools::tag_general<llvmo::JITDylib_O*>(memory_JITDylib_O_));
               llvmo::JITDylib_sp jitdylib = memory_JITDylib_sp_;
+              validate_object_file_literals_symbol(&*allocatedObjectFile, jitdylib, "snapshot-load");
 
               llvm::ExitOnError ExitOnErr;
               llvm::orc::JITDylib* jd = jitdylib->wrappedPtr();
