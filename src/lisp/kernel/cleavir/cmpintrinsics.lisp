@@ -901,10 +901,6 @@ Boehm and MPS use a single pointer"
     (error "result must be an instance of llvm-sys:Value_O but instead it has the value ~s" result)))
 
 
-;;; Define what ltvc_xxx functions return
-(define-symbol-macro %ltvc-return% %void%)
-
-
 ;;------------------------------------------------------------
 ;;
 ;; Setup dynamic variables
