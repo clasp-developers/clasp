@@ -193,6 +193,12 @@ uint8_t* ExecutableArena::allocate() {
   sys_icache_invalidate(slot, _slot_stride);
 #else
   std::memcpy(slot, _slot_template.data(), _slot_stride);
+#if defined(__aarch64__)
+  // AArch64 does not guarantee that stores through the data cache become
+  // visible to instruction fetches without explicit synchronization.
+  __builtin___clear_cache(reinterpret_cast<char*>(slot),
+                          reinterpret_cast<char*>(slot + _slot_stride));
+#endif
 #endif
 #if defined(_TARGET_OS_LINUX)
   // Register this slot's CIE+FDE with libgcc. The CIE starts at
@@ -286,12 +292,14 @@ public:
     perf_map_append(slot, _tramp_size, name);
 #if defined(_TARGET_OS_LINUX)
     // Build minimal ELF and register with GDB JIT interface (ELF/libgcc only).
-    size_t ef_size = _arena->eh_frame_size();
-    auto [elf_buf, elf_sz] = build_gdb_jit_elf(
-        (uintptr_t)slot, _tramp_size,
-        (uintptr_t)(slot + _tramp_size), slot + _tramp_size, ef_size,
-        name);
-    gdb_jit_register(elf_buf, elf_sz);
+    if (!getenv("CLASP_NO_GDB_JIT")) {
+      size_t ef_size = _arena->eh_frame_size();
+      auto [elf_buf, elf_sz] = build_gdb_jit_elf(
+          (uintptr_t)slot, _tramp_size,
+          (uintptr_t)(slot + _tramp_size), slot + _tramp_size, ef_size,
+          name);
+      gdb_jit_register(elf_buf, elf_sz);
+    }
 #endif
     int n = _debug_count.fetch_add(1);
     if (n < 3) {

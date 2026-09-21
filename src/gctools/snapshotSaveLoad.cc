@@ -2438,7 +2438,13 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
           // addGenerator was done in ClaspJIT_O
         } else {
-          llvm_jitdylib = &*(obj_claspJIT->_LLJIT->createJITDylib(name)); // Every other one we need to create
+#if LLVM_VERSION_MAJOR < 22
+          auto expected_jitdylib = obj_claspJIT->_LLJIT->createJITDylib(name);
+          llvm_jitdylib = &*expected_jitdylib;
+#else
+          llvm::ExitOnError ExitOnErr;
+          llvm_jitdylib = &ExitOnErr(obj_claspJIT->_LLJIT->createJITDylib(name));
+#endif
           memory_JITDylib_sp_->_ptr = llvm_jitdylib;
           llvm_jitdylib->addGenerator(llvm::cantFail(
               llvmo::DynamicLibrarySearchGenerator::GetForCurrentProcess(obj_claspJIT->_LLJIT->getDataLayout().getGlobalPrefix())));
@@ -2511,7 +2517,8 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 ISL_ERROR("JITDylib* is NULL");
               }
               ExitOnErr(obj_claspJIT->_LLJIT->addObjectFile(
-                  *jd, llvm::MemoryBuffer::getMemBuffer(allocatedObjectFile->_MemoryBuffer->getMemBufferRef())));
+                  *jd, llvm::MemoryBuffer::getMemBuffer(
+                           allocatedObjectFile->_MemoryBuffer->getMemBufferRef(), false)));
 
               gctools::Tagged fwd =
                   (gctools::Tagged)gctools::untag_object<gctools::clasp_ptr_t>((gctools::clasp_ptr_t)allocatedObjectFile.raw_());
