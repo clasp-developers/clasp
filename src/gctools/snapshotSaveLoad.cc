@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <filesystem>
 
+#include <algorithm>
 #include <optional>
 #include <iomanip>
 
@@ -2407,21 +2408,18 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
       }
 
       std::vector<CodeFixup_t> codeFixups;
+      struct MaterializationGroup {
+        llvmo::JITDylib_sp _JITDylib;
+        std::vector<size_t> _ObjectIds;
+      };
+      std::vector<MaterializationGroup> materializationGroups;
       size_t countNullObjects = 0;
       size_t objectFileCount = 0;
       {
         // Link all the code objects
         MaybeTimeStartup time5("Object file linking");
         using TP = thread_pool<ThreadManager>;
-#if 1
-        // Create a pool with one thread for debugging threading issues
-        printf("%s:%d:%s  Snapshot-load limited to one linker thread\n",
-               __FILE__, __LINE__, __FUNCTION__ );
-        TP pool(1);
-#else
-        // Create a pool of multiple threads
         TP pool(TP::sane_number_of_threads());
-#endif
         for (cur_header = start_header; cur_header->_Kind != ISLKind::End;) {
           if (cur_header->_Kind == ISLKind::General) {
             ISLGeneralHeader_s* generalHeader = (ISLGeneralHeader_s*)cur_header;
@@ -2487,35 +2485,51 @@ void snapshot_load(void* maybeStartOfSnapshot, void* maybeEndOfSnapshot, const s
                 ISL_ERROR("The loadedObjectFile->_ObjectId %lu does not match the allocatedObjectFile->_ObjectId %lu", loadedObjectFile->_ObjectId, allocatedObjectFile->_ObjectId);
               }
 
-              //
-              // Everything after this will have to change when we do multicore startup.
-              // lookup will cause multicore linking and with multicore linking we have to do things after this in a thread safe way
-              size_t objectId = allocatedObjectFile->_ObjectId;
-              pool.push_task([&obj_claspJIT, jitdylib, objectId]() {
-                // force_materialize can allocate, so set up a bit of a Lisp thread.
-                core::ThreadLocalState tls;
-                my_thread = &tls;
-                my_thread_low_level = &tls._LowLevel;
-                // Ensure the thread-local pointers don't dangle after the
-                // local `tls`/`tlsll` objects are destroyed at lambda exit.
-                // Worker threads are reused by the pool; between tasks any
-                // stray access to my_thread would read freed stack memory
-                // and GC scans would traverse garbage.
-                struct ClearTLS {
-                  ~ClearTLS() {
-                    my_thread = nullptr;
-                    my_thread_low_level = nullptr;
-                  }
-                } clear_tls_guard;
-                {
-                  if (!obj_claspJIT->force_materialize(jitdylib, objectId))
-                    ISL_ERROR("Failed to materialize JITDylib objectId=%lu", objectId );
-                }
-              });
+              auto group = std::find_if(materializationGroups.begin(), materializationGroups.end(),
+                                        [jitdylib](const MaterializationGroup& candidate) {
+                                          return candidate._JITDylib == jitdylib;
+                                        });
+              if (group == materializationGroups.end()) {
+                materializationGroups.push_back({jitdylib, {allocatedObjectFile->_ObjectId}});
+              } else {
+                group->_ObjectIds.push_back(allocatedObjectFile->_ObjectId);
+              }
             }
           }
           next_header = cur_header->next(cur_header->_Kind);
           cur_header = next_header;
+        }
+
+        // All MaterializationUnits and ObjectFile records must be visible
+        // before lookup starts.  Previously workers ran concurrently with
+        // this scan, so a lookup could request a symbol from an object that
+        // had not been added to ORC yet, and lookupObjectFile could traverse
+        // _AllObjectFiles while the main thread was extending it.
+        // Materializations in separate JITDylibs may proceed concurrently.
+        // Keep each individual JITDylib on one worker: LLVM 18's process
+        // symbol generator can otherwise race two lookups for the same
+        // external and try to define it twice in that JITDylib.
+        for (const auto& group : materializationGroups) {
+          llvmo::JITDylib_sp jitdylib = group._JITDylib;
+          std::vector<size_t> objectIds = group._ObjectIds;
+          pool.push_task([&obj_claspJIT, jitdylib, objectIds = std::move(objectIds)]() {
+            // force_materialize can allocate, so set up a bit of a Lisp thread.
+            core::ThreadLocalState tls;
+            my_thread = &tls;
+            my_thread_low_level = &tls._LowLevel;
+            // Ensure the thread-local pointers don't dangle after the local
+            // tls object is destroyed. Worker threads are reused by the pool.
+            struct ClearTLS {
+              ~ClearTLS() {
+                my_thread = nullptr;
+                my_thread_low_level = nullptr;
+              }
+            } clear_tls_guard;
+            for (size_t objectId : objectIds) {
+              if (!obj_claspJIT->force_materialize(jitdylib, objectId))
+                ISL_ERROR("Failed to materialize JITDylib objectId=%lu", objectId);
+            }
+          });
         }
         pool.wait_for_tasks();
         // Done working object files
