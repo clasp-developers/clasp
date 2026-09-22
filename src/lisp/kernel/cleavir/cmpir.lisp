@@ -903,7 +903,20 @@ Otherwise do a variable shift."
   ;; eventually could be done as, ideally, a memset, so LLVM knows about it
   (when iep (error "Initialized vector contents not yet supported"))
   (let ((intrinsic (ecase element-type
-                     ((t) "cc_initialize_simple_vector_t"))))
+                     ((t) "cc_initialize_simple_vector_t")
+                     ((single-float) "cc_initialize_simple_vector_single_float")
+                     ((double-float) "cc_initialize_simple_vector_double_float")
+                     ((base-char) "cc_initialize_simple_vector_base_char")
+                     ((character) "cc_initialize_simple_vector_character")
+                     ((ext:byte8) "cc_initialize_simple_vector_byte8")
+                     ((ext:integer8) "cc_initialize_simple_vector_integer8")
+                     ((ext:byte8) "cc_initialize_simple_vector_byte16")
+                     ((ext:integer8) "cc_initialize_simple_vector_integer16")
+                     ((ext:byte8) "cc_initialize_simple_vector_byte32")
+                     ((ext:integer8) "cc_initialize_simple_vector_integer32")
+                     ((ext:byte8) "cc_initialize_simple_vector_byte64")
+                     ((ext:integer8) "cc_initialize_simple_vector_integer64")
+                     ((fixnum) "cc_initialize_simple_vector_fixnum"))))
     (irc-intrinsic intrinsic memory nelems)))
 
 (defparameter *default-function-attributes*

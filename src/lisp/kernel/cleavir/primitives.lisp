@@ -286,6 +286,58 @@
           :void (list (list :i8* '(:captures ())) :size_t)
           :will-return t
           :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_single_float"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_double_float"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_base_char"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_character"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_byte8"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_int8"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_byte16"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_integer16"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_byte32"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_integer32"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_byte64"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_integer64"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_fixnum"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
 
          ;; === CLASP-FFI TRANSLATORS ===
 

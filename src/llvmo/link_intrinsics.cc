@@ -630,9 +630,25 @@ void cc_initialize_closure(unsigned char* closure, core::T_O* simpleFunInfo, siz
   gctools::GC<core::Closure_O>::initialize((void*)closure, ncells, tsimpleFunInfo);
 }
 
-void cc_initialize_simple_vector_t(unsigned char* vec, size_t nelements) {
-  gctools::GC<core::SimpleVector_O>::initialize((void*)vec, nelements);
-}
+#define DEF_VECTOR_INIT(NAME, TYPE) \
+  void cc_initialize_simple_vector_##NAME(unsigned char* vec, size_t nelements) { \
+  gctools::GC<TYPE>::initialize((void*)vec, nelements);\
+  }
+DEF_VECTOR_INIT(t, core::SimpleVector_O);
+DEF_VECTOR_INIT(single_float, core::SimpleVector_float_O);
+DEF_VECTOR_INIT(double_float, core::SimpleVector_double_O);
+DEF_VECTOR_INIT(base_char, core::SimpleBaseString_O);
+DEF_VECTOR_INIT(character, core::SimpleCharacterString_O);
+DEF_VECTOR_INIT(byte8,  core::SimpleVector_byte8_t_O);
+DEF_VECTOR_INIT(int8,   core::SimpleVector_int8_t_O);
+DEF_VECTOR_INIT(byte16, core::SimpleVector_byte16_t_O);
+DEF_VECTOR_INIT(int16,  core::SimpleVector_int16_t_O);
+DEF_VECTOR_INIT(byte32, core::SimpleVector_byte32_t_O);
+DEF_VECTOR_INIT(int32,  core::SimpleVector_int32_t_O);
+DEF_VECTOR_INIT(byte64, core::SimpleVector_byte64_t_O);
+DEF_VECTOR_INIT(int64,  core::SimpleVector_int64_t_O);
+DEF_VECTOR_INIT(fixnum, core::SimpleVector_fixnum_O);
+#undef DEF_VECTOR_INIT
 
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);

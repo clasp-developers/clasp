@@ -336,10 +336,23 @@
 
 ;;; -f just to permute out the initial element arguments.
 ;;; FIXME: probably should clean that up.
-(deftransform-f core:make-simple-vector-t
-    (constantly '(core::make-simple-vector-uninit t))
-  nil (0)
-  t (and fixnum (integer 0)) null null)
+;;; FIXME: merge with below
+(macrolet ((define-vector-transforms (element-type)
+             (let ((maker (cmp::uaet-info element-type)))
+               `(deftransform-f ,maker
+                    (constantly '(core::make-simple-vector-uninit ,element-type))
+                  nil (0)
+                  t (and fixnum (integer 0)) null null))))
+  (define-vector-transforms t)
+  (define-vector-transforms single-float)
+  (define-vector-transforms double-float)
+  (define-vector-transforms base-char)
+  (define-vector-transforms character)
+  (define-vector-transforms ext:byte64) (define-vector-transforms ext:integer64)
+  (define-vector-transforms ext:byte32) (define-vector-transforms ext:integer32)
+  (define-vector-transforms ext:byte16) (define-vector-transforms ext:integer16)
+  (define-vector-transforms ext:byte8) (define-vector-transforms ext:integer8)
+  (define-vector-transforms fixnum))
 
 (deftransform core:check-bound core:check-bound
   t fixnum t)

@@ -567,13 +567,28 @@
       (out val (first (bir:outputs inst))))))
 
 (defun new-vector-data-size (element-type nelems)
-  (let ((element-size
-          ;; FIXME: less hardcoding
-          (etypecase element-type
-            ((t) 8))))
+  (let* ((element-size
+           ;; FIXME: less hardcoding
+           (ecase element-type
+             ((t) 8)
+             ((single-float) 4)
+             ((double-float) 4)
+             ((base-char) 1)
+             ((character) 4)
+             ((ext:byte8 ext:integer8) 1)
+             ((ext:byte16 ext:integer16) 2)
+             ((ext:byte32 ext:integer32) 4)
+             ((ext:byte64 ext:integer64 fixnum) 8)))
+         (rnelems
+           ;; base-strings have an extra byte for a null terminator.
+           (case element-type
+             ((base-char) (llvm-sys:create-add cmp:*irbuilder* nelems (%size_t 1)
+                                               "base-string-null-terminated-size"
+                                               t t))
+             (t nelems))))
     (llvm-sys:create-add cmp:*irbuilder*
                          (%size_t cmp:+simple-vector._data-offset+)
-                         (cmp:irc-mul nelems (%size_t element-size)
+                         (cmp:irc-mul rnelems (%size_t element-size)
                                       :label "vector-data-size"
                                       :nuw t :nsw t)
                          "vector-size" t t)))
