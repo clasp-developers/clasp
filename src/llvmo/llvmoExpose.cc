@@ -1258,6 +1258,38 @@ Attribute_sp Attribute_O::get(LLVMContext_sp context, core::Cons_sp attribute_sy
 }
 #endif
 
+// note: this enum is actually a bitmask, but we don't expose the bitmask part
+// to Lisp. Lisp just passes booleans to add-alloc-kind-attribute (below).
+SYMBOL_EXPORT_SC_(LlvmoPkg, AllocKindUnknown);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AllocKindAlloc);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AllocKindRealloc);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AllocKindFree);
+SYMBOL_EXPORT_SC_(LlvmoPkg, AllocKindEnum);
+CL_BEGIN_ENUM(llvm::AllocFnKind, _sym_AllocKindEnum, "AllocFnKind");
+CL_VALUE_ENUM(_sym_AllocKindUnknown, llvm::AllocFnKind::Unknown);
+CL_VALUE_ENUM(_sym_AllocKindAlloc, llvm::AllocFnKind::Alloc);
+CL_VALUE_ENUM(_sym_AllocKindRealloc, llvm::AllocFnKind::Realloc);
+CL_VALUE_ENUM(_sym_AllocKindFree, llvm::AllocFnKind::Free);
+CL_END_ENUM(_sym_AllocKindEnum);
+
+#if LLVM_VERSION_MAJOR >= 20
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsNone);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsAddressIsNull);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsAddress);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsReadProvenance);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsProvenance);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsAll);
+SYMBOL_EXPORT_SC_(LlvmoPkg, CaptureComponentsEnum);
+CL_BEGIN_ENUM(llvm::CaptureComponents, _sym_CaptureComponentsEnum, "CaptureComponents");
+CL_VALUE_ENUM(_sym_CaptureComponentsNone, llvm::CaptureComponents::None);
+CL_VALUE_ENUM(_sym_CaptureComponentsAddressIsNull, llvm::CaptureComponents::AddressIsNull);
+CL_VALUE_ENUM(_sym_CaptureComponentsAddress, llvm::CaptureComponents::Address);
+CL_VALUE_ENUM(_sym_CaptureComponentsReadProvenance, llvm::CaptureComponents::ReadProvenance);
+CL_VALUE_ENUM(_sym_CaptureComponentsProvenance, llvm::CaptureComponents::Provenance);
+CL_VALUE_ENUM(_sym_CaptureComponentsAll, llvm::CaptureComponents::All);
+CL_END_ENUM(_sym_CaptureComponentsEnum);
+#endif
+
 #if LLVM_VERSION_MAJOR > 15
 SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefNone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, ModRefRead);
@@ -1312,6 +1344,8 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeAlignment);
 
 #if LLVM_VERSION_MAJOR < 21
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoCapture);
+#else
+SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeCaptures);
 #endif
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoRedZone);
 SYMBOL_EXPORT_SC_(LlvmoPkg, AttributeNoImplicitFloat);
@@ -1349,6 +1383,8 @@ CL_VALUE_ENUM(_sym_AttributeStackProtectReq, llvm::Attribute::StackProtectReq);
 CL_VALUE_ENUM(_sym_AttributeAlignment, llvm::Attribute::Alignment);
 #if LLVM_VERSION_MAJOR < 21
 CL_VALUE_ENUM(_sym_AttributeNoCapture, llvm::Attribute::NoCapture);
+#else
+CL_VALUE_ENUM(_sym_AttributeCaptures, llvm::Attribute::Captures);
 #endif
 CL_VALUE_ENUM(_sym_AttributeNoRedZone, llvm::Attribute::NoRedZone);
 CL_VALUE_ENUM(_sym_AttributeNoImplicitFloat, llvm::Attribute::NoImplicitFloat);
@@ -1399,6 +1435,42 @@ CL_DEFUN void llvm_sys__add_memory_attribute(llvm::Function* func,
   func->addFnAttr(memattr);
 }
 #endif // LLVM_VERSION_MAJOR > 15
+
+CL_LAMBDA(function alloc-kind &key uninitialized zeroed aligned);
+DOCGROUP(clasp);
+CL_DEFUN void llvm_sys__add_alloc_kind_attribute(llvm::Function* func,
+                                                 llvm::AllocFnKind kind,
+                                                 core::T_sp tuninitialized,
+                                                 core::T_sp tzeroed,
+                                                 core::T_sp taligned) {
+  if (tuninitialized.notnilp()) kind |= llvm::AllocFnKind::Uninitialized;
+  if (tzeroed.notnilp()) kind |= llvm::AllocFnKind::Zeroed;
+  // note: this does not mean "the memory is aligned", which can be expressed in
+  // constant cases through the aligned(n) attribute.
+  // This "aligned" means that one of the parameters is the alignment, and the
+  // parameter can be indicated with the allocsize attribute.
+  if (taligned.notnilp()) kind |= llvm::AllocFnKind::Aligned;
+  llvm::Attribute attr = llvm::Attribute::getWithAllocKind(func->getContext(), kind);
+  func->addFnAttr(attr);
+}
+
+CL_DEFUN void llvm_sys__add_alloc_size_attribute(llvm::Function* func,
+                                                 size_t paramindex) {
+  llvm::Attribute attr
+    = llvm::Attribute::getWithAllocSizeArgs(func->getContext(),
+                                            paramindex, std::nullopt);
+  func->addFnAttr(attr);
+}
+
+CL_DEFUN void llvm_sys__add_alloc_size_alignment_attribute(llvm::Function* func,
+                                                           size_t sizeindex,
+                                                           size_t alignindex) {
+  llvm::Attribute attr
+    = llvm::Attribute::getWithAllocSizeArgs(func->getContext(),
+                                            sizeindex, alignindex);
+  func->addFnAttr(attr);
+}
+
 
 CL_LAMBDA(module value &optional label);
 DOCGROUP(clasp);
@@ -3425,6 +3497,21 @@ CL_DEFUN void llvm_sys__add_ret_align_attr(llvm::Function* func, uint64_t align)
 CL_DEFUN void llvm_sys__add_ret_dereferenceable_attr(llvm::Function* func, uint64_t dereferenceable) {
   func->addRetAttr(llvm::Attribute::getWithDereferenceableBytes(func->getContext(), dereferenceable));
 }
+#if LLVM_VERSION_MAJOR >= 20
+CL_DEFUN void llvm_sys__add_param_captures(llvm::Function* func, unsigned argno,
+                                           llvm::CaptureComponents other) {
+  llvm::CaptureInfo capinfo{other};
+  llvm::Attribute attr = llvm::Attribute::getWithCaptureInfo(func->getContext(), capinfo);
+  func->addParamAttr(argno, attr);
+}
+CL_DEFUN void llvm_sys__add_param_captures_ret(llvm::Function* func, unsigned argno,
+                                               llvm::CaptureComponents other,
+                                               llvm::CaptureComponents ret) {
+  llvm::CaptureInfo capinfo{other, ret};
+  llvm::Attribute attr = llvm::Attribute::getWithCaptureInfo(func->getContext(), capinfo);
+  func->addParamAttr(argno, attr);
+}
+#endif
 
 CL_DEFMETHOD LLVMContext_sp Function_O::getContext() const {
   return gc::As<LLVMContext_sp>(translate::to_object<llvm::LLVMContext&>::convert(this->wrappedPtr()->getContext()));

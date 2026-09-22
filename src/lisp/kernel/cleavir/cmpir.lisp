@@ -1286,12 +1286,8 @@ But no irbuilders or basic-blocks. Return the fn."
       (when (llvm-sys:does-not-return the-function)
         (irc-unreachable)
         (irc-begin-block (irc-basic-block-create "from-invoke-that-never-returns")))
-      ;;; FIXME: Do I need to add attributes to the return value of the call
-      (dolist (index-attributes (primitive-argument-attributes primitive-info))
-        (let ((index (car index-attributes))
-              (attributes (cdr index-attributes)))
-          (dolist (attribute attributes)
-            (llvm-sys:add-param-attr code index attribute))))
+      ;; optimizer should copy attributes from the function declaration,
+      ;; so we don't bother doing it here.
       code)))
   
 (defun irc-intrinsic (function-name &rest args)
@@ -1405,6 +1401,26 @@ But no irbuilders or basic-blocks. Return the fn."
                          collect (loc loc) collect (modref mr))))
          (apply #'llvm-sys:add-memory-attribute function most rest))))))
 
+(defun add-param-attr (function argno attribute)
+  (etypecase attribute
+    (symbol (llvm-sys:add-param-attr function argno attribute))
+    #+(or llvm15 llvm16 llvm17 llvm18 llvm19)
+    ((cons (eql :captures) (cons null null))
+     (llvm-sys:add-param-attr function argno 'llvm-sys:attribute-no-capture))
+    #-(or llvm15 llvm16 llvm17 llvm18 llvm19)
+    ((cons (eql :captures) (cons t null))
+     (llvm-sys:add-param-captures
+      function argno
+      (core:enum-logical-or llvm-sys:capture-components-enum (second attribute))))
+    #-(or llvm15 llvm16 llvm17 llvm18 llvm19)
+    ((cons (eql :captures) (cons t (cons t null)))
+     (llvm-sys:add-param-captures-ret
+      function argno
+      ;; other captures
+      (core:enum-logical-or llvm-sys:capture-components-enum (second attribute))
+      ;; return value captures
+      (core:enum-logical-or llvm-sys:capture-components-enum (third attribute))))))
+
 (defun add-ret-attr (function attribute)
   (etypecase attribute
     (symbol (llvm-sys:add-ret-attr function attribute))
@@ -1426,6 +1442,8 @@ But no irbuilders or basic-blocks. Return the fn."
         (returns-twice (getf (primitive-properties primitive-info) :returns-twice))
         (will-return (getf (primitive-properties primitive-info) :will-return))
         (speculatable (getf (primitive-properties primitive-info) :speculatable))
+        (allockind (getf (primitive-properties primitive-info) :allockind))
+        (allocsize (getf (primitive-properties primitive-info) :allocsize))
         function-attributes)
     (when does-not-throw (push 'llvm-sys:attribute-no-unwind function-attributes))
     (when does-not-return (push 'llvm-sys:attribute-no-return function-attributes))
@@ -1440,6 +1458,14 @@ But no irbuilders or basic-blocks. Return the fn."
                                              :function-attributes function-attributes)))
       #-llvm15
       (when memory (add-memory-attribute function memory))
+      (when allockind (llvm-sys:add-alloc-kind-attribute function allockind))
+      (when allocsize
+        (etypecase allocsize
+          ((and (integer 0) fixnum)
+           (llvm-sys:add-alloc-size-attribute function allocsize))
+          ((cons (and (integer 0) fixnum) (cons (and (integer 0) fixnum) null))
+           (llvm-sys:add-alloc-size-alignment-attribute
+            function (first allocsize) (second allocsize)))))
       #+(or)(core:fmt t "Created function: {} arg-ty: {}%N" function argument-types)
       (when return-attributes
         (dolist (attribute return-attributes)
@@ -1448,7 +1474,7 @@ But no irbuilders or basic-blocks. Return the fn."
         (let ((index (car index-attributes))
               (attributes (cdr index-attributes)))
           (dolist (attribute attributes)
-            (llvm-sys:add-param-attr function index attribute))))
+            (add-param-attr function index attribute))))
       function)))
 
 (defun get-or-declare-function-or-error (module name)

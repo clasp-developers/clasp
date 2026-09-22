@@ -77,6 +77,18 @@ template <> struct to_object<llvm::StringRef> {
   }
 };
 
+template <> struct from_object<llvm::CaptureComponents> {
+  typedef llvm::CaptureComponents DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp o) {
+    if (o.fixnump()) {
+      llvm::CaptureComponents f = static_cast<llvm::CaptureComponents>(o.unsafe_fixnum());
+      _v = f;
+      return;
+    } else SIMPLE_ERROR("Only fixnums can be converted into llvm::CaptureComponents");
+  }
+};
+
 template <> struct from_object<llvm::DINode::DIFlags> {
   typedef llvm::DINode::DIFlags DeclareType;
   DeclareType _v;

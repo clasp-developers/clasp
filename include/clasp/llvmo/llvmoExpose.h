@@ -1202,6 +1202,19 @@ template <> struct from_object<llvm::Attribute::AttrKind> {
   }
 };
 
+template <> struct from_object<llvm::AllocFnKind> {
+  typedef llvm::AllocFnKind DeclareType;
+  DeclareType _v;
+  from_object(core::T_sp object) {
+    if (core::Symbol_sp sym = object.asOrNull<core::Symbol_O>()) {
+      core::SymbolToEnumConverter_sp converter = gc::As<core::SymbolToEnumConverter_sp>(llvmo::_sym_AllocKindEnum->symbolValue());
+      this->_v = converter->enumForSymbol<llvm::AllocFnKind>(sym);
+      return;
+    }
+    SIMPLE_ERROR("Cannot convert object {} to llvm::AllocFnKind", _rep_(object));
+  }
+};
+
 template <> struct from_object<llvm::Attribute> {
   typedef llvm::Attribute DeclareType;
   DeclareType _v;
