@@ -368,6 +368,7 @@
 
 (deftransform consp consp t)
 
+(deftransform cons cons t t)
 (deftransform car core::cons-car cons)
 (deftransform cdr core::cons-cdr cons)
 (deftransform (setf car) core::setf-car t cons)

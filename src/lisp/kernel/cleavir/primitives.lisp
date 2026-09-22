@@ -269,6 +269,17 @@
          (primitive         "llvm.frameaddress.p0" :i8* (list :i32))
          (primitive-unwinds "cc_landingpadUnwindMatchFrameElseRethrow" :size_t (list :i8* :i8*))
 
+         (primitive         "cc_alloc_normal"
+          (list :i8* 'llvm-sys:attribute-no-alias '(:align 8))
+          (list :size_t)
+          :will-return t
+          :allockind 'llvm-sys:alloc-kind-alloc :allocsize 0
+          :memory '(:none (:inaccessible :readwrite)))
+         (primitive         "cc_initialize_cons"
+          :void (list (list :i8* '(:captures ())))
+          :will-return t
+          :memory '(:none (:arg :write)))
+
          ;; === CLASP-FFI TRANSLATORS ===
 
          ;; !!! NOTE !!! => PORTING ISSUE/TODO !

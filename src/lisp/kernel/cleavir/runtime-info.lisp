@@ -25,6 +25,7 @@
 (defvar +derivable-cxx-object-stamp+ (get-cxx-data-structure-info :derivable-stamp))
 (defvar +instance-stamp+ (get-cxx-data-structure-info :instance-stamp))
 (defvar +c++-stamp-max+ (get-cxx-data-structure-info :c++-stamp-max))
+(defvar +cons-header-size+ (get-cxx-data-structure-info :cons-header-size))
 (defvar +header-size+ (get-cxx-data-structure-info :header-size))
 (defvar +header-stamp-offset+ (get-cxx-data-structure-info :header-stamp-offset))
 (defvar +header-stamp-size+ (get-cxx-data-structure-info :header-stamp-size))

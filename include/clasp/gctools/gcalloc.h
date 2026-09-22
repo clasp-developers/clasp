@@ -93,6 +93,13 @@ uint32_t my_thread_random();
 
 namespace gctools {
 
+// Allocate raw bytes for use as a Lisp object. Used in compiled Lisp code.
+// See cc_alloc_normal in link_intrinsics.cc for some details.
+// Here "normal" means normal policy.
+inline void* raw_alloc_normal(size_t nbytes) {
+  return do_raw_general_allocation(AlignUp(nbytes));
+}
+
 /*! Allocate regular C++ classes that are considered roots */
 template <class T> struct RootClassAllocator {
   template <class... ARGS>
@@ -120,6 +127,15 @@ template <class Stage, class Cons> struct ConsAllocator {
     Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
     new (cons) Cons(std::forward<ARGS>(args)...);
     return smart_ptr<Cons>((Tagged)tag_cons(cons));
+  }
+
+  template <typename... ARGS>
+  static void initialize(void* base, ARGS&&... args) {
+    ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(base);
+    const ConsHeader_s::StampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Cons>());
+    new (header) ConsHeader_s(stamp);
+    Cons* cons = (Cons*)HeaderPtrToConsPtr(header);
+    new (cons) Cons(std::forward<ARGS>(args)...);
   }
 
 #ifdef USE_PRECISE_GC
@@ -288,6 +304,19 @@ public:
     do_free(memory);
   }
 
+  template <typename...ARGS>
+  static void initialize(void* base,
+                         const Header_s::BadgeStampWtagMtag& the_header,
+                         ARGS&&... args) {
+    Header_s* header = reinterpret_cast<Header_s*>(base);
+    new (header) Header_s(the_header);
+    OT* ptr = HeaderPtrToGeneralPtr<OT>(base);
+    new (ptr) OT(std::forward<ARGS>(args)...);
+    OT_sp o{ptr};
+    initializeIfNeeded(o);
+    finalizeIfNeeded(o);
+  }
+
   /*
    * This function is referred to by all classes using the LISP_CLASS
    * macro, but is never actually called by anything.
@@ -386,6 +415,14 @@ public:
 #else
     do_register_destructor_finalizer<OT>(obj);
 #endif
+  }
+
+  // Given raw memory, initialize it with a header and run a constructor.
+  template <typename... ARGS>
+  static void initialize(void* base, ARGS&&... args) {
+    GCObjectAllocator<OT>::initialize(base,
+                                      Header_s::BadgeStampWtagMtag::make_StampWtagMtag(OT::static_ValueStampWtagMtag),
+                                      std::forward<ARGS>(args)...);
   }
 
 };

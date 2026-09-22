@@ -67,6 +67,11 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header)
   return do_atomic_allocation<Stage>(the_header, Size);
 }
 
+inline void* do_raw_general_allocation(size_t size) {
+  RAIIDisableInterrupts disable_interrupts;
+  return ALIGNED_GC_MALLOC(size);
+}
+
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   RAIIDisableInterrupts disable_interrupts;

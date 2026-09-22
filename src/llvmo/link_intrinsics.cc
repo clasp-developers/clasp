@@ -652,6 +652,22 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, void* thisFram
   throw;
 }
 
+// Allocate a bunch of unsigned bytes to use for a Lisp object.
+// It's a GC managed object so allocate on the heap.
+// We tell LLVM that this is an allocator and nbytes is its size. This means:
+// - LLVM can replace or elide calls to this function, so it shouldn't be depended on
+//   to do anything but allocate memory. In particular, it cannot do any required
+//   initialization, since LLVM will not do that for us.
+// - It must allocate at least nbytes, but more is ok.
+// - We also tell LLVM to align to 8 bytes.
+unsigned char* cc_alloc_normal(size_t nbytes) {
+  return (unsigned char*)gctools::raw_alloc_normal(nbytes);
+}
+
+void cc_initialize_cons(unsigned char* cons) {
+  gctools::ConsAllocator<gctools::RuntimeStage, core::Cons_O>::initialize((void*)cons);
+}
+
 // These entry point redirect functions are used as the XEP entries for
 // compiled functions that don't do anything interesting for a given arity
 // (like, they just signal an error). See generate-function-for-arity-p in

@@ -197,6 +197,7 @@
           alloca-vaslist
           alloca-temp-values
           alloca-arguments
+          alloch
           irc-and
           irc-or
           irc-xor
@@ -287,6 +288,8 @@
           irc-untag-fixnum
           irc-untag-general
           irc-untag-cons
+          irc-tag-cons
+          irc-skip-cons-header
           irc-untag-vaslist
           irc-tag-vaslist
           irc-unbox-vaslist
