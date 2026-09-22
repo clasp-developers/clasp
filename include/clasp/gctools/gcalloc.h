@@ -99,6 +99,9 @@ namespace gctools {
 inline void* raw_alloc_normal(size_t nbytes) {
   return do_raw_general_allocation(AlignUp(nbytes));
 }
+inline void* raw_alloc_collectable_immobile(size_t nbytes) {
+  return do_raw_collectable_immobile_allocation(AlignUp(nbytes));
+}
 
 /*! Allocate regular C++ classes that are considered roots */
 template <class T> struct RootClassAllocator {

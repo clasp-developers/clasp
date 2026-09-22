@@ -106,18 +106,6 @@ ALWAYS_INLINE char* cc_getPointer(core::T_O* pointer_object) {
 
 extern "C" {
 
-ALWAYS_INLINE core::T_O* cc_stack_enclose(void* closure_address, core::T_O* entryPointInfo, std::size_t numCells) {
-  NO_UNWIND_BEGIN();
-  core::T_sp tentryPoint((gctools::Tagged)entryPointInfo);
-  core::SimpleFun_sp entryPoint = tentryPoint.as<SimpleFun_O>();
-  core::Closure_sp functoid = gctools::InitObject<core::Closure_O>(closure_address, numCells, entryPoint);
-  return functoid.raw_();
-  NO_UNWIND_END();
-}
-};
-
-extern "C" {
-
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // M K -FUNCTIONS

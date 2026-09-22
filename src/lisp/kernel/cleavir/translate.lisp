@@ -860,9 +860,9 @@ function-or-placeholder - the llvm function or a placeholder for
       (error "BUG: Tried to ENCLOSE a function with no XEP"))
     (info-literal info)))
 
-;;; Generate code to initialize a closure('s cells) after cc_enclose.
+;;; Generate code to initialize a closure('s cells) after its allocation.
 (defun initialize-closure (closure closed)
-  (loop with cells = (cmp::irc-closure-cells closure)
+  (loop with cells = (cmp:irc-closure-cells closure)
         for i from 0
         for close in closed
         for addr = (cmp:irc-typed-gep cmp:%t*% cells (list i) "closure-cell")
@@ -877,20 +877,21 @@ function-or-placeholder - the llvm function or a placeholder for
     (if environment
         (let* ((ninputs (length environment))
                (sninputs (%size_t ninputs))
-               (enclose
+               (sizebytes (core:closure-size ninputs))
+               (closure-mem
                  (ecase extent
                    #+(or)
                    (:dynamic
-                    (%intrinsic-call
-                     "cc_stack_enclose"
-                     (list (cmp:alloca-i8 (core:closure-size ninputs)
-                                           :alignment cmp:+alignment+
-                                           :label "stack-allocated-closure")
-                           xepc sninputs)))
+                    (cmp:alloca-i8 sizebytes :alignment cmp:+alignment+
+                                             :label "stack-allocated-closure"))
                    ((:dynamic :indefinite)
-                    (%intrinsic-invoke-if-landing-pad-or-call
-                     "cc_enclose"
-                     (list xepc sninputs))))))
+                    (cmp:alloch-collectable-immobile sizebytes))))
+               (enclose
+                 (cmp:irc-tag-general
+                  (cmp:irc-skip-general-header closure-mem "closure")
+                  "closure")))
+          ;; set up header etc (does NOT fill cells)
+          (%intrinsic-call "cc_initialize_closure" (list closure-mem xepc sninputs))
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
           ;; (If DELAY NIL is passed this delay is not necessary.)
@@ -1813,7 +1814,7 @@ function-or-placeholder - the llvm function or a placeholder for
       (let* ((closure (first (llvm-sys:get-argument-list the-function)))
              (llvm-function-info (find-llvm-function-info ir))
              (environment-values
-               (loop with closure-vec = (cmp::irc-closure-cells closure)
+               (loop with closure-vec = (cmp:irc-closure-cells closure)
                      for import in (environment llvm-function-info)
                      for i from 0
                      for addr = (cmp:irc-typed-gep cmp:%t*% closure-vec (list i)

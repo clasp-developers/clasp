@@ -209,13 +209,6 @@
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 
-         (primitive-unwinds "cc_enclose" (list :t* 'llvm-sys:attribute-no-alias)
-          (list (list :t* 'llvm-sys:attribute-read-only) :size_t))
-         (primitive         "cc_stack_enclose" :t*
-          (list
-           (list :i8* 'llvm-sys:attribute-write-only)
-           (list :t* 'llvm-sys:attribute-read-only)
-           :size_t))
          (primitive-unwinds "cc_variableCellValue" :t* (list (list :t* 'llvm-sys:attribute-read-only)))
          (primitive         "cc_set_variableCellValue" :void (list :t* :t*))
          (primitive         "cc_getCellTLIndex" :i32 (list :t*))
@@ -275,8 +268,18 @@
           :will-return t
           :allockind 'llvm-sys:alloc-kind-alloc :allocsize 0
           :memory '(:none (:inaccessible :readwrite)))
+         (primitive         "cc_alloc_collectable_immobile"
+          (list :i8* 'llvm-sys:attribute-no-alias '(:align 8))
+          (list :size_t)
+          :will-return t
+          :allockind 'llvm-sys:alloc-kind-alloc :allocsize 0
+          :memory '(:none (:inaccessible :readwrite)))
          (primitive         "cc_initialize_cons"
           :void (list (list :i8* '(:captures ())))
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_closure"
+          :void (list (list :i8* '(:captures ())) :t* :size_t)
           :will-return t
           :memory '(:none (:arg :write)))
 

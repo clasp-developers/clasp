@@ -340,6 +340,12 @@ local-function - the lcl function that all of the xep functions call."
   (irc-intrinsic "llvm.ptrmask.p0.i64"
                  tagged-ptr (jit-constant-i64 (ldb (byte 64 0) (lognot +ptag-mask+)))))
 
+(defun irc-tag-general (ptr &optional (label "general"))
+  (irc-typed-gep %i8% ptr (list (jit-constant-i64 +general-tag+)) label))
+
+(defun irc-skip-general-header (ptr &optional (label "general"))
+  (irc-typed-gep %i8% ptr (list (jit-constant-i64 +header-size+)) label))
+
 (defun irc-untag-cons (tagged-ptr)
   (irc-maybe-check-tag tagged-ptr +cons-tag+)
   (irc-intrinsic "llvm.ptrmask.p0.i64"
@@ -1060,6 +1066,9 @@ But no irbuilders or basic-blocks. Return the fn."
   ;; eventually this may include inline allocation served from a bump pointer.
   (irc-intrinsic-call-or-invoke "cc_alloc_normal" (list (jit-constant-size_t size))
                                 label))
+(defun alloch-collectable-immobile (size &optional (label ""))
+  (irc-intrinsic-call-or-invoke "cc_alloc_collectable_immobile"
+                                (list (jit-constant-size_t size)) label))
 
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))

@@ -145,6 +145,7 @@
 
           irc-create-call-wft
           irc-calculate-entry
+          irc-closure-cells
           compile-definition
           codegen
           compile-error-if-not-enough-arguments
@@ -198,6 +199,7 @@
           alloca-temp-values
           alloca-arguments
           alloch
+          alloch-collectable-immobile
           irc-and
           irc-or
           irc-xor
@@ -287,6 +289,8 @@
           irc-unreachable
           irc-untag-fixnum
           irc-untag-general
+          irc-tag-general
+          irc-skip-general-header
           irc-untag-cons
           irc-tag-cons
           irc-skip-cons-header

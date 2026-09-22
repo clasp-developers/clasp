@@ -623,12 +623,11 @@ NEVER_OPTIMIZE void cc_etypecase_error(T_O* datum, T_O* possibilities) {
                       kw::_sym_possibilities, tpossibilities);
 }
 
-core::T_O* cc_enclose(core::T_O* simpleFunInfo, std::size_t numCells) {
-  core::T_sp tsimpleFun((gctools::Tagged)simpleFunInfo);
-  core::SimpleFun_sp simpleFun = gc::As<SimpleFun_sp>(tsimpleFun);
-  gctools::smart_ptr<core::Closure_O> functoid =
-    gctools::GC<core::Closure_O>::allocate_container<gctools::RuntimeStage, gctools::collectable_immobile>(false, numCells, simpleFun);
-  return functoid.raw_();
+void cc_initialize_closure(unsigned char* closure, core::T_O* simpleFunInfo, size_t ncells) {
+  // todo: LLVM optimizations would work better if all construction was done in Lisp,
+  // so that e.g. LLVM could track the simple fun info itself.
+  core::SimpleFun_sp tsimpleFunInfo((gctools::Tagged)simpleFunInfo);
+  gctools::GC<core::Closure_O>::initialize((void*)closure, ncells, tsimpleFunInfo);
 }
 
 void cc_oddKeywordException(core::T_O* tclosure) {
@@ -662,6 +661,9 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, void* thisFram
 // - We also tell LLVM to align to 8 bytes.
 unsigned char* cc_alloc_normal(size_t nbytes) {
   return (unsigned char*)gctools::raw_alloc_normal(nbytes);
+}
+unsigned char* cc_alloc_collectable_immobile(size_t nbytes) {
+  return (unsigned char*)gctools::raw_alloc_collectable_immobile(nbytes);
 }
 
 void cc_initialize_cons(unsigned char* cons) {
