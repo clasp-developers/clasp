@@ -423,7 +423,7 @@
   :directory "src/lisp/kernel/contrib/trivial-indent/"
   :repository "https://codeberg.org/shinmera/trivial-indent"
   :branch "master"
-  :commit "df07d50bbc71c32a6ca62ce062f66e11011945e9"
+  :commit "7281fb015c573c35a3a25392f3019c5e32fe0bd0"
   :pin 1)
  (:name :trivial-package-local-nicknames
   :directory "src/lisp/kernel/contrib/trivial-package-local-nicknames/"
