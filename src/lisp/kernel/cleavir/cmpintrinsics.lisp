@@ -253,6 +253,10 @@ names to offsets."
 (define-symbol-macro %uintptr_t% #+64-bit %i64%
                                  #+32-bit %i32%)
 (define-symbol-macro %uintptr_t*% (llvm-sys:type-get-pointer-to %uintptr_t%))
+
+(define-symbol-macro %bit-array-word%
+  (ecase +bit-array-word-bytes+ (4 %i32%) (8 %i64%)))
+
 (defun make-uintptr_t (x)
   (and (> x most-positive-fixnum) (error "make sure the integer ~s fits in a %i64%" x))
   (cond
@@ -556,26 +560,6 @@ Boehm and MPS use a single pointer"
 ;;;
 ;;; Vector access and unboxed value stuff
 
-(defun element-type->llvm-type (element-type)
-  (case element-type
-    ((t) %t*%)
-    (ext:byte8 %i8%)
-    (ext:integer8 %i8%)
-    (ext:byte16 %i16%)
-    (ext:integer16 %i16%)
-    (ext:byte32 %i32%)
-    (ext:integer32 %i32%)
-    (ext:byte64 %i64%)
-    (ext:integer64 %i64%)
-    (fixnum %i64%) ; FIXME: should we store fixnums in arrays tagged? we do now.
-    (single-float %float%)
-    (double-float %double%)
-    ;; should be less hardcoded
-    (base-char %i8%) ; in core as C unsigned char
-    (character %i32%) ; in core as C int
-    (otherwise
-     (error "BUG: Unknown element type ~a" element-type))))
-
 (defun simple-vector-llvm-type (element-type)
   (cmp:with-thread-safe-context (context)
     (llvm-sys:struct-type-get
@@ -586,7 +570,7 @@ Boehm and MPS use a single pointer"
       ;; The length, an untagged integer
       %size_t%
       ;; The data, a flexible member
-      (llvm-sys:array-type-get (element-type->llvm-type element-type) 0))
+      (llvm-sys:array-type-get element-type 0))
      ;; Not totally sure it should be packed.
      t)))
 

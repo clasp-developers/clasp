@@ -9,7 +9,7 @@
 (defun gen-vector-length-untagged (vector)
   (let (;; find the location of the length
         (length-address
-          (irc-typed-in-bounds-gep (simple-vector-llvm-type 't)
+          (irc-typed-in-bounds-gep (simple-vector-llvm-type %t*%)
                                    (irc-untag-general vector)
                                    (list 0 +simple-vector-length-slot+)
                                    "vector-length-address")))

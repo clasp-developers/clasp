@@ -384,7 +384,8 @@
   "cc_checkBound")
 
 (defun %vector-element-address (vec element-type index)
-  (let* ((vtype (cmp::simple-vector-llvm-type element-type))
+  (let* ((etype (element-type->llvm-type element-type))
+         (vtype (cmp:simple-vector-llvm-type etype))
          (cvec (cmp:irc-untag-general vec))
          (gep-indices (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index)))
     (cmp:irc-typed-gep-variable vtype cvec gep-indices)))
@@ -403,6 +404,9 @@
     ((fixnum) :utfixnum)
     ((bit) :ub1)))
 
+(defun element-type->llvm-type (element-type)
+  (vrtype->llvm (element-type->vrtype element-type)))
+
 (cleavir-primop-info:defprimop core:vref 2 :value :flushable)
 (cleavir-primop-info:defprimop core::vset 3 :value :flushable)
 
@@ -416,11 +420,11 @@
   (cmp:with-thread-safe-context (context)
     (llvm-sys:type-get-int-nty context bit-unit-width)))
 
+(defvar +bit-array-word-bits+ (* 8 cmp:+bit-array-word-bytes+))
+
 (defun %bit-array-word-address (vec bit-unit-width index)
-  (let* ((n-of-bit-units-in-word (/ 64 bit-unit-width))
-         ;; fixme: seriously don't hardcode bit array word length,
-         ;; especially not in this stupid way
-         (vtype (cmp::simple-vector-llvm-type 'ext:byte64))
+  (let* ((n-of-bit-units-in-word (/ +bit-array-word-bits+ bit-unit-width))
+         (vtype (cmp:simple-vector-llvm-type cmp:%bit-array-word%))
          (uvec (cmp:irc-untag-general vec))
          (index (cmp:irc-udiv index (%size_t n-of-bit-units-in-word)
                               :label "bit-array-word-index")))
@@ -428,7 +432,7 @@
      vtype uvec (list (%i32 0) (%i32 cmp::+simple-vector-data-slot+) index))))
 
 (defun %bit-array-word-offset (bit-unit-width index)
-  (let* ((n-of-bit-units-in-word (/ 64 bit-unit-width))
+  (let* ((n-of-bit-units-in-word (/ +bit-array-word-bits+ bit-unit-width))
          (shift-to-0 (- n-of-bit-units-in-word 1)))
     (cmp:irc-mul (cmp:irc-sub (%size_t shift-to-0)
                               (cmp:irc-urem index (%size_t n-of-bit-units-in-word)))
@@ -462,11 +466,11 @@
                   (%bit-array-word-address vec bit-unit-width index))
                 (bit-array-word
                   (if order
-                      (cmp:irc-typed-load-atomic cmp:%i64% bit-array-word*
+                      (cmp:irc-typed-load-atomic cmp:%bit-array-word% bit-array-word*
                                                  :label "bit-array-word"
                                                  :align 8
                                                  :order (cmp::order-spec->order order))
-                      (cmp:irc-typed-load cmp:%i64% bit-array-word*
+                      (cmp:irc-typed-load cmp:%bit-array-word% bit-array-word*
                                           "bit-array-word")))
                 (offset (%bit-array-word-offset bit-unit-width index))
                 (mask (%bit-unit-mask bit-unit-width offset))
@@ -507,10 +511,10 @@
   (let* ((curb (cmp:irc-get-insert-block))
          (body (cmp:irc-basic-block-create "atomic-write-body"))
          (after (cmp:irc-basic-block-create "atomic-write-after"))
-         (old (cmp:irc-typed-load-atomic cmp:%i64% bit-array-word*
+         (old (cmp:irc-typed-load-atomic cmp:%bit-array-word% bit-array-word*
                                          :label "bit-array-word"))
          (_ (progn (cmp:irc-br body) (cmp:irc-begin-block body)))
-         (old_baw (cmp:irc-phi cmp:%i64% 2 "old_baw"))
+         (old_baw (cmp:irc-phi cmp:%bit-array-word% 2 "old_baw"))
          (new_baw (cmp:irc-and old_baw
                                (cmp:irc-or (cmp:irc-not mask "antimask") nval
                                            "masked")
@@ -538,7 +542,8 @@
                    (%bit-array-word-address vec bit-unit-width index))
                  (offset (%bit-array-word-offset bit-unit-width index))
                  (mask (%bit-unit-mask bit-unit-width offset))
-                 (nval (cmp:irc-shl (cmp:irc-zext val cmp:%i64% "shifted-bit-unit")
+                 (nval (cmp:irc-shl (cmp:irc-zext val cmp:%bit-array-word%
+                                                  "shifted-bit-unit")
                                     offset)))
             (if order
                 ;; atomic write. In general this entails a CAS loop which is not
@@ -551,7 +556,8 @@
                   ((ext:byte2 ext:byte4 ext:integer2 ext:integer4)
                    (%atomic-write-sub-byte bit-array-word* order mask nval)))
                 ;; non-atomic, "easy"
-                (let* ((bit-array-word (cmp:irc-typed-load cmp:%i64% bit-array-word*
+                (let* ((bit-array-word (cmp:irc-typed-load cmp:%bit-array-word%
+                                                           bit-array-word*
                                                            "bit-array-word"))
                        (masked (cmp:irc-and bit-array-word
                                             (cmp:irc-not mask "antimask")))

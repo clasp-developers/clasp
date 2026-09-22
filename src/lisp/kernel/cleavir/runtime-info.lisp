@@ -92,3 +92,4 @@
 (defvar +entry-point-arity-begin+ (get-cxx-data-structure-info :entry-point-arity-begin))
 (defvar +entry-point-arity-end+ (get-cxx-data-structure-info :entry-point-arity-end))
 (defvar +number-of-entry-points+ (get-cxx-data-structure-info :number-of-entry-points))
+(defvar +bit-array-word-bytes+ (get-cxx-data-structure-info :bit-array-word-bytes))

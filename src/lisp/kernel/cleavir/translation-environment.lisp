@@ -61,7 +61,8 @@
 (defmethod vrtype->llvm ((vrtype (eql :object))) cmp:%t*%)
 (defmethod vrtype->llvm ((vrtype (eql :boolean))) cmp:%i1%)
 (defmethod vrtype->llvm ((vrtype (eql :vaslist))) cmp:%vaslist%)
-;; These all pretty much have to match element-type->llvm-type in cmpintrinsics.
+;; Getting these right is important for array access.
+;; Check element-type->vrtype in primop.lisp.
 (defmethod vrtype->llvm ((vrtype (eql :single-float))) cmp:%float%)
 (defmethod vrtype->llvm ((vrtype (eql :double-float))) cmp:%double%)
 (defmethod vrtype->llvm ((vrtype (eql :base-char))) cmp:%i8%)

@@ -94,6 +94,7 @@
           +catch-dynenv-size+
           +progv-dynenv-size+
           +void*-size+
+          +bit-array-word-bytes+
           %void%
           %i1%
           %i2%
@@ -106,6 +107,7 @@
           %i8**%
           %i8*%
           %i8%
+          %bit-array-word%
           %exn%
           %ehselector%
           %go-index%
@@ -356,6 +358,7 @@
           +simple-vector._data-offset+
           +simple-vector._length-offset+
           initialize-simple-vector
+          simple-vector-llvm-type
           +entry-point-arity-begin+
           +entry-point-arity-end+
           +number-of-entry-points+

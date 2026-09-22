@@ -289,6 +289,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "NUMBER-OF-ENTRY-POINTS", make_fixnum(NUMBER_OF_ENTRY_POINTS));
   ENTRY(list, "UNBOUND-MASK", make_fixnum(UNBOUND_MASK));
   ENTRY(list, "UNBOUND-BYTE", make_fixnum(UNBOUND_BYTE));
+  ENTRY(list, "BIT-ARRAY-WORD-BYTES", make_fixnum(sizeof(bit_array_word)));
   return list;
 }
 
