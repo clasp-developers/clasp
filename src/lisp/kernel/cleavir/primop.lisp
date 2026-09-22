@@ -901,7 +901,7 @@
   (let* ((car (in (first (bir:inputs inst))))
          (cdr (in (second (bir:inputs inst))))
          (hcons (cmp:alloch cmp:+cons-size+ "cons"))
-         (cons (cmp:irc-typed-gep cmp:%i8% hcons '(8)))
+         (cons (cmp:irc-skip-cons-header hcons "cons"))
          (tcons (cmp:irc-tag-cons cons)))
     (%intrinsic-call "cc_initialize_cons" (list hcons))
     (cmp:irc-rplaca tcons car)
