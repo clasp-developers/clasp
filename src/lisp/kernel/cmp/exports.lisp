@@ -353,7 +353,9 @@
           make-uintptr_t
           +cons-car-offset+
           +cons-cdr-offset+
+          +simple-vector._data-offset+
           +simple-vector._length-offset+
+          initialize-simple-vector
           +entry-point-arity-begin+
           +entry-point-arity-end+
           +number-of-entry-points+

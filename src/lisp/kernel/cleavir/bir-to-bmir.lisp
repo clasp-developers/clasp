@@ -334,6 +334,13 @@
 (deftransform array-rank core::%array-rank (and array (not (simple-array * (*)))))
 ;;; Can't use %array-dimension since it doesn't check the rank.
 
+;;; -f just to permute out the initial element arguments.
+;;; FIXME: probably should clean that up.
+(deftransform-f core:make-simple-vector-t
+    (constantly '(core::make-simple-vector-uninit t))
+  nil (0)
+  t (and fixnum (integer 0)) null null)
+
 (deftransform core:check-bound core:check-bound
   t fixnum t)
 ;; These are unsafe - make sure we only use core:vref when we don't need a

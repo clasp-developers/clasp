@@ -630,6 +630,10 @@ void cc_initialize_closure(unsigned char* closure, core::T_O* simpleFunInfo, siz
   gctools::GC<core::Closure_O>::initialize((void*)closure, ncells, tsimpleFunInfo);
 }
 
+void cc_initialize_simple_vector_t(unsigned char* vec, size_t nelements) {
+  gctools::GC<core::SimpleVector_O>::initialize((void*)vec, nelements);
+}
+
 void cc_oddKeywordException(core::T_O* tclosure) {
   core::Function_sp closure((gc::Tagged)tclosure);
   throwOddKeywordsError(closure);

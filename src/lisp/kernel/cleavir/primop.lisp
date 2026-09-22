@@ -566,6 +566,45 @@
       ;; a linear datum more than once.
       (out val (first (bir:outputs inst))))))
 
+(defun new-vector-data-size (element-type nelems)
+  (let ((element-size
+          ;; FIXME: less hardcoding
+          (etypecase element-type
+            ((t) 8))))
+    (llvm-sys:create-add cmp:*irbuilder*
+                         (%size_t cmp:+simple-vector._data-offset+)
+                         (cmp:irc-mul nelems (%size_t element-size)
+                                      :label "vector-data-size"
+                                      :nuw t :nsw t)
+                         "vector-size" t t)))
+
+;; KLUDGE: necessary because defvprimop doesn't work with parameters,
+;; even if the parameters don't affect the rtype. FIXME?
+(defmethod %primop-rtype-info ((name (eql 'core::make-simple-vector-uninit)) info)
+  (declare (ignore info))
+  '((:object) :utfixnum))
+
+(defvprimop (core::make-simple-vector-uninit :flags (:flushable))
+    ((:object) :utfixnum) (inst)
+  (destructuring-bind (element-type)
+      (cleavir-primop-info:arguments (bir:info inst))
+    (let* ((name (format nil "simple-vector-~s" element-type))
+           (nelems (in (first (bir:inputs inst))))
+           (base-size (%size_t (+ cmp:+header-size+
+                                  ;; size of the vector, not including
+                                  ;; the actual data
+                                  cmp:+simple-vector._data-offset+)))
+           ;; FIXME: fix irc-add to have nuw and nsw arguments
+           (size (llvm-sys:create-add cmp:*irbuilder*
+                                      base-size (new-vector-data-size
+                                                 element-type nelems)
+                                      name t t))
+           (mem (cmp:alloch size name))
+           (untagged (cmp:irc-skip-general-header mem name))
+           (tagged (cmp:irc-tag-general untagged name)))
+      (cmp:initialize-simple-vector mem element-type nelems)
+      tagged)))
+
 ;;;
 
 (defvprimop (core::fixnum-lognot :flags (:flushable)) ((:fixnum) :fixnum) (inst)

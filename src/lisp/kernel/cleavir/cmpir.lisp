@@ -895,6 +895,17 @@ Otherwise do a variable shift."
          (new-vals (irc-vaslist-values vaslist)))
     (irc-make-vaslist new-nvals new-vals label)))
 
+;;; Generate code to initialize a simple (not necessarily T) vector.
+;;; abstracted into a function since eventually i'd like to store the length
+;;; directly so LLVM knows about it, instead of using an intrinsic.
+(defun initialize-simple-vector (memory element-type nelems
+                                 &optional (initial-element nil iep))
+  ;; eventually could be done as, ideally, a memset, so LLVM knows about it
+  (when iep (error "Initialized vector contents not yet supported"))
+  (let ((intrinsic (ecase element-type
+                     ((t) "cc_initialize_simple_vector_t"))))
+    (irc-intrinsic intrinsic memory nelems)))
+
 (defparameter *default-function-attributes*
   '(("uwtable" "async") ("frame-pointer" "all")))
 
@@ -1062,13 +1073,17 @@ But no irbuilders or basic-blocks. Return the fn."
 ;;; ALLOCH functions
 ;;; that's "H" for heap
 
+(defun fix-alloch-size (size)
+  (etypecase size
+    ((unsigned-byte 64) (jit-constant-size_t size))
+    (llvm-sys:value size)))
 (defun alloch (size &optional (label ""))
   ;; eventually this may include inline allocation served from a bump pointer.
-  (irc-intrinsic-call-or-invoke "cc_alloc_normal" (list (jit-constant-size_t size))
+  (irc-intrinsic-call-or-invoke "cc_alloc_normal" (list (fix-alloch-size size))
                                 label))
 (defun alloch-collectable-immobile (size &optional (label ""))
   (irc-intrinsic-call-or-invoke "cc_alloc_collectable_immobile"
-                                (list (jit-constant-size_t size)) label))
+                                (list (fix-alloch-size size)) label))
 
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))

@@ -282,6 +282,10 @@
           :void (list (list :i8* '(:captures ())) :t* :size_t)
           :will-return t
           :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_t"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
 
          ;; === CLASP-FFI TRANSLATORS ===
 
