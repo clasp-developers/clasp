@@ -572,7 +572,26 @@
       ;; a linear datum more than once.
       (out val (first (bir:outputs inst))))))
 
+(defun new-sub-byte-vector-data-size (element-type nelems)
+  (let* ((bit-unit-width (bit-unit-width element-type))
+         (nbits (cmp:irc-mul (%size_t bit-unit-width) nelems
+                             :label "nbits" :nsw t :nuw t))
+         ;; (nbits + baw_width - 1) / baw_width to get to a multiple of baw_width
+         (nwords
+           (cmp:irc-udiv
+            (llvm-sys:create-add cmp:*irbuilder* nbits
+                                 (%size_t (- +bit-array-word-bits+ 1))
+                                 "preround" t t)
+            (%size_t +bit-array-word-bits+)
+            :label "nwords"))
+         (nbytes (cmp:irc-udiv nwords (%size_t cmp:+bit-array-word-bytes+)
+                               :label "nbytes" :exact t)))
+    nbytes))
+
 (defun new-vector-data-size (element-type nelems)
+  (when (member element-type '(bit ext:byte2 ext:integer2 ext:byte4 ext:integer4))
+    (return-from new-vector-data-size
+      (new-sub-byte-vector-data-size element-type nelems)))
   (let* ((element-size
            ;; FIXME: less hardcoding
            (ecase element-type

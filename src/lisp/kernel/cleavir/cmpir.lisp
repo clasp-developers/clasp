@@ -901,6 +901,7 @@ Otherwise do a variable shift."
 (defun initialize-simple-vector (memory element-type nelems
                                  &optional (initial-element nil iep))
   ;; eventually could be done as, ideally, a memset, so LLVM knows about it
+  (declare (ignore initial-element))
   (when iep (error "Initialized vector contents not yet supported"))
   (let ((intrinsic (ecase element-type
                      ((t) "cc_initialize_simple_vector_t")
@@ -908,6 +909,11 @@ Otherwise do a variable shift."
                      ((double-float) "cc_initialize_simple_vector_double_float")
                      ((base-char) "cc_initialize_simple_vector_base_char")
                      ((character) "cc_initialize_simple_vector_character")
+                     ((bit) "cc_initialize_simple_vector_bit")
+                     ((ext:byte2) "cc_initialize_simple_vector_byte2")
+                     ((ext:integer2) "cc_initialize_simple_vector_integer2")
+                     ((ext:byte4) "cc_initialize_simple_vector_byte4")
+                     ((ext:integer4) "cc_initialize_simple_vector_integer4")
                      ((ext:byte8) "cc_initialize_simple_vector_byte8")
                      ((ext:integer8) "cc_initialize_simple_vector_integer8")
                      ((ext:byte16) "cc_initialize_simple_vector_byte16")

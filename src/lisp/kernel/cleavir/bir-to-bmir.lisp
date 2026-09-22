@@ -334,38 +334,41 @@
 (deftransform array-rank core::%array-rank (and array (not (simple-array * (*)))))
 ;;; Can't use %array-dimension since it doesn't check the rank.
 
-;;; -f just to permute out the initial element arguments.
+
 ;;; FIXME: probably should clean that up.
 ;;; FIXME: merge with below
-(macrolet ((define-vector-transforms (element-type)
-             (let ((maker (cmp::uaet-info element-type)))
-               `(deftransform-f ,maker
-                    (constantly '(core::make-simple-vector-uninit ,element-type))
-                  nil (0)
-                  t (and fixnum (integer 0)) null null))))
+(macrolet ((define-vector-transforms (element-type)))
   (define-vector-transforms t)
   (define-vector-transforms single-float)
   (define-vector-transforms double-float)
   (define-vector-transforms base-char)
   (define-vector-transforms character)
+  (define-vector-transforms fixnum)
   (define-vector-transforms ext:byte64) (define-vector-transforms ext:integer64)
   (define-vector-transforms ext:byte32) (define-vector-transforms ext:integer32)
   (define-vector-transforms ext:byte16) (define-vector-transforms ext:integer16)
   (define-vector-transforms ext:byte8) (define-vector-transforms ext:integer8)
-  (define-vector-transforms fixnum))
+  (define-vector-transforms bit))
 
 (deftransform core:check-bound core:check-bound
   t fixnum t)
 ;; These are unsafe - make sure we only use core:vref when we don't need a
 ;; (further) bounds check.
 (macrolet ((define-vector-transforms (element-type)
-             `(progn
-                (deftransform core:vref (core:vref ,element-type)
-                  (simple-array ,element-type (*)) fixnum)
-                (deftransform (setf core:vref) (core::vset ,element-type)
-                  ;; FIXME: we should probably check the new value's type?
-                  ;; ditto for atomic aref below.
-                  t (simple-array ,element-type (*)) fixnum))))
+             (let ((maker (cmp::uaet-info element-type)))
+               `(progn
+                  (deftransform core:vref (core:vref ,element-type)
+                    (simple-array ,element-type (*)) fixnum)
+                  (deftransform (setf core:vref) (core::vset ,element-type)
+                    ;; FIXME: we should probably check the new value's type?
+                    ;; ditto for atomic aref below.
+                    t (simple-array ,element-type (*)) fixnum)
+                  ;; -f just to permute out the initial element arguments.
+                  ;; FIXME: clean that up.
+                  (deftransform-f ,maker
+                      (constantly '(core::make-simple-vector-uninit ,element-type))
+                    nil (0)
+                    t (and fixnum (integer 0)) null null)))))
   (define-vector-transforms t)
   (define-vector-transforms single-float)
   (define-vector-transforms double-float)

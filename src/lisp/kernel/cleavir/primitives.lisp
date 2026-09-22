@@ -302,6 +302,26 @@
           :void (list (list :i8* '(:captures ())) :size_t)
           :will-return t
           :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_bit"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_byte2"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_int2"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_byte4"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_simple_vector_int4"
+          :void (list (list :i8* '(:captures ())) :size_t)
+          :will-return t
+          :memory '(:none (:arg :write)))
          (primitive         "cc_initialize_simple_vector_byte8"
           :void (list (list :i8* '(:captures ())) :size_t)
           :will-return t

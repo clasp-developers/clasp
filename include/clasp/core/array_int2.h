@@ -23,7 +23,7 @@ public:
   typedef specialized_SimpleVector_byte2_t TemplatedBase;
 
 public:
-  SimpleVector_byte2_t_O(size_t length, bit_array_word initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
+  SimpleVector_byte2_t_O(size_t length, bit_array_word initialElement = 0, bool initialElementSupplied = false, size_t initialContentsSize = 0,
                          const bit_array_word* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = 0, bool initialElementSupplied = false,
@@ -106,7 +106,7 @@ public:
   typedef specialized_SimpleVector_int2_t TemplatedBase;
 
 public:
-  SimpleVector_int2_t_O(size_t length, bit_array_word initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
+  SimpleVector_int2_t_O(size_t length, bit_array_word initialElement = 0, bool initialElementSupplied = false, size_t initialContentsSize = 0,
                         const bit_array_word* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, value_type initialElement = 0, bool initialElementSupplied = false,

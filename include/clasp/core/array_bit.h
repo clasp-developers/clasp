@@ -32,7 +32,7 @@ class SimpleBitVector_O : public specialized_SimpleBitVector {
 
 public:
   typedef specialized_SimpleBitVector TemplatedBase;
-  SimpleBitVector_O(size_t length, bit_array_word initialElement, bool initialElementSupplied, size_t initialContentsSize = 0,
+  SimpleBitVector_O(size_t length, bit_array_word initialElement = 0, bool initialElementSupplied = false, size_t initialContentsSize = 0,
                     const bit_array_word* initialContents = NULL)
       : TemplatedBase(length, initialElement, initialElementSupplied, initialContentsSize, initialContents){};
   static smart_ptr_type make(size_t length, bit_array_word initialElement = 0, bool initialElementSupplied = false,
