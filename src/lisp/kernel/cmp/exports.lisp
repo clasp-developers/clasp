@@ -202,8 +202,8 @@
           alloca-vaslist
           alloca-temp-values
           alloca-arguments
-          alloch
-          alloch-collectable-immobile
+          alloch post-alloch
+          alloch-immobile post-alloch-immobile
           irc-and
           irc-or
           irc-xor

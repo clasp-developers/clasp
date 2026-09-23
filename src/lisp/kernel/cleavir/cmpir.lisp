@@ -1100,9 +1100,22 @@ But no irbuilders or basic-blocks. Return the fn."
   ;; eventually this may include inline allocation served from a bump pointer.
   (irc-intrinsic-call-or-invoke "cc_alloc_normal" (list (fix-alloch-size size))
                                 label))
-(defun alloch-collectable-immobile (size &optional (label ""))
-  (irc-intrinsic-call-or-invoke "cc_alloc_collectable_immobile"
+(defun alloch-immobile (size &optional (label ""))
+  (irc-intrinsic-call-or-invoke "cc_alloc_immobile"
                                 (list (fix-alloch-size size)) label))
+
+(defun post-alloch (base size)
+  #+use-boehm ;; needs no post-allocation actions
+  (declare (ignore base size))
+  #-use-boehm
+  (irc-intrinsic-call-or-invoke "cc_post_alloc_normal"
+                                (list base (fix-alloch-size size))))
+(defun post-alloch-immobile (base size)
+  #+use-boehm ;; needs no post-allocation actions
+  (declare (ignore base size))
+  #-use-boehm
+  (irc-intrinsic-call-or-invoke "cc_post_alloc_immobile"
+                                (list base (fix-alloch-size size))))
 
 (defun irc-initialize-cons (space car cdr &optional (label "cons"))
   (irc-intrinsic-call-or-invoke "cc_initialize_cons" (list space))
@@ -1111,8 +1124,9 @@ But no irbuilders or basic-blocks. Return the fn."
     cons))
 
 (defun irc-cons (car cdr &optional (label "cons"))
-  (irc-initialize-cons (alloch +cons-size+ (format nil "~a-space" label))
-                       car cdr label))
+  (let ((space (alloch +cons-size+ (format nil "~a-space" label))))
+    (prog1 (irc-initialize-cons space car cdr label)
+      (post-alloch space +cons-size+))))
 
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))

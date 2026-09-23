@@ -287,12 +287,19 @@
           :will-return t
           :allockind 'llvm-sys:alloc-kind-alloc :allocsize 0
           :memory '(:none (:inaccessible :readwrite)))
-         (primitive         "cc_alloc_collectable_immobile"
+         (primitive         "cc_post_alloc_normal"
+          :void (list :i8* :size_t)
+          :will-return t :memory '(:none (:arg :write)))
+         (primitive         "cc_alloc_immobile"
           (list :i8* 'llvm-sys:attribute-no-alias '(:align 8))
           (list :size_t)
           :will-return t
           :allockind 'llvm-sys:alloc-kind-alloc :allocsize 0
           :memory '(:none (:inaccessible :readwrite)))
+         (primitive         "cc_post_alloc_immobile"
+          :void (list :i8* :size_t)
+          :will-return t :memory '(:none (:arg :write)))
+
          (primitive         "cc_initialize_cons"
           :void (list (list :i8* '(:captures ())))
           :will-return t

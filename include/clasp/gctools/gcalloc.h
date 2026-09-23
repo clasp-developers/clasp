@@ -99,8 +99,19 @@ namespace gctools {
 inline void* raw_alloc_normal(size_t nbytes) {
   return do_raw_general_allocation(AlignUp(nbytes));
 }
-inline void* raw_alloc_collectable_immobile(size_t nbytes) {
-  return do_raw_collectable_immobile_allocation(AlignUp(nbytes));
+inline void* raw_alloc_immobile(size_t nbytes) {
+  return do_raw_immobile_allocation(AlignUp(nbytes));
+}
+
+// Any actions required by the GC backend to happen after the header is installed,
+// e.g. setting metadata bits.
+// This is not done in initialize() because we use initialize() with non-heap objects
+// that the GC should not need to know about.
+inline void post_alloc_normal(void* base, size_t nbytes) {
+  do_post_alloc_normal(base, AlignUp(nbytes));
+}
+inline void post_alloc_immobile(void* base, size_t nbytes) {
+  do_post_alloc_immobile(base, AlignUp(nbytes));
 }
 
 /*! Allocate regular C++ classes that are considered roots */

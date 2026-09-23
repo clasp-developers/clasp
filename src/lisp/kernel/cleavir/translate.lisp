@@ -511,12 +511,13 @@ function-or-placeholder - the llvm function or a placeholder for
              (dcons-space
                (unless simplep
                  (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
-                                :label "come-from-dynenv-cons")))
+                                                :label "come-from-dynenv-cons")))
+             (dynenv-space-size
+               (unless simplep
+                 (if blockp cmp:+block-dynenv-size+ cmp:+tagbody-dynenv-size+)))
              (dynenv-space
                (unless simplep
-                 (cmp:alloch
-                  (if blockp cmp:+block-dynenv-size+ cmp:+tagbody-dynenv-size+)
-                  "escape-dynenv-mem")))
+                 (cmp:alloch dynenv-space-size "escape-dynenv-mem")))
              (dynenv (cmp:irc-tag-general
                       (cmp:irc-skip-general-header dynenv-space "escape-dynenv")
                       "escape-dynenv"))
@@ -530,6 +531,7 @@ function-or-placeholder - the llvm function or a placeholder for
                                        "cc_initialize_block_dynenv"
                                        "cc_initialize_tagbody_dynenv")
                                    dynenv-space frame bufp)
+                  (cmp:post-alloch dynenv-space dynenv-space-size)
                   (new-de-stack dcons-space dynenv)
                   (out
                    (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
@@ -900,13 +902,14 @@ function-or-placeholder - the llvm function or a placeholder for
                     (cmp:alloca-i8 sizebytes :alignment cmp:+alignment+
                                              :label "stack-allocated-closure"))
                    ((:dynamic :indefinite)
-                    (cmp:alloch-collectable-immobile sizebytes))))
+                    (cmp:alloch-immobile sizebytes))))
                (enclose
                  (cmp:irc-tag-general
                   (cmp:irc-skip-general-header closure-mem "closure")
                   "closure")))
           ;; set up header etc (does NOT fill cells)
           (%intrinsic-call "cc_initialize_closure" (list closure-mem xepc sninputs))
+          (cmp:post-alloch-immobile closure-mem sizebytes)
           ;; We may not initialize the closure immediately in case it partakes
           ;; in mutual reference.
           ;; (If DELAY NIL is passed this delay is not necessary.)

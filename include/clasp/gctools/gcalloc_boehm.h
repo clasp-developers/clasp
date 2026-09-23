@@ -71,6 +71,7 @@ inline void* do_raw_general_allocation(size_t size) {
   RAIIDisableInterrupts disable_interrupts;
   return ALIGNED_GC_MALLOC(size);
 }
+inline void do_post_alloc_normal(void*, size_t) {}
 
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
@@ -116,9 +117,10 @@ template <typename Stage = RuntimeStage, size_t Size>
 inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header) {
   return do_immobile_allocation<Stage>(the_header, Size);
 }
-inline void* do_raw_collectable_immobile_allocation(size_t nbytes) {
+inline void* do_raw_immobile_allocation(size_t nbytes) {
   return do_raw_general_allocation(nbytes);
 }
+inline void do_post_alloc_immobile(void*, size_t) {}
 
 inline Header_s* do_uncollectable_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   size_t true_size = size;

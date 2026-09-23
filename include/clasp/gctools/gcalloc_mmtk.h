@@ -112,6 +112,20 @@ inline Header_s* do_atomic_allocation(const Header_s::StampWtagMtag& the_header)
 
 // --- General allocation (contains pointers) ---
 
+inline void* do_raw_general_allocation(size_t size) {
+  ThreadLocalStateLowLevel* thread_ll = my_thread_low_level;
+  RAIIDisableInterrupts disable_interrupts(thread_ll);
+  MMTkClaspAllocSemantics semantics = semantics_or(MMTK_CLASP_ALLOC_DEFAULT, size);
+  return mmtk_alloc_raw(thread_ll, size, semantics);
+}
+
+inline void do_post_alloc_normal(void* base, size_t size) {
+  ThreadLocalStateLowLevel* thread_ll = my_thread_low_level;
+  RAIIDisableInterrupts disable_interrupts(thread_ll);
+  MMTkClaspAllocSemantics semantics = semantics_or(MMTK_CLASP_ALLOC_DEFAULT, size);
+  mmtk_post_alloc(thread_ll, base, size, semantics);
+}
+
 template <typename Stage = RuntimeStage>
 inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   MMTkClaspAllocSemantics semantics = semantics_or(MMTK_CLASP_ALLOC_DEFAULT, size);
@@ -124,6 +138,20 @@ inline Header_s* do_general_allocation(const Header_s::StampWtagMtag& the_header
 }
 
 // --- Non-moving allocation ---
+inline void* do_raw_immobile_allocation(size_t size) {
+  ThreadLocalStateLowLevel* thread_ll = my_thread_low_level;
+  RAIIDisableInterrupts disable_interrupts(thread_ll);
+  MMTkClaspAllocSemantics semantics = semantics_or(MMTK_CLASP_ALLOC_NON_MOVING, size);
+  return mmtk_alloc_raw(thread_ll, size, semantics);
+}
+
+inline void do_post_alloc_immobile(void* base, size_t size) {
+  ThreadLocalStateLowLevel* thread_ll = my_thread_low_level;
+  RAIIDisableInterrupts disable_interrupts(thread_ll);
+  MMTkClaspAllocSemantics semantics = semantics_or(MMTK_CLASP_ALLOC_NON_MOVING, size);
+  mmtk_post_alloc(thread_ll, base, size, semantics);
+}
+
 template <typename Stage = RuntimeStage>
 inline Header_s* do_immobile_allocation(const Header_s::StampWtagMtag& the_header, size_t size) {
   MMTkClaspAllocSemantics semantics = semantics_or(MMTK_CLASP_ALLOC_NON_MOVING, size);

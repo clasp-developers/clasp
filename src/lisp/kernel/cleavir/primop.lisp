@@ -643,6 +643,7 @@
            (untagged (cmp:irc-skip-general-header mem name))
            (tagged (cmp:irc-tag-general untagged name)))
       (cmp:initialize-simple-vector mem element-type nelems)
+      (cmp:post-alloch mem size)
       tagged)))
 
 ;;;

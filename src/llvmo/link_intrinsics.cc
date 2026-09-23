@@ -673,8 +673,14 @@ size_t cc_landingpadUnwindMatchFrameElseRethrow(char* exceptionP, void* thisFram
 unsigned char* cc_alloc_normal(size_t nbytes) {
   return (unsigned char*)gctools::raw_alloc_normal(nbytes);
 }
-unsigned char* cc_alloc_collectable_immobile(size_t nbytes) {
-  return (unsigned char*)gctools::raw_alloc_collectable_immobile(nbytes);
+unsigned char* cc_alloc_immobile(size_t nbytes) {
+  return (unsigned char*)gctools::raw_alloc_immobile(nbytes);
+}
+void cc_post_alloc_normal(void* base, size_t nbytes) {
+  gctools::post_alloc_normal(base, nbytes);
+}
+void cc_post_alloc_immobile(void* base, size_t nbytes) {
+  gctools::post_alloc_immobile(base, nbytes);
 }
 
 void cc_initialize_cons(unsigned char* cons) {
