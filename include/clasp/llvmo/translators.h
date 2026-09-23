@@ -77,6 +77,7 @@ template <> struct to_object<llvm::StringRef> {
   }
 };
 
+#if LLVM_VERSION_MAJOR >= 20
 template <> struct from_object<llvm::CaptureComponents> {
   typedef llvm::CaptureComponents DeclareType;
   DeclareType _v;
@@ -88,6 +89,7 @@ template <> struct from_object<llvm::CaptureComponents> {
     } else SIMPLE_ERROR("Only fixnums can be converted into llvm::CaptureComponents");
   }
 };
+#endif
 
 template <> struct from_object<llvm::DINode::DIFlags> {
   typedef llvm::DINode::DIFlags DeclareType;
