@@ -1310,13 +1310,16 @@ SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationErrnoMem);
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationOther);
 // also TargetMem0 etc, but we don't use those and they may have been added later?
 SYMBOL_EXPORT_SC_(LlvmoPkg, MemLocationEnum);
-CL_BEGIN_ENUM(llvm::IRMemLocation, _sym_MemLocationEnum, "IRMemLocation");
-CL_VALUE_ENUM(_sym_MemLocationArgMem, llvm::IRMemLocation::ArgMem);
-CL_VALUE_ENUM(_sym_MemLocationInaccessibleMem, llvm::IRMemLocation::InaccessibleMem);
+// compatibility note: before version 17 Location was its own enum.
+// past that, it's an alias for llvm::IRMemLocation.
+// We use MemoryEffects::Location to be compatible with both.
+CL_BEGIN_ENUM(llvm::MemoryEffects::Location, _sym_MemLocationEnum, "llvm::MemoryEffects::Location");
+CL_VALUE_ENUM(_sym_MemLocationArgMem, llvm::MemoryEffects::Location::ArgMem);
+CL_VALUE_ENUM(_sym_MemLocationInaccessibleMem, llvm::MemoryEffects::Location::InaccessibleMem);
 #if LLVM_VERSION_MAJOR > 20
-CL_VALUE_ENUM(_sym_MemLocationErrnoMem, llvm::IRMemLocation::ErrnoMem);
+CL_VALUE_ENUM(_sym_MemLocationErrnoMem, llvm::MemoryEffects::Location::ErrnoMem);
 #endif
-CL_VALUE_ENUM(_sym_MemLocationOther, llvm::IRMemLocation::Other);
+CL_VALUE_ENUM(_sym_MemLocationOther, llvm::MemoryEffects::Location::Other);
 CL_END_ENUM(_sym_MemLocationEnum);
 #endif // LLVM_VERSION_MAJOR > 15
 
@@ -1426,7 +1429,7 @@ CL_DEFUN void llvm_sys__add_memory_attribute(llvm::Function* func,
   for (size_t i = 0; i < more->nargs(); i += 2) {
     core::Symbol_sp loc = more->next_arg().as<core::Symbol_O>();
     core::Symbol_sp modref = more->next_arg().as<core::Symbol_O>();
-    llvm::MemoryEffects nme{loc_converter->enumForSymbol<llvm::IRMemLocation>(loc),
+    llvm::MemoryEffects nme{loc_converter->enumForSymbol<llvm::MemoryEffects::Location>(loc),
         modref_converter->enumForSymbol<llvm::ModRefInfo>(modref)};
     me |= nme; // add on the new effects
   }
@@ -1450,7 +1453,11 @@ CL_DEFUN void llvm_sys__add_alloc_kind_attribute(llvm::Function* func,
   // This "aligned" means that one of the parameters is the alignment, and the
   // parameter can be indicated with the allocsize attribute.
   if (taligned.notnilp()) kind |= llvm::AllocFnKind::Aligned;
+#if LLVM_VERSION_MAJOR < 21
+  llvm::Attribute attr = llvm::Attribute::get(func->getContext(), llvm::Attribute::AllocKind, static_cast<uint64_t>(kind));
+#else
   llvm::Attribute attr = llvm::Attribute::getWithAllocKind(func->getContext(), kind);
+#endif
   func->addFnAttr(attr);
 }
 
