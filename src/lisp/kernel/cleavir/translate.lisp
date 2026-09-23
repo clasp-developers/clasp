@@ -512,20 +512,28 @@ function-or-placeholder - the llvm function or a placeholder for
                (unless simplep
                  (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
                                 :label "come-from-dynenv-cons")))
-             (dynenv
+             (dynenv-space
                (unless simplep
-                 (%intrinsic-invoke-if-landing-pad-or-call
-                  (if blockp
-                      "cc_createAndPushBlockDynenv"
-                      "cc_createAndPushTagbodyDynenv")
-                  (list dcons-space frame bufp))))
+                 (cmp:alloch
+                  (if blockp cmp:+block-dynenv-size+ cmp:+tagbody-dynenv-size+)
+                  "escape-dynenv-mem")))
+             (dynenv (cmp:irc-tag-general
+                      (cmp:irc-skip-general-header dynenv-space "escape-dynenv")
+                      "escape-dynenv"))
              (de-stack
                (unless simplep
                  (if blockp old-de-stack (cmp::thread-dynenv-stack))))
-             ;; Set the continuation for use by bir:unwind insts.
-             (_ (out
-                 (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
-                 come-from))
+             ;; Set the continuation for use by bir:unwind insts,
+             ;; and initialize the dynenv and stack.
+             (_ (progn
+                  (%intrinsic-call (if blockp
+                                       "cc_initialize_block_dynenv"
+                                       "cc_initialize_tagbody_dynenv")
+                                   dynenv-space frame bufp)
+                  (new-de-stack dcons-space dynenv)
+                  (out
+                   (if simplep (cmp:irc-bit-cast bufp cmp:%t*%) dynenv)
+                   come-from)))
              (sj (%intrinsic-call "_setjmp" (list bufp)))
              (sw (cmp:irc-switch sj default (1+ (length iblocks)))))
         (declare (ignore _))

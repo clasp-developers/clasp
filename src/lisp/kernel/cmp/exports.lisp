@@ -90,6 +90,7 @@
           +header-where-tag+
           +cons-size+
           +vaslist-size+ +vaslist-alignment+
+          +block-dynenv-size+ +tagbody-dynenv-size+
           +unwind-protect-dynenv-size+
           +binding-dynenv-size+
           +catch-dynenv-size+

@@ -227,8 +227,14 @@
          (primitive-unwinds "_longjmp" :void (list :jmp-buf-tag* :i32) :does-not-return t)
          (primitive-unwinds "cc_throw" :void (list :t*) :does-not-return t)
          (primitive         "cc_catch_tag" :t* (list :t*))
-         (primitive-unwinds "cc_createAndPushBlockDynenv" (list :t* 'llvm-sys:attribute-no-alias) (list :i8* :i8* :jmp-buf-tag*))
-         (primitive-unwinds "cc_createAndPushTagbodyDynenv" (list :t* 'llvm-sys:attribute-no-alias) (list :i8* :i8* :jmp-buf-tag*))
+         (primitive-unwinds "cc_initialize_block_dynenv"
+          :void (list :i8* (list :i8* 'llvm-sys:attribute-read-none)
+                 (list :jmp-buf-tag* 'llvm-sys:attribute-read-none))
+          :will-return t :memory '(:none (:arg :write)))
+         (primitive-unwinds "cc_initialize_tagbody_dynenv"
+          :void (list :i8* (list :i8* 'llvm-sys:attribute-read-none)
+                 (list :jmp-buf-tag* 'llvm-sys:attribute-read-none))
+          :will-return t :memory '(:none (:arg :write)))
          (primitive         "cc_initialize_cleanup_dynenv"
           :void (list (list :i8* '(:captures ()))
                  (list :jmp-buf-tag* 'llvm-sys:attribute-read-none))

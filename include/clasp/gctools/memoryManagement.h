@@ -847,34 +847,6 @@ public:
 
   smart_ptr<LispClass> asSmartPtr() { return smart_ptr<LispClass>((LispClass*)&this->_Object); }
 };
-
-// Initialize raw memory as a Lisp object.
-// This is used in generated code (llvmo/link_intrinsics..) to initialize
-// stack allocated Lisp objects.
-template <class Ty_O, class... ARGS>
-smart_ptr<Ty_O> InitObject(void* space, ARGS&&... args) {
-  if constexpr(std::is_same_v<Ty_O, core::Cons_O>) {
-    ConsHeader_s* header = reinterpret_cast<ConsHeader_s*>(space);
-    const ConsHeader_s::BadgeStampWtagMtag stamp(ConsHeader_s::BadgeStampWtagMtag::make<Ty_O>());
-    new (header) ConsHeader_s(stamp);
-    Ty_O* obj = (Ty_O*)HeaderPtrToConsPtr(space);
-    new (obj) Ty_O(std::forward<ARGS>(args)...);
-    return smart_ptr<Ty_O>(obj);
-  } else {
-    Header_s* header = reinterpret_cast<Header_s*>(space);
-    const Header_s::BadgeStampWtagMtag stamp = Header_s::BadgeStampWtagMtag::make<Ty_O>();
-#ifdef DEBUG_GUARD
-    size_t size = sizeof_with_header<Ty_O>();
-    new (header) Header_s(stamp, size, 0, size);
-#else
-    new (header) Header_s(stamp);
-#endif
-    Ty_O* obj = HeaderPtrToGeneralPtr<Ty_O>(space);
-    new (obj) Ty_O(std::forward<ARGS>(args)...);
-    return smart_ptr<Ty_O>(obj);
-  }
-}
-
 }; // namespace gctools
 
 #include <clasp/gctools/cast.h>

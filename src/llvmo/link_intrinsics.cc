@@ -393,18 +393,16 @@ void debug_memory(size_t num, core::T_O** vector) {
 
 extern "C" {
 
-core::T_O* cc_createAndPushBlockDynenv(void* cspace, void* frame, jmp_buf* target) {
-  core::BlockDynEnv_sp block = BlockDynEnv_O::create(frame, target);
-  auto newstack = gctools::InitObject<core::Cons_O>(cspace, block, my_thread->dynEnvStackGet());
-  my_thread->dynEnvStackSet(newstack);
-  return block.raw_();
+void cc_initialize_block_dynenv(void* space, void* frame, jmp_buf* target) {
+  NO_UNWIND_BEGIN();
+  gctools::GC<core::BlockDynEnv_O>::initialize(space, frame, target);
+  NO_UNWIND_END();
 }
 
-core::T_O* cc_createAndPushTagbodyDynenv(void* cspace, void* frame, jmp_buf* target) {
-  core::TagbodyDynEnv_sp tb = TagbodyDynEnv_O::create(frame, target);
-  auto newstack = gctools::InitObject<core::Cons_O>(cspace, tb, my_thread->dynEnvStackGet());
-  my_thread->dynEnvStackSet(newstack);
-  return tb.raw_();
+void cc_initialize_tagbody_dynenv(void* space, void* frame, jmp_buf* target) {
+  NO_UNWIND_BEGIN();
+  gctools::GC<core::TagbodyDynEnv_O>::initialize(space, frame, target);
+  NO_UNWIND_END();
 }
 
 void cc_initialize_cleanup_dynenv(unsigned char* mem, jmp_buf* target) {
