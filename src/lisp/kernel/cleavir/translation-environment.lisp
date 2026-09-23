@@ -92,13 +92,7 @@
 ;;; want to change it later, so use these abstractions.
 ;;; Note that defining a new general Cell_O would not save any space since
 ;;; it would have to have a vtable.
-(defun make-cell ()
-  (let* ((cons-space (cmp:alloch cmp:+cons-size+ "cell"))
-         (cons (cmp:irc-tag-cons (cmp:irc-skip-cons-header cons-space "cell") "cell")))
-    (%intrinsic-call "cc_initialize_cons" (list cons-space))
-    (cmp:irc-rplaca cons (%nil))
-    (cmp:irc-rplacd cons (%nil))
-    cons))
+(defun make-cell () (cmp:irc-cons (%nil) (%nil)))
 (defun cell-read (cell) (cmp:irc-cons-car-atomic cell))
 (defun cell-write (value cell) (cmp:irc-rplaca-atomic cell value))
 
@@ -284,13 +278,9 @@
       (error "Missing llvm function info for BIR function ~a." function)))
 
 (defun new-de-stack (consmem dynenv)
-  (%intrinsic-call "cc_initialize_cons" (list consmem))
-  (let ((cons (cmp:irc-tag-cons (cmp:irc-skip-cons-header consmem "dynenv-stack")
-                                "dynenv-stack")))
-    (cmp:irc-rplaca cons dynenv)
-    (cmp:irc-rplacd cons (cmp::thread-dynenv-stack))
-    (cmp::set-thread-dynenv-stack cons)
-    (values)))
+  (cmp::set-thread-dynenv-stack
+   (cmp:irc-initialize-cons consmem dynenv (cmp::thread-dynenv-stack) "dynenv-stack"))
+  (values))
 
 ;;; Binding and unbinding special variables
 (defun bind-special (cellv value)

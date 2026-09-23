@@ -257,6 +257,7 @@
           irc-atomicrmw
           irc-cmpxchg
           irc-struct-gep
+          irc-cons irc-initialize-cons
           irc-cons-car irc-cons-cdr
           irc-cons-car-atomic irc-cons-cdr-atomic
           irc-rplaca irc-rplacd

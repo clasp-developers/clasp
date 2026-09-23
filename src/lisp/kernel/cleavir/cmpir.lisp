@@ -1104,6 +1104,16 @@ But no irbuilders or basic-blocks. Return the fn."
   (irc-intrinsic-call-or-invoke "cc_alloc_collectable_immobile"
                                 (list (fix-alloch-size size)) label))
 
+(defun irc-initialize-cons (space car cdr &optional (label "cons"))
+  (irc-intrinsic-call-or-invoke "cc_initialize_cons" (list space))
+  (let ((cons (irc-tag-cons (irc-skip-cons-header space label) label)))
+    (irc-rplaca cons car) (irc-rplacd cons cdr)
+    cons))
+
+(defun irc-cons (car cdr &optional (label "cons"))
+  (irc-initialize-cons (alloch +cons-size+ (format nil "~a-space" label))
+                       car cdr label))
+
 (defun null-t-ptr ()
   (llvm-sys:constant-pointer-null-get %t*%))
 
