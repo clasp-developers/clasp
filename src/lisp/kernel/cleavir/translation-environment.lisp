@@ -269,6 +269,15 @@
   (or (gethash function *function-info*)
       (error "Missing llvm function info for BIR function ~a." function)))
 
+(defun new-de-stack (consmem dynenv)
+  (%intrinsic-call "cc_initialize_cons" (list consmem))
+  (let ((cons (cmp:irc-tag-cons (cmp:irc-skip-cons-header consmem "dynenv-stack")
+                                "dynenv-stack")))
+    (cmp:irc-rplaca cons dynenv)
+    (cmp:irc-rplacd cons (cmp::thread-dynenv-stack))
+    (cmp::set-thread-dynenv-stack cons)
+    (values)))
+
 ;;; Binding and unbinding special variables
 (defun bind-special (cellv value)
   (let* ((bde-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
@@ -276,11 +285,14 @@
          (bde-mem (cmp:alloca-i8 cmp:+binding-dynenv-size+
                                  :alignment cmp:+alignment+
                                  :label "binding-dynenv-mem"))
+         (bde (cmp:irc-tag-general
+               (cmp:irc-skip-general-header bde-mem "binding-dynenv")
+               "binding-dynenv"))
          (old-de-stack (cmp::thread-dynenv-stack))
          (ind (%intrinsic-call "cc_getCellTLIndex" (list cellv)))
          (old (%intrinsic-call "cc_specialBind" (list ind value))))
-    (%intrinsic-call "cc_initializeAndPushBindingDynenv"
-                     (list bde-mem bde-cons-mem cellv old))
+    (%intrinsic-call "cc_initialize_binding_dynenv" (list bde-mem cellv old))
+    (new-de-stack bde-cons-mem bde)
     (values ind old old-de-stack)))
 
 (defun unbind-special (index old-value old-de-stack)

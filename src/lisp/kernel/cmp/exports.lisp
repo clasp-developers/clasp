@@ -62,6 +62,7 @@
           *low-level-trace*
           *low-level-trace-print*
           *the-module*
+          +cons-header-size+
           +header-size+
           +header-stamp-size+
           +header-stamp-offset+

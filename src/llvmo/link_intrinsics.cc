@@ -407,47 +407,35 @@ core::T_O* cc_createAndPushTagbodyDynenv(void* cspace, void* frame, jmp_buf* tar
   return tb.raw_();
 }
 
-core::T_O* cc_initializeAndPushCleanupDynenv(void* space, void* cspace, jmp_buf* target) {
+void cc_initialize_cleanup_dynenv(unsigned char* mem, jmp_buf* target) {
   NO_UNWIND_BEGIN();
-  auto newde = gctools::InitObject<core::UnwindProtectDynEnv_O>(space, target);
-  auto newstack = gctools::InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
-  my_thread->dynEnvStackSet(newstack);
-  return newde.raw_();
+  gctools::GC<core::UnwindProtectDynEnv_O>::initialize(mem, target);
   NO_UNWIND_END();
 }
 
-core::T_O* cc_initializeAndPushBindingDynenv(void* space, void* cspace, core::T_O* cell, core::T_O* old) {
+void cc_initialize_binding_dynenv(void* space, core::T_O* cell, core::T_O* old) {
   NO_UNWIND_BEGIN();
   core::T_sp told((gc::Tagged)old);
   core::T_sp tcell((gc::Tagged)cell);
   core::VariableCell_sp rcell = gc::As_assert<VariableCell_sp>(tcell);
-  auto newde = gctools::InitObject<core::BindingDynEnv_O>(space, rcell, told);
-  auto newstack = gctools::InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
-  my_thread->dynEnvStackSet(newstack);
-  return newde.raw_();
+  gctools::GC<core::BindingDynEnv_O>::initialize(space, rcell, told);
   NO_UNWIND_END();
 }
 
-core::T_O* cc_initializeAndPushProgvDynenv(void* space, void* cspace, core::T_O* cells, core::T_O* oldvals) {
+void cc_initialize_progv_dynenv(void* space, core::T_O* cells, core::T_O* oldvals) {
   NO_UNWIND_BEGIN();
   core::T_sp tcells((gc::Tagged)cells);
   core::T_sp tvals((gc::Tagged)oldvals);
   core::SimpleVector_sp vcells = tcells.as_assert<core::SimpleVector_O>();
   core::SimpleVector_sp vvals = tvals.as_assert<core::SimpleVector_O>();
-  auto newde = gctools::InitObject<core::ProgvDynEnv_O>(space, vcells, vvals);
-  auto newstack = gctools::InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
-  my_thread->dynEnvStackSet(newstack);
-  return newde.raw_();
+  gctools::GC<core::ProgvDynEnv_O>::initialize(space, vcells, vvals);
   NO_UNWIND_END();
 }
 
-core::T_O* cc_initializeAndPushCatchDynenv(void* space, void* cspace, jmp_buf* target, core::T_O* tag) {
+void cc_initialize_catch_dynenv(void* space, jmp_buf* target, core::T_O* tag) {
   NO_UNWIND_BEGIN();
   core::T_sp ttag((gc::Tagged)tag);
-  auto newde = gctools::InitObject<core::CatchDynEnv_O>(space, target, ttag);
-  auto newstack = gctools::InitObject<core::Cons_O>(cspace, newde, my_thread->dynEnvStackGet());
-  my_thread->dynEnvStackSet(newstack);
-  return newde.raw_();
+  gctools::GC<core::CatchDynEnv_O>::initialize(space, target, ttag);
   NO_UNWIND_END();
 }
 

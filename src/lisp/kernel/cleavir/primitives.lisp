@@ -229,10 +229,25 @@
          (primitive         "cc_catch_tag" :t* (list :t*))
          (primitive-unwinds "cc_createAndPushBlockDynenv" (list :t* 'llvm-sys:attribute-no-alias) (list :i8* :i8* :jmp-buf-tag*))
          (primitive-unwinds "cc_createAndPushTagbodyDynenv" (list :t* 'llvm-sys:attribute-no-alias) (list :i8* :i8* :jmp-buf-tag*))
-         (primitive         "cc_initializeAndPushCleanupDynenv" :t* (list :i8* :i8* :jmp-buf-tag*))
-         (primitive         "cc_initializeAndPushBindingDynenv" :t* (list :i8* :i8* :t* :t*))
-         (primitive         "cc_initializeAndPushProgvDynenv" :t* (list :i8* :i8* :t* :t*))
-         (primitive         "cc_initializeAndPushCatchDynenv" :t* (list :i8* :i8* :jmp-buf-tag* :t*))
+         (primitive         "cc_initialize_cleanup_dynenv"
+          :void (list (list :i8* '(:captures ()))
+                 (list :jmp-buf-tag* 'llvm-sys:attribute-read-none))
+          :will-return t :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_binding_dynenv"
+          :void (list (list :i8* '(:captures ()) 'llvm-sys:attribute-write-only)
+                 (list :t* 'llvm-sys:attribute-read-only)
+                 (list :t* 'llvm-sys:attribute-read-none))
+          :will-return t :memory '(:none (:arg :readwrite)))
+         (primitive         "cc_initialize_progv_dynenv"
+          :void (list (list :i8* '(:captures ()) 'llvm-sys:attribute-write-only)
+                 (list :t* 'llvm-sys:attribute-read-only)
+                 (list :t* 'llvm-sys:attribute-read-only))
+          :will-return t :memory '(:none (:arg :readwrite)))
+         (primitive         "cc_initialize_catch_dynenv"
+          :void (list (list :i8* '(:captures ()))
+                 (list :jmp-buf-tag* 'llvm-sys:attribute-read-none)
+                 (list :t* 'llvm-sys:attribute-read-none))
+          :will-return t :memory '(:none (:arg :write)))
          (primitive-unwinds "cc_sjlj_unwind" :void (list :t* :size_t) :does-not-return t)
          ;; This function is called in compiled code VERY frequently
          ;; so we want LLVM to optimize as much as possible.
