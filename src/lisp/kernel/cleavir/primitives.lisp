@@ -203,8 +203,6 @@
          (primitive         "cm_vset" :return-type (list :t* :t* :t*))
          (primitive         "cc_ensure_valid_object" :t* (list :t*))
          (primitive         "cc_getPointer" :i8* (list (list :t* 'llvm-sys:attribute-read-only)))
-         (primitive-unwinds "cc_makeCell"
-          (list :t* 'llvm-sys:attribute-no-alias) nil)
          (primitive-unwinds "cc_checkBound" :size_t (list (list :t* 'llvm-sys:attribute-read-only) :size_t :t*))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))

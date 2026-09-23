@@ -87,14 +87,6 @@ ALWAYS_INLINE core::T_O* cc_gatherVaRestArguments(Vaslist* vaslist, std::size_t 
   NO_UNWIND_END();
 }
 
-ALWAYS_INLINE core::T_O* cc_makeCell() {
-  core::Cons_sp res = core::Cons_O::create(nil<core::T_O>(), nil<core::T_O>());
-#ifdef DEBUG_CC
-  printf("%s:%d makeCell res.px[%p]\n", __FILE__, __LINE__, res.px);
-#endif
-  return res.raw_();
-}
-
 ALWAYS_INLINE char* cc_getPointer(core::T_O* pointer_object) {
   NO_UNWIND_BEGIN();
   core::Pointer_O* po = reinterpret_cast<core::Pointer_O*>(gctools::untag_general(pointer_object));

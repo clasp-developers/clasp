@@ -85,6 +85,23 @@
 (defmethod vrtype->llvm ((vrtype (eql :sb32))) cmp:%i32%)
 (defmethod vrtype->llvm ((vrtype (eql :sb64))) cmp:%i64%)
 
+;;; Indefinite extent closure cells are currently implemented as conses,
+;;; with the value in the CAR and the CDR set to NIL.
+;;; (CDR does have to be set so that GC can scan, even though it's unused.)
+;;; That's three words (header, car, cdr) which is kind of dumb and we may
+;;; want to change it later, so use these abstractions.
+;;; Note that defining a new general Cell_O would not save any space since
+;;; it would have to have a vtable.
+(defun make-cell ()
+  (let* ((cons-space (cmp:alloch cmp:+cons-size+ "cell"))
+         (cons (cmp:irc-tag-cons (cmp:irc-skip-cons-header cons-space "cell") "cell")))
+    (%intrinsic-call "cc_initialize_cons" (list cons-space))
+    (cmp:irc-rplaca cons (%nil))
+    (cmp:irc-rplacd cons (%nil))
+    cons))
+(defun cell-read (cell) (cmp:irc-cons-car-atomic cell))
+(defun cell-write (value cell) (cmp:irc-rplaca-atomic cell value))
+
 (defun bind-variable (var)
   (if (bir:immutablep var)
       ;; Since immutable vars are just LLVM Values, they will be initialized
@@ -114,10 +131,7 @@
                        #+(or)(cmp:dbg-variable-alloca alloca fname spi)
                        ;; return
                        alloca))))
-              ((:indefinite)
-               ;; make a cell
-               (%intrinsic-invoke-if-landing-pad-or-call
-                "cc_makeCell" nil (datum-name-as-string var)))))))
+              ((:indefinite) (make-cell))))))
 
 ;; Return either the value or cell of a closed over variable depending
 ;; on whether it is immutable so we can close over the memory location
@@ -194,7 +208,7 @@
             (:indefinite
              (let ((cell (or (gethash variable *datum-values*)
                              (error "BUG: Cell missing: ~a" variable))))
-               (cmp:irc-cons-car-atomic cell)))))))
+               (cell-read cell)))))))
 
 (defun out (value datum)
   (check-type datum bir:ssa)
@@ -241,7 +255,7 @@
             (:indefinite
              (let ((cell (or (gethash variable *datum-values*)
                              (error "BUG: Cell missing: ~a" variable))))
-               (cmp:irc-rplaca-atomic cell value)))))))
+               (cell-write value cell)))))))
 
 (defun dynenv-storage (dynenv)
   (check-type dynenv bir:dynamic-environment)
