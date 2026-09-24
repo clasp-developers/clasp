@@ -15,12 +15,13 @@
 (defun compile-tag-check (object-raw mask ctag then-br else-br)
   (irc-cond-br (tag-check-cond object-raw mask ctag) then-br else-br))
 
-;;; NOTE: Unlike compile-header-check, this is only valid if the object is already
-;;; known to be generalp.
+;;; NOTE: This is only valid if the object is already known to be generalp.
+;;; although in practice we just mask out the tag bits.
 (defun header-check-cond (header-value-min-max object-raw)
   (if *debug-typeq* (irc-intrinsic "debugPrintI32" (jit-constant-i32 10001)))
   (let* ((byte-ptr           (irc-bit-cast object-raw %i8*%))
-         (header-addr        (irc-typed-gep %i8% byte-ptr (list (+ +header-stamp-offset+ (- (+ +header-size+ +general-tag+))))))
+         (general            (irc-untag-general byte-ptr))
+         (header-addr        (irc-typed-gep %i8% general (list (+ +header-stamp-offset+ (- +header-size+)))))
          (_0 (if *debug-typeq* (irc-intrinsic "debugPointer" header-addr)))
          (header-stamp-ptr-type (cond
                                   ((= 4 +header-stamp-size+) %i32*%)
