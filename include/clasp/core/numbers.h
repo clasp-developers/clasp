@@ -830,25 +830,22 @@ public:
   Integer_sp _denominator;
 
 public:
-  static Ratio_sp create(Integer_sp num, Integer_sp denom) {
-    auto v = gctools::GC<Ratio_O>::allocate();
-    v->setf_numerator_denominator(num, denom);
-    return v;
+  static Ratio_sp create(Integer_sp inum, Integer_sp idenom) {
+    Integer_sp num, denom;
+    normalize_numerator_denominator(inum, idenom, num, denom);
+    return gctools::GC<Ratio_O>::allocate(num, denom);
   };
   static Ratio_sp create(mpz_class const& num, mpz_class const& denom) {
     return Ratio_O::create(Integer_O::create(num), Integer_O::create(denom));
   }
   // For when it is known that the ratio is reduced already.
   static Ratio_sp create_primitive(Integer_sp num, Integer_sp denom) {
-    auto v = gctools::GC<Ratio_O>::allocate();
-    v->_numerator = num;
-    v->_denominator = denom;
-    return v;
+    return gctools::GC<Ratio_O>::allocate(num, denom);
   }
 
 public:
-  // Only useful for creating Ratio in fasl files.
-  void setf_numerator_denominator(core::Integer_sp num, core::Integer_sp denom);
+  static void normalize_numerator_denominator(Integer_sp num, Integer_sp denom,
+                                              Integer_sp& rnum, Integer_sp& rdenom);
 
 public:
   virtual bool zerop_() const override { return zerop(this->_numerator); };
@@ -891,6 +888,7 @@ public:
   virtual void __write__(T_sp strm) const override;
 
   Ratio_O() : _numerator(clasp_make_fixnum(0)), _denominator(clasp_make_fixnum(1)) {};
+  Ratio_O(Integer_sp num, Integer_sp den) : _numerator(num), _denominator(den) {};
 };
 
 inline Number_sp float_sqrt(float f) {

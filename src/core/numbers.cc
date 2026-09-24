@@ -1422,30 +1422,24 @@ Number_sp Ratio_O::reciprocal_() const {
     return Ratio_O::create_primitive(denom, num);
 }
 
-void Ratio_O::setf_numerator_denominator(Integer_sp inum, Integer_sp idenom) {
+void Ratio_O::normalize_numerator_denominator(Integer_sp inum, Integer_sp idenom,
+                                              Integer_sp& num, Integer_sp& denom) {
   Integer_sp gcd = clasp_gcd(inum, idenom);
-  Integer_sp num = inum;
-  Integer_sp denom = idenom;
+  num = inum;
+  denom = idenom;
   if (!(gcd.fixnump() && gcd.unsafe_fixnum() == 1)) {
     num = clasp_integer_divide(inum, gcd);
     denom = clasp_integer_divide(idenom, gcd);
   }
   if (num.fixnump() && denom.fixnump()) {
     if (denom.unsafe_fixnum() < 0) {
-      this->_numerator = clasp_make_fixnum(-num.unsafe_fixnum());
-      this->_denominator = clasp_make_fixnum(-denom.unsafe_fixnum());
-    } else {
-      this->_numerator = num;
-      this->_denominator = denom;
+      num = clasp_make_fixnum(-num.unsafe_fixnum());
+      denom = clasp_make_fixnum(-denom.unsafe_fixnum());
     }
     return;
-  }
-  if (Real_O::minusp(idenom)) {
-    this->_numerator = gc::As<Integer_sp>(clasp_negate(num));
-    this->_denominator = gc::As<Integer_sp>(clasp_negate(denom));
-  } else {
-    this->_numerator = num;
-    this->_denominator = denom;
+  } else if (Real_O::minusp(idenom)) {
+    num = clasp_negate(num).as<Integer_O>();
+    denom = clasp_negate(denom).as<Integer_O>();
   }
 }
 
