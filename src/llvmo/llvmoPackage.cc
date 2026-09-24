@@ -149,107 +149,75 @@ CL_DEFUN core::T_sp llvm_sys__tag_tests() {
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   List_sp list = nil<T_O>();
+#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
   list = Cons_O::create(Cons_O::create(_sym_tsp, make_fixnum((int)sizeof(T_sp))), nil<T_O>());
   list = Cons_O::create(Cons_O::create(_sym_tmv, make_fixnum((int)sizeof(T_mv))), list);
   list = Cons_O::create(Cons_O::create(_sym_size_t, make_fixnum((int)sizeof(size_t))), list);
   list = Cons_O::create(Cons_O::create(_sym_threadInfo, make_fixnum((int)sizeof(ThreadLocalState))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"), make_fixnum((int)gctools::Alignment())), list);
-  //  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-PARENT-OFFSET"),
-  //  make_fixnum((int)offsetof(core::ValueFrame_O,_Parent))),list); list =
-  //  Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT0-OFFSET"),
-  //  make_fixnum((int)offsetof(core::ValueFrame_O,_Objects._Data[0]))),list); list =
-  //  Cons_O::create(Cons_O::create(lisp_internKeyword("VALUE-FRAME-ELEMENT-SIZE"),
-  //  make_fixnum((int)sizeof(core::ValueFrame_O::value_type))),list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("LCC-ARGS-IN-REGISTERS"), make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("PTAG-MASK"), make_fixnum((int)gctools::ptag_mask)), list);
+  ENTRY(list, "ALIGNMENT", make_fixnum((int)gctools::Alignment()));
+  ENTRY(list, "LCC-ARGS-IN-REGISTERS", make_fixnum((int)sizeof(LCC_ARGS_IN_REGISTERS)));
+  ENTRY(list, "PTAG-MASK", make_fixnum((int)gctools::ptag_mask));
+  ENTRY(list, "MTAG-MASK", make_fixnum((int)gctools::Header_s::mtag_mask));
+  ENTRY(list, "DERIVABLE-WTAG", make_fixnum((int)gctools::Header_s::Header_s::derivable_wtag));
+  ENTRY(list, "RACK-WTAG", make_fixnum((int)gctools::Header_s::Header_s::rack_wtag));
+  ENTRY(list, "WRAPPED-WTAG", make_fixnum((int)gctools::Header_s::Header_s::wrapped_wtag));
+  ENTRY(list, "HEADER-WTAG", make_fixnum((int)gctools::Header_s::Header_s::header_wtag));
+  ENTRY(list, "MAX-WTAG", make_fixnum((int)gctools::Header_s::Header_s::max_wtag));
+  ENTRY(list, "WTAG-WIDTH", make_fixnum((int)gctools::Header_s::Header_s::wtag_width));
+  ENTRY(list, "GENERAL-MTAG-WIDTH", make_fixnum((int)gctools::Header_s::Header_s::general_mtag_width));
 
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("MTAG-MASK"), make_fixnum((int)gctools::Header_s::mtag_mask)), list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("DERIVABLE-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::derivable_wtag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("RACK-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::rack_wtag)),
-                        list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("WRAPPED-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::wrapped_wtag)), list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("HEADER-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::header_wtag)), list);
-  list =
-      Cons_O::create(Cons_O::create(lisp_internKeyword("MAX-WTAG"), make_fixnum((int)gctools::Header_s::Header_s::max_wtag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("WTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::wtag_width)),
-                        list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("GENERAL-MTAG-WIDTH"), make_fixnum((int)gctools::Header_s::Header_s::general_mtag_width)),
-      list);
-
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("IMMEDIATE-MASK"), make_fixnum((int)gctools::immediate_mask)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("GENERAL-TAG"), make_fixnum((int)gctools::general_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM-MASK"), make_fixnum((int)gctools::fixnum_mask)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAG-BITS"), make_fixnum((int)TAG_BITS)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM00-TAG"), make_fixnum((int)gctools::fixnum00_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM01-TAG"), make_fixnum((int)gctools::fixnum01_tag)), list);
+  ENTRY(list, "IMMEDIATE-MASK", make_fixnum((int)gctools::immediate_mask));
+  ENTRY(list, "GENERAL-TAG", make_fixnum((int)gctools::general_tag));
+  ENTRY(list, "FIXNUM-MASK", make_fixnum((int)gctools::fixnum_mask));
+  ENTRY(list, "TAG-BITS", make_fixnum((int)TAG_BITS));
+  ENTRY(list, "FIXNUM00-TAG", make_fixnum((int)gctools::fixnum00_tag));
+  ENTRY(list, "FIXNUM01-TAG", make_fixnum((int)gctools::fixnum01_tag));
 #if TAG_BITS == 4
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM10-TAG"), make_fixnum((int)gctools::fixnum10_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("FIXNUM11-TAG"), make_fixnum((int)gctools::fixnum11_tag)), list);
+  ENTRY(list, "FIXNUM10-TAG", make_fixnum((int)gctools::fixnum10_tag));
+  ENTRY(list, "FIXNUM11-TAG", make_fixnum((int)gctools::fixnum11_tag));
 #endif
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-TAG"), make_fixnum((int)gctools::cons_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST0-TAG"), make_fixnum((int)gctools::vaslist0_tag)), list);
+  ENTRY(list, "CONS-TAG", make_fixnum((int)gctools::cons_tag));
+  ENTRY(list, "VASLIST0-TAG", make_fixnum((int)gctools::vaslist0_tag));
 #if TAG_BITS == 4
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST1-TAG"), make_fixnum((int)gctools::vaslist1_tag)), list);
-  list =
-      Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-PTAG-MASK"), make_fixnum((int)gctools::vaslist_ptag_mask)), list);
+  ENTRY(list, "VASLIST1-TAG", make_fixnum((int)gctools::vaslist1_tag));
+  ENTRY(list, "VASLIST-PTAG-MASK", make_fixnum((int)gctools::vaslist_ptag_mask));
 #endif
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CHARACTER-TAG"), make_fixnum((int)gctools::character_tag)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SINGLE-FLOAT-TAG"), make_fixnum((int)gctools::single_float_tag)), list);
-  list =
-      Cons_O::create(Cons_O::create(lisp_internKeyword("SINGLE-FLOAT-SHIFT"), make_fixnum((int)gctools::single_float_shift)), list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-LIMIT"), make_fixnum((int)MultipleValues::MultipleValuesLimit)), list);
-  list =
-      Cons_O::create(Cons_O::create(lisp_internKeyword("MULTIPLE-VALUES-SIZEOF"), make_fixnum((int)sizeof(MultipleValues))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CAR-OFFSET"), make_fixnum(core::Cons_O::car_offset())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-CDR-OFFSET"), make_fixnum(core::Cons_O::cdr_offset())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UINTPTR_T-SIZE"), make_fixnum(sizeof(uintptr_t))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-SIZE"), make_fixnum(sizeof(Vaslist))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ALIGNMENT"), make_fixnum(VASLIST_ALIGNMENT)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-ARGS-OFFSET"), make_fixnum((int)Vaslist::args_offset())), list);
-  list =
-      Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-OFFSET"), make_fixnum((int)Vaslist::nargs_offset())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-DECREMENT"), make_fixnum((int)Vaslist::NargsDecrement)),
-                        list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-MASK"), make_fixnum((int)Vaslist::NargsMask)), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VASLIST-NARGS-SHIFT"), make_fixnum((int)Vaslist::NargsShift)), list);
+  ENTRY(list, "CHARACTER-TAG", make_fixnum((int)gctools::character_tag));
+  ENTRY(list, "SINGLE-FLOAT-TAG", make_fixnum((int)gctools::single_float_tag));
+  ENTRY(list, "SINGLE-FLOAT-SHIFT", make_fixnum((int)gctools::single_float_shift));
+  ENTRY(list, "MULTIPLE-VALUES-LIMIT", make_fixnum((int)MultipleValues::MultipleValuesLimit));
+  ENTRY(list, "MULTIPLE-VALUES-SIZEOF", make_fixnum((int)sizeof(MultipleValues)));
+  ENTRY(list, "CONS-CAR-OFFSET", make_fixnum(core::Cons_O::car_offset()));
+  ENTRY(list, "CONS-CDR-OFFSET", make_fixnum(core::Cons_O::cdr_offset()));
+  ENTRY(list, "UINTPTR_T-SIZE", make_fixnum(sizeof(uintptr_t)));
+  ENTRY(list, "VASLIST-SIZE", make_fixnum(sizeof(Vaslist)));
+  ENTRY(list, "VASLIST-ALIGNMENT", make_fixnum(VASLIST_ALIGNMENT));
+  ENTRY(list, "VASLIST-ARGS-OFFSET", make_fixnum((int)Vaslist::args_offset()));
+  ENTRY(list, "VASLIST-NARGS-OFFSET", make_fixnum((int)Vaslist::nargs_offset()));
+  ENTRY(list, "VASLIST-NARGS-DECREMENT", make_fixnum((int)Vaslist::NargsDecrement));
+  ENTRY(list, "VASLIST-NARGS-MASK", make_fixnum((int)Vaslist::NargsMask));
+  ENTRY(list, "VASLIST-NARGS-SHIFT", make_fixnum((int)Vaslist::NargsShift));
 
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-HEADER-SIZE"), make_fixnum(sizeof(gctools::ConsHeader_s))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-SIZE"), make_fixnum(sizeof(gctools::Header_s))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-OFFSET"),
-                                       make_fixnum(offsetof(gctools::Header_s, _badge_stamp_wtag_mtag._value))),
-                        list);
-  list =
-      Cons_O::create(Cons_O::create(lisp_internKeyword("HEADER-STAMP-SIZE"), make_fixnum(sizeof(gctools::tagged_stamp_t))), list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("REGISTER-SAVE-AREA-SIZE"), make_fixnum(LCC_TOTAL_REGISTERS * sizeof(void*))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("ALIGNMENT"), make_fixnum(gctools::Alignment())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("VOID*-SIZE"), make_fixnum(sizeof(void*))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("JMP-BUF-SIZE"), make_fixnum(sizeof(jmp_buf))), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("UNWIND-PROTECT-DYNENV-SIZE"),
-                                       make_fixnum(gctools::sizeof_with_header<UnwindProtectDynEnv_O>())),
-                        list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("BINDING-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<BindingDynEnv_O>())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CATCH-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<CatchDynEnv_O>())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("PROGV-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<ProgvDynEnv_O>())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("BLOCK-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<BlockDynEnv_O>())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("TAGBODY-DYNENV-SIZE"), make_fixnum(gctools::sizeof_with_header<TagbodyDynEnv_O>())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("CONS-SIZE"), make_fixnum(gctools::sizeof_with_header<Cons_O>())), list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("DOUBLE-FLOAT-SIZE"), make_fixnum(gctools::sizeof_with_header<DoubleFloat_O>())), list);
-  list = Cons_O::create(
-      Cons_O::create(lisp_internKeyword("CLOSURE-ENTRY-POINT-OFFSET"), make_fixnum(offsetof(core::Function_O, _TheSimpleFun))),
-      list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIMPLE-FUN-ENTRY-POINTS-OFFSET"),
-                                       make_fixnum(offsetof(core::SimpleFun_O, _EntryPoints))),
-                        list);
-  list = Cons_O::create(Cons_O::create(lisp_internKeyword("SIZE_T-BITS"), make_fixnum(sizeof(size_t) * 8)), list);
-#define ENTRY(list, name, code) list = Cons_O::create(Cons_O::create(lisp_internKeyword(name), code), list)
+  ENTRY(list, "CONS-HEADER-SIZE", make_fixnum(sizeof(gctools::ConsHeader_s)));
+  ENTRY(list, "HEADER-SIZE", make_fixnum(sizeof(gctools::Header_s)));
+  ENTRY(list, "HEADER-STAMP-OFFSET", make_fixnum(offsetof(gctools::Header_s, _badge_stamp_wtag_mtag._value)));
+  ENTRY(list, "HEADER-STAMP-SIZE", make_fixnum(sizeof(gctools::tagged_stamp_t)));
+  ENTRY(list, "REGISTER-SAVE-AREA-SIZE", make_fixnum(LCC_TOTAL_REGISTERS * sizeof(void*)));
+  ENTRY(list, "ALIGNMENT", make_fixnum(gctools::Alignment()));
+  ENTRY(list, "VOID*-SIZE", make_fixnum(sizeof(void*)));
+  ENTRY(list, "JMP-BUF-SIZE", make_fixnum(sizeof(jmp_buf)));
+  ENTRY(list, "UNWIND-PROTECT-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<UnwindProtectDynEnv_O>()));
+  ENTRY(list, "BINDING-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<BindingDynEnv_O>()));
+  ENTRY(list, "CATCH-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<CatchDynEnv_O>()));
+  ENTRY(list, "PROGV-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<ProgvDynEnv_O>()));
+  ENTRY(list, "BLOCK-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<BlockDynEnv_O>()));
+  ENTRY(list, "TAGBODY-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<TagbodyDynEnv_O>()));
+  ENTRY(list, "CONS-SIZE", make_fixnum(gctools::sizeof_with_header<Cons_O>()));
+  ENTRY(list, "DOUBLE-FLOAT-SIZE", make_fixnum(gctools::sizeof_with_header<DoubleFloat_O>()));
+  ENTRY(list, "CLOSURE-ENTRY-POINT-OFFSET", make_fixnum(offsetof(core::Function_O, _TheSimpleFun)));
+  ENTRY(list, "SIMPLE-FUN-ENTRY-POINTS-OFFSET",
+        make_fixnum(offsetof(core::SimpleFun_O, _EntryPoints)));
+  ENTRY(list, "SIZE_T-BITS", make_fixnum(sizeof(size_t) * 8));
   gc::Vec0<T_sp> tempVec0Tsp;
   ENTRY(list, "VEC0-VECTOR-OFFSET", make_fixnum((char*)&tempVec0Tsp._Vector - (char*)&tempVec0Tsp));
   gc::GCVector_moveable<T_O*> tempGCVector(1, 0);
@@ -294,6 +262,7 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "UNBOUND-BYTE", make_fixnum(UNBOUND_BYTE));
   ENTRY(list, "BIT-ARRAY-WORD-BYTES", make_fixnum(sizeof(bit_array_word)));
   return list;
+#undef ENTRY
 }
 
 CL_LAMBDA(&key tsp tmv symbol symbol-function-offset symbol-setf-function-offset function function-description-offset vaslist function-description);
