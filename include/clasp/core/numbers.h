@@ -593,7 +593,6 @@ public:
   void sxhash_equal(HashGenerator& hg) const override;
   //	virtual Number_sp copy() const;
   string __repr__() const override;
-  void set(double val) { this->_Value = val; };
   double get() const { return this->_Value; };
 
   Real_sp imagpart_() const override;
@@ -674,16 +673,13 @@ private:
 public:
 #ifdef CLASP_LONG_FLOAT
   static LongFloat_sp create(long_float_t nm) {
-    auto v = gctools::GC<LongFloat_O>::allocate();
-    v->set(nm);
-    return v;
+    return gctools::GC<LongFloat_O>::allocate(nm);
   };
 
   static LongFloat_sp coerce(Number_sp x);
 
   void sxhash_equal(HashGenerator& hg) const override;
   string __repr__() const override;
-  void set(long_float_t val) { this->_Value = val; };
   long_float_t get() const { return this->_Value; };
 
   Real_sp imagpart_() const override;
@@ -733,6 +729,7 @@ public:
   virtual Number_sp tanh_() const override;
   virtual Rational_sp as_rational_() const override;
   LongFloat_O() : _Value(long_float_t{0.0}) {};
+  LongFloat_O(long_float_t lf) : _Value(lf) {};
 #else
   inline static DoubleFloat_sp create(long_float_t nm) { return DoubleFloat_O::create(nm); }
 
