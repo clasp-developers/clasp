@@ -115,8 +115,6 @@
          (primitive-unwinds "__cxa_end_catch" :void nil)
          (primitive-unwinds "__cxa_rethrow" :void nil :does-not-return t)
          (primitive         +intrinsic/llvm.eh.typeid.for.p0+ :i32 (list :i8*))
-         (primitive-unwinds "cc_overflowed_signed_bignum"
-          (list :t* 'llvm-sys:attribute-no-alias) (list :i64))
          (primitive         "llvm.sadd.with.overflow.i32" :{i32.i1} (list :i32 :i32))
          (primitive         "llvm.sadd.with.overflow.i64" :{i64.i1} (list :i64 :i64))
          (primitive         "llvm.ssub.with.overflow.i32" :{i32.i1} (list :i32 :i32))
@@ -306,6 +304,10 @@
           :memory '(:none (:arg :write)))
          (primitive         "cc_initialize_double"
           :void (list (list :i8* '(:captures ())) :double-float)
+          :will-return t
+          :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_bignum"
+          :void (list (list :i8* '(:captures ())) :i64)
           :will-return t
           :memory '(:none (:arg :write)))
          (primitive         "cc_initialize_closure"
@@ -528,7 +530,6 @@
 
 (defun lookup-type (type-name)
   (case type-name
-    (:bignum %bignum%)
     #+short-float (:short-float %short-float%)
     #+short-float (:binary16 %short-float%)
     (:single-float %float%)

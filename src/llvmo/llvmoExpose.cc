@@ -3193,8 +3193,18 @@ CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateFCmp)
 
 // (llvm::FunctionType *FTy, Value *Callee, ArrayRef< Value * > Args, const Twine &Name="", MDNode *FPMathTag=nullptr)
 
-CL_LISPIFY_NAME(CreateSelect);
-CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateSelect);
+CL_LAMBDA(irbuilder condition true false name &optional md-from-instruction);
+CL_DEFUN llvm::Value* llvm_sys__create_select(llvmo::IRBuilderBase_O::ExternalType* builder,
+                                              llvm::Value* condition,
+                                              llvm::Value* iftrue, llvm::Value* iffalse,
+                                              const llvm::Twine& label,
+                                              core::T_sp md_from_instruction) {
+  llvm::Instruction* mdfrom = nullptr;
+  if (md_from_instruction.notnilp())
+    mdfrom = md_from_instruction.as<llvmo::Instruction_O>()->wrappedPtr();
+  return builder->CreateSelect(condition, iftrue, iffalse, label, mdfrom);
+}
+
 CL_LISPIFY_NAME(CreateVAArg);
 CL_EXTERN_DEFMETHOD(IRBuilderBase_O, &IRBuilderBase_O::ExternalType::CreateVAArg);
 CL_LISPIFY_NAME(CreateShuffleVector);

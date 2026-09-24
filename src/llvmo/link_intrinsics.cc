@@ -522,20 +522,8 @@ extern "C" {
 
 // #define DEBUG_CC
 
-core::T_O* cc_overflowed_signed_bignum(int64_t add_over) {
-  mp_limb_t limb;
-  mp_size_t len;
-  if (add_over < 0) { // positive
-    len = 1;
-    limb = ((uint64_t)add_over) >> 2;
-  } else if (add_over > 0) { // negative
-    len = -1;
-    limb = ((uint64_t)((~add_over) + 1)) >> 2;
-  } else { // add_over == 0
-    len = -1;
-    limb = 0x4000000000000000;
-  }
-  return core::Bignum_O::create_from_limbs(len, limb, true).raw_();
+void cc_initialize_bignum(void* space, int64_t signed_length) {
+  gctools::GC<core::Bignum_O>::initialize(space, signed_length);
 }
 
 core::T_O* cc_variableCellValue(core::T_O* cell) {

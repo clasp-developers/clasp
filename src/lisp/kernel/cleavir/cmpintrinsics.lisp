@@ -163,6 +163,7 @@ names to offsets."
       (llvm-sys:type-get-int64-ty context))) ;; -> LONG, LONG LONG
 (define-symbol-macro %i64*% (llvm-sys:type-get-pointer-to %i64%))
 (define-symbol-macro %i64**% (llvm-sys:type-get-pointer-to %i64*%))
+(define-symbol-macro %i64[0]% (llvm-sys:array-type-get %i64% 0))
 
 (define-symbol-macro %i128%
     (cmp:with-thread-safe-context (context)
@@ -170,6 +171,12 @@ names to offsets."
 
 (define-symbol-macro %fixnum% #+64-bit %i64%
                               #+32-bit %i32%)
+(define-symbol-macro %mp-limb% %i64%)
+(define-c++-struct %bignum%
+    (%i8*% :vtable)
+  (%i64% :signed-length)
+  (%i64[0]% :limbs))
+
 (define-symbol-macro %word% #+64-bit %i64% #+32-bit %i32%)
 (define-symbol-macro %uint% %i32%) ; FIXME: export from C++ probably
 
@@ -329,8 +336,6 @@ Boehm and MPS use a single pointer"
 ;; Define the T_O struct - right now just put in a dummy i32 - later put real fields here
 (define-symbol-macro %t% %i8%) ; (cmp:with-thread-safe-context (context) (llvm-sys:struct-type-get context nil  nil))) ;; "T_O"
 (define-symbol-macro %t*% (llvm-sys:type-get-pointer-to %t%))
-;; alias for bignum dumping
-(define-symbol-macro %bignum% %t*%)
 (define-symbol-macro %t**% (llvm-sys:type-get-pointer-to %t*%))
 (define-symbol-macro %t***% (llvm-sys:type-get-pointer-to %t**%))
 (define-symbol-macro %t*[0]% (llvm-sys:array-type-get %t*% 0))

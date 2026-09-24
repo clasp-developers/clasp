@@ -214,6 +214,8 @@ CL_DEFUN core::T_sp llvm_sys__cxxDataStructuresInfo() {
   ENTRY(list, "TAGBODY-DYNENV-SIZE", make_fixnum(gctools::sizeof_with_header<TagbodyDynEnv_O>()));
   ENTRY(list, "CONS-SIZE", make_fixnum(gctools::sizeof_with_header<Cons_O>()));
   ENTRY(list, "DOUBLE-FLOAT-SIZE", make_fixnum(gctools::sizeof_with_header<DoubleFloat_O>()));
+  ENTRY(list, "BIGNUM-SIZE", make_fixnum(gctools::sizeof_container_with_header<Bignum_O>(0)));
+  ENTRY(list, "LIMB-SIZE", make_fixnum(sizeof(mp_limb_t)));
   ENTRY(list, "CLOSURE-ENTRY-POINT-OFFSET", make_fixnum(offsetof(core::Function_O, _TheSimpleFun)));
   ENTRY(list, "SIMPLE-FUN-ENTRY-POINTS-OFFSET",
         make_fixnum(offsetof(core::SimpleFun_O, _EntryPoints)));

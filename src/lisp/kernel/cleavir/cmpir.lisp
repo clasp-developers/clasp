@@ -186,6 +186,9 @@ local-function - the lcl function that all of the xep functions call."
 (defun irc-switch (go-value default-block num-cases)
   (llvm-sys:create-switch *irbuilder* go-value default-block num-cases nil nil))
 
+(defun irc-select (bool true-val false-val &optional (name ""))
+  (llvm-sys:create-select *irbuilder* bool true-val false-val name nil))
+
 (defun irc-add-case (switch val block)
   (llvm-sys:add-case switch val block))
 
@@ -424,6 +427,36 @@ representing a tagged fixnum."
   ;; but that's only valid if it's unsigned!
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
+
+(defun irc-bignum-limb* (bignum index &optional (label "limb"))
+  (let ((limbs (c++-field-ptr info.%bignum% bignum :limbs)))
+    (irc-typed-gep %mp-limb% limbs (list index) label)))
+
+(defun irc-bignum-limb (bignum index &optional (label "limb"))
+  (irc-typed-load %mp-limb% (irc-bignum-limb* bignum index label) label))
+
+(defun set-bignum-limb (limb bignum index)
+  (irc-store limb (irc-bignum-limb* bignum index)))
+
+;; given the primary result of llvm.sadd.with.overflow, create and return a bignum.
+;; I don't 100% follow the logic here but it does work.
+(defun irc-overflowed-signed-bignum (overflow-result)
+  (let* ((negp (irc-icmp-slt overflow-result (jit-constant-i64 0)))
+         (posp (irc-icmp-slt (jit-constant-i64 0) overflow-result))
+         (slength (irc-select negp (jit-constant-i64 1) (jit-constant-i64 -1)
+                              "signed-length"))
+         (pos (irc-lshr overflow-result (jit-constant-i64 +fixnum-shift+) :exact t))
+         ;; this part in particular baffles me. I don't know what I was doing
+         ;; originally. Just doing -pos gives junk.
+         (neg (irc-lshr (irc-add (irc-not overflow-result) (jit-constant-i64 1))
+                        (jit-constant-i64 +fixnum-shift+) :exact t))
+         (zero (jit-constant-i64 #x4000000000000000))
+         (limb (irc-select negp pos (irc-select posp neg zero)))
+         (mem (cmp:alloch (+ +bignum-size+ +limb-size+) "bignum-mem"))
+         (bignum (irc-tag-general (irc-skip-general-header mem "bignum") "bignum")))
+    (irc-intrinsic-call-or-invoke "cc_initialize_bignum" (list mem slength))
+    (set-bignum-limb limb bignum 0)
+    bignum))
 
 (defun irc-untag-base-char (t* &optional (label "base-char"))
   ;; convert to word first to avoid losing bits by truncation before we shift.

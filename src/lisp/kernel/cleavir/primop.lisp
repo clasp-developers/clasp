@@ -703,10 +703,8 @@
          (after-block (cmp:irc-basic-block-create "after"))
          (_1 (cmp:irc-cond-br overflowp overflow-block no-overflow-block))
          (_2 (cmp:irc-begin-block overflow-block))
-         (big (%intrinsic-invoke-if-landing-pad-or-call
-               "cc_overflowed_signed_bignum"
-               (list (cmp:irc-extract-value r '(0)))))
-         ;; Necessary because invoke interposes a block.
+         (big (cmp:irc-overflowed-signed-bignum (cmp:irc-extract-value r '(0))))
+         ;; Necessary because irc-overflowed-signed-bignum may make a new block.
          (bigblock (cmp:irc-get-insert-block))
          (_3 (cmp:irc-br after-block))
          (_4 (cmp:irc-begin-block no-overflow-block))

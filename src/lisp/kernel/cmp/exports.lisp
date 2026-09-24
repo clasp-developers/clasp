@@ -283,9 +283,11 @@
           irc-rack-stamp
           irc-wrapped-stamp
           irc-derivable-stamp
+          irc-select
           irc-switch
           irc-add-case
           irc-tag-fixnum
+          irc-overflowed-signed-bignum
           irc-tag-base-char
           irc-untag-base-char
           irc-tag-character
