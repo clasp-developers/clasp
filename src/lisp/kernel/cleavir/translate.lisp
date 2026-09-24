@@ -378,13 +378,6 @@ function-or-placeholder - the llvm function or a placeholder for
         (cmp:irc-phi-add-incoming phi hedp hedb)
         (out phi (bir:output inst))))))
 
-#+(or)
-(defmethod translate-conditional-test ((instruction cc-bmir:headerq) next)
-  (cmp:compile-header-check
-   (cc-bmir:info instruction)
-   (in (first (bir:inputs instruction)))
-   (first next) (second next)))
-
 (defmethod translate-simple-instruction ((inst cc-vaslist:nendp) abi)
   (declare (ignore abi))
   (out (cmp:irc-icmp-ugt (cmp:irc-vaslist-nvals (in (bir:input inst)))

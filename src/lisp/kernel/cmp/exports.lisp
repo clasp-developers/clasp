@@ -377,7 +377,6 @@
           tag-check-cond
           header-check-cond
           compile-tag-check
-          compile-header-check
           general-entry-point-redirect-name
           get-or-declare-function-or-error
           ))
