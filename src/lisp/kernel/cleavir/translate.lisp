@@ -491,7 +491,7 @@ function-or-placeholder - the llvm function or a placeholder for
                   (%intrinsic-call (if blockp
                                        "cc_initialize_block_dynenv"
                                        "cc_initialize_tagbody_dynenv")
-                                   dynenv-space frame bufp)
+                                   (list dynenv-space frame bufp))
                   (cmp:post-alloch dynenv-space dynenv-space-size)
                   (new-de-stack dcons-space dynenv)
                   (out
