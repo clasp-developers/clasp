@@ -614,8 +614,6 @@ function-or-placeholder - the llvm function or a placeholder for
          (bufp (cmp:alloca cmp::%jmp-buf-tag% 1 "unwind-protect-buf"))
          (de-cons-mem (cmp:alloca-i8 cmp:+cons-size+ :alignment cmp:+alignment+
                                                      :label "upde-cons-mem"))
-         (de-cons (cmp:irc-tag-cons (cmp:irc-skip-cons-header de-cons-mem)
-                                    "upde-cons"))
          (upde-mem (cmp:alloca-i8 cmp:+unwind-protect-dynenv-size+
                                   :alignment cmp:+alignment+
                                   :label "unwind-protect-dynenv-mem"))
