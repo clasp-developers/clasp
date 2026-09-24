@@ -585,9 +585,7 @@ private:
 
 public:
   static DoubleFloat_sp create(double nm) {
-    auto v = gctools::GC<DoubleFloat_O>::allocate();
-    v->set(nm);
-    return v;
+    return gctools::GC<DoubleFloat_O>::allocate(nm);
   };
 
   static DoubleFloat_sp coerce(Number_sp x);
@@ -646,6 +644,7 @@ public:
   virtual Number_sp tanh_() const override;
   virtual Rational_sp as_rational_() const override;
   DoubleFloat_O() : _Value(0.0) {};
+  DoubleFloat_O(double nm) : _Value(nm) {};
 };
 
 template <> inline Float_sp Number_O::make_float(double_float_t x) { return DoubleFloat_O::create(x); }

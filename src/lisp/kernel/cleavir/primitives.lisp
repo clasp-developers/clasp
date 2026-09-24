@@ -304,6 +304,10 @@
           :void (list (list :i8* '(:captures ())))
           :will-return t
           :memory '(:none (:arg :write)))
+         (primitive         "cc_initialize_double"
+          :void (list (list :i8* '(:captures ())) :double-float)
+          :will-return t
+          :memory '(:none (:arg :write)))
          (primitive         "cc_initialize_closure"
           :void (list (list :i8* '(:captures ())) :t* :size_t)
           :will-return t

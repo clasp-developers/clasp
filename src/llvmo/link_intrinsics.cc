@@ -687,6 +687,10 @@ void cc_initialize_cons(unsigned char* cons) {
   gctools::ConsAllocator<gctools::RuntimeStage, core::Cons_O>::initialize((void*)cons);
 }
 
+void cc_initialize_double(void* box, double d) {
+  gctools::GC<core::DoubleFloat_O>::initialize(box, d);
+}
+
 // These entry point redirect functions are used as the XEP entries for
 // compiled functions that don't do anything interesting for a given arity
 // (like, they just signal an error). See generate-function-for-arity-p in

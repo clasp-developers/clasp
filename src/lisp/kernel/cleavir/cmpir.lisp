@@ -474,7 +474,10 @@ representing a tagged fixnum."
   (irc-typed-load %double%
                   (c++-field-ptr info.%boxed-double% t* :double label)))
 (defun irc-box-double-float (double &optional (label "double-float"))
-  (irc-intrinsic-call-or-invoke "to_object_double" (list double) label))
+  (let ((mem (alloch +double-float-size+ "double-float-mem")))
+    (irc-intrinsic-call-or-invoke "cc_initialize_double" (list mem double))
+    (post-alloch mem +double-float-size+)
+    (irc-tag-general (irc-skip-general-header mem "double-float") "double-float")))
 
 (defun irc-maybe-cast-integer-to-t* (val &optional (label "fixnum-to-t*"))
   "If it's a fixnum then cast it - otherwise just return it - it should already be a t*"
