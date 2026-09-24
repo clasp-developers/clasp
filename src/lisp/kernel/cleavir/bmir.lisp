@@ -1,15 +1,5 @@
 (in-package #:cc-bmir)
 
-(defclass fixnump (bir:one-input bir:conditional-test) ())
-(defclass consp (bir:one-input bir:conditional-test) ())
-(defclass characterp (bir:one-input bir:conditional-test) ())
-(defclass single-float-p (bir:one-input bir:conditional-test) ())
-(defclass generalp (bir:one-input bir:conditional-test) ())
-(defclass headerq (bir:one-input bir:conditional-test)
-  ((%info :initarg :info :reader info)))
-
-;;;
-
 ;;; This instruction represents a low-level representation change, such as a
 ;;; NOP, putting into or removing from a multiple value structure, or box
 ;;; related operations.

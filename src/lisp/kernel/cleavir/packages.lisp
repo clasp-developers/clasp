@@ -64,8 +64,6 @@
   (:nicknames #:cc-bmir)
   (:shadow #:characterp #:consp #:load #:variable #:load-time-value)
   (:local-nicknames (#:bir #:cleavir-bir))
-  (:export #:fixnump #:characterp #:consp #:single-float-p #:generalp
-           #:headerq #:info)
   (:export #:cast #:unboxed-constant-reference
            #:mtf #:append-values #:fixed-mv-call #:fixed-mv-local-call)
   (:export #:datum)

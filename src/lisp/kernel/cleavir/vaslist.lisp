@@ -140,8 +140,6 @@
   (let ((type (bir:test-ctype inst)))
     (or (eq type 'cons) (equal type '(cons t t)))))
 
-(defmethod use-ok-p ((inst cc-bmir:consp) (datum bir:datum)) t)
-
 ;; This arises e.g. from (null a-&rest-list).
 (defmethod use-ok-p ((inst bir:ifi) (datum bir:datum)) t)
 
@@ -250,8 +248,6 @@
     (bir:delete-thei use)
     (rewrite-use (bir:use input))))
 
-(defmethod rewrite-use ((use cc-bmir:consp))
-  (change-class use 'nendp))
 (defmethod rewrite-use ((use bir:typeq-test))
   (change-class use 'nendp))
 
