@@ -28,7 +28,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
         with:
           images: ghcr.io/clasp-developers/clasp
           tags: |
