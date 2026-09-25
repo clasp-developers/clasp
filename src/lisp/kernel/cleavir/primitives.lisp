@@ -119,6 +119,10 @@
          (primitive         "llvm.sadd.with.overflow.i64" :{i64.i1} (list :i64 :i64))
          (primitive         "llvm.ssub.with.overflow.i32" :{i32.i1} (list :i32 :i32))
          (primitive         "llvm.ssub.with.overflow.i64" :{i64.i1} (list :i64 :i64))
+         (primitive         "cc_mpn_cmp"
+          :i32 (list (list :i64* '(:captures ()))
+                (list :i64* '(:captures ())) :i64)
+          :memory '(:none (:arg :read)) :will-return t)
          (primitive         "llvm.ctpop.i64" :i64 (list :i64))
          (primitive         "llvm.fshl.i32" :i32 (list :i32 :i32 :i32))
          (primitive         "llvm.fshr.i32" :i32 (list :i32 :i32 :i32))

@@ -428,13 +428,17 @@ representing a tagged fixnum."
   ;; (If the int is too long, it truncates - don't think we ever do that, though)
   (irc-int-to-ptr (irc-shl int +fixnum-shift+ :nsw t) %t*% label))
 
-(defun irc-bignum-limb* (bignum index &optional (label "limb"))
-  (let ((limbs (c++-field-ptr info.%bignum% bignum :limbs)))
-    (irc-typed-gep %mp-limb% limbs (list index) label)))
+(defun irc-bignum-length* (bignum &optional (label "bignum-length"))
+  (c++-field-ptr info.%bignum% bignum :signed-length label))
+(defun irc-bignum-length (bignum &optional (label "bignum-length"))
+  (irc-typed-load %i64% (irc-bignum-length* bignum label) label))
 
+(defun irc-bignum-limbs (bignum &optional (label "limbs"))
+  (c++-field-ptr info.%bignum% bignum :limbs))
+(defun irc-bignum-limb* (bignum index &optional (label "limb"))
+  (irc-typed-gep %mp-limb% (irc-bignum-limbs bignum) (list index) label))
 (defun irc-bignum-limb (bignum index &optional (label "limb"))
   (irc-typed-load %mp-limb% (irc-bignum-limb* bignum index label) label))
-
 (defun set-bignum-limb (limb bignum index)
   (irc-store limb (irc-bignum-limb* bignum index)))
 

@@ -526,6 +526,12 @@ void cc_initialize_bignum(void* space, int64_t signed_length) {
   gctools::GC<core::Bignum_O>::initialize(space, signed_length);
 }
 
+// I don't know why this wrapper is necessary. LLVM JIT does not seem to be able
+// to find mpn_cmp directly.
+int cc_mpn_cmp(mp_limb_t* llimbs, mp_limb_t* rlimbs, mp_size_t len) {
+  return mpn_cmp(llimbs, rlimbs, len);
+}
+
 core::T_O* cc_variableCellValue(core::T_O* cell) {
   core::VariableCell_sp tcell = gctools::smart_ptr<core::VariableCell_O>((gc::Tagged)cell);
   return tcell->value().raw_();

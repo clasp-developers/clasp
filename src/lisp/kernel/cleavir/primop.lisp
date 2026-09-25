@@ -792,6 +792,121 @@
   (def-fixnum-compare core::two-arg-fixnum->  cmp:irc-icmp-sgt)
   (def-fixnum-compare core::two-arg-fixnum->= cmp:irc-icmp-sge))
 
+(deftprimop core::two-arg-integer-= (:object :object) (inst)
+  (let* ((i1 (in (first (bir:inputs inst))))
+         (i2 (in (second (bir:inputs inst))))
+         (initb  (cmp:irc-get-insert-block))
+         (not-eq (cmp:irc-basic-block-create "integer-=-not-eq"))
+         (bignum (cmp:irc-basic-block-create "integer-=-both-bignum"))
+         (size=  (cmp:irc-basic-block-create "integer-=-bignum-same-size"))
+         (mergeb (cmp:irc-basic-block-create "integer-=-merge"))
+         ;; first check for eqness. This covers fixnums, and also bignums
+         ;; that happen to be eq.
+         (eqp (cmp:irc-icmp-eq i1 i2 "integer-=-eq")))
+    (cmp:irc-cond-br eqp mergeb not-eq)
+    (cmp:irc-begin-block mergeb)
+    (let ((phi (cmp:irc-phi cmp:%i1% 4 "integer-=")))
+      (cmp:irc-phi-add-incoming phi (%i1 1) initb)
+      ;; if the integers aren't eq, they might be eql bignums.
+      ;; First, check that they're both bignums.
+      ;; Since this primop is only used when the arguments are proven to be
+      ;; integers, w just need to check for a general tag.
+      (cmp:irc-begin-block not-eq)
+      (let* ((big1 (cmp:tag-check-cond i1 cmp:+immediate-mask+ cmp:+general-tag+))
+             (big2 (cmp:tag-check-cond i2 cmp:+immediate-mask+ cmp:+general-tag+))
+             (both-big (cmp:irc-and big1 big2)))
+        (cmp:irc-phi-add-incoming phi (%i1 0) (cmp:irc-get-insert-block))
+        (cmp:irc-cond-br both-big bignum mergeb))
+      ;; They're both bignums. Now, to be eql they must have the same size.
+      (cmp:irc-begin-block bignum)
+      (let* ((L1 (cmp:irc-bignum-length i1))
+             (L2 (cmp:irc-bignum-length i2))
+             (L= (cmp:irc-icmp-eq L1 L2 "bignum-length-=")))
+        (cmp:irc-phi-add-incoming phi (%i1 0) (cmp:irc-get-insert-block))
+        (cmp:irc-cond-br L= size= mergeb)
+        ;; They're both bignums and of the same size, so for the final test
+        ;; we call into GMP.
+        (cmp:irc-begin-block size=)
+        (let* ((limbs1 (cmp:irc-bignum-limbs i1))
+               (limbs2 (cmp:irc-bignum-limbs i2))
+               (mpcmp (%intrinsic-call "cc_mpn_cmp" (list limbs1 limbs2 L1)
+                                       "bignum-="))
+               (= (cmp:irc-icmp-eq mpcmp (%i32 0) "bignum-=")))
+          (cmp:irc-phi-add-incoming phi = (cmp:irc-get-insert-block))
+          (cmp:irc-br mergeb)))
+      ;; all done.
+      (cmp:irc-begin-block mergeb)
+      phi)))
+
+(defun generate-integer-comparison (inst op strict-op)
+  (let* ((i1 (in (first (bir:inputs inst))))
+         (i2 (in (second (bir:inputs inst))))
+         (i1fixnump (cmp:tag-check-cond i1 cmp:+fixnum-mask+ cmp:+fixnum00-tag+))
+         (i2fixnump (cmp:tag-check-cond i2 cmp:+fixnum-mask+ cmp:+fixnum00-tag+))
+         (fix1    (cmp:irc-basic-block-create "fix1-cmp"))
+         (big1    (cmp:irc-basic-block-create "fix2-cmp"))
+         (fix-fix (cmp:irc-basic-block-create "fix-to-fix-cmp"))
+         (fix-big (cmp:irc-basic-block-create "fix-to-big-cmp"))
+         (big-fix (cmp:irc-basic-block-create "big-to-fix-cmp"))
+         (big-big (cmp:irc-basic-block-create "big-to-big-cmp"))
+         (big-gmp (cmp:irc-basic-block-create "big-to-big-gmp-cmp"))
+         (merge   (cmp:irc-basic-block-create "merge-cmp"))
+         (_ (progn (cmp:irc-cond-br i1fixnump fix1 big1)
+                   (cmp:irc-begin-block merge)))
+         (phi (cmp:irc-phi cmp:%i1% 5 "integer-cmp")))
+    (declare (ignore _))
+    (cmp:irc-begin-block fix1)
+    (cmp:irc-cond-br i2fixnump fix-fix fix-big)
+    (cmp:irc-begin-block big1)
+    (cmp:irc-cond-br i2fixnump big-fix big-big)
+    ;; fixnum fixnum comparison: just do the op
+    (cmp:irc-begin-block fix-fix)
+    (cmp:irc-phi-add-incoming phi (funcall op i1 i2) (cmp:irc-get-insert-block))
+    (cmp:irc-br merge)
+    ;; fixnum bignum: we know that all positive bignums are larger than all fixnums
+    ;; and all negative bignums are smaller than all fixnums, so we only need to
+    ;; compare the bignum length.
+    ;; we can use the "strict" op (< instead of <=, etc.) because we know that
+    ;; the length of a bignum is never zero.
+    (cmp:irc-begin-block fix-big)
+    (let ((len (cmp:irc-bignum-length i2)))
+      (cmp:irc-phi-add-incoming phi (funcall strict-op (%i64 0) len) fix-big))
+    (cmp:irc-br merge)
+    ;; bignum fixnum: similar
+    (cmp:irc-begin-block big-fix)
+    (let ((len (cmp:irc-bignum-length i1)))
+      (cmp:irc-phi-add-incoming phi (funcall strict-op len (%i64 0)) big-fix))
+    (cmp:irc-br merge)
+    ;; bignum bignum: check the lengths first. If they're the same,
+    ;; we have to call out to GMP to actually look at the limbs.
+    ;; If they're not the same we can use that result directly.
+    ;; e.g., if we're testing <, and length1 /= length2, return length1 < length2.
+    (cmp:irc-begin-block big-big)
+    (let* ((L1 (cmp:irc-bignum-length i1))
+           (L2 (cmp:irc-bignum-length i2))
+           (size-eq (cmp:irc-icmp-eq L1 L2 "bignum-length-=")))
+      (cmp:irc-phi-add-incoming phi (funcall strict-op L1 L2)
+                                (cmp:irc-get-insert-block))
+      (cmp:irc-cond-br size-eq big-gmp merge)
+      (cmp:irc-begin-block big-gmp)
+      (let* ((limbs1 (cmp:irc-bignum-limbs i1))
+             (limbs2 (cmp:irc-bignum-limbs i2))
+             (mpcmp (%intrinsic-call "cc_mpn_cmp" (list limbs1 limbs2 L1)))
+             (cmp (funcall op mpcmp (%i32 0))))
+        (cmp:irc-phi-add-incoming phi cmp (cmp:irc-get-insert-block))
+        (cmp:irc-br merge)))
+    ;; all done.
+    (cmp:irc-begin-block merge)
+    phi))
+
+(macrolet ((def-integer-compare (name op &optional (strict-op op))
+             `(deftprimop ,name (:object :object) (inst)
+                (generate-integer-comparison inst #',op #',strict-op))))
+  (def-integer-compare core::two-arg-integer-<  cmp:irc-icmp-slt)
+  (def-integer-compare core::two-arg-integer-<= cmp:irc-icmp-sle cmp:irc-icmp-slt)
+  (def-integer-compare core::two-arg-integer->  cmp:irc-icmp-sgt)
+  (def-integer-compare core::two-arg-integer->= cmp:irc-icmp-sge cmp:irc-icmp-sgt))
+
 (defvprimop (core::fixnum-positive-logcount :flags (:flushable))
     ((:utfixnum) :fixnum) (inst)
   (let ((arg (in (first (bir:inputs inst)))))

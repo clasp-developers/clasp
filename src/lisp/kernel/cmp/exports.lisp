@@ -287,6 +287,7 @@
           irc-switch
           irc-add-case
           irc-tag-fixnum
+          irc-bignum-length irc-bignum-limbs irc-bignum-limb
           irc-overflowed-signed-bignum
           irc-tag-base-char
           irc-untag-base-char

@@ -220,6 +220,12 @@
 (deftransform core:two-arg->  core::two-arg-fixnum->  fixnum fixnum)
 (deftransform core:two-arg->= core::two-arg-fixnum->= fixnum fixnum)
 
+(deftransform core:two-arg-=  core::two-arg-integer-=  integer integer)
+(deftransform core:two-arg-<  core::two-arg-integer-<  integer integer)
+(deftransform core:two-arg-<= core::two-arg-integer-<= integer integer)
+(deftransform core:two-arg->  core::two-arg-integer->  integer integer)
+(deftransform core:two-arg->= core::two-arg-integer->= integer integer)
+
 (deftransform truncate core::sf-truncate
   (single-float #.(float most-negative-fixnum 1f0)
                 #.(float most-positive-fixnum 1f0))
