@@ -4403,23 +4403,6 @@ CL_DEFUN void llvm_sys__remove_useless_global_ctors(llvmo::Module_sp module) {
   }
 }
 
-void removeAlwaysInlineFunctions(llvm::Module* M) {
-  // Silently remove always-inline functions from the module
-  std::vector<llvm::Function*> inline_funcs;
-  for (auto& F : *M) {
-    if (F.hasFnAttribute(llvm::Attribute::AlwaysInline)) {
-      inline_funcs.push_back(&F);
-    }
-  }
-  for (auto f : inline_funcs) {
-    //    printf("%s:%d Erasing function: %s\n", __FILE__, __LINE__, f->getName().str().c_str());
-    f->eraseFromParent();
-  }
-}
-
-DOCGROUP(clasp);
-CL_DEFUN void llvm_sys__removeAlwaysInlineFunctions(llvm::Module* module) { removeAlwaysInlineFunctions(module); }
-
 DOCGROUP(clasp);
 CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   llvm::LoopAnalysisManager LAM;
@@ -4428,9 +4411,6 @@ CL_DEFUN void llvm_sys__optimizeModule(llvm::Module* module, int level) {
   llvm::ModuleAnalysisManager MAM;
 
   llvm::PipelineTuningOptions pipeline_opts;
-#if LLVM_VERSION_MAJOR > 15
-  pipeline_opts.InlinerThreshold = 0;
-#endif
 
   llvm::PassBuilder PB(NULL, pipeline_opts);
 
