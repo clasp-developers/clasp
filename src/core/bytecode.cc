@@ -512,12 +512,17 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       bool aokp = false;
       T_sp unknown_keys = nil<T_O>();
       vm._stackPointer = sp;
-      SimpleVector_sp argstemp = SimpleVector_O::make(key_count, unbound<T_O>());
+      if ((lcc_nargs > more_start) && (((lcc_nargs - more_start) % 2) != 0)) {
+        T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
+        throwOddKeywordsError(tclosure);
+      }
+      // The parameter slots are themselves the destination, so no scratch vector
+      // is needed. stackref 0 is the most recently pushed, so slot n is key n.
+      for (size_t i = 0; i < key_count; ++i)
+        vm.push(sp, unbound<T_O>().raw_());
+      // The slots are live roots now, so the GC scanner must see them.
+      vm._stackPointer = sp;
       if (lcc_nargs > more_start) {
-        if (((lcc_nargs - more_start) % 2) != 0) {
-          T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
-          throwOddKeywordsError(tclosure);
-        }
         // We grab keyword arguments from the end to the beginning.
         // This means that earlier arguments are put in their variables
         // last, matching the CL semantics.
@@ -536,8 +541,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
             T_O* ckey = literals[key_id + key_literal_start];
             if (key == ckey) {
               valid_key_p = true;
-              T_sp value((gctools::Tagged)(lcc_args[arg_index]));
-              (*argstemp)[key_id] = value;
+              *vm.stackref(sp, key_id) = lcc_args[arg_index];
               break;
             }
           }
@@ -550,13 +554,6 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       if (unknown_keys.notnilp() && !aokp) {
         T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
         throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
-      }
-      // Finally, push keys to the stack.
-      for (size_t i = 0; i < key_count; ++i) {
-        size_t key_id = key_count - i - 1;
-        T_sp key((gctools::Tagged)literals[key_id + key_literal_start]);
-        T_sp value = (*argstemp)[key_id];
-        vm.push(sp, value.raw_());
       }
       pc++;
       break;
@@ -1299,12 +1296,16 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     bool aokp = false;
     T_sp unknown_keys = nil<T_O>();
     vm._stackPointer = sp;
-    SimpleVector_sp argstemp = SimpleVector_O::make(key_count, unbound<T_O>());
+    if ((lcc_nargs > more_start) && (((lcc_nargs - more_start) % 2) != 0)) {
+      T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
+      throwOddKeywordsError(tclosure);
+    }
+    // See the short-operand form above; the parameter slots are the destination.
+    for (size_t i = 0; i < key_count; ++i)
+      vm.push(sp, unbound<T_O>().raw_());
+    // The slots are live roots now, so the GC scanner must see them.
+    vm._stackPointer = sp;
     if (lcc_nargs > more_start) {
-      if (((lcc_nargs - more_start) % 2) != 0) {
-        T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
-        throwOddKeywordsError(tclosure);
-      }
       // KLUDGE: We use a signed type so that if more_start is zero we don't
       // wrap arg_index around. There's probably a cleverer solution.
       ptrdiff_t arg_index;
@@ -1320,8 +1321,7 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
           T_O* ckey = literals[key_id + key_literal_start];
           if (key == ckey) {
             valid_key_p = true;
-            T_sp value((gctools::Tagged)(lcc_args[arg_index]));
-            (*argstemp)[key_id] = value;
+            *vm.stackref(sp, key_id) = lcc_args[arg_index];
             break;
           }
         }
@@ -1335,8 +1335,6 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
       T_sp tclosure((gctools::Tagged)gctools::tag_general(closure));
       throwUnrecognizedKeywordArgumentError(tclosure, unknown_keys);
     }
-    for (size_t i = 0; i < key_count; ++i)
-      vm.push(sp, (*argstemp)[key_count - i - 1].raw_());
     pc += 7;
     break;
   }
