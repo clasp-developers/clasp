@@ -73,6 +73,7 @@
 
          (primitive-unwinds "cc_error_type_error" :void (list :t* :t*) :does-not-return t)
          (primitive-unwinds "cc_error_array_out_of_bounds" :void (list :t* :t* :t*) :does-not-return t)
+         (primitive-unwinds "cc_badIndexError" :void (list :t* :size_t :t* :size_t) :does-not-return t)
          (primitive-unwinds "cc_etypecase_error" :void (list :t* :t*) :does-not-return t)
          
          (primitive-unwinds "gdb" :void nil)
@@ -205,7 +206,6 @@
          (primitive         "cm_vset" :return-type (list :t* :t* :t*))
          (primitive         "cc_ensure_valid_object" :t* (list :t*))
          (primitive         "cc_getPointer" :i8* (list (list :t* 'llvm-sys:attribute-read-only)))
-         (primitive-unwinds "cc_checkBound" :size_t (list (list :t* 'llvm-sys:attribute-read-only) :size_t :t*))
 
          (primitive "cc_verify_tag" :void (list :size_t :t* :size_t))
 

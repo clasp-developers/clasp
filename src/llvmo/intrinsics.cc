@@ -519,19 +519,16 @@ void cc_rewind_vaslist(vaslist va_args, void** register_save_areaP)
 }
 #endif
 
-size_t cc_checkBound(core::T_O* array, size_t bound, core::T_O* index) {
-  (void)array; // FIXME
+void cc_badIndexError(core::T_O* array,
+                      size_t axis, core::T_O* index, size_t dimension) {
+  core::T_sp tarray((gctools::Tagged)array);
   core::T_sp tindex((gctools::Tagged)index);
-  if (tindex.fixnump()) {
-    core::Fixnum findex = tindex.unsafe_fixnum();
-    if ((0 <= findex) && (findex < bound))
-      return findex;
-    else {
-      // FIXME: use core::badIndexError instead
-      TYPE_ERROR(tindex, Cons_O::createList(cl::_sym_integer, core::make_fixnum(0), Cons_O::createList(core::make_fixnum(bound))));
-    }
-  } else
-    TYPE_ERROR(tindex, cl::_sym_fixnum);
+  ERROR(core::_sym_array_out_of_bounds,
+        core::lisp_createList(kw::_sym_expected_type,
+                              core::lisp_createList(cl::_sym_integer, clasp_make_fixnum(0),
+                                                    core::lisp_createList(clasp_make_fixnum(dimension))),
+                              kw::_sym_datum, tindex, kw::_sym_object, tarray,
+                              kw::_sym_axis, clasp_make_fixnum(axis)));
 }
 
 #if 0
