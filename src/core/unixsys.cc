@@ -150,8 +150,10 @@ static void from_list_to_execve_argument(T_sp l, char*** environp) {
     cl_index l = ss.size();
     environ[j] = (char*)malloc(l + 1);
     memcpy(environ[j], ss.c_str(), l);
+    environ[j][l] = 0; // terminate THIS string before advancing -- the previous
+                       // order (`j++; environ[j][l]=0;`) wrote into the next,
+                       // uninitialized slot's pointer = wild write + missing NUL.
     j++;
-    environ[j][l] = 0;
   }
   environ[j] = 0;
   if (environp)
