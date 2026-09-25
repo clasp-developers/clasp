@@ -37,6 +37,7 @@ THE SOFTWARE.
 */
 
 #include <clasp/core/foundation.h>
+#include <clasp/gctools/park.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -294,7 +295,8 @@ The status can be passed to //core:wifexited// and //core:wifsignaled//. )")
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__wait() {
   int status;
-  pid_t p = wait(&status);
+  // Park: wait() blocks until a child exits, which may be never.
+  pid_t p = BEGIN_PARK { return wait(&status); } END_PARK;
   return Values(make_fixnum(p), make_fixnum(status));
 };
 
@@ -1707,7 +1709,9 @@ DOCGROUP(clasp);
 CL_DEFUN T_mv ext__system(String_sp cmd) {
   ASSERT(cl__stringp(cmd));
   string command = cmd->get_std_string();
-  int ret = system(command.c_str());
+  // Park: system() blocks for an unbounded time, so the thread must be GC-safe
+  // and marked blocking, which is what lets an interrupt wake it with SIGCONT.
+  int ret = BEGIN_PARK { return system(command.c_str()); } END_PARK;
   if (ret == 0) {
     return Values(core::make_fixnum(0));
   } else {
@@ -1828,7 +1832,7 @@ CL_DEFUN T_mv ext__vfork_execvp(List_sp call_and_arguments, T_sp return_stream) 
       while (b_done == false) {
         errno = 0;
 
-        wait_ret = wait(&status);
+        wait_ret = BEGIN_PARK { return wait(&status); } END_PARK;
 
         if (WIFEXITED(status)) {
           child_exit_status = WEXITSTATUS(status);
@@ -1946,7 +1950,7 @@ CL_DEFUN T_mv ext__fork_execvp(List_sp call_and_arguments, T_sp return_stream) {
     } else {
       // Parent
       int status;
-      pid_t wait_ret = wait(&status);
+      pid_t wait_ret = BEGIN_PARK { return wait(&status); } END_PARK;
       // Clean up args
       for (int i(0); i < execvp_args.size() - 1; ++i)
         free((void*)execvp_args[i]);
@@ -2003,7 +2007,10 @@ CL_DEFUN T_mv core__select(int nfds, FdSet_sp readfds, FdSet_sp writefds, FdSet_
   struct timeval timeout;
   timeout.tv_sec = seconds;
   timeout.tv_usec = microseconds;
-  int num = select(nfds, &readfds->_fd_set, &writefds->_fd_set, &errorfds->_fd_set, &timeout);
+  // Park: select() blocks for up to the caller's timeout.
+  int num = BEGIN_PARK {
+    return select(nfds, &readfds->_fd_set, &writefds->_fd_set, &errorfds->_fd_set, &timeout);
+  } END_PARK;
   if (num < 0) {
     return Values(make_fixnum(num), make_fixnum(errno));
   }
