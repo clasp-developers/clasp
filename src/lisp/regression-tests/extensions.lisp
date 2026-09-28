@@ -1,5 +1,11 @@
 (in-package #:clasp-tests)
 
+(test-true profiler-executable-range-merging
+           (ext:test-profile-executable-ranges))
+
+(test-true profiler-walk-stops
+           (ext:test-profile-walk-stops))
+
 (test-true clip-failure
            (ext::source-location-p (first (ext:source-location '(setf find-class) :function))))
 

@@ -22,6 +22,7 @@
 #include <clasp/core/commandLineOptions.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/mpPackage.h>
+#include <clasp/core/sampling_profiler.h>
 #include <clasp/llvmo/code.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
 #include <clasp/llvmo/jit.h>
@@ -260,8 +261,17 @@ public:
           const auto& AG = KV.first;
           auto& Seg = KV.second;
           auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
-          if (Prot & sys::Memory::MF_EXEC)
+          if (Prot & sys::Memory::MF_EXEC) {
             execMemory = (void*)Seg.WorkingMem;
+            // Publish executable addresses before finalization can run JIT code,
+            // so profiler stack walks recognize newly generated native frames.
+            // BL.apply() has advanced Seg.Addr to the segment end. In this
+            // in-process allocator, WorkingMem retains the execution base.
+            const uintptr_t lo = reinterpret_cast<uintptr_t>(Seg.WorkingMem);
+            const uintptr_t size = Seg.ContentSize + Seg.ZeroFillSize;
+            if (size != 0)
+              core::sampling_profiler_add_executable_range(lo, lo + size);
+          }
           ++numSegments;
         }
         if (auto DeallocActions = runFinalizeActions(BL.getGraph().allocActions())) {

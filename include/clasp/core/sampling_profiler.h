@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <clasp/core/profilerWalkStop.h>
 
 namespace core {
 
@@ -32,7 +33,10 @@ struct SampleHeader {
   uint64_t vm_pc;          // bytecode VM's _pc at sample time, or 0
   uint32_t thread_id;      // Linux tid / macOS port id (truncated)
   uint32_t depth;          // number of trailing PCs (0 if walk failed)
+  profiler_detail::WalkStop walk_stop;
 };
+
+static_assert(sizeof(SampleHeader) == 56, "SampleHeader layout changed");
 
 // Per-allocation sample header. An AllocationSampleHeader is followed
 // immediately by `depth` native PCs.
@@ -48,9 +52,10 @@ struct AllocationSampleHeader {
   uint32_t depth;
   uint32_t stamp_wtag;        // preserve the allocator's raw unshifted value
   uint32_t flags;             // allocation-policy flags; initially zero
+  profiler_detail::WalkStop walk_stop;
 };
 
-static_assert(sizeof(AllocationSampleHeader) == 48,
+static_assert(sizeof(AllocationSampleHeader) == 80,
               "AllocationSampleHeader layout changed");
 
 // Aggregated symbolicated sample: one entry per unique (thread_id, frames)

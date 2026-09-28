@@ -831,15 +831,17 @@ palettes, your value is honored and a warning is printed to
              (imagewidth (opts-image-width opts))
              (frameheight (opts-frame-height opts))
              (fontsize (opts-font-size opts))
-             (ypad1 (* fontsize 3))
+             (subtitle-lines (unless (zerop (length (opts-subtitle opts)))
+                               (split-string (opts-subtitle opts) #\Newline)))
+             ;; Reserve subtitle space above the frames in both orientations.
+             (ypad1 (+ (* fontsize 3)
+                       (* fontsize 2 (length subtitle-lines))))
              (ypad2 (+ (* fontsize 2) 10))
-             (ypad3 (* fontsize 2))
              (xpad 10)
              (framepad 1)
              (widthpertime (/ (- imagewidth (* 2 xpad)) (float timemax)))
              (minwidth-time (/ (opts-min-width opts) widthpertime))
-             (depthmax 0)
-             (has-subtitle (plusp (length (opts-subtitle opts)))))
+             (depthmax 0))
 
         ;; Prune narrow nodes and record depthmax.
         (let ((to-delete '()))
@@ -851,8 +853,7 @@ palettes, your value is honored and a warning is printed to
                    nodes)
           (dolist (id to-delete) (remhash id nodes)))
 
-        (let ((imageheight (+ (* (1+ depthmax) frameheight) ypad1 ypad2
-                              (if has-subtitle ypad3 0))))
+        (let ((imageheight (+ (* (1+ depthmax) frameheight) ypad1 ypad2)))
           (emit-svg-header output imagewidth imageheight opts)
 
           ;; <defs> for background gradient + the interactive JS.
@@ -874,11 +875,12 @@ palettes, your value is honored and a warning is printed to
                      (floor imagewidth 2) (* fontsize 2)
                      (xml-escape (opts-title opts))
                      :anchor "middle")
-          (when has-subtitle
-            (emit-text output "rgb(160,160,160)" (opts-font-type opts) fontsize
-                       (floor imagewidth 2) (* fontsize 4)
-                       (xml-escape (opts-subtitle opts))
-                       :anchor "middle"))
+          (loop for line in subtitle-lines
+                for baseline from (* fontsize 4) by (* fontsize 2)
+                do (emit-text output "rgb(160,160,160)" (opts-font-type opts) fontsize
+                              (floor imagewidth 2) baseline
+                              (xml-escape line)
+                              :anchor "middle"))
 
           ;; Details / Reset Zoom / Search / Matched labels.
           (emit-text output "rgb(0,0,0)" (opts-font-type opts) fontsize
@@ -1101,10 +1103,12 @@ Returns the new string, or STRING unchanged if PATTERN is not found."
             until (equal result previous)
             finally (return result))))
 
-  (defun snapshot (path &key (duration *snapshot-duration*))
+  (defun snapshot (path &key (duration *snapshot-duration*) (walk-stop-report nil))
     "Run DURATION seconds of sampling profiling on a background thread
-and write the flame graph SVG to PATH. Returns T if a snapshot was
-spawned, NIL if the profiler was already running."
+and write the flame graph SVG to PATH. Walk-stop counts are reported unless
+the only reason is a nonadvancing frame. Set :WALK-STOP-REPORT T to also write
+a detailed .stops.sexp companion file, retaining all stop reasons.
+Returns T if a snapshot was spawned, NIL if the profiler was already running."
     (setf path (expand-path-variables path))
     (when (ext:profile-running-p)
       (format *error-output* "flamegraph: profiler already running~%")
@@ -1118,18 +1122,37 @@ spawned, NIL if the profiler was already running."
                     (progn
                       (sleep duration)
                       (ext:profile-stop)
-                      (with-open-file (out path :direction :output
-                                                :if-exists :supersede
-                                                :if-does-not-exist :create)
-                        (flamegraph :data (ext:profile-symbolicated-samples)
-                                    :output out
-                                    :title (format nil "clasp ~A (~Ds)"
-                                                   (core:getpid) duration)))
-                      (core:chmod path #o664)
-                      (ext:profile-reset)
-                      (format *error-output* "flamegraph: wrote ~A~%" path))
-                 ;; Make sure the profiler is stopped even on non-local exit.
-                 (when (ext:profile-running-p) (ext:profile-stop)))
+                      (let ((range-annotation
+                              (ext::profile-executable-range-annotation)))
+                        (multiple-value-bind (stop-annotation stop-path)
+                            (ext::write-profile-walk-stop-report
+                             path :write-report walk-stop-report)
+                          (cond (stop-path
+                                 (format *error-output*
+                                         "flamegraph: wrote walk-stop report ~A~@[ | ~a~]~%"
+                                         stop-path stop-annotation))
+                                (stop-annotation
+                                 (format *error-output* "flamegraph: ~a~%"
+                                         stop-annotation)))
+                          (let ((annotation (format nil "~a~@[~%~a~]"
+                                                    range-annotation
+                                                    stop-annotation)))
+                            (with-open-file (out path :direction :output
+                                                      :if-exists :supersede
+                                                      :if-does-not-exist :create)
+                              (flamegraph :data (ext:profile-symbolicated-samples)
+                                          :output out
+                                          :title (format nil "clasp ~A (~Ds)"
+                                                         (core:getpid) duration)
+                                          :subtitle annotation
+                                          :notes annotation)))
+                          (core:chmod path #o664)
+                          (format *error-output* "flamegraph: wrote ~A | ~a~%"
+                                  path range-annotation))))
+                 ;; Reset even if report generation or SVG output fails.
+                 (unwind-protect
+                      (when (ext:profile-running-p) (ext:profile-stop))
+                   (ext:profile-reset)))
                (format *error-output*
                        "flamegraph: profile-start failed (already running?)~%"))
          (error (c)
