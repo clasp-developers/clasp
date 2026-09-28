@@ -604,8 +604,8 @@
                                  "preround" t t)
             (%size_t +bit-array-word-bits+)
             :label "nwords"))
-         (nbytes (cmp:irc-udiv nwords (%size_t cmp:+bit-array-word-bytes+)
-                               :label "nbytes" :exact t)))
+         (nbytes (cmp:irc-mul nwords (%size_t cmp:+bit-array-word-bytes+)
+                              :label "nbytes" :nsw t :nuw t)))
     nbytes))
 
 (defun new-vector-data-size (element-type nelems)
