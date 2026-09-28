@@ -172,7 +172,9 @@ uint8_t* ExecutableArena::allocate() {
                    PROT_READ | PROT_WRITE | PROT_EXEC,
                    MAP_PRIVATE | MAP_ANONYMOUS | MAP_JIT, -1, 0);
     if (p == MAP_FAILED) {
+#if 0
       perror("[trampoline-arena] mmap");
+#endif
       abort();
     }
     _current_page = (uint8_t*)p;
@@ -247,11 +249,15 @@ public:
     std::lock_guard<std::mutex> g(_init_lock);
     if (_initialized.load(std::memory_order_relaxed)) return true;
     if (!tramp_bytes || tramp_size == 0) {
+#if 0
       fprintf(stderr, "[trampoline-arena] %s install_template: invalid tramp args\n", _label);
+#endif
       return false;
     }
     if (!cie_bytes || cie_len == 0 || !fde_bytes || fde_len == 0) {
+#if 0
       fprintf(stderr, "[trampoline-arena] %s install_template: invalid CIE/FDE args\n", _label);
+#endif
       return false;
     }
     _tramp_size = tramp_size;
@@ -259,6 +265,7 @@ public:
                                  cie_bytes,   cie_len,
                                  fde_bytes,   fde_len);
     _side_table = new TrampolineSideTable();
+#if 0
     fprintf(stderr,
             "[trampoline-arena] installed %s template: code=%zu CIE=%zu FDE=%zu\n",
             _label, tramp_size, cie_len, fde_len);
@@ -270,6 +277,7 @@ public:
     for (size_t i = 0; i < fde_len; ++i) fprintf(stderr, " %02x", fde_bytes[i]);
     fprintf(stderr, "\n");
     fflush(stderr);
+#endif
     _initialized.store(true, std::memory_order_release);
     return true;
   }
@@ -280,7 +288,9 @@ public:
 
   core::Pointer_sp compile(const std::string& name) {
     if (!is_initialized()) {
+#if 0
       fprintf(stderr, "[trampoline-arena] %s compile before init\n", _label);
+#endif
       abort();
     }
     uint8_t* slot = _arena->allocate();
@@ -301,12 +311,14 @@ public:
       gdb_jit_register(elf_buf, elf_sz);
     }
 #endif
+#if 0
     int n = _debug_count.fetch_add(1);
     if (n < 3) {
       fprintf(stderr, "[trampoline-arena] %s compile #%d '%s' -> %p\n",
               _label, n, name.c_str(), slot);
       fflush(stderr);
     }
+#endif
     return core::Pointer_O::create((void*)slot);
   }
 
@@ -321,13 +333,15 @@ public:
   }
 
 private:
-  const char*           _label;
+  [[maybe_unused]] const char* _label;
   std::atomic<bool>     _initialized{false};
   std::mutex            _init_lock;
   size_t                _tramp_size = 0;
   ExecutableArena*      _arena = nullptr;
   TrampolineSideTable*  _side_table = nullptr;
+#if 0
   std::atomic<int>      _debug_count{0};
+#endif
 };
 
 TrampolineArenaInstance g_bytecode("bytecode trampoline");

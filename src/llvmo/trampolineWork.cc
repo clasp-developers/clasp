@@ -87,9 +87,11 @@ extern "C" gctools::return_type (*g_gf_dispatch_entry_point_n)(core::T_O*, size_
 
 enum class TrampolineKind { Bytecode, GF };
 
+#if 0
 static const char* kind_label(TrampolineKind k) {
   return k == TrampolineKind::Bytecode ? "bytecode" : "GF";
 }
+#endif
 
 // One-time arena initialization for either kind. Copies the hardcoded
 // machine-code template, patches the call-target address, and installs
@@ -104,6 +106,7 @@ static bool ensure_trampoline_arena_initialized(TrampolineKind kind) {
   if (s == 2) return false;
 
 #ifdef __APPLE__
+#if 0
   static std::atomic<bool> warned_bytecode{false};
   static std::atomic<bool> warned_gf{false};
   std::atomic<bool>& warned = (kind == TrampolineKind::GF) ? warned_gf : warned_bytecode;
@@ -117,6 +120,7 @@ static bool ensure_trampoline_arena_initialized(TrampolineKind kind) {
                 : "default_bytecode_trampoline");
     fflush(stderr);
   }
+#endif
   state.store(2, std::memory_order_release);
   return false;
 #endif
@@ -166,12 +170,16 @@ static bool ensure_trampoline_arena_initialized(TrampolineKind kind) {
                                            cie, cie_size,
                                            fde_data, fde_sz);
   if (!installed) {
+#if 0
     fprintf(stderr, "[trampoline-arena] %s install failed\n", kind_label(kind));
+#endif
     state.store(2, std::memory_order_release);
     return false;
   }
+#if 0
   fprintf(stderr, "[trampoline-arena] %s template installed, target %p\n",
           kind_label(kind), (void*)target_addr);
+#endif
   state.store(1, std::memory_order_release);
   return true;
 #elif defined(__aarch64__)
@@ -210,17 +218,23 @@ static bool ensure_trampoline_arena_initialized(TrampolineKind kind) {
                                            cie, cie_size,
                                            fde_data, fde_sz);
   if (!installed) {
+#if 0
     fprintf(stderr, "[trampoline-arena] %s install failed\n", kind_label(kind));
+#endif
     state.store(2, std::memory_order_release);
     return false;
   }
+#if 0
   fprintf(stderr, "[trampoline-arena] %s template installed, target %p\n",
           kind_label(kind), (void*)target_addr);
+#endif
   state.store(1, std::memory_order_release);
   return true;
 #else
+#if 0
   fprintf(stderr, "[trampoline-arena] %s: no hardcoded template for this architecture\n",
           kind_label(kind));
+#endif
   state.store(2, std::memory_order_release);
   return false;
 #endif
@@ -296,7 +310,9 @@ CL_DEFUN core::Pointer_mv cmp__compile_trampoline(core::T_sp tname) {
 // Re-attach an arena trampoline to every BytecodeSimpleFun reachable from the
 // snapshot. Called after snapshot_load completes its fixup pass.
 void arena_post_load_regenerate_trampolines() {
+#if 0
   size_t n_regen = 0;
+#endif
   core::List_sp modules = _lisp->_Roots._AllBytecodeModules.load(std::memory_order_relaxed);
   for (auto mods : modules) {
     core::BytecodeModule_sp module = gc::As_assert<core::BytecodeModule_sp>(oCar(mods));
@@ -307,21 +323,29 @@ void arena_post_load_regenerate_trampolines() {
         core::BytecodeSimpleFun_sp fun = gc::As_unsafe<core::BytecodeSimpleFun_sp>(info);
         core::Pointer_sp tramp = cmp__compile_trampoline(fun->functionName());
         fun->set_trampoline(tramp);
+#if 0
         ++n_regen;
+#endif
       }
     }
   }
+#if 0
   size_t n_gf = 0;
+#endif
   core::List_sp gfs = _lisp->_Roots._AllGFBytecodeFuns.load(std::memory_order_relaxed);
   for (auto gf_cons : gfs) {
     core::GFBytecodeSimpleFun_sp gf = gc::As_assert<core::GFBytecodeSimpleFun_sp>(oCar(gf_cons));
     core::Pointer_sp tramp = cmp__compile_gf_trampoline(gf->functionName());
     gf->_EntryPoints._EntryPoints[0] = (core::ClaspXepAnonymousFunction)tramp->ptr();
+#if 0
     ++n_gf;
+#endif
   }
+#if 0
   fprintf(stderr, "[trampoline-arena] post-load regenerated %zu bytecode + %zu gf trampolines\n",
           n_regen, n_gf);
   fflush(stderr);
+#endif
 }
 
 }; // namespace llvmo
