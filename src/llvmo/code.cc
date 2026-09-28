@@ -46,11 +46,12 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
   // On Apple Silicon we turn off MEM_JIT memory write protect for this thread
   pthread_jit_write_protect_np(false);
 #else
-  size_t PageSize = getpagesize();
   auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
   for (auto& KV : BL.segments()) {
     auto& Seg = KV.second;
-    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize);
+    // LLVM rounds the address range to page boundaries. Pre-rounding the
+    // length with an unaligned start can include an unrelated extra page.
+    uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
     sys::Memory::protectMappedMemory(MB, rwxProt);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Temporarily Applying Protections (RWX/%x) to range %p - %p\n", __FILE__, __LINE__,
@@ -60,7 +61,6 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
 }
 
 void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
-  size_t PageSize = getpagesize();
 #if defined(CLASP_APPLE_SILICON)
   pthread_jit_write_protect_np(true);
   for (auto& KV : BL.segments()) {
@@ -83,7 +83,9 @@ void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Applying Protections %s to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__,
                               ss.str().c_str(), Seg.WorkingMem, (Seg.WorkingMem + Seg.ContentSize + Seg.ZeroFillSize)));
 #endif
-    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize);
+    // Pass the exact interval; LLVM performs the page rounding. An extra
+    // page here could remove execute permission from neighboring JIT code.
+    uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
     if ((Prot & sys::Memory::MF_RWE_MASK) == sys::Memory::MF_READ) {
       Prot = (sys::Memory::ProtectionFlags)(sys::Memory::MF_READ | sys::Memory::MF_WRITE);
