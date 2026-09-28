@@ -617,7 +617,7 @@
            (ecase element-type
              ((t) 8)
              ((single-float) 4)
-             ((double-float) 4)
+             ((double-float) 8)
              ((base-char) 1)
              ((character) 4)
              ((ext:byte8 ext:integer8) 1)
