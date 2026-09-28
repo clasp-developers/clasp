@@ -20,6 +20,7 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/trampoline_arena.h>
+#include <clasp/gctools/stw.h>
 
 namespace llvmo {
 
@@ -477,16 +478,19 @@ CL_DEFUN size_t number_of_object_files() {
 CL_LISPIFY_NAME(total_memory_allocated_for_object_files);
 DOCGROUP(clasp);
 CL_DEFUN size_t total_memory_allocated_for_object_files() {
-  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
-  size_t count = 0;
-  size_t sz = 0;
-  while (cur.consp()) {
-    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
-    sz += ofi->_MemoryBuffer->getBufferSize();
-    count++;
-    cur = CONS_CDR(cur);
-  }
-  return sz;
+  // Linking publishes ObjectFiles before their buffers are installed. Do not
+  // race buffer replacement, and tolerate objects still awaiting materialization.
+  return gctools::call_with_stopped_world([]() -> size_t {
+    core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+    size_t sz = 0;
+    while (cur.consp()) {
+      ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
+      if (ofi->_MemoryBuffer)
+        sz += ofi->_MemoryBuffer->getBufferSize();
+      cur = CONS_CDR(cur);
+    }
+    return sz;
+  });
 }
 
 struct StackmapHeader {

@@ -36,6 +36,32 @@
 
 namespace llvmo {
 
+struct TrampolineMemoryStats {
+  size_t count = 0;
+  size_t mapped_bytes = 0;
+  size_t slot_bytes = 0;
+  size_t side_table_used_bytes = 0;
+  size_t side_table_capacity_bytes = 0;
+  size_t name_capacity_bytes = 0;
+  size_t gdb_jit_bytes = 0;
+  size_t gdb_jit_object_bytes = 0;
+  size_t gdb_jit_entries = 0;
+  size_t auxiliary_capacity_bytes = 0;
+};
+
+// Native memory retained by both trampoline arenas. Counts requested storage,
+// not RSS or allocator overhead; excludes libgcc/libunwind internal allocations
+// and perf-map stdio buffers. slot_bytes is contained in mapped_bytes, and
+// side_table_used_bytes is contained in side_table_capacity_bytes. Names count
+// only heap capacity (including the trailing NUL); inline strings are already
+// included in the side table. GDB bytes include ELF buffers and registration
+// records; gdb_jit_object_bytes is just their ELF payload (a subset).
+// Auxiliary bytes include arena/table objects, page indexes, templates.
+// Returns zeros before initialization. Locks native mutexes: do not call while
+// other threads are stopped or from a signal handler. Concurrent allocation can
+// advance between the component snapshots.
+TrampolineMemoryStats trampoline_memory_stats();
+
 struct TrampolineEntry {
   uint8_t*    code_start;
   uint32_t    code_size;
@@ -55,11 +81,13 @@ public:
   // handlers (no lock, no allocation).
   const TrampolineEntry* find(uintptr_t pc) const;
   size_t published() const { return _published.load(std::memory_order_acquire); }
+  void accumulate_memory_stats(TrampolineMemoryStats& stats) const;
 
 private:
-  std::mutex _write_lock;
+  mutable std::mutex _write_lock;
   std::vector<TrampolineEntry> _entries;
   std::atomic<size_t> _published{0};
+  size_t _name_capacity_bytes = 0;
 };
 
 class ExecutableArena {
@@ -93,9 +121,10 @@ public:
   size_t slot_code_size() const { return _tramp_size; }
   // CIE + FDE + 4-byte terminator size — used by GDB JIT ELF builder.
   size_t eh_frame_size() const { return _cie_size + _fde_size + 4; }
+  void accumulate_memory_stats(TrampolineMemoryStats& stats) const;
 
 private:
-  std::mutex _lock;
+  mutable std::mutex _lock;
   size_t _tramp_size = 0;          // code length, for FDE PC range and side-table size
   size_t _cie_size = 0;
   size_t _fde_size = 0;
@@ -106,6 +135,7 @@ private:
   std::vector<uint8_t> _slot_template;
   uint8_t* _current_page = nullptr;
   size_t _current_offset = 0;
+  size_t _allocated_slots = 0;
   struct PageRange {
     uintptr_t start;
     uintptr_t end;

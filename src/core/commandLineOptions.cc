@@ -25,6 +25,8 @@ THE SOFTWARE.
 */
 /* -^- */
 
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <clasp/core/foundation.h>
@@ -68,6 +70,12 @@ Options:
       If the default debugger would be entered, Clasp instead quits
   -G, --dump-debugger-info
       Dump the info for the gdb/udb/lldb debugger extension.
+  -H, --hpc
+      For high performance computing. Equivalent to \"-P\".
+  -P, --no-gdb-jit
+      Disable GDB JIT registration for object files and trampolines.
+      Equivalent to setting CLASP_NO_GDB_JIT=1 before startup.
+      This can save up to 250MB of RSS memory and should be used on clusters.
   --quit
       Don't start a REPL
   -a, --addresses <file>
@@ -213,7 +221,8 @@ Environment variables:
   CLASP_DEBUG_STAMP_INFO=1
       Generate info about stamps.
   CLASP_NO_GDB_JIT=1
-      Disable registering object files to the gdb/udb JIT debug API.
+      Disable registering object files and trampolines to the gdb/udb JIT
+      debug API. Also available as -P or --no-gdb-jit.
   CLASP_MPS_CONFIG=<arenaMb> <spareCommitLimitMb> <nurseryKb>
                    <nurseryMortalityPercent> <generation1Kb>
                    <generation1MortalityPercent> <keyExtendByKb>)dx";
@@ -315,6 +324,11 @@ void process_clasp_arguments(CommandLineOptions* options) {
       options->_NoPrint = true;
     } else if (*arg == "-D" || *arg == "--disable-debugger") {
       options->_DebuggerDisabled = true;
+    } else if (*arg == "-H" || *arg == "--hpc") {
+      options->_NoGdbJit = true;
+    } else if (*arg == "-P" || *arg == "--no-gdb-jit") {
+      // Argument processing precedes JIT construction and snapshot loading.
+      options->_NoGdbJit = true;
     } else if (*arg == "-G" || *arg == "--dump-debugger-info") {
       core::dumpDebuggingLayouts();
       std::cout << global_python_virtual_machine_codes;
@@ -451,6 +465,7 @@ CommandLineOptions::CommandLineOptions(int argc, const char* argv[])
       _FreezeStartupType(false), _HasDescribeFile(false), _StartupFile(""), _ExportedSymbolsCheck(false),
       _RandomNumberSeed(0), _NoInform(false), _NoPrint(false), _DebuggerDisabled(false),
       _Interactive(true), _Version(false), _SilentStartup(true), _GenerateTrampolines(false),
+      _NoGdbJit(std::getenv("CLASP_NO_GDB_JIT") != nullptr),
       _RCFileName(std::string(getenv("HOME")) + "/.clasprc"), _NoRc(false), _PauseForDebugger(false) {
   if (argc == 0) {
     this->_RawArguments.push_back("./");

@@ -18,6 +18,8 @@
 #include <llvm/ExecutionEngine/Orc/TargetProcess/JITLoaderGDB.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/commandLineOptions.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/mpPackage.h>
 #include <clasp/llvmo/code.h>
@@ -144,6 +146,43 @@ using namespace llvm::jitlink;
 
 std::atomic<size_t> global_object_file_number;
 std::atomic<size_t> global_JITDylibCounter;
+
+namespace {
+#if LLVM_VERSION_MAJOR >= 18 && LLVM_VERSION_MAJOR < 22
+std::atomic<size_t> g_gdb_jit_module_bytes{0};
+
+// Count successful registrations rather than traversing LLVM's descriptor,
+// which is modified under an LLVM-private mutex. This registrar has no
+// unregister operation; Clasp currently retains JIT resources until shutdown.
+class CountingDebugObjectRegistrar : public orc::DebugObjectRegistrar {
+  std::unique_ptr<orc::DebugObjectRegistrar> _Target;
+
+public:
+  explicit CountingDebugObjectRegistrar(std::unique_ptr<orc::DebugObjectRegistrar> target)
+      : _Target(std::move(target)) {}
+
+  Error registerDebugObject(orc::ExecutorAddrRange targetMem, bool autoRegisterCode) override {
+    if (auto err = _Target->registerDebugObject(targetMem, autoRegisterCode))
+      return err;
+    g_gdb_jit_module_bytes.fetch_add(targetMem.size(), std::memory_order_relaxed);
+    return Error::success();
+  }
+};
+#endif
+} // namespace
+
+std::optional<size_t> gdb_jit_module_bytes() {
+  if (core::global_options->_NoGdbJit)
+    return 0;
+#if LLVM_VERSION_MAJOR >= 18 && LLVM_VERSION_MAJOR < 22 && \
+    (defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_FREEBSD))
+  return g_gdb_jit_module_bytes.load(std::memory_order_relaxed);
+#else
+  // MachO and LLVM >=22 have additional/different registration paths. Do not
+  // misreport their unmeasured allocations as zero or a partial total.
+  return std::nullopt;
+#endif
+}
 
 std::string literals_name = OS_LITERALS_NAME;
 
@@ -606,9 +645,14 @@ ClaspJIT_O::ClaspJIT_O() {
                   std::make_unique<EHFrameRegistrationPlugin>(ES, std::make_unique<jitlink::InProcessEHFrameRegistrar>()));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
             // GDB registrar isn't working at the moment
-            if (!getenv("CLASP_NO_GDB_JIT")) {
+            if (!core::global_options->_NoGdbJit) {
+              std::unique_ptr<orc::DebugObjectRegistrar> registrar =
+                  ExitOnErr(orc::createJITLoaderGDBRegistrar(ES));
+#if LLVM_VERSION_MAJOR >= 18
+              registrar = std::make_unique<CountingDebugObjectRegistrar>(std::move(registrar));
+#endif
               ObjLinkingLayer->addPlugin(
-                  std::make_unique<orc::DebugObjectManagerPlugin>(ES, ExitOnErr(orc::createJITLoaderGDBRegistrar(ES))));
+                  std::make_unique<orc::DebugObjectManagerPlugin>(ES, std::move(registrar)));
               if (TT.isOSBinFormatMachO()) {
                 ObjLinkingLayer->addPlugin(std::make_unique<GDBJITDebugInfoRegistrationPlugin>(
                     llvm::orc::ExecutorAddr::fromPtr(&llvm_orc_registerJITLoaderGDBWrapper)));
@@ -634,7 +678,7 @@ ClaspJIT_O::ClaspJIT_O() {
             if (!ES.getTargetTriple().isOSBinFormatMachO())
               ObjLinkingLayer->addPlugin(ExitOnErr(orc::EHFrameRegistrationPlugin::Create(ES)));
             ObjLinkingLayer->addPlugin(std::make_unique<ClaspPlugin>());
-            if (!getenv("CLASP_NO_GDB_JIT")) {
+            if (!core::global_options->_NoGdbJit) {
               Error TargetSymErr = Error::success();
               auto Plugin = std::make_unique<ELFDebugObjectPlugin>(ES, true, true, TargetSymErr);
               ExitOnErr(std::move(TargetSymErr));

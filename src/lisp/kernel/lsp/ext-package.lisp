@@ -147,6 +147,8 @@
           unregister-command-line-option
           print-extension-command-line-help
           process-extension-command-line-arguments
+          current-rss-bytes
+          peak-rss-bytes
           with-flame-profile
           with-allocation-profile))
 ) ; eval-when

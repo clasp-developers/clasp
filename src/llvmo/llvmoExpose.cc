@@ -122,6 +122,7 @@ Error enableObjCRegistration(const char* PathToLibObjC);
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/common.h>
+#include <clasp/core/commandLineOptions.h>
 #include <clasp/core/cons.h>
 #include <clasp/core/evaluator.h>
 #include <clasp/core/symbolTable.h>
@@ -4296,8 +4297,7 @@ mp::Mutex* global_jit_descriptor = NULL;
 
 void register_object_file_with_gdb(const llvm::object::ObjectFile& Obj,
                                    const llvm::RuntimeDyld::LoadedObjectInfo& loadedObjectInfo) {
-  static const bool disabled = std::getenv("CLASP_NO_GDB_JIT") != nullptr;
-  if (disabled) return;
+  if (core::global_options->_NoGdbJit) return;
   //  printf("%s:%d:%s  ObjectFile@%p\n", __FILE__, __LINE__, __FUNCTION__, &Obj);
   uint64_t Key = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(Obj.getData().data()));
   if (global_jit_descriptor == NULL) {

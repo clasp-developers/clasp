@@ -43,6 +43,8 @@
 #include <cstdio>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
+#include <clasp/core/lisp.h>
+#include <clasp/core/commandLineOptions.h>
 #include <clasp/core/pointer.h>
 #include <clasp/core/sampling_profiler.h>
 #include <clasp/llvmo/trampoline_arena.h>
@@ -108,7 +110,22 @@ TrampolineSideTable::TrampolineSideTable() {
 void TrampolineSideTable::append(TrampolineEntry e) {
   std::lock_guard<std::mutex> g(_write_lock);
   _entries.push_back(std::move(e));
+  // libstdc++ and libc++ keep short strings inside the string object. Count
+  // only external buffers, since inline storage is part of TrampolineEntry.
+  const std::string& name = _entries.back().name;
+  uintptr_t data = reinterpret_cast<uintptr_t>(name.data());
+  uintptr_t object = reinterpret_cast<uintptr_t>(&name);
+  if (data < object || data >= object + sizeof(name))
+    _name_capacity_bytes += name.capacity() + 1;
   _published.store(_entries.size(), std::memory_order_release);
+}
+
+void TrampolineSideTable::accumulate_memory_stats(TrampolineMemoryStats& stats) const {
+  std::lock_guard<std::mutex> g(_write_lock);
+  stats.side_table_used_bytes += _entries.size() * sizeof(TrampolineEntry);
+  stats.side_table_capacity_bytes += _entries.capacity() * sizeof(TrampolineEntry);
+  stats.name_capacity_bytes += _name_capacity_bytes;
+  stats.auxiliary_capacity_bytes += sizeof(*this);
 }
 
 const TrampolineEntry* TrampolineSideTable::find(uintptr_t pc) const {
@@ -209,7 +226,17 @@ uint8_t* ExecutableArena::allocate() {
   __register_frame(slot + _tramp_size);
 #endif
   _current_offset += _slot_stride;
+  ++_allocated_slots;
   return slot;
+}
+
+void ExecutableArena::accumulate_memory_stats(TrampolineMemoryStats& stats) const {
+  std::lock_guard<std::mutex> g(_lock);
+  stats.count += _allocated_slots;
+  stats.mapped_bytes += _pages.size() * _page_size;
+  stats.slot_bytes += _allocated_slots * _slot_stride;
+  stats.auxiliary_capacity_bytes += sizeof(*this)
+      + _pages.capacity() * sizeof(PageRange) + _slot_template.capacity();
 }
 
 bool ExecutableArena::owns(uintptr_t pc) const {
@@ -231,6 +258,10 @@ namespace {
 // arena instances, so that they sit next to the perf_map code they parallel).
 // The GDB JIT ELF image is ELF-only; on non-Linux targets it's omitted.
 #if defined(_TARGET_OS_LINUX)
+std::mutex g_gdb_jit_lock;
+size_t g_gdb_jit_bytes = 0;
+size_t g_gdb_jit_entries = 0;
+
 static std::pair<char*, size_t>
 build_gdb_jit_elf(uintptr_t code_addr, size_t code_size,
                   uintptr_t eh_frame_addr,
@@ -302,7 +333,7 @@ public:
     perf_map_append(slot, _tramp_size, name);
 #if defined(_TARGET_OS_LINUX)
     // Build minimal ELF and register with GDB JIT interface (ELF/libgcc only).
-    if (!getenv("CLASP_NO_GDB_JIT")) {
+    if (!core::global_options->_NoGdbJit) {
       size_t ef_size = _arena->eh_frame_size();
       auto [elf_buf, elf_sz] = build_gdb_jit_elf(
           (uintptr_t)slot, _tramp_size,
@@ -330,6 +361,14 @@ public:
 
   bool owns(uintptr_t pc) const {
     return is_initialized() && _arena->owns(pc);
+  }
+
+  void accumulate_memory_stats(TrampolineMemoryStats& stats) const {
+    // Acquire publication before touching pointers installed by another thread.
+    // Once published, both objects live for the remainder of the process.
+    if (!is_initialized()) return;
+    _arena->accumulate_memory_stats(stats);
+    _side_table->accumulate_memory_stats(stats);
   }
 
 private:
@@ -486,6 +525,7 @@ build_gdb_jit_elf(uintptr_t code_addr, size_t code_size,
 }
 
 static void gdb_jit_register(const char* elf_buf, size_t elf_size) {
+  std::lock_guard<std::mutex> g(g_gdb_jit_lock);
   auto* entry = new jit_code_entry();
   entry->symfile_addr = elf_buf;
   entry->symfile_size = elf_size;
@@ -497,6 +537,8 @@ static void gdb_jit_register(const char* elf_buf, size_t elf_size) {
   __jit_debug_descriptor.relevant_entry = entry;
   __jit_debug_descriptor.action_flag    = JIT_REGISTER_FN;
   __jit_debug_register_code();
+  g_gdb_jit_bytes += elf_size + sizeof(jit_code_entry);
+  ++g_gdb_jit_entries;
 }
 
 #endif
@@ -522,6 +564,19 @@ void perf_map_append(uint8_t* addr, size_t size, const std::string& name) {
 // -------------------------------------------------------------------------
 // Public C-level wrappers — delegate to the appropriate arena instance.
 // -------------------------------------------------------------------------
+
+TrampolineMemoryStats trampoline_memory_stats() {
+  TrampolineMemoryStats stats;
+  g_bytecode.accumulate_memory_stats(stats);
+  g_gf.accumulate_memory_stats(stats);
+#if defined(_TARGET_OS_LINUX)
+  std::lock_guard<std::mutex> g(g_gdb_jit_lock);
+  stats.gdb_jit_bytes = g_gdb_jit_bytes;
+  stats.gdb_jit_object_bytes = g_gdb_jit_bytes - g_gdb_jit_entries * sizeof(jit_code_entry);
+  stats.gdb_jit_entries = g_gdb_jit_entries;
+#endif
+  return stats;
+}
 
 bool arena_install_trampoline_template(const uint8_t* tramp_bytes, size_t tramp_size,
                                         const uint8_t* cie_bytes,   size_t cie_len,
