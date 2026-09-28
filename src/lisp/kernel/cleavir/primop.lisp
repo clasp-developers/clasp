@@ -631,12 +631,9 @@
                                                "base-string-null-terminated-size"
                                                t t))
              (t nelems))))
-    (llvm-sys:create-add cmp:*irbuilder*
-                         (%size_t cmp:+simple-vector._data-offset+)
-                         (cmp:irc-mul rnelems (%size_t element-size)
-                                      :label "vector-data-size"
-                                      :nuw t :nsw t)
-                         "vector-size" t t)))
+    (cmp:irc-mul rnelems (%size_t element-size)
+                 :label "vector-data-size"
+                 :nuw t :nsw t)))
 
 ;; KLUDGE: necessary because defvprimop doesn't work with parameters,
 ;; even if the parameters don't affect the rtype. FIXME?
