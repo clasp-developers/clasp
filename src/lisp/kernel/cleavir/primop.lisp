@@ -604,8 +604,8 @@
                                  "preround" t t)
             (%size_t +bit-array-word-bits+)
             :label "nwords"))
-         (nbytes (cmp:irc-udiv nwords (%size_t cmp:+bit-array-word-bytes+)
-                               :label "nbytes" :exact t)))
+         (nbytes (cmp:irc-mul nwords (%size_t cmp:+bit-array-word-bytes+)
+                              :label "nbytes" :nsw t :nuw t)))
     nbytes))
 
 (defun new-vector-data-size (element-type nelems)
@@ -745,9 +745,7 @@
          (after-block (cmp:irc-basic-block-create "after"))
          (_1 (cmp:irc-cond-br overflowp overflow-block no-overflow-block))
          (_2 (cmp:irc-begin-block overflow-block))
-         (big (%intrinsic-invoke-if-landing-pad-or-call
-               "cc_overflowed_signed_bignum"
-               (list (cmp:irc-extract-value r '(0)))))
+         (big (cmp:irc-overflowed-signed-bignum (cmp:irc-extract-value r '(0))))
          (bigblock (cmp:irc-get-insert-block))
          (_3 (cmp:irc-br after-block))
          (_4 (cmp:irc-begin-block no-overflow-block))
