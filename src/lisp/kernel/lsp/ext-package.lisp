@@ -1,6 +1,13 @@
 (in-package #:ext)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
+  ;; FLAMEGRAPH loads before PROFILER defines these private helpers. Intern them
+  ;; during EXT's package setup so that loading FLAMEGRAPH does not attempt
+  ;; to add a new symbol to locked EXT from another package.
+  (intern "PROFILE-EXECUTABLE-RANGE-ANNOTATION" "EXT")
+  (intern "WRITE-PROFILE-WALK-STOP-REPORT" "EXT"))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (import '(cmp::muffle-note
           core:argc
           core:argv
@@ -147,6 +154,14 @@
           unregister-command-line-option
           print-extension-command-line-help
           process-extension-command-line-arguments
+          current-rss-bytes
+          peak-rss-bytes
+          profile-executable-range-stats
+          test-profile-executable-ranges
+          profile-walk-stops
+          test-profile-walk-stops
           with-flame-profile
-          with-allocation-profile))
+          with-cpu-profile
+          with-allocation-profile
+          ))
 ) ; eval-when

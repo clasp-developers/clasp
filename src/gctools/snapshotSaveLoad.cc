@@ -2016,22 +2016,28 @@ void snapshot_save(SaveLispAndDie& data) {
   {
     core::T_sp cur = _lisp->_Roots._AllObjectFiles.load(std::memory_order_relaxed);
     core::T_sp kept = nil<core::T_O>();
+#if 0
     size_t dropped = 0;
+#endif
     while (cur.consp()) {
       core::T_sp car = CONS_CAR(gc::As_unsafe<core::Cons_sp>(cur));
       if (gc::IsA<llvmo::ObjectFile_sp>(car)
           && gc::As_unsafe<llvmo::ObjectFile_sp>(car)->_TransientSkipSnapshot) {
+#if 0
         ++dropped;
+#endif
       } else {
         kept = core::Cons_O::create(car, kept);
       }
       cur = CONS_CDR(gc::As_unsafe<core::Cons_sp>(cur));
     }
     _lisp->_Roots._AllObjectFiles.store(kept, std::memory_order_relaxed);
+#if 0
     if (dropped) {
       fprintf(stderr, "[trampoline-arena] snapshot save dropped %zu transient ObjectFile(s) from _AllObjectFiles\n", dropped);
       fflush(stderr);
     }
+#endif
   }
   core::lisp_write(fmt::format("Finished removing transient object-files\n"));
 

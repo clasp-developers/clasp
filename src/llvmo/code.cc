@@ -20,6 +20,7 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/debugInfoExpose.h>
 #include <clasp/llvmo/trampoline_arena.h>
+#include <clasp/gctools/stw.h>
 
 namespace llvmo {
 
@@ -46,11 +47,16 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
   // On Apple Silicon we turn off MEM_JIT memory write protect for this thread
   pthread_jit_write_protect_np(false);
 #else
-  size_t PageSize = getpagesize();
   auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
   for (auto& KV : BL.segments()) {
     auto& Seg = KV.second;
-    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize);
+    // LLVM may round the address range to page boundaries, but we really only
+    // care about the memory we're actually using, so don't align up this size
+    // and let LLVM do whatever it does. Since Seg.WorkingMem is in general NOT
+    // aligned to a page boundary (it was allocated as part of a CodeBlock) we don't
+    // want to mess with subsequent pages by giving LLVM a size that overlaps into
+    // those subsequent pages.
+    uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
     sys::Memory::protectMappedMemory(MB, rwxProt);
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Temporarily Applying Protections (RWX/%x) to range %p - %p\n", __FILE__, __LINE__,
@@ -60,13 +66,12 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
 }
 
 void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
-  size_t PageSize = getpagesize();
 #if defined(CLASP_APPLE_SILICON)
   pthread_jit_write_protect_np(true);
   for (auto& KV : BL.segments()) {
     const auto& AG = KV.first;
     auto& Seg = KV.second;
-    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, Seg.Alignment.value());
+    uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
     sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
     if (Prot & sys::Memory::MF_EXEC)
@@ -83,7 +88,9 @@ void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
     DEBUG_OBJECT_FILES_PRINT(("%s:%d:%s Applying Protections %s to range %p - %p\n", __FILE__, __LINE__, __FUNCTION__,
                               ss.str().c_str(), Seg.WorkingMem, (Seg.WorkingMem + Seg.ContentSize + Seg.ZeroFillSize)));
 #endif
-    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, PageSize);
+    // Pass the exact interval; LLVM performs the page rounding. An extra
+    // page here could remove execute permission from neighboring JIT code.
+    uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
     if ((Prot & sys::Memory::MF_RWE_MASK) == sys::Memory::MF_READ) {
       Prot = (sys::Memory::ProtectionFlags)(sys::Memory::MF_READ | sys::Memory::MF_WRITE);
@@ -475,16 +482,19 @@ CL_DEFUN size_t number_of_object_files() {
 CL_LISPIFY_NAME(total_memory_allocated_for_object_files);
 DOCGROUP(clasp);
 CL_DEFUN size_t total_memory_allocated_for_object_files() {
-  core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
-  size_t count = 0;
-  size_t sz = 0;
-  while (cur.consp()) {
-    ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
-    sz += ofi->_MemoryBuffer->getBufferSize();
-    count++;
-    cur = CONS_CDR(cur);
-  }
-  return sz;
+  // Linking publishes ObjectFiles before their buffers are installed. Do not
+  // race buffer replacement, and tolerate objects still awaiting materialization.
+  return gctools::call_with_stopped_world([]() -> size_t {
+    core::T_sp cur = _lisp->_Roots._AllObjectFiles.load();
+    size_t sz = 0;
+    while (cur.consp()) {
+      ObjectFile_sp ofi = gc::As<ObjectFile_sp>(CONS_CAR(cur));
+      if (ofi->_MemoryBuffer)
+        sz += ofi->_MemoryBuffer->getBufferSize();
+      cur = CONS_CDR(cur);
+    }
+    return sz;
+  });
 }
 
 struct StackmapHeader {

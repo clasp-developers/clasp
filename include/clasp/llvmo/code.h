@@ -32,6 +32,7 @@ THE SOFTWARE.
 // #define USE_JITLINKER 1
 
 #include <unistd.h>
+#include <optional>
 #include <clasp/core/common.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <llvm/ExecutionEngine/JITLink/JITLinkMemoryManager.h>
@@ -382,7 +383,12 @@ SectionedAddress_sp object_file_sectioned_address(void*, ObjectFile_sp, bool);
 
 size_t number_of_object_files();
 
+// Retained native buffer payloads, not RSS or allocator overhead.
+// The object-file counter stops mutators while inspecting their buffers.
 size_t total_memory_allocated_for_object_files();
+// LLVM module debug buffers only; trampoline ELF buffers are counted separately.
+// Unavailable for registration backends that are not instrumented.
+std::optional<size_t> gdb_jit_module_bytes();
 
 }; // namespace llvmo
 

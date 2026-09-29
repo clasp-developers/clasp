@@ -167,6 +167,7 @@ void BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fi
   // trampoline if the user is running with the arena backend.
   if (snapshotSaveLoad::operation(fixup) == snapshotSaveLoad::SaveOp
       && llvmo::arena_owns_pc((uintptr_t)this->_Trampoline)) {
+#if 0
     static std::atomic<size_t> s_subbed{0};
     size_t n = s_subbed.fetch_add(1) + 1;
     if (n <= 3 || (n % 10000) == 0) {
@@ -175,6 +176,7 @@ void BytecodeSimpleFun_O::fixupInternalsForSnapshotSaveLoad(snapshotSaveLoad::Fi
               n, _rep_(this->functionName()).c_str(), (void*)this->_Trampoline);
       fflush(stderr);
     }
+#endif
     this->_Trampoline = (BytecodeTrampolineFunction)bytecode_call;
   }
   this->fixupOneCodePointer(fixup, (void**)&this->_Trampoline, code);

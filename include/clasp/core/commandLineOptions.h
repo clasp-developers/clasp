@@ -77,6 +77,7 @@ struct CommandLineOptions {
   bool _NoRc;
   bool _PauseForDebugger;
   bool _GenerateTrampolines;
+  bool _NoGdbJit;
   std::vector<std::string> _ExtensionArguments;
 
   bool validStartupTypeOption(const std::string& arg);

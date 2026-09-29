@@ -11,7 +11,8 @@
           pipe-streams
           external-process-pid
           external-process-status
-          run-program)
+          run-program
+          current-rss-bytes)
         :ext)
 
 (defconstant +sigkill+ 9 )
@@ -351,3 +352,16 @@
                     (or stream-read stream-write))
                 (external-process-%code process)
                 process)))))
+
+
+(defun current-rss-bytes ()
+  "Return this Cando process's current RSS in bytes on Linux/macOS."
+  (multiple-value-bind (stream exit-code)
+      (run-program
+       "ps" (list "-o" "rss=" "-p"
+                  (format nil "~d" (core:getpid)))
+       :input nil :output :stream :wait t)
+    (with-open-stream (output stream)
+      (unless (eql exit-code 0)
+        (error "ps failed with exit code ~s" exit-code))
+      (* 1024 (parse-integer (read-line output))))))

@@ -3,10 +3,14 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <optional>
 #include <sstream>
-#include <iomanip>
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
+#include <sys/resource.h>
+#endif
 
 #include <clasp/core/object.h>
+#include <clasp/core/numbers.h>
 #include <clasp/core/bformat.h>
 #include <clasp/core/lisp.h>
 #include <clasp/core/instance.h>
@@ -26,6 +30,7 @@
 #include <clasp/llvmo/code.h>
 #include <clasp/llvmo/llvmoExpose.h>
 #include <clasp/llvmo/debugInfoExpose.h>
+#include <clasp/llvmo/trampoline_arena.h>
 #include <clasp/gctools/gc_interface.h>
 #include <clasp/gctools/threadlocal.h>
 #include <clasp/gctools/snapshotSaveLoad.h>
@@ -277,8 +282,9 @@ size_t dumpReachableClassMap(const gctools::ReachableClassMap& data, std::ostrea
 
 void displayClassKinds(const ReachableClassMap& rcmap, std::ostream& OutputStream) {
   OutputStream << "-------------------- Reachable ClassKinds -------------------\n";
-  dumpReachableClassMap(rcmap, OutputStream);
-  OutputStream << "Done walk of memory  " << static_cast<uintptr_t>(rcmap.size()) << " ClassKinds\n";
+  size_t totalSize = dumpReachableClassMap(rcmap, OutputStream);
+  OutputStream << "Object walk: " << static_cast<uintptr_t>(rcmap.size()) << " object kinds\n";
+  OutputStream << fmt::format("{:<32}{:12d}\n", "Traced object bytes:", totalSize);
 }
 
 struct RoomSummary {
@@ -342,6 +348,34 @@ void fill_reachable_class_map(ReachableClassMap* rcmap) {
   call_with_stopped_world([&](){mapAllObjects(roomMapper, rcmap);});
 }
 
+// Process-lifetime high-water mark, not the peak since the previous ROOM.
+// Unlike current RSS, this does not require launching a subprocess.
+static std::optional<size_t> room_peak_rss_bytes() {
+#if defined(_TARGET_OS_LINUX) || defined(_TARGET_OS_DARWIN) || defined(_TARGET_OS_FREEBSD)
+  struct rusage usage {};
+  if (getrusage(RUSAGE_SELF, &usage) != 0 || usage.ru_maxrss < 0)
+    return std::nullopt;
+#ifdef _TARGET_OS_DARWIN
+  // Darwin reports bytes; Linux and FreeBSD report KiB.
+  return static_cast<size_t>(usage.ru_maxrss);
+#else
+  return static_cast<size_t>(usage.ru_maxrss) * 1024;
+#endif
+#else
+  return std::nullopt;
+#endif
+}
+
+CL_DOCSTRING(R"dx(Return the process-lifetime peak resident set size in bytes.
+Signal an error if the operating system cannot provide this measurement.)dx");
+DOCGROUP(clasp);
+CL_DEFUN core::Integer_sp ext__peak_rss_bytes() {
+  const auto bytes = room_peak_rss_bytes();
+  if (!bytes)
+    SIMPLE_ERROR("Peak process RSS is unavailable: getrusage is unsupported or failed to return a valid measurement.");
+  return core::Integer_O::create(*bytes);
+}
+
 CL_LAMBDA(&optional (x :default));
 CL_DEFUN void cl__room(core::Symbol_sp x) {
   std::ostringstream OutputStream;
@@ -363,10 +397,91 @@ CL_DEFUN void cl__room(core::Symbol_sp x) {
   }
 #endif
 
-  // Summary statistics
-  OutputStream << "Total heap bytes:                              " << std::setw(12) << heap_size() << '\n';
-  OutputStream << "Free bytes:                                    " << std::setw(12) << free_bytes() << '\n';
-  OutputStream << "Bytes allocated since last GC:                 " << std::setw(12) << bytes_since_gc() << '\n';
+  const size_t objectFileBytes = verb == room_max
+      ? llvmo::total_memory_allocated_for_object_files() : 0;
+
+  // Capture GC statistics before the RSS helper allocates Lisp objects.
+  // Boehm's snapshot is atomic: separate unlocked getters could straddle a GC.
+  std::optional<size_t> occupiedBytes, allocatedSinceGc, totalAllocated, collections;
+#ifdef USE_BOEHM
+  GC_prof_stats_s stats {};
+  GC_get_prof_stats(&stats, sizeof(stats));
+  // The *_full fields include unmapped pages; retain the old ROOM convention
+  // of reporting only the heap capacity still mapped into the process.
+  const size_t heapCapacity = stats.heapsize_full - stats.unmapped_bytes;
+  const size_t freeSpace = stats.free_bytes_full - stats.unmapped_bytes;
+  occupiedBytes = stats.heapsize_full - stats.free_bytes_full;
+  allocatedSinceGc = stats.bytes_allocd_since_gc;
+  totalAllocated = stats.allocd_bytes_before_gc + stats.bytes_allocd_since_gc;
+  // Before initialization Boehm can report -1, which is not a collection count.
+  if (stats.gc_no != static_cast<GC_word>(-1)) collections = stats.gc_no;
+#else
+  const size_t heapCapacity = heap_size();
+  const size_t freeSpace = free_bytes();
+#ifdef USE_MMTK
+  // MMTk can temporarily exceed capacity and clamps free space to zero, so
+  // capacity - free space is not a reliable substitute for its used counter.
+  occupiedBytes = mmtk_clasp_used_bytes();
+#endif
+  // MMTk currently exposes neither allocation counters nor collection counts.
+  // In particular, its bytes_since_gc() stub returns 0, not a measurement.
+#endif
+  auto report = [&](const char* label, std::optional<size_t> value) {
+    if (value)
+      OutputStream << fmt::format("{:<32}{:12d}\n", label, *value);
+    else
+      OutputStream << fmt::format("{:<32}{:>12}\n", label, "unavailable");
+  };
+  report("GC heap capacity (bytes):", heapCapacity);
+  report("GC free space (bytes):", freeSpace);
+
+  if (verb == room_max) {
+    // Occupied blocks include fragmentation and garbage awaiting collection;
+    // this is not a count of live object bytes.
+    report("GC occupied blocks (bytes):", occupiedBytes);
+    report("GC total allocated (bytes):", totalAllocated);
+    report("GC collection count:", collections);
+
+    // Native mutexes must not be acquired while other threads are stopped.
+    // These are component snapshots; concurrent compilation may advance
+    // between the original-buffer, trampoline, and module measurements.
+    const auto trampolines = llvmo::trampoline_memory_stats();
+    auto gdbObjectBytes = llvmo::gdb_jit_module_bytes();
+    if (gdbObjectBytes)
+      *gdbObjectBytes += trampolines.gdb_jit_object_bytes;
+    // RUN-PROGRAM must run after the stopped-world object walk has finished.
+    // The Lisp helper may not be defined yet during early startup.
+    core::Symbol_sp rssFunction = _lisp->findSymbol("EXT:CURRENT-RSS-BYTES");
+    if (rssFunction.notnilp() && rssFunction->fboundp()) {
+      core::T_sp rss = core::eval::funcall(rssFunction);
+      report("Process RSS (bytes):", core::clasp_to_size_t(rss));
+    } else {
+      OutputStream << fmt::format("{:<32}{:>12} (EXT:CURRENT-RSS-BYTES not loaded)\n",
+                                  "Process RSS (bytes):", "unavailable");
+    }
+    report("Peak process RSS (bytes):", room_peak_rss_bytes());
+
+    OutputStream << "Native object-file memory (not RSS):\n";
+    report("  Object files (bytes):", objectFileBytes);
+    report("  GDB JIT object files (bytes):", gdbObjectBytes);
+    OutputStream << "  GDB total includes the trampoline ELF buffers below.\n";
+
+    // Subsets are shown for utilization, not to be added to their capacities.
+    // These are requested/mapped bytes, excluding malloc/libgcc overhead and
+    // other native allocations; they are not a resident-memory measurement.
+    OutputStream << "Native trampoline memory (not RSS):\n";
+    report("  Trampoline count:", trampolines.count);
+    report("  Executable mappings (bytes):", trampolines.mapped_bytes);
+    report("  Occupied slots (bytes):", trampolines.slot_bytes);
+    report("  Table entries used (bytes):", trampolines.side_table_used_bytes);
+    report("  Table capacity (bytes):", trampolines.side_table_capacity_bytes);
+    report("  Name capacity (bytes):", trampolines.name_capacity_bytes);
+    report("  Auxiliary capacity (bytes):", trampolines.auxiliary_capacity_bytes);
+    report("  GDB JIT metadata (bytes):", trampolines.gdb_jit_bytes);
+    report("  GDB JIT registrations:", trampolines.gdb_jit_entries);
+  }
+
+  report("Allocated since last GC (bytes):", allocatedSinceGc);
 
   // Write it all out.  
   clasp_write_string(OutputStream.str(), cl::_sym_STARstandard_outputSTAR->symbolValue());

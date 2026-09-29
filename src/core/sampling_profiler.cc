@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <limits>
 #include <mutex>
 #include <pthread.h>
 #include <sys/mman.h>
@@ -57,8 +58,11 @@
 
 #include <clasp/core/foundation.h>
 #include <clasp/core/lisp.h>
+#include <clasp/core/numbers.h>
+#include <clasp/core/cons.h>
 #include <clasp/core/sampling_profiler.h>
 #include <clasp/core/profilerStack.h>
+#include <clasp/core/profilerExecutableRanges.h>
 #include <clasp/gctools/gc_boot.h>
 #include <clasp/gctools/threadlocal.fwd.h>
 #include <clasp/llvmo/trampoline_arena.h>   // arena_lookup_by_pc
@@ -120,7 +124,7 @@ std::mutex            g_lifecycle_lock;     // serializes both profiler lifecycl
 //
 // The cache is immutable once published. New JIT pages allocated during
 // profiling are registered via sampling_profiler_add_executable_range(),
-// which appends to a separate lock-free array that the handler also checks.
+// which extends or appends to a separate table with lock-free readers.
 // ---------------------------------------------------------------------------
 
 struct ExecRange {
@@ -133,25 +137,28 @@ struct ExecRange {
 static ExecRange*  g_exec_ranges = nullptr;
 static size_t      g_exec_range_count = 0;
 
-// Dynamic additions during profiling (JIT, arena pages). Append-only, read
-// by the signal handler. _count is the publication fence — the handler reads
-// up to _count entries. Writers bump _count after the entry is fully written.
-static constexpr size_t MAX_DYNAMIC_EXEC_RANGES = 4096;
-static ExecRange   g_dynamic_exec_ranges[MAX_DYNAMIC_EXEC_RANGES];
-static std::atomic<size_t> g_dynamic_exec_range_count{0};
+// Dynamic additions during profiling (JIT, arena pages). Writers serialize
+// registration; readers never lock. The last entry can grow atomically when
+// the new interval overlaps or touches it, without consuming another slot.
+static constexpr size_t MAX_DYNAMIC_EXEC_RANGES = 16 * 1024;
+static profiler_detail::DynamicExecutableRanges<MAX_DYNAMIC_EXEC_RANGES>
+  g_dynamic_exec_ranges;
 static std::mutex  g_dynamic_exec_range_writer_lock;
+// Protected by the writer mutex; signal handlers never read this counter.
+static size_t g_dynamic_exec_range_rejections = 0;
 
 static void build_exec_range_cache() {
   // JIT threads may register executable ranges concurrently with setup.
-  // The signal handler never takes this lock; publication still occurs
-  // through g_dynamic_exec_range_count.
+  // The signal handler never takes this lock; the dynamic table publishes
+  // new slots and endpoint extensions atomically.
   std::lock_guard<std::mutex> writer_guard(
     g_dynamic_exec_range_writer_lock);
 
   // Free previous cache if any.
   if (g_exec_ranges) { free(g_exec_ranges); g_exec_ranges = nullptr; }
   g_exec_range_count = 0;
-  g_dynamic_exec_range_count.store(0, std::memory_order_release);
+  g_dynamic_exec_ranges.reset();
+  g_dynamic_exec_range_rejections = 0;
 
   std::vector<ExecRange> ranges;
 
@@ -226,13 +233,8 @@ static inline bool exec_cache_contains(uintptr_t pc) {
     else
       return true;
   }
-  // Check dynamic ranges (small, linear scan).
-  size_t dyn_count = g_dynamic_exec_range_count.load(std::memory_order_acquire);
-  for (size_t i = 0; i < dyn_count; ++i) {
-    if (pc >= g_dynamic_exec_ranges[i].lo && pc < g_dynamic_exec_ranges[i].hi)
-      return true;
-  }
-  return false;
+  // Check dynamic ranges (linear scan with atomic endpoint reads).
+  return g_dynamic_exec_ranges.contains(pc);
 }
 
 static inline bool plausible_rip(uintptr_t rip) {
@@ -319,9 +321,10 @@ static inline bool plausible_rbp(uintptr_t rbp,
 // checks + writes to the caller's buffer. No libc calls, allocation, or locks.
 static uint32_t walk_fp(uintptr_t rip_top, uintptr_t rbp_top,
                         uint64_t* out, uint32_t max_depth,
-                        uintptr_t stack_lo, uintptr_t stack_hi) {
+                        uintptr_t stack_lo, uintptr_t stack_hi,
+                        profiler_detail::WalkStop& stop) {
   return profiler_detail::walk_frame_chain(rip_top, rbp_top, out, max_depth,
-                                          stack_lo, stack_hi, plausible_rip);
+                                          stack_lo, stack_hi, plausible_rip, &stop);
 }
 
 // Reserve `bytes` from the bump buffer. Returns nullptr when the buffer is
@@ -390,13 +393,16 @@ static void sigprof_handler(int /*sig*/, siginfo_t* /*info*/, void* ucptr) {
   uint32_t cap = g_max_depth;
   if (cap > 8192) cap = 8192;
   uint32_t depth;
+  profiler_detail::WalkStop stop{};
   if (t_stack_bounds.populated) {
     depth = walk_fp(rip, rbp, pcs, cap,
                     std::max(t_stack_bounds.lo, profiler_detail::context_sp(ucptr)),
-                    t_stack_bounds.hi);
+                    t_stack_bounds.hi, stop);
   } else {
     pcs[0] = (uint64_t)rip;
     depth = 1;
+    stop.reason = profiler_detail::WalkStopReason::no_stack_bounds;
+    stop.frame_pointer = rbp;
   }
 
   const size_t record_bytes = sizeof(SampleHeader) + depth * sizeof(uint64_t);
@@ -417,6 +423,7 @@ static void sigprof_handler(int /*sig*/, siginfo_t* /*info*/, void* ucptr) {
   h->thread_id = 0;  // TODO: pthread_mach_thread_np on macOS
 #endif
   h->depth = depth;
+  h->walk_stop = stop;
   std::memcpy(slot + sizeof(SampleHeader), pcs, depth * sizeof(uint64_t));
 
   g_samples_recorded.fetch_add(1, std::memory_order_relaxed);
@@ -525,23 +532,27 @@ void allocation_profiler_record(uint32_t stamp_wtag,
     __builtin_extract_return_addr(__builtin_return_address(0)));
   uint32_t depth = 1;
   pcs[0] = static_cast<uint64_t>(rip);
+  profiler_detail::WalkStop stop{};
+  stop.reason = profiler_detail::WalkStopReason::no_stack_bounds;
+  uintptr_t current_fp = reinterpret_cast<uintptr_t>(__builtin_frame_address(0));
+  stop.frame_pointer = current_fp;
 
   if (my_thread_low_level) {
     uintptr_t stack_lo = reinterpret_cast<uintptr_t>(
       my_thread_low_level->_ControlStackTop);
     uintptr_t stack_hi = reinterpret_cast<uintptr_t>(
       my_thread_low_level->_ControlStackBottom);
-    uintptr_t current_fp = reinterpret_cast<uintptr_t>(
-      __builtin_frame_address(0));
-    uintptr_t caller_fp = 0;
-
     // Starting with our caller's frame avoids duplicating rip as the
     // first frame read from our own frame record.
-    if (plausible_rbp(current_fp, stack_lo, stack_hi))
-      caller_fp = *reinterpret_cast<uintptr_t*>(current_fp);
-
-    depth = walk_fp(rip, caller_fp, pcs, cap,
-                    stack_lo, stack_hi);
+    if (plausible_rbp(current_fp, stack_lo, stack_hi)) {
+      uintptr_t caller_fp = *reinterpret_cast<uintptr_t*>(current_fp);
+      depth = walk_fp(rip, caller_fp, pcs, cap, stack_lo, stack_hi, stop);
+    } else {
+      // Do not turn failure to validate our own frame into a fictitious
+      // null caller link. No memory at current_fp has been read here.
+      stop.reason = profiler_detail::invalid_frame_pointer_reason(current_fp);
+      stop.flags = profiler_detail::InitialFrame;
+    }
   }
 
   size_t record_bytes =
@@ -576,6 +587,7 @@ void allocation_profiler_record(uint32_t stamp_wtag,
   header->depth = depth;
   header->stamp_wtag = stamp_wtag;
   header->flags = flags;
+  header->walk_stop = stop;
   std::memcpy(slot + sizeof(AllocationSampleHeader),
               pcs, depth * sizeof(uint64_t));
 
@@ -1196,10 +1208,10 @@ void sampling_profiler_register_current_thread() {
 void sampling_profiler_add_executable_range(uintptr_t lo, uintptr_t hi) {
   std::lock_guard<std::mutex> writer_guard(
     g_dynamic_exec_range_writer_lock);
-  size_t idx = g_dynamic_exec_range_count.load(std::memory_order_acquire);
-  if (idx >= MAX_DYNAMIC_EXEC_RANGES) return;
-  g_dynamic_exec_ranges[idx] = {lo, hi};
-  g_dynamic_exec_range_count.store(idx + 1, std::memory_order_release);
+  if (g_dynamic_exec_ranges.add(lo, hi) ==
+      profiler_detail::ExecutableRangeRegistration::full) {
+    ++g_dynamic_exec_range_rejections;
+  }
 }
 
 core::T_sp SymbolicatedSample::encode() {
@@ -1219,6 +1231,478 @@ core::T_sp SymbolicatedSample::encode() {
 // ---------------------------------------------------------------------------
 // Lisp bindings.
 // ---------------------------------------------------------------------------
+
+namespace {
+
+// A stopped-buffer snapshot contains only integers, not references to stack
+// memory. Release the lifecycle mutex before allocating any Lisp objects.
+struct CapturedWalkStop {
+  profiler_detail::WalkStop stop;
+  uint64_t timestamp_ns;
+  uint64_t last_pc;
+  uint64_t attributed_bytes;
+  uint32_t thread_id;
+  uint32_t depth;
+};
+
+template <typename Header, typename Visitor>
+static const char* visit_walk_stops(const uint8_t* buffer, size_t end,
+                                   size_t capacity, uint32_t max_depth,
+                                   Visitor visit) {
+  if (end > capacity || (end != 0 && !buffer))
+    return "Invalid profiling buffer extent";
+  for (size_t off = 0; off < end;) {
+    size_t remaining = end - off;
+    if (remaining < sizeof(Header)) return "Incomplete profiling sample header";
+    const auto* header = reinterpret_cast<const Header*>(buffer + off);
+    if (header->depth == 0 || header->depth > max_depth ||
+        header->depth > (remaining - sizeof(Header)) / sizeof(uint64_t))
+      return "Invalid profiling sample depth";
+    const auto* pcs = reinterpret_cast<const uint64_t*>(buffer + off + sizeof(Header));
+    visit(*header, pcs);
+    off += sizeof(Header) + header->depth * sizeof(uint64_t);
+  }
+  return nullptr;
+}
+
+template <typename Header, typename Weight>
+static const char* copy_walk_stops(const uint8_t* buffer, size_t end,
+                                  size_t capacity, uint32_t max_depth,
+                                  Weight weight,
+                                  std::vector<CapturedWalkStop>& records) {
+  return visit_walk_stops<Header>(buffer, end, capacity, max_depth,
+    [&](const Header& header, const uint64_t* pcs) {
+      records.push_back({header.walk_stop, header.timestamp_ns,
+                        pcs[header.depth - 1], weight(header),
+                        header.thread_id, header.depth});
+    });
+}
+
+struct WalkStopSummary {
+  // The final bucket preserves the raw API's :UNKNOWN fallback.
+  static constexpr size_t known_reasons =
+    static_cast<size_t>(profiler_detail::WalkStopReason::no_stack_bounds) + 1;
+  struct Counts {
+    uint64_t samples = 0;
+    uint64_t attributed_bytes = 0;
+  } counts[known_reasons + 1]{};
+
+  void add(profiler_detail::WalkStopReason reason, uint64_t weight) {
+    size_t index = static_cast<size_t>(reason);
+    auto& bucket = counts[index < known_reasons ? index : known_reasons];
+    ++bucket.samples;
+    bucket.attributed_bytes += weight;
+  }
+};
+
+template <typename Header, typename Weight>
+static const char* summarize_walk_stops(const uint8_t* buffer, size_t end,
+                                       size_t capacity, uint32_t max_depth,
+                                       Weight weight, WalkStopSummary& summary) {
+  return visit_walk_stops<Header>(buffer, end, capacity, max_depth,
+    [&](const Header& header, const uint64_t*) {
+      summary.add(header.walk_stop.reason, weight(header));
+    });
+}
+
+static const char* walk_stop_reason_name(profiler_detail::WalkStopReason reason) {
+  using Reason = profiler_detail::WalkStopReason;
+  switch (reason) {
+  case Reason::null_frame_pointer: return "NULL-FRAME-POINTER";
+  case Reason::null_return_address: return "NULL-RETURN-ADDRESS";
+  case Reason::unaligned_frame_pointer: return "UNALIGNED-FRAME-POINTER";
+  case Reason::frame_outside_stack: return "FRAME-OUTSIDE-STACK";
+  case Reason::unrecognized_return_address: return "UNRECOGNIZED-RETURN-ADDRESS";
+  case Reason::nonadvancing_frame: return "NONADVANCING-FRAME";
+  case Reason::depth_limit: return "DEPTH-LIMIT";
+  case Reason::no_stack_bounds: return "NO-STACK-BOUNDS";
+  }
+  return "UNKNOWN";
+}
+
+} // anonymous namespace
+
+CL_DOCSTRING(R"dx(Return a vector of per-sample stack-walk stop diagnostic plists.
+With :ALLOCATION T, read allocation samples; otherwise read CPU samples.
+The selected profiler must be stopped. This does not reset its buffer.
+With :SUMMARY-ONLY T, return one plist per observed reason containing only
+:REASON, :SAMPLES and :ATTRIBUTED-BYTES (NIL for CPU samples). This scans the
+buffer using fixed-size counters, without copying samples or symbol lookup.
+By default, return the full per-sample diagnostics described below.
+Each plist preserves :REASON, :FLAGS, :FRAME-POINTER, :PREVIOUS-FRAME-POINTER,
+:RETURN-PC, :LAST-PC, :LAST-FUNCTION, :RETURN-FUNCTION, :THREAD-ID, :DEPTH,
+:TIMESTAMP-NS, :SAMPLES and :ATTRIBUTED-BYTES (NIL for CPU samples).
+Unreadable saved frame fields are NIL, distinct from a captured zero value.
+:RETURN-PC has architecture-specific authentication bits stripped. It is
+rejected only for an unrecognized/null-return-address stop, not every reason.
+:PRECEDING-BYTE-EXECUTABLE records a capture-time range-boundary candidate;
+it is not proof that the range ended there. :FLAGS bits are 1=frame record
+read, 2=preceding byte recognized, 4=allocation recorder's initial FP failed.
+Null termination and depth-limit stops do not certify a complete stack.
+All symbol lookup and Lisp allocation happen here, not during capture.)dx");
+CL_LAMBDA(&key allocation summary-only);
+DOCGROUP(clasp);
+CL_DEFUN core::T_sp ext__profile_walk_stops(bool allocation, bool summary_only) {
+  std::vector<CapturedWalkStop> records;
+  WalkStopSummary summary;
+  const char* failure = nullptr;
+  {
+    std::lock_guard<std::mutex> guard(g_lifecycle_lock);
+    if (allocation) {
+      if (g_allocation_running.load(std::memory_order_acquire))
+        failure = "Stop allocation profiling before reading walk diagnostics";
+      else
+        failure = summary_only
+          ? summarize_walk_stops<AllocationSampleHeader>(
+              g_allocation_buffer, g_allocation_write_offset.load(), g_allocation_buffer_bytes,
+              kMaxAllocationDepth,
+              [](const AllocationSampleHeader& h) { return h.sampled_bytes; }, summary)
+          : copy_walk_stops<AllocationSampleHeader>(
+              g_allocation_buffer, g_allocation_write_offset.load(), g_allocation_buffer_bytes,
+              kMaxAllocationDepth,
+              [](const AllocationSampleHeader& h) { return h.sampled_bytes; }, records);
+    } else {
+      if (g_running.load(std::memory_order_acquire))
+        failure = "Stop CPU profiling before reading walk diagnostics";
+      else
+        failure = summary_only
+          ? summarize_walk_stops<SampleHeader>(
+              g_buffer, g_write_offset.load(), g_buffer_bytes, 8192,
+              [](const SampleHeader&) { return uint64_t{0}; }, summary)
+          : copy_walk_stops<SampleHeader>(
+              g_buffer, g_write_offset.load(), g_buffer_bytes, 8192,
+              [](const SampleHeader&) { return uint64_t{0}; }, records);
+    }
+  }
+  if (failure) SIMPLE_ERROR("{}", failure);
+
+  if (summary_only) {
+    size_t count = 0;
+    for (const auto& bucket : summary.counts)
+      if (bucket.samples != 0) ++count;
+    auto result = core::SimpleVector_O::make(count);
+    size_t index = 0;
+    for (size_t reason = 0; reason <= WalkStopSummary::known_reasons; ++reason) {
+      const auto& bucket = summary.counts[reason];
+      if (bucket.samples == 0) continue;
+      core::List_sp plist = nil<core::T_O>();
+      auto field = [&](const char* key, core::T_sp value) {
+        plist = core::Cons_O::create(_lisp->internKeyword(key),
+                                    core::Cons_O::create(value, plist));
+      };
+      field("ATTRIBUTED-BYTES", allocation
+            ? core::T_sp(Integer_O::create(bucket.attributed_bytes)) : nil<core::T_O>());
+      field("SAMPLES", Integer_O::create(bucket.samples));
+      field("REASON", _lisp->internKeyword(walk_stop_reason_name(
+        static_cast<profiler_detail::WalkStopReason>(reason))));
+      (*result)[index++] = plist;
+    }
+    return result;
+  }
+
+  auto result = core::SimpleVector_O::make(records.size());
+  std::unordered_map<uint64_t, std::string> symbols;
+  auto perf_map = load_perf_map();
+  for (size_t index = 0; index < records.size(); ++index) {
+    const auto& record = records[index];
+    const auto& stop = record.stop;
+    bool have_frame = (stop.flags & profiler_detail::HaveFrameRecord) != 0;
+    core::List_sp plist = nil<core::T_O>();
+    auto field = [&](const char* key, core::T_sp value) {
+      plist = core::Cons_O::create(_lisp->internKeyword(key),
+                                  core::Cons_O::create(value, plist));
+    };
+    field("ATTRIBUTED-BYTES", allocation
+          ? core::T_sp(Integer_O::create(record.attributed_bytes)) : nil<core::T_O>());
+    field("SAMPLES", clasp_make_fixnum(1));
+    field("TIMESTAMP-NS", Integer_O::create(record.timestamp_ns));
+    field("DEPTH", Integer_O::create(record.depth));
+    field("THREAD-ID", Integer_O::create(record.thread_id));
+    field("RETURN-FUNCTION", have_frame && stop.return_pc != 0
+          ? core::T_sp(SimpleBaseString_O::make(symbolicate_one(stop.return_pc, symbols, perf_map)))
+          : nil<core::T_O>());
+    field("LAST-FUNCTION", SimpleBaseString_O::make(symbolicate_one(record.last_pc, symbols, perf_map)));
+    field("LAST-PC", Integer_O::create(record.last_pc));
+    field("PRECEDING-BYTE-EXECUTABLE",
+          (stop.flags & profiler_detail::PrecedingByteExecutable) ? _lisp->_true() : nil<core::T_O>());
+    field("RETURN-PC", have_frame ? core::T_sp(Integer_O::create(stop.return_pc)) : nil<core::T_O>());
+    field("PREVIOUS-FRAME-POINTER", have_frame
+          ? core::T_sp(Integer_O::create(stop.previous_frame_pointer)) : nil<core::T_O>());
+    field("FRAME-POINTER", Integer_O::create(stop.frame_pointer));
+    field("FLAGS", Integer_O::create(stop.flags));
+    field("REASON", _lisp->internKeyword(walk_stop_reason_name(stop.reason)));
+    (*result)[index] = plist;
+  }
+  return result;
+}
+
+CL_DOCSTRING(R"dx(Test frame-walk stop reasons and stopped-buffer decoding on isolated
+fixtures. Returns T on success or signals an error naming the failed check.
+Does not start profiling or change profiler buffers or executable ranges.)dx");
+CL_LAMBDA();
+DOCGROUP(clasp);
+CL_DEFUN bool ext__test_profile_walk_stops() {
+  using namespace profiler_detail;
+  using Reason = WalkStopReason;
+  auto check = [](bool passed, const char* description) {
+    if (!passed) SIMPLE_ERROR("Walk-stop regression failed: {}", description);
+  };
+  auto same_stop = [](const WalkStop& a, const WalkStop& b) {
+    return a.reason == b.reason && a.flags == b.flags &&
+      a.frame_pointer == b.frame_pointer &&
+      a.previous_frame_pointer == b.previous_frame_pointer &&
+      a.return_pc == b.return_pc;
+  };
+  alignas(16) uintptr_t frames[6] = {};
+  const uintptr_t lo = reinterpret_cast<uintptr_t>(frames);
+  const uintptr_t hi = lo + sizeof frames;
+  frames[0] = lo + 16; frames[1] = 0x1000;
+  frames[2] = lo + 32; frames[3] = 0x2000;
+  frames[4] = 0;       frames[5] = 0x3000;
+  uintptr_t stack_lo = lo, stack_hi = hi;
+  const uint64_t expected_pcs[] = {0x4000, 0x1000, 0x2000, 0x3000};
+  constexpr uint64_t sentinel = 0xdeadbeef;
+  WalkStop stop{Reason::no_stack_bounds, ~uint32_t{0}, 1, 2, 3};
+  auto executable = [](uintptr_t pc) { return pc >= 0x1000 && pc < 0x4000; };
+  auto run = [&](const char* label, uintptr_t fp, uint32_t capacity,
+                 uint32_t expected_depth, const WalkStop& expected) {
+    uint64_t pcs[5], legacy[5];
+    std::fill_n(pcs, 5, sentinel);
+    std::fill_n(legacy, 5, sentinel);
+    uint32_t depth = walk_frame_chain(0x4000, fp, pcs, capacity,
+                                      stack_lo, stack_hi, executable, &stop);
+    check(depth == expected_depth && same_stop(stop, expected), label);
+    check(walk_frame_chain(0x4000, fp, legacy, capacity,
+                           stack_lo, stack_hi, executable) == depth, label);
+    for (uint32_t i = 0; i < 5; ++i) {
+      check(pcs[i] == legacy[i], label);
+      check(pcs[i] == (i < depth ? expected_pcs[i] : sentinel), label);
+    }
+  };
+  run("null outer link", lo, 5, 4,
+      {Reason::null_frame_pointer, HaveFrameRecord, lo + 32, 0, 0x3000});
+  run("null initial FP clears reused evidence", 0, 5, 1,
+      {Reason::null_frame_pointer, 0, 0, 0, 0});
+  run("unaligned FP", lo + 1, 5, 1,
+      {Reason::unaligned_frame_pointer, 0, lo + 1, 0, 0});
+  run("FP below stack", lo - 8, 5, 1,
+      {Reason::frame_outside_stack, 0, lo - 8, 0, 0});
+  run("incomplete frame at upper bound", hi - 8, 5, 1,
+      {Reason::frame_outside_stack, 0, hi - 8, 0, 0});
+  run("unreadable out-of-stack FP", 8, 5, 1,
+      {Reason::frame_outside_stack, 0, 8, 0, 0});
+  frames[1] = 0;
+  run("null saved PC", lo, 5, 1,
+      {Reason::null_return_address, HaveFrameRecord, lo, lo + 16, 0});
+  frames[1] = 0x5000;
+  run("unrecognized saved PC", lo, 5, 1,
+      {Reason::unrecognized_return_address, HaveFrameRecord, lo, lo + 16, 0x5000});
+  frames[1] = 0x4000;
+  run("exclusive executable endpoint remains rejected", lo, 5, 1,
+      {Reason::unrecognized_return_address, HaveFrameRecord | PrecedingByteExecutable,
+       lo, lo + 16, 0x4000});
+  frames[1] = 0x1000;
+  frames[2] = lo;
+  run("backward link", lo, 5, 3,
+      {Reason::nonadvancing_frame, HaveFrameRecord, lo + 16, lo, 0x2000});
+  frames[0] = lo;
+  run("self link", lo, 5, 2,
+      {Reason::nonadvancing_frame, HaveFrameRecord, lo, lo, 0x1000});
+  run("observed self link takes priority at cap", lo, 2, 2,
+      {Reason::nonadvancing_frame, HaveFrameRecord, lo, lo, 0x1000});
+  frames[0] = lo + 16; frames[2] = lo + 32;
+  run("depth cap clears reused frame evidence", lo, 2, 2,
+      {Reason::depth_limit, 0, lo + 16, 0, 0});
+  run("observed null link takes priority at cap", lo, 4, 4,
+      {Reason::null_frame_pointer, HaveFrameRecord, lo + 32, 0, 0x3000});
+  stack_lo = 8; stack_hi = 24;
+  run("capacity zero does not read or write", 8, 0, 0,
+      {Reason::depth_limit, 0, 8, 0, 0});
+  run("leaf-only capacity does not read nominally valid FP", 8, 1, 1,
+      {Reason::depth_limit, 0, 8, 0, 0});
+  stack_lo = hi; stack_hi = lo;
+  run("reversed stack bounds", lo, 5, 1,
+      {Reason::frame_outside_stack, 0, lo, 0, 0});
+  stack_lo = lo; stack_hi = lo + 8;
+  run("stack smaller than a frame record", lo, 5, 1,
+      {Reason::frame_outside_stack, 0, lo, 0, 0});
+
+  struct { SampleHeader header; uint64_t pcs[2]; } cpu{};
+  cpu.header.depth = 2; cpu.header.thread_id = 7; cpu.header.timestamp_ns = 11;
+  cpu.header.walk_stop = {Reason::unrecognized_return_address,
+    HaveFrameRecord | PrecedingByteExecutable, lo + 16, lo + 32, 0x4000};
+  cpu.pcs[0] = 0x4000; cpu.pcs[1] = 0x1000;
+  struct { AllocationSampleHeader header; uint64_t pcs[1]; } allocation{};
+  allocation.header.depth = 1; allocation.header.thread_id = 13;
+  allocation.header.timestamp_ns = 17; allocation.header.sampled_bytes = 12345;
+  allocation.header.walk_stop = {Reason::no_stack_bounds, 0, 8, 0, 0};
+  allocation.pcs[0] = 0x2000;
+  std::vector<CapturedWalkStop> records;
+  auto cpu_weight = [](const SampleHeader&) { return uint64_t{0}; };
+  check(!copy_walk_stops<SampleHeader>(reinterpret_cast<const uint8_t*>(&cpu),
+      sizeof(cpu), sizeof(cpu), 5, cpu_weight, records), "CPU header decoding");
+  check(!copy_walk_stops<AllocationSampleHeader>(
+      reinterpret_cast<const uint8_t*>(&allocation), sizeof(allocation),
+      sizeof(allocation), 5,
+      [](const AllocationSampleHeader& h) { return h.sampled_bytes; }, records),
+      "allocation header decoding");
+  check(records.size() == 2 && same_stop(records[0].stop, cpu.header.walk_stop) &&
+      records[0].depth == 2 && records[0].last_pc == 0x1000 &&
+      records[0].thread_id == 7 && records[0].timestamp_ns == 11 &&
+      records[0].attributed_bytes == 0 &&
+      same_stop(records[1].stop, allocation.header.walk_stop) &&
+      records[1].depth == 1 && records[1].last_pc == 0x2000 &&
+      records[1].thread_id == 13 && records[1].timestamp_ns == 17 &&
+      records[1].attributed_bytes == 12345, "snapshot metadata and weights");
+  check(copy_walk_stops<SampleHeader>(reinterpret_cast<const uint8_t*>(&cpu),
+      sizeof(cpu) - 1, sizeof(cpu), 5, cpu_weight, records) != nullptr,
+      "truncated saved-PC array rejected");
+
+  WalkStopSummary cpu_summary;
+  decltype(cpu) cpu_samples[] = {cpu, cpu};
+  check(!summarize_walk_stops<SampleHeader>(
+      reinterpret_cast<const uint8_t*>(cpu_samples), sizeof(cpu_samples),
+      sizeof(cpu_samples), 5, cpu_weight, cpu_summary), "CPU summary decoding");
+  const auto& cpu_counts = cpu_summary.counts[
+    static_cast<size_t>(Reason::unrecognized_return_address)];
+  check(cpu_counts.samples == 2 && cpu_counts.attributed_bytes == 0,
+        "CPU summary counts repeated reasons");
+  check(summarize_walk_stops<SampleHeader>(reinterpret_cast<const uint8_t*>(&cpu),
+      sizeof(cpu) - 1, sizeof(cpu), 5, cpu_weight, cpu_summary) != nullptr &&
+      cpu_counts.samples == 2, "summary rejects truncated saved-PC array");
+
+  WalkStopSummary allocation_summary;
+  decltype(allocation) allocation_samples[] = {allocation, allocation, allocation};
+  allocation_samples[1].header.sampled_bytes = 6789;
+  allocation_samples[2].header.sampled_bytes = 5;
+  allocation_samples[2].header.walk_stop.reason = Reason::depth_limit;
+  check(!summarize_walk_stops<AllocationSampleHeader>(
+      reinterpret_cast<const uint8_t*>(allocation_samples), sizeof(allocation_samples),
+      sizeof(allocation_samples), 5,
+      [](const AllocationSampleHeader& h) { return h.sampled_bytes; }, allocation_summary),
+      "allocation summary decoding");
+  const auto& missing_bounds = allocation_summary.counts[
+    static_cast<size_t>(Reason::no_stack_bounds)];
+  const auto& depth_limit = allocation_summary.counts[
+    static_cast<size_t>(Reason::depth_limit)];
+  check(missing_bounds.samples == 2 && missing_bounds.attributed_bytes == 19134 &&
+      depth_limit.samples == 1 && depth_limit.attributed_bytes == 5,
+      "allocation summary keeps sample counts and weighted bytes separate");
+  cpu.header.walk_stop.reason = static_cast<Reason>(~uint32_t{0});
+  check(!summarize_walk_stops<SampleHeader>(reinterpret_cast<const uint8_t*>(&cpu),
+      sizeof(cpu), sizeof(cpu), 5, cpu_weight, cpu_summary) &&
+      cpu_summary.counts[WalkStopSummary::known_reasons].samples == 1,
+      "summary preserves unknown-reason fallback");
+  return true;
+}
+
+CL_DOCSTRING(R"dx(Test executable-range merging on isolated tables using the
+same implementation as the CPU and allocation profilers. Returns T on success;
+signals an error naming the failed check otherwise. Tests adjacency in both
+directions, overlaps, duplicates, gaps, capacity, reset, and address limits.
+Does not start profiling or modify the live executable-range registry.)dx");
+CL_LAMBDA();
+DOCGROUP(clasp);
+CL_DEFUN bool ext__test_profile_executable_ranges() {
+  using profiler_detail::DynamicExecutableRanges;
+  using Result = profiler_detail::ExecutableRangeRegistration;
+  auto check = [](bool passed, const char* description) {
+    if (!passed)
+      SIMPLE_ERROR("Executable-range regression failed: {}", description);
+  };
+
+  DynamicExecutableRanges<1> single;
+  check(single.add(100, 200) == Result::added, "initial registration");
+  check(!single.contains(99) && single.contains(100) &&
+        single.contains(199) && !single.contains(200), "half-open bounds");
+  check(single.add(200, 300) == Result::merged, "upward adjacency at capacity");
+  check(single.add(50, 100) == Result::merged, "downward adjacency at capacity");
+  check(single.add(250, 400) == Result::merged, "upper overlap");
+  check(single.add(25, 75) == Result::merged, "lower overlap");
+  check(single.add(100, 200) == Result::merged, "contained range");
+  check(single.add(25, 400) == Result::merged, "exact duplicate");
+  check(single.add(10, 500) == Result::merged, "extension at both ends");
+  check(single.size() == 1, "merges must not consume slots");
+  for (uintptr_t pc = 10; pc < 500; ++pc)
+    check(single.contains(pc), "merged interval coverage");
+  check(!single.contains(9) && !single.contains(500), "merged interval bounds");
+
+  DynamicExecutableRanges<2> gaps;
+  check(gaps.add(10, 20) == Result::added, "first gap fixture");
+  check(gaps.add(21, 30) == Result::added, "one-byte gap must not merge");
+  check(gaps.size() == 2 && !gaps.contains(20), "gap remains unregistered");
+  check(gaps.add(100, 110) == Result::full && !gaps.contains(100),
+        "full table rejects disjoint range");
+  check(gaps.add(30, 40) == Result::merged, "full table accepts upward merge");
+  check(gaps.add(20, 21) == Result::merged, "full table accepts downward merge");
+  check(gaps.size() == 2 && gaps.contains(20) && gaps.contains(39) &&
+        !gaps.contains(40), "full-table merge preserves coverage and bounds");
+  check(gaps.add(0, 10) == Result::full && !gaps.contains(0),
+        "only the most recent entry is considered for merging");
+  gaps.reset();
+  check(gaps.size() == 0 && !gaps.contains(10) && !gaps.contains(39),
+        "reset hides previously published slots");
+  check(gaps.add(500, 600) == Result::added && gaps.size() == 1 &&
+        gaps.contains(500) && !gaps.contains(10), "reuse after reset");
+
+  DynamicExecutableRanges<3> interleaved;
+  check(interleaved.add(100, 200) == Result::added &&
+        interleaved.add(400, 500) == Result::added &&
+        interleaved.add(200, 300) == Result::added,
+        "interleaved registrations are not assumed address-ordered");
+  check(interleaved.size() == 3 && !interleaved.contains(300),
+        "interleaved gap remains unregistered");
+  check(interleaved.add(300, 400) == Result::merged &&
+        interleaved.size() == 3 && interleaved.contains(300),
+        "merge last entry without moving earlier published entries");
+
+  const uintptr_t limit = std::numeric_limits<uintptr_t>::max();
+  DynamicExecutableRanges<1> edge;
+  check(edge.add(0, 0) == Result::invalid &&
+        edge.add(limit, limit) == Result::invalid &&
+        edge.add(limit, 0) == Result::invalid && edge.size() == 0,
+        "empty and reversed ranges do not consume slots");
+  check(edge.add(limit - 20, limit - 10) == Result::added &&
+        edge.add(limit - 10, limit) == Result::merged &&
+        edge.add(limit - 30, limit - 15) == Result::merged,
+        "merges near the address limit");
+  check(edge.contains(limit - 30) && edge.contains(limit - 1) &&
+        !edge.contains(limit - 31) && !edge.contains(limit),
+        "exclusive address-limit bounds");
+  check(edge.add(0, 1) == Result::full && !edge.contains(0),
+        "no wraparound adjacency");
+  check(edge.add(40, 30) == Result::invalid && edge.size() == 1,
+        "invalid ranges are checked before capacity");
+  edge.reset();
+  check(!edge.contains(limit - 1) &&
+        edge.add(0, 1) == Result::added && edge.add(1, 2) == Result::merged &&
+        edge.contains(0) && edge.contains(1) && !edge.contains(2),
+        "reset and adjacency at address zero");
+  return true;
+}
+
+CL_DOCSTRING(R"dx(Return three values: filled dynamic executable ranges, capacity,
+and registrations rejected because that capacity was exhausted.
+These describe the shared CPU/allocation profiler executable-range cache since
+its most recent rebuild, normally the start of the first active profiler.
+They are not dropped-sample or truncated-stack counts. Reading the counters
+does not reset them. This diagnostic takes a mutex: do not call from a signal
+handler or while other threads are stopped.)dx");
+CL_LAMBDA();
+DOCGROUP(clasp);
+CL_DEFUN core::T_mv ext__profile_executable_range_stats() {
+  size_t filled, rejected;
+  {
+    std::lock_guard<std::mutex> guard(g_dynamic_exec_range_writer_lock);
+    filled = g_dynamic_exec_ranges.size();
+    rejected = g_dynamic_exec_range_rejections;
+  }
+  // Construct Lisp values only after releasing the mutex: an allocation can
+  // itself be profiled, or cause a GC that stops another registering thread.
+  return Values(Integer_O::create(filled),
+                Integer_O::create(MAX_DYNAMIC_EXEC_RANGES),
+                Integer_O::create(rejected));
+}
 
 CL_DOCSTRING(R"dx(Start the sampling profiler.
 Args:
