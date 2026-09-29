@@ -50,8 +50,12 @@ void JITMemoryReadWriteMaybeExecute(llvm::jitlink::BasicLayout& BL) {
   auto rwxProt = llvm::sys::Memory::MF_READ | llvm::sys::Memory::MF_WRITE | llvm::sys::Memory::MF_EXEC;
   for (auto& KV : BL.segments()) {
     auto& Seg = KV.second;
-    // LLVM rounds the address range to page boundaries. Pre-rounding the
-    // length with an unaligned start can include an unrelated extra page.
+    // LLVM may round the address range to page boundaries, but we really only
+    // care about the memory we're actually using, so don't align up this size
+    // and let LLVM do whatever it does. Since Seg.WorkingMem is in general NOT
+    // aligned to a page boundary (it was allocated as part of a CodeBlock) we don't
+    // want to mess with subsequent pages by giving LLVM a size that overlaps into
+    // those subsequent pages.
     uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
     sys::Memory::protectMappedMemory(MB, rwxProt);
@@ -67,7 +71,7 @@ void JITMemoryReadExecute(llvm::jitlink::BasicLayout& BL) {
   for (auto& KV : BL.segments()) {
     const auto& AG = KV.first;
     auto& Seg = KV.second;
-    uint64_t SegSize = alignTo(Seg.ContentSize + Seg.ZeroFillSize, Seg.Alignment.value());
+    uint64_t SegSize = Seg.ContentSize + Seg.ZeroFillSize;
     auto Prot = toSysMemoryProtectionFlags(AG.getMemProt());
     sys::MemoryBlock MB(Seg.WorkingMem, SegSize);
     if (Prot & sys::Memory::MF_EXEC)
