@@ -221,6 +221,7 @@ And convert everything to JIT constants."
                          (%i1 0))))
 
 (defun load-all-values (nret storage)
+  (cmp::set-thread-nvalues nret)
   (%intrinsic-call "llvm.memcpy.p0.p0.i64"
                    (list (cmp::thread-return-values) storage
                          (cmp::irc-shl nret 3 :nuw t)
