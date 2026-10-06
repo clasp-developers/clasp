@@ -1,133 +1,9 @@
 (in-package #:clasp-cleavir)
 
-(defun kwarg-presence (keyword required optional rest sys)
-  (let ((result nil) (oddreq nil)
-        (mems (list keyword)) (ktype (ctype:member sys keyword)))
-    (loop for (param . r) on required by #'cddr
-          ;; Check if it's definitely the keyword.
-          when (and (ctype:member-p sys param)
-                    (equal (ctype:member-members sys param) mems))
-            do (return-from kwarg-presence t)
-          ;; Check if it might be the keyword, if we haven't determined
-          ;; this already.
-          when (and (null result)
-                    (ctype:subtypep ktype param sys))
-            do (setf result :maybe)
-          ;; Check for an odd number of required parameters.
-          when (null r)
-            do (setf oddreq t))
-    ;; Now do the same thing with optionals, if we haven't got a maybe.
-    ;; We don't need to check equality since optional means these might
-    ;; not even be passed.
-    (when (eq result :maybe) (return-from kwarg-presence result))
-    (loop for (param) on (if oddreq (cdr optional) optional) by #'cddr
-          when (ctype:subtypep ktype param sys)
-            do (return-from kwarg-presence :maybe))
-    ;; Finally the rest.
-    (if (ctype:subtypep ktype rest sys)
-        :maybe
-        nil)))
-
-(defun kwarg-type (keyword required optional rest sys)
-  (let ((result (ctype:bottom sys)) (oddreq nil) (ambiguousp nil)
-        (mems (list keyword)) (ktype (ctype:member sys keyword)))
-    (loop for (param . r) on required by #'cddr
-          ;; If this is the first param we've seen that could be the keyword,
-          ;; and it must be the keyword, we're done.
-          when (and (not ambiguousp)
-                    (ctype:member-p sys param)
-                    (equal (ctype:member-members sys param) mems))
-            do (return-from kwarg-type (cond (r (first r))
-                                             (optional (first optional))
-                                             (t rest)))
-          when (ctype:subtypep ktype param sys)
-            do (setf result (ctype:disjoin sys result
-                                           (cond (r (first r))
-                                                 (optional (first optional))
-                                                 (t rest)))
-                     ;; Mark that we've seen the possible keyword, so that
-                     ;; future iterations don't hit the short circuit above.
-                     ambiguousp t)
-          when (null r)
-            do (setf oddreq t))
-    (loop for (param . r) on (if oddreq (cdr optional) optional) by #'cddr
-          when (ctype:subtypep ktype param sys)
-            do (setf result (ctype:disjoin sys result
-                                           (if r (first r) rest))))
-    (if (ctype:subtypep ktype rest sys)
-        (ctype:disjoin sys result rest)
-        result)))
-
-;;; Determines the real type of a keyword argument given its default type and the
-;;; result of kwarg-presence. For example if the keyword only may be present, the
-;;; default type is stuck in there.
-(defun defaulted-kwarg-type (keyword presence default required optional rest sys)
-  (ecase presence
-    ((nil) default)
-    ((t) (kwarg-type keyword required optional rest sys))
-    ((:maybe)
-     (ctype:disjoin sys default (kwarg-type keyword required optional rest sys)))))
-
-;;;
-
 (defmacro with-types (lambda-list argstype (&key default) &body body)
-  (multiple-value-bind (req opt rest keyp keys)
-      (core:process-lambda-list lambda-list 'function)
-    ;; We ignore &allow-other-keys because it's too much effort for
-    ;; type derivation. Approximate results are fine.
-    (if (and (zerop (first req)) (zerop (first opt)) (not keyp))
-        ;; If the whole lambda list is &rest, skip parsing entirely.
-        `(let ((,rest ,argstype)) ,@body)
-        ;; hard mode
-        (let ((gsys (gensym "SYS")) (gargs (gensym "ARGSTYPE"))
-              (greq (gensym "REQ")) (glr (gensym "LREQ"))
-              (gopt (gensym "OPT"))
-              (grest (gensym "REST")) (grb (gensym "REST-BOTTOM-P")))
-          `(let* ((,gsys *clasp-system*) (,gargs ,argstype)
-                  (,greq (ctype:values-required ,gargs ,gsys))
-                  (,glr (length ,greq))
-                  (,gopt (ctype:values-optional ,gargs ,gsys))
-                  (,grest (ctype:values-rest ,gargs ,gsys))
-                  (,grb (ctype:bottom-p ,grest ,gsys)))
-             (if (or (and ,grb (< (+ ,glr (length ,gopt)) ,(first req)))
-                     ,@(if (or rest keyp)
-                           nil
-                           `((> ,glr (+ ,(first req) ,(first opt))))))
-                 ;; Not enough arguments, or too many
-                 ,default
-                 ;; Valid call
-                 (let* (,@(loop for reqv in (rest req)
-                                collect `(,reqv (or (pop ,greq)
-                                                    (pop ,gopt) ,grest)))
-                        ,@(loop for (optv default -p) on (rest opt) by #'cdddr
-                                when -p
-                                  collect `(,-p (cond (,greq t)
-                                                      ((or ,gopt (not ,grb)) :maybe)
-                                                      (t nil)))
-                                collect `(,optv
-                                          (or (pop ,greq)
-                                              (ctype:disjoin ,gsys
-                                                             (env:parse-type-specifier
-                                                              ',default nil ,gsys)
-                                                             (or (pop ,gopt) ,grest)))))
-                        ,@(when rest
-                            `((,rest (ctype:values ,greq ,gopt ,grest ,gsys))))
-                        ,@(loop for (kw var def -p) on (rest keys) by #'cddddr
-                                ;; We need a -p for processing
-                                for r-p = (or -p (gensym "-P"))
-                                ;; KLUDGE: If no default is specified
-                                ;; we want T, not NIL
-                                for r-def = (or def 't)
-                                collect `(,r-p
-                                          (kwarg-presence ',kw ,greq ,gopt ,grest
-                                                          ,gsys))
-                                collect `(,var
-                                          (defaulted-kwarg-type
-                                           ',kw ,r-p
-                                           (env:parse-type-specifier
-                                            ',r-def nil ,gsys)
-                                           ,greq ,gopt ,grest ,gsys))))
-                   ,@body)))))))
+  `(domain:with-info-type (*clasp-system* ,lambda-list ,default)
+                          domain:type ,argstype
+     ,@body))
 
 (defmacro with-deriver-types (lambda-list argstype &body body)
   `(with-types ,lambda-list ,argstype
@@ -745,15 +621,15 @@
 
 (defun floor-quokind (k1 k2) (declare (ignore k1 k2)) 'integer)
 
-(define-deriver truncate (dividend &optional (divisor (integer 1 1)))
+(define-deriver truncate (dividend &optional (divisor '(integer 1 1)))
   (derive-floor-etc dividend divisor
                     #'floor-quokind #'interval-truncate #'truncate-remainder
                     *clasp-system*))
-(define-deriver floor (dividend &optional (divisor (integer 1 1)))
+(define-deriver floor (dividend &optional (divisor '(integer 1 1)))
   (derive-floor-etc dividend divisor
                     #'floor-quokind #'interval-floor #'floor-remainder
                     *clasp-system*))
-(define-deriver ceiling (dividend &optional (divisor (integer 1 1)))
+(define-deriver ceiling (dividend &optional (divisor '(integer 1 1)))
   (derive-floor-etc dividend divisor
                     #'floor-quokind #'interval-ceiling #'ceiling-remainder
                     *clasp-system*))
@@ -790,15 +666,15 @@
          'single-float)
         (t (contagion k1 k2))))
 
-(define-deriver ffloor (dividend &optional (divisor (integer 1 1)))
+(define-deriver ffloor (dividend &optional (divisor '(integer 1 1)))
   (derive-floor-etc dividend divisor
                     #'ffloor-quokind #'interval-floor #'floor-remainder
                     *clasp-system*))
-(define-deriver fceiling (dividend &optional (divisor (integer 1 1)))
+(define-deriver fceiling (dividend &optional (divisor '(integer 1 1)))
   (derive-floor-etc dividend divisor
                     #'ffloor-quokind #'interval-ceiling #'ceiling-remainder
                     *clasp-system*))
-(define-deriver ftruncate (dividend &optional (divisor (integer 1 1)))
+(define-deriver ftruncate (dividend &optional (divisor '(integer 1 1)))
   (derive-floor-etc dividend divisor
                     #'ffloor-quokind #'interval-truncate #'truncate-remainder
                     *clasp-system*))
@@ -1346,10 +1222,10 @@
 ;;; (15) ARRAYS
 
 (define-deriver make-array (dimensions
-                            &key (element-type (eql t))
+                            &key (element-type '(eql t))
                             initial-element initial-contents
-                            (adjustable (eql nil))
-                            (fill-pointer (eql nil)) (displaced-to (eql nil))
+                            (adjustable '(eql nil))
+                            (fill-pointer '(eql nil)) (displaced-to '(eql nil))
                             displaced-index-offset)
   (declare (ignore displaced-index-offset initial-element initial-contents))
   (let* ((sys *clasp-system*)
@@ -1496,8 +1372,8 @@
 (define-deriver stringp (obj)
   (derive-type-predicate obj 'string *clasp-system*))
 
-(define-deriver make-string (size &key (initial-element character)
-                                  (element-type (eql character)))
+(define-deriver make-string (size &key (initial-element 'character)
+                                  (element-type '(eql character)))
   (declare (ignore initial-element))
   (let* ((sys *clasp-system*)
          (etypes (if (ctype:member-p sys element-type)

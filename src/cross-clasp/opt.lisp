@@ -40,6 +40,14 @@
 (defun core::logand-2op (x y) (logand x y))
 (defun core::logior-2op (x y) (logior x y))
 
+(defun core::%ldb (size position integer) (ldb (byte size position) integer))
+(defun core::%ldb-test (size position integer)
+  (ldb-test (byte size position) integer))
+(defun core::%mask-field (size position integer)
+  (mask-field (byte size position) integer))
+(defun core::%dpb (newbyte size position integer)
+  (dpb newbyte (byte size position) integer))
+
 (defun core::gethash3 (key table default) (gethash key table default))
 (defun core::puthash (new key table) (setf (gethash key table) new))
 

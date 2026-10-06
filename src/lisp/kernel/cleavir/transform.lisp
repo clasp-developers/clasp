@@ -733,16 +733,15 @@ Optimizations are available for any of:
 ;;; FIXME: The &key stuff should be integrated into deftransform itself. Easier.
 (deftransform make-array (((dimensions (integer 0 #.array-dimension-limit)) &rest keys)
                           :argstype args)
-  (with-transformer-types (dimensions &key (element-type (eql t))
-                                      (initial-element null iesp)
-                                      (initial-contents null icsp)
-                                      (adjustable null)
-                                      (fill-pointer null)
-                                      (displaced-to null)
-                                      (displaced-index-offset (eql 0) diosp))
+  (with-transformer-types (dimensions &key (element-type '(eql t))
+                                      (initial-element 'nil)
+                                      (initial-contents 'nil)
+                                      (adjustable 'null)
+                                      (fill-pointer 'null)
+                                      (displaced-to 'null)
+                                      (displaced-index-offset 'nil))
     args
-    (declare (ignore dimensions displaced-index-offset
-                     initial-element initial-contents))
+    (declare (ignore dimensions))
     (let* ((sys *clasp-system*) (null (ctype:member sys nil)))
       (multiple-value-bind (element-type valid)
           (constant-type sys element-type)
@@ -750,12 +749,13 @@ Optimizations are available for any of:
                  (ctype:subtypep adjustable null sys)
                  (ctype:subtypep fill-pointer null sys)
                  (ctype:subtypep displaced-to null sys)
-                 (not diosp)
+                 (ctype:bottom-p displaced-index-offset sys)
                  ;; Handle these later. TODO. For efficiency,
                  ;; this will probably mean inlining lambdas with &key.
                  ;; Or replacing the make-array with a reqargs-only function,
                  ;; more likely.
-                 (and (null iesp) (null icsp)))
+                 (ctype:bottom-p initial-element sys)
+                 (ctype:bottom-p initial-contents sys))
             (let* ((uaet (upgraded-array-element-type element-type))
                    (make-sv (cmp::uaet-info uaet)))
               `(,make-sv dimensions nil nil))
