@@ -46,7 +46,7 @@
               (si:read-fd fd buffer)
             (declare (ignore errno))
             (if (> num-read 0)
-                (write-sequence buffer t :start 0 :end num-read)
+                (write-sequence buffer *standard-output* :start 0 :end num-read)
                 (return))))
     (si:close-fd fd) ; FIXME: unwind protect?
     (ansi-control)))
