@@ -86,6 +86,12 @@
       (2 (values `(,two-arg-fun ,@args) t))
       (t (simple-associate-args two-arg-fun (first args) (rest args)))))
 
+  ;; One trailing argument needs no COMBINER: TWO-ARG-FUN already type checks it.
+  (defun expand-inverse (two-arg-fun unary-fun combiner leading trailing)
+    (cond ((null trailing) `(,unary-fun ,leading))
+          ((null (rest trailing)) `(,two-arg-fun ,leading ,(first trailing)))
+          (t `(,two-arg-fun ,leading (,combiner ,@trailing)))))
+
   (defun simple-compare-args (fun first-arg more-args)
     (let ((next (rest more-args))
           (arg (first more-args)))
@@ -126,5 +132,6 @@
           ((2) `(not (,fun ,(first args) ,(second args))))
           (otherwise form))
         form))
-  (export '(expand-associative expand-compare expand-uncompare) "CORE")
+  (export '(expand-associative expand-inverse expand-compare expand-uncompare)
+          "CORE")
   )
