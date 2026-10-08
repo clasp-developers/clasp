@@ -38,7 +38,7 @@
 ;;; The object may be fully initialized or may require further initialization.
 (defclass creator (instruction)
   ((%index :initform nil :initarg :index :accessor index
-           :type (integer 0))))
+           :type (or null (integer 0)))))
 ;;; A creator for which a prototype value (which the eventual LTV will be
 ;;; similar to) is available.
 (defclass vcreator (creator)
@@ -55,7 +55,9 @@
 
 (defmethod print-object ((object creator) stream)
   (print-unreadable-object (object stream :type t)
-    (format stream "~d" (index object)))
+    (if (slot-boundp object '%index)
+        (format stream "~d" (index object))
+        (write-string "[no index]" stream)))
   object)
 
 (defmethod print-object ((object vcreator) stream)
@@ -63,7 +65,9 @@
     (if (slot-boundp object '%prototype)
         (prin1 (prototype object) stream)
         (write-string "[no prototype]" stream))
-    (format stream " ~d" (index object)))
+    (if (slot-boundp object '%index)
+        (format stream " ~d" (index object))
+        (write-string " [no index]" stream)))
   object)
 
 ;;; An instruction that performs some action for effect. This can include
