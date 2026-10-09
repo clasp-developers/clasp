@@ -245,34 +245,44 @@ class GlobalFunInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, GlobalFunInfo_O, "GlobalFunInfo", FunInfo_O);
 
 public:
+  T_sp _inline_data = nil<T_O>(); // inline definition
   T_sp _cmexpander = nil<T_O>(); // compiler macro expander
   T_sp _opt_id = nil<T_O>(); // optimization mark
 public:
-  GlobalFunInfo_O(InlineStatus inl, T_sp expander, T_sp opt_id)
-    : FunInfo_O(inl), _cmexpander(expander), _opt_id(opt_id) {};
+  GlobalFunInfo_O(InlineStatus inl, T_sp inline_data, T_sp expander, T_sp opt_id)
+    : FunInfo_O(inl), _inline_data(inline_data),
+      _cmexpander(expander), _opt_id(opt_id) {};
   CL_LISPIFY_NAME(GlobalFunInfo/make)
-  CL_LAMBDA(inline_status expander &optional identity)
+  CL_LAMBDA(inline_status inline_data expander &optional identity)
   CL_DEF_CLASS_METHOD
-  static GlobalFunInfo_sp make(T_sp inlstatus, T_sp expander, T_sp opt_id) {
-    return make_direct(sym_to_inl(inlstatus), expander, opt_id);
+  static GlobalFunInfo_sp make(T_sp inlstatus, T_sp inline_data,
+                               T_sp expander, T_sp opt_id) {
+    return make_direct(sym_to_inl(inlstatus), inline_data, expander, opt_id);
   }
-  static GlobalFunInfo_sp make_direct(InlineStatus inlstatus, T_sp expander, T_sp opt_id) {
-    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(inlstatus, expander, opt_id);
+  static GlobalFunInfo_sp make_direct(InlineStatus inlstatus, T_sp inline_data,
+                                      T_sp expander, T_sp opt_id) {
+    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(inlstatus, inline_data, expander, opt_id);
   }
+  CL_DEFMETHOD T_sp inline_data() const { return this->_inline_data; }
   CL_DEFMETHOD T_sp cmexpander() const { return this->_cmexpander; }
   CL_DEFMETHOD T_sp opt_id() const { return this->_opt_id; }
   virtual FunInfo_sp clone_inline(InlineStatus inl);
 };
 
 struct GlobalFunInfoV {
-  GlobalFunInfoV(FunInfo_O::InlineStatus inl, T_sp cmexpander, T_sp opt_id)
-    : _inline(inl), _cmexpander(cmexpander), _opt_id(opt_id) {};
+  GlobalFunInfoV(FunInfo_O::InlineStatus inl, T_sp inline_data,
+                 T_sp cmexpander, T_sp opt_id)
+    : _inline(inl), _inline_data(inline_data),
+      _cmexpander(cmexpander), _opt_id(opt_id) {};
   GlobalFunInfoV(GlobalFunInfo_sp info)
-    : _inline(info->inlstatus()), _cmexpander(info->cmexpander()),
-      _opt_id(info->opt_id()) {};
+    : _inline(info->inlstatus()), _inline_data(info->inline_data()),
+      _cmexpander(info->cmexpander()), _opt_id(info->opt_id()) {};
   FunInfo_O::InlineStatus _inline;
+  T_sp _inline_data;
   T_sp _cmexpander;
   T_sp _opt_id;
+  FunInfo_O::InlineStatus inline_status() const { return _inline; }
+  T_sp inline_data() const { return _inline_data; }
   T_sp cmexpander() const { return _cmexpander; }
   T_sp opt_id() const { return _opt_id; }
 };

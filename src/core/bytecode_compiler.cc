@@ -179,7 +179,7 @@ static List_sp scrub_decls(List_sp decls) {
 }
 
 FunInfo_sp GlobalFunInfo_O::clone_inline(InlineStatus inl) {
-  return make_direct(inl, cmexpander(), opt_id());
+  return make_direct(inl, inline_status(), cmexpander(), opt_id());
 }
 FunInfo_sp LocalFunInfo_O::clone_inline(InlineStatus inl) {
   return make_direct(inl, lex());
@@ -440,6 +440,19 @@ static inline FunInfo_O::InlineStatus main_env_inline(T_sp name) {
   return FunInfo_O::InlineStatus::NONE;
 }
 
+// Get the saved inline data for a function from the main environment.
+// This will generally be a cfunction saved by the file compiler.
+static inline T_sp main_env_inline_data(T_sp name) {
+  if (_sym_STARfunction_inline_dataSTAR->boundP()) {
+    T_sp t_fid = _sym_STARfunction_inline_dataSTAR->symbolValue();
+    if (t_fid.isA<HashTable_O>()) {
+      T_sp data = t_fid.as_unsafe<HashTable_O>()->gethash(name);
+      return data;
+    }
+  }
+  return nil<T_O>();
+}
+
 // FIXME: remove redundancy with cl:special-operator-p
 static bool special_operator_p(T_sp fname) {
   return fname == cl::_sym_progn
@@ -496,6 +509,7 @@ static inline T_sp main_env_fun_info(T_sp name) {
             if (opt_id.notnilp()
                 || main_env_known_fun_p(name))
               return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                                  main_env_inline_data(name),
                                                   main_env_cmf(name), opt_id);
             else return nil<T_O>();
           } if (fname->macroP())
@@ -503,6 +517,7 @@ static inline T_sp main_env_fun_info(T_sp name) {
                                                     fname->getSetfFdefinition());
           else
             return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                                main_env_inline_data(name),
                                                 main_env_cmf(name), opt_id);
         }
       }
@@ -516,12 +531,14 @@ static inline T_sp main_env_fun_info(T_sp name) {
     if (!fname->fboundp()) {
       if (opt_id.notnilp() || main_env_known_fun_p(name))
         return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                            main_env_inline_data(name),
                                             main_env_cmf(name), opt_id);
       else return nil<T_O>();
     } else if (fname->macroP())
       return GlobalMacroInfo_O::make_direct(main_env_inline(name), fname->symbolFunction());
     else
       return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                          main_env_inline_data(name),
                                           main_env_cmf(name), opt_id);
   }
 }
@@ -568,6 +585,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     if (!fname->fboundp_setf()) {
       if (opt_id.notnilp() || main_env_known_fun_p(name))
         return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                       main_env_inline_data(name),
                                        main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
     } else if (fname->macroP())
@@ -575,6 +593,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
                                        fname->getSetfFdefinition()));
     else
       return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                     main_env_inline_data(name),
                                      main_env_cmf(name), opt_id));
   } else {
     Symbol_sp fname = gc::As<Symbol_sp>(name);
@@ -583,6 +602,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     if (!fname->fboundp()) {
       if (opt_id.notnilp() || main_env_known_fun_p(name))
         return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                       main_env_inline_data(name),
                                        main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
     } else if (fname->macroP())
@@ -590,6 +610,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
                                        fname->symbolFunction()));
     else
       return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                     main_env_inline_data(name),
                                      main_env_cmf(name), opt_id));
   }
 }
@@ -1406,9 +1427,16 @@ void Module_O::link_load(T_sp env) {
   ql::list mutableLTVs;
   for (size_t i = 0; i < literal_length; ++i) {
     T_sp lit = cmodule_literals[i];
-    if (gc::IsA<Cfunction_sp>(lit))
-      literals[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
-    else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
+    if (gc::IsA<Cfunction_sp>(lit)) {
+      if (lit.as_unsafe<Cfunction_O>()->module() == this->asSmartPtr()) [[likely]]
+        literals[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
+      else
+        // inline definition - load recursively.
+        // FIXME: Loading in this environment is probably wrong, but the alternative
+        // is that we have to store the environment with the inline definition, and
+        // environments would be weird to serialize. Think harder.
+        literals[i] = lit.as_unsafe<Cfunction_O>()->link_function(env);
+    } else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
       LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
       literals[i] = ltvinfo->eval(env);
       if (!ltvinfo->read_only_p())
@@ -2278,11 +2306,23 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.assemble1(vm_code::make_closure, ctxt.cfunction_index(fun));
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
-    if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
-      if (std::holds_alternative<NoFunInfoV>(info) // Warn
-          && _sym_register_global_function_ref->fboundp() && !code_walking_p())
+    if (std::holds_alternative<NoFunInfoV>(info)) {
+      if (_sym_register_global_function_ref->fboundp() && !code_walking_p())
+        // Warn
         eval::funcall(_sym_register_global_function_ref, fnameoid, ctxt.source_info());
       ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
+    } else if (std::holds_alternative<GlobalFunInfoV>(info)) {
+      // If the thing is declared inline, try using an inline definition.
+      if (std::get<GlobalFunInfoV>(info).inline_status()
+          == FunInfo_O::InlineStatus::INLINE) {
+        T_sp inline_data = std::get<GlobalFunInfoV>(info).inline_data();
+        if (inline_data.isA<Cfunction_O>())
+          ctxt.assemble1(vm_code::_const,
+                         ctxt.cfunction_index(inline_data.as_unsafe<Cfunction_O>()));
+        else
+          ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
+      } else // Otherwise, normal global function reference.
+        ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       lfinfo->lex()->setReadP(true);
