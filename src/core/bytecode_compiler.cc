@@ -404,14 +404,6 @@ VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
   }
 }
 
-T_sp Lexenv_O::lookupSymbolMacro(Symbol_sp sname) {
-  VarInfoV info = var_info_v(sname, this->asSmartPtr());
-  if (std::holds_alternative<SymbolMacroVarInfoV>(info))
-    return std::get<SymbolMacroVarInfoV>(info).expander();
-  else
-    return nil<T_O>();
-}
-
 static inline T_sp main_env_cmf(T_sp name) {
   if (cl::_sym_compiler_macro_function->fboundp())
     return eval::funcall(cl::_sym_compiler_macro_function, name);
@@ -631,16 +623,6 @@ FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
       return FunInfoV(NoFunInfoV());
     }
   }
-}
-
-T_sp Lexenv_O::lookupMacro(Symbol_sp macroname) {
-  FunInfoV info = fun_info_v(macroname, this->asSmartPtr());
-  if (std::holds_alternative<LocalMacroInfoV>(info))
-    return std::get<LocalMacroInfoV>(info).expander();
-  else if (std::holds_alternative<GlobalMacroInfoV>(info))
-    return std::get<GlobalMacroInfoV>(info).expander();
-  else
-    return nil<T_O>();
 }
 
 bool Lexenv_O::notinlinep(T_sp fname) {
