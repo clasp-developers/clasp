@@ -56,30 +56,33 @@
   (let ((irmodule (make-instance 'bir:module)))
     (values irmodule (compile-bcmodule-into bcmodule irmodule))))
 
-;;; Process a bytecode module's literals into something easy to turn into
-;;; BIR. Note that we avoid making constants/LTVs ahead of time, since
-;;; BTB or Cleavir may optimize them away (e.g. in unreachable code).
-;;; FIXME: That's stupid, Cleavir can optimize away constants regardless.
+;;; Process a bytecode module's literals into BIR.
 ;;; TODO?: If the bytecode recorded immutable LTVs as well, and the forms (or
 ;;; bytecode functions) that produced the values, we could dump an actual
 ;;; bytecode function into a FASL with zero information loss.
-(defun compute-runtime-literals (literals mutables)
+(defun compute-runtime-literals (literals functions mutables irmodule)
+  (declare (ignore irmodule)) ; later
   (loop with nlits = (length literals)
         with result = (make-array nlits)
         for i from 0 below nlits
         for value = (aref literals i)
         do (setf (aref result i)
-                 (if (member i mutables) ; FIXME: a bit inefficient
-                     (cons `',value :ltv-mutable)
-                     (cons value nil)))
+                 (cond ((member i mutables) ; FIXME: a bit inefficient
+                        (cons `',value :ltv-mutable))
+                       ((and (typep value 'core:bytecode-simple-fun)
+                             (position value functions))
+                        (cons value :cfunction))
+                       (t (cons value nil))))
         finally (return result)))
 
 (defun compile-bcmodule-into (bcmodule irmodule)
   (let ((literals (core:bytecode-module/literals bcmodule))
-        (mutables (core:bytecode-module/mutable-literals bcmodule)))
+        (mutables (core:bytecode-module/mutable-literals bcmodule))
+        (debug-info (core:bytecode-module/debug-info bcmodule)))
     (compile-bytecode-into (core:bytecode-module/bytecode bcmodule)
-                           (core:bytecode-module/debug-info bcmodule)
-                           (compute-runtime-literals literals mutables)
+                           debug-info
+                           (compute-runtime-literals literals debug-info mutables
+                                                     irmodule)
                            irmodule)))
 
 ;;; Shared entry point for both runtime and compile-file-time.
@@ -557,12 +560,11 @@
            (build:insert inserter 'bir:load-time-value-reference
                          :inputs (list ltv) :outputs (list output))))
         ((eql :cfunction)
-         ;; A cfunction. This will be a non-closure function at runtime,
-         ;; but no function exists yet, so we have to make an ENCLOSE
+         ;; A cfunction or bytecode function.
+         ;; This will be a non-closure function at runtime,
+         ;; but no function may exist yet, so we have to make an ENCLOSE
          ;; instruction. (The translator will not put in any consing,
          ;; since again, this isn't a closure.)
-         ;; Bytecode functions don't need to go through this, although
-         ;; doing so might help inlining and such? TODO
          (let ((irfun (make-bir-function value inserter)))
            (setf (cdr c) irfun)
            (add-function context value irfun nil)
@@ -1723,9 +1725,7 @@
    (%fmap :initarg :fmap :reader nmodule-fmap)
    (%literals :initarg :literals :reader nmodule-literals)))
 
-;;; Process a bytecode cmp:module's literal infos into something easy to turn into
-;;; BIR. BIR is computed eagerly, unlike compute-runtime-literals, because it makes
-;;; translation easier. And optimization can still remove constants.
+;;; Process a bytecode cmp:module's literal infos into BIR.
 (defgeneric compute-compiled-literal (info module))
 (defmethod compute-compiled-literal ((info cmp:constant-info) module)
   (cons info (bir:constant-in-module (cmp:constant-info/value info) module)))
