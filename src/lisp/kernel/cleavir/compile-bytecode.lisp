@@ -1645,11 +1645,13 @@
 ;;; existing IR module.
 (defun compile-cfunction-into-module (irmod cfunction)
   (let* ((bcmod (cmp:cfunction/module cfunction))
+         (_ (cmp:module/link bcmod))
          (bytecode (cmp:module/create-bytecode bcmod))
          (literals (cmp:module/literals bcmod))
          (info (cmp:module/create-debug-info bcmod))
          (cliterals (compute-compiled-literals literals info irmod))
          (funmap (compile-bytecode-into bytecode info cliterals irmod)))
+    (declare (ignore _))
     (finfo-irfun (find-bcfun cfunction funmap))))
 
 ;;; We compile a function into a bytecode cmodule, and then

@@ -1214,12 +1214,16 @@ static void resolve_debug_info(BytecodeDebugInfo_sp info) {
   T_sp open_label = info->start();
   if (gc::IsA<Label_sp>(open_label))
     info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
-  else // compiler screwed up, but this is just debug info, don't raise stink
+  // The label may have already been resolved by a previous call, in which case
+  // don't mess with it. Otherwise, set it to 0 to at least match the type; somehow
+  // the compiler or something messed it up, but we don't want to raise a stink
+  // about debug info.
+  else if (!open_label.fixnump())
     info->setStart(clasp_make_fixnum(0));
   T_sp close_label = info->end();
   if (gc::IsA<Label_sp>(close_label))
     info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
-  else
+  else if (!close_label.fixnump())
     info->setEnd(clasp_make_fixnum(0));
 }
 
