@@ -632,9 +632,19 @@ CL_DEFUN T_mv core__declared_global_inline_p(T_sp name) {
   return gc::As<HashTable_sp>(_sym_STARfunctions_to_inlineSTAR->symbolValue())->gethash(name);
 }
 
+CL_DEFUN void core__proclaim_inline(T_sp name) {
+  _sym_STARfunctions_to_inlineSTAR->symbolValue().as<HashTable_O>()->hash_table_setf_gethash(name, cl::_sym_T_O);
+  _sym_STARfunctions_to_notinlineSTAR->symbolValue().as<HashTable_O>()->remhash(name);
+}
+
 DOCGROUP(clasp);
 CL_DEFUN T_mv core__declared_global_notinline_p(T_sp name) {
   return gc::As<HashTable_sp>(_sym_STARfunctions_to_notinlineSTAR->symbolValue())->gethash(name);
+}
+
+CL_DEFUN void core__proclaim_notinline(T_sp name) {
+  _sym_STARfunctions_to_notinlineSTAR->symbolValue().as<HashTable_O>()->hash_table_setf_gethash(name, cl::_sym_T_O);
+  _sym_STARfunctions_to_inlineSTAR->symbolValue().as<HashTable_O>()->remhash(name);
 }
 
 DOCGROUP(clasp);

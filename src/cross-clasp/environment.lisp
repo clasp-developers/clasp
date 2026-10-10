@@ -152,6 +152,21 @@
       ((or null clos::compiler-generic) dat)
       (t (error "Not a generic: ~s" name)))))
 
+(defun core::inline-status (name &optional env)
+  (let ((desc (trucler:describe-function m:*client* (or env *build-ce*) name)))
+    (if desc (trucler:inline desc) nil)))
+(defun (setf core::inline-status) (status name &optional env)
+  (assert (null env))
+  (assert (member status '(inline notinline nil)))
+  (setf (clostrum:operator-inline m:*client* *build-ce* name) status))
+
+(defun core::inline-data (name &optional env)
+  (let ((desc (trucler:describe-function m:*client* (or env *build-ce*) name)))
+    (if desc (trucler:inline-data desc) nil)))
+(defun (setf core::inline-data) (data name &optional env)
+  (assert (null env))
+  (setf (clostrum:operator-inline-data m:*client* *build-ce* name) data))
+
 ;;; necessary as extrinsicl/maclina's methods are specialized on vm-cross:client
 #+clasp
 (defmethod extrinsicl:symbol-value ((client client) env symbol)

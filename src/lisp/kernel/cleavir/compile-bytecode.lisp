@@ -600,6 +600,9 @@
                              :code irfun :outputs (list output))
                ;; a literal cfunction in your code is truly evil, but who knows
                ;; what evil lurks in the hearts of coders
+               ;; but actually this should be impossible, because a literal cfunction
+               ;; in compile-file will have a constant-info, so it won't be marked
+               ;; as :inline-cfunction.
                (let ((const (build:constant inserter value)))
                  (setf (cdr c) const)
                  (build:insert inserter 'bir:constant-reference

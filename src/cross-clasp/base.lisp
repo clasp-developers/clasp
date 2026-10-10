@@ -38,6 +38,12 @@
        ;; noting a function, as some code (like alexandria) does.
        (loop for f in (cddr proclamation)
              do (cmp::register-global-function-def 'defun f)))
+      ((inline)
+       (loop for n in (rest proclamation)
+             do (setf (clostrum:operator-inline m:*client* *build-ce* n) 'inline)))
+      ((notinline)
+       (loop for n in (rest proclamation)
+             do (setf (clostrum:operator-inline m:*client* *build-ce* n) 'notinline)))
       ((declaration)
        (loop for n in (rest proclamation)
              do (setf (clostrum:proclamation m:*client* *build-rte* n) t)))))
@@ -46,14 +52,29 @@
 (defun core::*make-special (var)
   (clostrum:make-variable m:*client* *build-rte* var))
 
+(defun core::proclaim-inline (fname)
+  (setf (clostrum:operator-inline m:*client* *build-ce* fname) 'inline))
+(defun core::proclaim-notinline (fname)
+  (setf (clostrum:operator-inline m:*client* *build-ce* fname) 'notinline))
+
 (defmethod common-macro-definitions:proclaim
     ((client client) declspec env)
   (declare (ignore env))
-  (if (and (consp declspec) (eq (car declspec) 'special))
-      ;; special case this so clasp can load it early.
-      `(progn
-         ,@(loop for s in (rest declspec)
-                 collect `(core::*make-special ',s)))
+  (if (consp declspec)
+      (case (car declspec)
+        ((special)
+         ;; special case this so clasp can load it early.
+         `(progn
+            ,@(loop for s in (rest declspec)
+                    collect `(core::*make-special ',s))))
+        ((inline)
+         `(progn
+            ,@(loop for s in (rest declspec)
+                    collect `(core::proclaim-inline ',s))))
+        ((notinline)
+         `(progn
+            ,@(loop for s in (rest declspec)
+                    collect `(core::proclaim-notinline ',s)))))
       ;; proclaim is defined a bit late.
       nil #+(or)`(cl:proclaim ',declspec)))
 
@@ -150,6 +171,10 @@
   (let ((env (or environment *build-rte*)))
     (extrinsicl:get-setf-expansion
      client env (macroexpand-hook) place)))
+
+(defun cmp::compute-inline-data (lambda-expression environment)
+  (maclina.compile:compile-into (maclina.compile:make-cmodule)
+                                lambda-expression environment))
 
 ;;; We define our own SETF over Common Macros'. This is because we want to
 ;;; minimize how much code actually needs to be compiled by using simple
@@ -414,6 +439,10 @@
                        ext:current-source-location
                        core::variable-source-info
                        (setf core::variable-source-info)
+                       core::inline-status (setf core::inline-status)
+                       core::proclaim-inline core::proclaim-notinline
+                       core::inline-data (setf core::inline-data)
+                       cmp::compute-inline-data
                        (setf documentation) ; used by e.g. defpackage
                        ext:add-package-local-nickname
                        core::gethash3 core::puthash
