@@ -22,11 +22,9 @@
           *compile-file-debug-dump-module* ;; Dump intermediate modules
           *compile-debug-dump-module* ;; Dump intermediate modules
           *default-linkage*
-          *compile-file-parallel-write-bitcode*
           *default-compile-linkage*
           quick-module-dump
           code-model
-          write-bitcode
           parse-bitcode
           link-bitcode-modules-together
           *irbuilder*
