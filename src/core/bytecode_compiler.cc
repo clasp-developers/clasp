@@ -1387,6 +1387,65 @@ void Module_O::link() {
   cmodule->resolve_fixup_sizes();
 }
 
+static T_sp load_literal(T_sp lit, T_sp env, bool& mutable_ltv_p) {
+  mutable_ltv_p = false;
+  if (lit.isA<Cfunction_O>())
+    return lit.as_unsafe<Cfunction_O>()->info();
+  else if (lit.isA<LoadTimeValueInfo_O>()) {
+    LoadTimeValueInfo_sp ltvinfo = lit.as_unsafe<LoadTimeValueInfo_O>();
+    if (!ltvinfo->read_only_p()) mutable_ltv_p = true;
+    return ltvinfo->eval(env);
+  } else if (lit.isA<ConstantInfo_O>())
+    return lit.as_unsafe<ConstantInfo_O>()->value();
+  else if (lit.isA<NamedConstantInfo_O>()) {
+    NamedConstantInfo_sp ncinfo = lit.as_unsafe<NamedConstantInfo_O>();
+    Symbol_sp name = ncinfo->name().as_assert<Symbol_O>();
+    VariableCell_sp cell;
+    if (env.nilp())
+      cell = name->ensureVariableCell();
+    else {
+      T_sp tcell = eval::funcall(core::_sym_fcge_ensure_vcell, env, name);
+      cell = tcell.as<VariableCell_O>();
+    }
+    return cell->value();
+  } else if (lit.isA<FunctionCellInfo_O>()) {
+    if (env.nilp())
+      return core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
+    else
+      return eval::funcall(core::_sym_fcge_ensure_fcell, env,
+                           lit.as_unsafe<FunctionCellInfo_O>()->fname());
+  }
+  else if (lit.isA<VariableCellInfo_O>()) {
+    if (env.nilp())
+      return lit.as_unsafe<VariableCellInfo_O>()->vname()->ensureVariableCell();
+    else
+      return eval::funcall(core::_sym_fcge_ensure_vcell, env,
+                           lit.as_unsafe<VariableCellInfo_O>()->vname());
+  }
+  else if (lit.isA<EnvInfo_O>())
+    return env;
+  else
+    SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
+}
+
+static FunctionDescription_sp link_function_description(Cfunction_sp cfunction) {
+  T_sp sourcePathname = nil<T_O>();
+  int lineno = -1;
+  int column = -1;
+  int filepos = -1;
+  if (cfunction->sourcePosInfo().notnilp()) {
+    SourcePosInfo_sp spi = gc::As_assert<SourcePosInfo_sp>(cfunction->sourcePosInfo());
+      // FIXME: This is ridiculous.
+    sourcePathname = gc::As_assert<FileScope_sp>(core__file_scope(clasp_make_fixnum(spi->fileHandle())))->pathname();
+    lineno = spi->lineno();
+    column = spi->column();
+    filepos = spi->filepos();
+  }
+  return makeFunctionDescription(cfunction->nname(), cfunction->lambda_list(), cfunction->doc(),
+                                 nil<T_O>(), // declares
+                                 sourcePathname, lineno, column, filepos);
+}
+
 void Module_O::link_load(T_sp env) {
   // env is global, used to look up cells.
   Module_sp cmodule = this->asSmartPtr();
@@ -1401,21 +1460,7 @@ void Module_O::link_load(T_sp env) {
   // Create the real function objects.
   for (auto const& tfun : cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
-    T_sp sourcePathname = nil<T_O>();
-    int lineno = -1;
-    int column = -1;
-    int filepos = -1;
-    if (cfunction->sourcePosInfo().notnilp()) {
-      SourcePosInfo_sp spi = gc::As_assert<SourcePosInfo_sp>(cfunction->sourcePosInfo());
-      // FIXME: This is ridiculous.
-      sourcePathname = gc::As_assert<FileScope_sp>(core__file_scope(clasp_make_fixnum(spi->fileHandle())))->pathname();
-      lineno = spi->lineno();
-      column = spi->column();
-      filepos = spi->filepos();
-    }
-    FunctionDescription_sp fdesc = makeFunctionDescription(cfunction->nname(), cfunction->lambda_list(), cfunction->doc(),
-                                                           nil<T_O>(), // declares
-                                                           sourcePathname, lineno, column, filepos);
+    FunctionDescription_sp fdesc = link_function_description(cfunction);
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
     BytecodeSimpleFun_sp func =
@@ -1430,52 +1475,10 @@ void Module_O::link_load(T_sp env) {
   // Also also record mutable LTVs.
   ql::list mutableLTVs;
   for (size_t i = 0; i < literal_length; ++i) {
+    bool mutablep = false;
     T_sp lit = cmodule_literals[i];
-    if (gc::IsA<Cfunction_sp>(lit)) {
-      if (lit.as_unsafe<Cfunction_O>()->module() == this->asSmartPtr()) [[likely]]
-        literals[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
-      else
-        // inline definition - load recursively.
-        // FIXME: Loading in this environment is probably wrong, but the alternative
-        // is that we have to store the environment with the inline definition, and
-        // environments would be weird to serialize. Think harder.
-        literals[i] = lit.as_unsafe<Cfunction_O>()->link_function(env);
-    } else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
-      LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
-      literals[i] = ltvinfo->eval(env);
-      if (!ltvinfo->read_only_p())
-        mutableLTVs << Integer_O::create(i);
-    } else if (gc::IsA<ConstantInfo_sp>(lit))
-      literals[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
-    else if (gc::IsA<NamedConstantInfo_sp>(lit)) {
-      NamedConstantInfo_sp ncinfo = lit.as_unsafe<NamedConstantInfo_O>();
-      Symbol_sp name = ncinfo->name().as_assert<Symbol_O>();
-      VariableCell_sp cell;
-      if (env.nilp())
-        cell = name->ensureVariableCell();
-      else {
-        T_sp tcell = eval::funcall(core::_sym_fcge_ensure_vcell, env, name);
-        cell = tcell.as<VariableCell_O>();
-      }
-      literals[i] = cell->value();
-    } else if (gc::IsA<FunctionCellInfo_sp>(lit)) {
-      if (env.nilp())
-        literals[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
-      else
-        literals[i] = eval::funcall(core::_sym_fcge_ensure_fcell, env, 
-                                    lit.as_unsafe<FunctionCellInfo_O>()->fname());
-    }
-    else if (gc::IsA<VariableCellInfo_sp>(lit)) {
-      if (env.nilp())
-        literals[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
-      else
-        literals[i] = eval::funcall(core::_sym_fcge_ensure_vcell, env,
-                                    lit.as_unsafe<VariableCellInfo_O>()->vname());
-    }
-    else if (gc::IsA<EnvInfo_sp>(lit))
-      literals[i] = env;
-    else
-      SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
+    literals[i] = load_literal(lit, env, mutablep);
+    if (mutablep) mutableLTVs << Integer_O::create(i);
   }
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
