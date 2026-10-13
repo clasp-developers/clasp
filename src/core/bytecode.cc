@@ -217,6 +217,22 @@ static unsigned char* long_dispatch(VirtualMachine&, unsigned char*, MultipleVal
                                     core::T_O**, core::T_O**, size_t, core::T_O**, uint8_t);
 
 SYMBOL_EXPORT_SC_(KeywordPkg, name);
+
+// Poll interrupts on backward branches so loops of pure opcodes stay cancellable.
+static inline unsigned char* vm_branch(VirtualMachine& vm, ThreadLocalState* thread, unsigned char* pc, core::T_O** sp,
+                                       int32_t rel) {
+  pc += rel;
+  if (rel < 0) {
+    core::Cons_sp head = thread->_PendingInterruptsHead.load(std::memory_order_acquire);
+    if (thread->pending_signals_p() || (static_cast<bool>(head) && head->cdr().notnilp())) {
+      // The handler can cons or unwind, so the GC must see the current frame.
+      vm._pc = pc;
+      vm._stackPointer = sp;
+      gctools::handle_all_queued_interrupts();
+    }
+  }
+  return pc;
+}
 #ifdef DEBUG_VIRTUAL_MACHINE
 __attribute__((optnone))
 #endif
@@ -564,19 +580,19 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
     case vm_code::jump_8: {
       int8_t rel = *(pc + 1);
       DBG_VM1("jump %" PRId8 "\n", rel);
-      pc += rel;
+      pc = vm_branch(vm, thread, pc, sp, rel);
       break;
     }
     case vm_code::jump_16: {
       int16_t rel = read_s16(pc + 1);
       DBG_VM("jump %" PRId16 "\n", rel);
-      pc += rel;
+      pc = vm_branch(vm, thread, pc, sp, rel);
       break;
     }
     case vm_code::jump_24: {
       int32_t rel = read_label(pc, 3);
       DBG_VM("jump %" PRId32 "\n", rel);
-      pc += rel;
+      pc = vm_branch(vm, thread, pc, sp, rel);
       break;
     }
     case vm_code::jump_if_8: {
@@ -585,7 +601,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp tval((gctools::Tagged)vm.pop(sp));
       VM_RECORD_PLAYBACK(tval.raw_(), "vm_jump_if_8");
       if (tval.notnilp())
-        pc += rel;
+        pc = vm_branch(vm, thread, pc, sp, rel);
       else
         pc += 2;
       break;
@@ -595,7 +611,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("jump-if %" PRId16 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
       if (tval.notnilp())
-        pc += rel;
+        pc = vm_branch(vm, thread, pc, sp, rel);
       else
         pc += 3;
       break;
@@ -605,7 +621,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       DBG_VM("jump-if %" PRId32 "\n", rel);
       T_sp tval((gctools::Tagged)vm.pop(sp));
       if (tval.notnilp())
-        pc += rel;
+        pc = vm_branch(vm, thread, pc, sp, rel);
       else
         pc += 4;
       break;
@@ -618,7 +634,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += 2;
       } else {
         vm.push(sp, tval.raw_());
-        pc += rel;
+        pc = vm_branch(vm, thread, pc, sp, rel);
       }
       break;
     }
@@ -630,7 +646,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
         pc += 3;
       } else {
         vm.push(sp, tval.raw_());
-        pc += rel;
+        pc = vm_branch(vm, thread, pc, sp, rel);
       }
       break;
     }
