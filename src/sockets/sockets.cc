@@ -69,25 +69,36 @@ namespace sockets {
 
 #define REINTERPRET_CAST(t, c) reinterpret_cast<t>(c)
 
-static void* safe_buffer_pointer(core::T_sp x, uint size) {
+static void* safe_buffer_pointer(core::T_sp x, int size) {
+  // Reject negative sizes here: callers pass `int length` from Lisp, and a
+  // signed -> unsigned conversion would underflow into multi-GB. The syscall
+  // layer would then receive/send gigabytes into/from a small Lisp buffer.
+  if (size < 0)
+    SIMPLE_ERROR("Negative socket buffer size: {}", size);
+  size_t usize = (size_t)size;
   bool ok = false;
   void* address;
   if (core::Str8Ns_sp str = x.asOrNull<core::Str8Ns_O>()) {
-    ok = (size <= str->arrayTotalSize());
-    address = (void*)&(*str)[0]; // str->addressOfBuffer();
+    ok = (usize <= str->arrayTotalSize());
+    address = (void*)&(*str)[0];
   } else if (core::SimpleBaseString_sp strb = x.asOrNull<core::SimpleBaseString_O>()) {
-    ok = (size <= strb->arrayTotalSize());
-    address = (void*)&(*strb)[0]; // str->addressOfBuffer();
-  } else if (core::ComplexVector_T_sp vec = x.asOrNull<core::ComplexVector_T_O>()) {
-    int divisor = vec->elementSizeInBytes();
-    size = (size + divisor - 1) / divisor;
-    ok = (size <= vec->arrayTotalSize());
-    address = &(*vec)[0];
+    ok = (usize <= strb->arrayTotalSize());
+    address = (void*)&(*strb)[0];
   } else if (core::SimpleVector_byte8_t_sp svb8 = x.asOrNull<core::SimpleVector_byte8_t_O>()) {
-    ok = (size <= svb8->arrayTotalSize());
+    ok = (usize <= svb8->arrayTotalSize());
     address = svb8->rowMajorAddressOfElement_(0);
   } else {
-    SIMPLE_ERROR("Add support for buffer {}", _rep_(x));
+    // Refuse anything else -- in particular (vector t): the previous code
+    // accepted it via a ComplexVector_T_O branch, but writing raw socket bytes
+    // over a vector of boxed Lisp pointers corrupts the GC heap (recvfrom into
+    // such a buffer would scribble network bytes over tagged pointer values).
+    // Its (size+divisor-1)/divisor capacity check also wrapped on a negative
+    // `length` cast to uint, bypassing the bounds check entirely. High-level
+    // socket wrappers use strings or (simple-array (unsigned-byte 8)).
+    SIMPLE_ERROR("Refusing socket buffer of unsupported type {}; pass a string "
+                 "or (simple-array (unsigned-byte 8)) instead -- writing raw "
+                 "network bytes into a vector of boxed values would corrupt the heap",
+                 _rep_(x));
   }
   if (!ok) {
     SIMPLE_ERROR("Lisp object does not have enough space to be a valid socket buffer: {}", _rep_(x));
@@ -725,13 +736,28 @@ DOCGROUP(clasp);
 CL_DEFUN void sockets_internal__fdset_zero(core::Pointer_sp p) { FD_ZERO((fd_set*)p->ptr()); }
 
 DOCGROUP(clasp);
-CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset) { FD_SET(fd, (fd_set*)fdset->ptr()); }
+// Range-check fd against FD_SETSIZE: FD_SET/FD_CLR/FD_ISSET index into a
+// fixed-size bit array and write/read out of bounds for fd outside [0,FD_SETSIZE).
+static inline void check_fdset_fd(gc::Fixnum fd) {
+  if (fd < 0 || fd >= FD_SETSIZE)
+    SIMPLE_ERROR("File descriptor {} out of range for fd_set [0..{})", fd, (int)FD_SETSIZE);
+}
+CL_DEFUN void sockets_internal__fdset_set(gc::Fixnum fd, core::Pointer_sp fdset) {
+  check_fdset_fd(fd);
+  FD_SET(fd, (fd_set*)fdset->ptr());
+}
 
 DOCGROUP(clasp);
-CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset) { FD_CLR(fd, (fd_set*)fdset->ptr()); }
+CL_DEFUN void sockets_internal__fdset_clr(gc::Fixnum fd, core::Pointer_sp fdset) {
+  check_fdset_fd(fd);
+  FD_CLR(fd, (fd_set*)fdset->ptr());
+}
 
 DOCGROUP(clasp);
-CL_DEFUN bool sockets_internal__fdset_isset(gc::Fixnum fd, core::Pointer_sp fdset) { return FD_ISSET(fd, (fd_set*)fdset->ptr()); }
+CL_DEFUN bool sockets_internal__fdset_isset(gc::Fixnum fd, core::Pointer_sp fdset) {
+  check_fdset_fd(fd);
+  return FD_ISSET(fd, (fd_set*)fdset->ptr());
+}
 
 DOCGROUP(clasp);
 CL_DEFUN core::T_sp sockets_internal__get_host_name() {
