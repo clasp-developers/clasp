@@ -188,6 +188,8 @@ typedef enum : claspCharacter {
 T_sp stream_open(T_sp fn, StreamDirection direction, StreamIfExists if_exists, StreamIfDoesNotExist if_does_not_exist,
                  gctools::Fixnum byte_size, int flags, T_sp external_format);
 T_sp stream_close(T_sp stream, T_sp abort);
+// Flush every FILE* clasp has open, skipping any another thread currently holds locked.
+void flush_open_c_streams();
 
 // Low level byte functions
 
