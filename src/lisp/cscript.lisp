@@ -169,6 +169,7 @@
              #~"kernel/cmp/compile-file-parallel.lisp"
              #@"fli-specs.lisp"
              #~"kernel/lsp/fli.lisp"
+             #~"kernel/lsp/shmem.lisp"
              #~"kernel/lsp/cltl2.lisp"
              #~"kernel/lsp/macroexpand-all.lisp"
              #~"kernel/cmp/external-clang.lisp"
