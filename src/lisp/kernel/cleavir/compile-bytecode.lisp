@@ -20,33 +20,45 @@
 ;;; During file compilation we will have a cmp:cfunction rather than an
 ;;; actual function.
 (defun bcfun-p (annotation)
-  (typep annotation '(or cmp:cfunction core:bytecode-simple-fun)))
+  (typep annotation '(or cmp:cfunction cmp:linked-function
+                      core:bytecode-simple-fun)))
 
 (defgeneric bcfun/locals-size (bcfun))
 (defmethod bcfun/locals-size ((bcfun core:bytecode-simple-fun))
   (core:bytecode-simple-fun/locals-frame-size bcfun))
 (defmethod bcfun/locals-size ((bcfun cmp:cfunction))
   (cmp:cfunction/nlocals bcfun))
+(defmethod bcfun/locals-size ((bcfun cmp:linked-function))
+  (cmp:linked-function/locals-frame-size bcfun))
 (defgeneric bcfun/nvars (bcfun))
 (defmethod bcfun/nvars ((bcfun core:bytecode-simple-fun))
   (core:bytecode-simple-fun/environment-size bcfun))
 (defmethod bcfun/nvars ((bcfun cmp:cfunction))
   (length (cmp:cfunction/closed bcfun)))
+(defmethod bcfun/nvars ((bcfun cmp:linked-function))
+  (cmp:linked-function/environment-size bcfun))
 (defgeneric bcfun/fname (bcfun))
 (defmethod bcfun/fname ((bcfun core:bytecode-simple-fun))
   (core:function-name bcfun))
 (defmethod bcfun/fname ((bcfun cmp:cfunction))
   (cmp:cfunction/name bcfun))
+(defmethod bcfun/fname ((bcfun cmp:linked-function))
+  (cmp:linked-function/name bcfun))
 (defgeneric bcfun/docstring (bcfun))
 (defmethod bcfun/docstring ((bcfun core:bytecode-simple-fun))
   (core:function-docstring bcfun))
 (defmethod bcfun/docstring ((bcfun cmp:cfunction))
   (cmp:cfunction/doc bcfun))
+(defmethod bcfun/docstring ((bcfun cmp:linked-function))
+  (cmp:linked-function/docstring bcfun))
 (defgeneric bcfun/spi (bcfun))
 (defmethod bcfun/spi ((bcfun core:bytecode-simple-fun))
   (function-spi bcfun))
 (defmethod bcfun/spi ((bcfun cmp:cfunction))
   (cmp:cfunction/source-pos-info bcfun))
+(defmethod bcfun/spi ((bcfun cmp:linked-function))
+  ;; FIXME
+  nil)
 
 (defgeneric compile-instruction (mnemonic inserter context &rest args))
 (defgeneric start-annotation (annotation inserter context))
@@ -593,8 +605,9 @@
                  (setf (cdr c) const)
                  (build:insert inserter 'bir:constant-reference
                                :inputs (list const) :outputs (list output))))))
-        ((eql :inline-cfunction)
-         (let ((irfun (compile-cfunction-into-module (bir:module inserter) value)))
+        ((eql :inline-function)
+         (let ((irfun (compile-linked-function-into-module
+                       (bir:module inserter) value)))
            (if (and irfun (not (bir:enclose irfun)))
                (build:insert inserter 'bir:enclose
                              :code irfun :outputs (list output))
@@ -602,7 +615,7 @@
                ;; what evil lurks in the hearts of coders
                ;; but actually this should be impossible, because a literal cfunction
                ;; in compile-file will have a constant-info, so it won't be marked
-               ;; as :inline-cfunction.
+               ;; as :inline-function.
                (let ((const (build:constant inserter value)))
                  (setf (cdr c) const)
                  (build:insert inserter 'bir:constant-reference
@@ -1641,7 +1654,17 @@
   (finfo-irfun
    (find-bcfun bcfun (compile-bcmodule-into (core:simple-fun-code bcfun) irmod))))
 
-;;; Compile an outside cfunction (like a type checker or inline function) into an
+;;; Compile a linked function (probably inline) into an existing IR module.
+(defun compile-linked-function-into-module (irmod linked-function)
+  (let* ((lmod (cmp:linked-function/code linked-function))
+         (bytecode (cmp:linked-module/bytecode lmod))
+         (literals (cmp:linked-module/literals lmod))
+         (info (cmp:linked-module/debug-info lmod))
+         (cliterals (compute-compiled-literals literals irmod))
+         (funmap (compile-bytecode-into bytecode info cliterals irmod)))
+    (finfo-irfun (find-bcfun linked-function funmap))))
+
+;;; Compile an outside cfunction (like a type checker) into an
 ;;; existing IR module.
 (defun compile-cfunction-into-module (irmod cfunction)
   (let* ((bcmod (cmp:cfunction/module cfunction))
@@ -1649,7 +1672,7 @@
          (bytecode (cmp:module/create-bytecode bcmod))
          (literals (cmp:module/literals bcmod))
          (info (cmp:module/create-debug-info bcmod))
-         (cliterals (compute-compiled-literals literals info irmod))
+         (cliterals (compute-compiled-literals literals irmod))
          (funmap (compile-bytecode-into bytecode info cliterals irmod)))
     (declare (ignore _))
     (finfo-irfun (find-bcfun cfunction funmap))))
@@ -1739,6 +1762,12 @@
   (when (cmp:cfunction/source-pos-info annot)
     (pop (origin-stack context))))
 
+;; FIXME
+(defmethod start-annotation ((annot cmp:linked-function) inserter context)
+  (declare (ignore inserter context)))
+(defmethod end-annotation ((annot cmp:linked-function) inserter context)
+  (declare (ignore inserter context)))
+
 (defun kludge-spi (spi)
   ;; pair of start and end, but it's really just a start
   (cons spi spi))
@@ -1774,50 +1803,42 @@
    (%literals :initarg :literals :reader nmodule-literals)))
 
 ;;; Process a bytecode cmp:module's literal infos into BIR.
-(defgeneric compute-compiled-literal (info debug-info module))
-(defmethod compute-compiled-literal ((info cmp:constant-info) debug-info module)
-  (declare (ignore debug-info))
+(defgeneric compute-compiled-literal (info module))
+(defmethod compute-compiled-literal ((info cmp:constant-info) module)
   (cons info (bir:constant-in-module (cmp:constant-info/value info) module)))
-(defmethod compute-compiled-literal ((info cmp:named-constant-info) debug-info module)
-  (declare (ignore debug-info))
+(defmethod compute-compiled-literal ((info cmp:named-constant-info) module)
   (assert (null *environment*)) ; FIXME
   (cons info (bir:constant-in-module
               (symbol-value (cmp:named-constant-info/name info))
               module)))
-(defmethod compute-compiled-literal ((info cmp:cfunction) debug-info module)
+(defmethod compute-compiled-literal ((info cmp:cfunction) module)
   (declare (ignore module))
-  (if (position info debug-info)
-      (cons info :cfunction)
-      ;; not in this module, so it must be inline
-      (cons info :inline-cfunction)))
-(defmethod compute-compiled-literal ((info cmp:load-time-value-info)
-                                     debug-info module)
-  (declare (ignore debug-info))
+  (cons info :cfunction))
+(defmethod compute-compiled-literal ((info cmp:linked-function) module)
+  (declare (ignore module))
+  (cons info :inline-function))
+(defmethod compute-compiled-literal ((info cmp:load-time-value-info) module)
   (cons info (bir:load-time-value-in-module
               (cmp:load-time-value-info/form info)
               (cmp:load-time-value-info/read-only-p info)
               module)))
-(defmethod compute-compiled-literal ((info cmp:function-cell-info) debug-info module)
-  (declare (ignore debug-info))
+(defmethod compute-compiled-literal ((info cmp:function-cell-info) module)
   (cons info (bir:function-cell-in-module (cmp:function-cell-info/fname info)
                                           module)))
-(defmethod compute-compiled-literal ((info cmp:variable-cell-info) debug-info module)
-  (declare (ignore debug-info))
+(defmethod compute-compiled-literal ((info cmp:variable-cell-info) module)
   (cons info (bir:variable-cell-in-module (cmp:variable-cell-info/vname info)
                                           module)))
-(defmethod compute-compiled-literal ((info cmp:env-info) debug-info module)
-  (declare (ignore debug-info))
+(defmethod compute-compiled-literal ((info cmp:env-info) module)
   ;; FIXME? There's a bit of a mismatch here. Native-compiled code probably
   ;; never refers to the environment, for now.
   (cons info (bir:constant-in-module nil module)))
 
-(defun compute-compiled-literals (literals debug-info irmodule)
-  (map 'vector (lambda (lit) (compute-compiled-literal lit debug-info irmodule))
-       literals))
+(defun compute-compiled-literals (literals irmodule)
+  (map 'vector (lambda (lit) (compute-compiled-literal lit irmodule)) literals))
 
 (defun cmodule->irmodule (bytecode literals-info debug-info)
   (let* ((irmodule (make-instance 'bir:module))
-         (literals (compute-compiled-literals literals-info debug-info irmodule))
+         (literals (compute-compiled-literals literals-info irmodule))
          (funmap (compile-bytecode-into bytecode debug-info literals irmodule)))
     (loop for info across debug-info
           when (typep info 'cmp:cfunction)
@@ -1855,7 +1876,7 @@
 (defun allocate-module-constants (constants)
   ;; Generate translator constants for any infos that are actually used.
   (loop for (cmp . ir) across constants
-        unless (or (eq ir :inline-cfunction) ; inlined out of literals vector
+        unless (or (eq ir :inline-function) ; inlined out of literals vector
                    (eq ir :inline-bytecode)
                    (and (not (typep ir 'bir:function))
                         (cleavir-set:empty-set-p (bir:readers ir)))) ; used?

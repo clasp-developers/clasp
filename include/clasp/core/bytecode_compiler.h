@@ -1308,6 +1308,12 @@ public:
   CL_DEFMETHOD T_sp docstring() const { return _FunctionDescription->docstring(); }
   CL_LISPIFY_NAME(LinkedFunction/lambdaList)
   CL_DEFMETHOD T_sp lambdaList() const { return _FunctionDescription->lambdaList(); }
+
+public:
+  // For use as a BytecodeDebugInfo.
+  T_sp start() const;
+  T_sp end() const;
+  
 };
 
 // Main entry point

@@ -1365,6 +1365,12 @@ CL_DEFMETHOD T_sp Cfunction_O::end() const {
   return clasp_make_fixnum(this->entry_point()->module_position() + this->final_size());
 }
 
+// Ditto for linked functions.
+CL_LISPIFY_NAME("core:bytecode-debug-info/start")
+CL_DEFMETHOD T_sp LinkedFunction_O::start() const { return clasp_make_fixnum(entryPcN()); }
+CL_LISPIFY_NAME("core:bytecode-debug-info/end")
+CL_DEFMETHOD T_sp LinkedFunction_O::end() const { return clasp_make_fixnum(entryPcN() + bytecodeSize()); }
+
 // Should we BTB compile this new bytecode function?
 // We say yes if there's a (speed 3) declaration anywhere in it.
 bool btb_bcfun_p(BytecodeSimpleFun_sp fun, SimpleVector_sp debug_info) {
