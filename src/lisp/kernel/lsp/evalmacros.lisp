@@ -177,7 +177,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
             (cmp::register-global-function-def 'defun ',name)
-            #+(or)
             ,@(when (eq 'inline (inline-status name env))
                 `((setf (inline-data ',name)
                         ,(cmp:bytecompile-inline-definition lambda-expression env)))))
