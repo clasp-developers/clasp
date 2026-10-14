@@ -172,7 +172,10 @@
     (extrinsicl:get-setf-expansion
      client env (macroexpand-hook) place)))
 
-(defun cmp::compute-inline-data (lambda-expression environment)
+(defun cmp::bytecompile-inline-definition (lambda-expression environment)
+  (declare (ignore lambda-expression environment))
+  nil
+  #+(or)
   (maclina.compile:compile-into (maclina.compile:make-cmodule)
                                 lambda-expression environment))
 
@@ -442,7 +445,7 @@
                        core::inline-status (setf core::inline-status)
                        core::proclaim-inline core::proclaim-notinline
                        core::inline-data (setf core::inline-data)
-                       cmp::compute-inline-data
+                       cmp::bytecompile-inline-definition
                        (setf documentation) ; used by e.g. defpackage
                        ext:add-package-local-nickname
                        core::gethash3 core::puthash

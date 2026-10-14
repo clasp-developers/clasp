@@ -1399,6 +1399,49 @@
     (or (find-oob cfunction)
         (%add-function cfunction module))))
 
+(defun %add-linked-function (value module-creator)
+  (let ((inst
+          (add-oob
+           value
+           (make-instance 'bytefunction-creator
+             :cfunction value
+             :module module-creator
+             :nlocals (cmp:linked-function/locals-frame-size value)
+             :nclosed (cmp:linked-function/environment-size value)
+             :entry-point (cmp:linked-function/entry-pc-n value)
+             :size (cmp:linked-function/bytecode-size value)))))
+    (add-instruction (make-instance 'name-attr
+                       :object inst
+                       :objname (ensure-constant
+                                 (cmp:linked-function/name value))))
+    (when (cmp:linked-function/docstring value)
+      (add-instruction (make-instance 'docstring-attr
+                         :object inst
+                         :docstring (ensure-constant
+                                     (cmp:linked-function/docstring value)))))
+    (add-instruction (make-instance 'lambda-list-attr
+                       :function inst
+                       :lambda-list (ensure-constant
+                                     (cmp:linked-function/lambda-list value))))
+    #+(or) ; source info. FIXME: should be grabbed from function
+    (let ((cspi core:*current-source-pos-info*))
+      (add-instruction
+       (make-instance 'spi-attr
+         :function inst
+         :pathname (ensure-constant
+                    (core:file-scope-pathname
+                     (core:file-scope
+                      (core:source-pos-info-file-handle cspi))))
+         :lineno (core:source-pos-info-lineno cspi)
+         :column (core:source-pos-info-column cspi)
+         :filepos (core:source-pos-info-filepos cspi))))
+    inst))
+
+(defun add-linked-function (lfunction)
+  (let ((module (ensure-linked-module (cmp:linked-function/code lfunction))))
+    (or (find-oob lfunction)
+        (%add-linked-function lfunction module))))
+
 (defmethod encode ((inst bytefunction-creator) stream)
   ;; four bytes for the entry point, two for the nlocals and nclosed,
   ;; then indices.
@@ -1446,6 +1489,12 @@
 (defmethod ensure-module-literal ((info cmp:cfunction))
   (ensure-function info))
 
+(defun ensure-linked-function (lfunction)
+  (or (find-oob lfunction) (add-linked-function lfunction)))
+
+(defmethod ensure-module-literal ((info cmp:linked-function))
+  (ensure-linked-function info))
+
 (defun ensure-ltv (info)
   (or (find-oob info)
       (add-oob
@@ -1485,6 +1534,10 @@
 (defmethod process-debug-info ((info cmp:cfunction))
   (make-instance 'debug-info-function
     :function (ensure-function info)))
+
+(defmethod process-debug-info ((info cmp:linked-function))
+  (make-instance 'debug-info-function
+    :function (ensure-linked-function info)))
 
 (defmethod process-debug-info ((item core:bytecode-debug-vars))
   (make-instance 'debug-info-vars
@@ -1695,6 +1748,38 @@
 
 (defun ensure-module (module)
   (or (find-oob module) (add-module module)))
+
+(defun add-linked-module (value)
+  ;; Add the module first to prevent recursion.
+  (let* ((bytecode (cmp:linked-module/bytecode value))
+         (literals (cmp:linked-module/literals value))
+         #+clasp
+         (info (cmp:linked-module/debug-info value))
+         (mod
+           (add-oob
+            value
+            (make-instance 'bytemodule-creator
+              :prototype value :lispcode bytecode)))
+         (cliterals
+           (map 'simple-vector #'ensure-module-literal literals)))
+    (add-instruction
+     (make-instance 'setf-literals :module mod :literals cliterals))
+    #+clasp ; debug info
+    (add-instruction
+     (make-instance 'module-debug-attr
+       :module mod
+       :infos (map 'vector #'process-debug-info info)))
+    #+clasp ; mutable LTVs
+    (let ((mutables (mutable-LTVs literals)))
+      (when mutables
+        (add-instruction
+         (make-instance 'module-mutable-ltv-attr
+           :module mod
+           :indices mutables))))
+    mod))
+
+(defun ensure-linked-module (module)
+  (or (find-oob module) (add-linked-module module)))
 
 (defmethod encode ((inst bytemodule-creator) stream)
   ;; Write instructions.

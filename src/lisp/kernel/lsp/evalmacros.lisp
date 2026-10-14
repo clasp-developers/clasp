@@ -161,11 +161,6 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     (error "Non-NIL enviornment passed to (setf inline-data)"))
   (setf (gethash name *function-inline-data*) data))
 
-;; cross-clasp uses a different Maclina-based definition,
-;; so definitely don't eval-when this.
-(defun cmp::compute-inline-data (lambda-expression env)
-  (cmp:bytecompile-into (cmp:module/make) lambda-expression env))
-
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lisp
    (multiple-value-bind (decls body doc-string) 
@@ -182,9 +177,10 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
             (cmp::register-global-function-def 'defun ',name)
+            #+(or)
             ,@(when (eq 'inline (inline-status name env))
                 `((setf (inline-data ',name)
-                        ,(cmp::compute-inline-data lambda-expression env)))))
+                        ,(cmp:bytecompile-inline-definition lambda-expression env)))))
           (setf (fdefinition ',name) #',lambda-expression)
           ',name))))
 

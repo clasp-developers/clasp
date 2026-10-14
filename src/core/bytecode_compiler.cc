@@ -711,6 +711,16 @@ size_t Context::cfunction_index(Cfunction_sp fun) const {
   Fixnum_sp nind = literals->vectorPushExtend(fun);
   return nind.unsafe_fixnum();
 }
+size_t Context::inline_index(LinkedFunction_sp fun) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = literals[i];
+    if (slit.isA<LinkedFunction_O>() && slit == fun)
+      return i;
+  }
+  Fixnum_sp nind = literals->vectorPushExtend(fun);
+  return nind.unsafe_fixnum();
+}
 
 size_t Context::fcell_index(T_sp name) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
@@ -1339,7 +1349,11 @@ CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_l
 Function_sp Cfunction_O::link_function(T_sp env) {
   this->module()->link_load(env);
   // Linking installed the GBEP in this cfunction's info. Return that.
-  return this->info();
+  return this->info().as_assert<Function_O>();
+}
+LinkedFunction_sp Cfunction_O::link_save_function() {
+  this->module()->link_save();
+  return this->info().as_assert<LinkedFunction_O>();
 }
 
 // For using a cfunction as a debug info (in BTB).
@@ -1391,6 +1405,8 @@ static T_sp load_literal(T_sp lit, T_sp env, bool& mutable_ltv_p) {
   mutable_ltv_p = false;
   if (lit.isA<Cfunction_O>())
     return lit.as_unsafe<Cfunction_O>()->info();
+  else if (lit.isA<LinkedFunction_O>())
+    return lit.as_unsafe<LinkedFunction_O>()->load(env);
   else if (lit.isA<LoadTimeValueInfo_O>()) {
     LoadTimeValueInfo_sp ltvinfo = lit.as_unsafe<LoadTimeValueInfo_O>();
     if (!ltvinfo->read_only_p()) mutable_ltv_p = true;
@@ -1498,12 +1514,103 @@ void Module_O::link_load(T_sp env) {
   if (_sym_STARautocompile_hookSTAR->boundP() && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     for (auto const& tfun : cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
-      BytecodeSimpleFun_sp fun = cfun->info();
+      BytecodeSimpleFun_sp fun = cfun->info().as_assert<BytecodeSimpleFun_O>();
       if (btb_bcfun_p(fun, debug_info)) {
         T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, env);
         fun->setSimpleFun(gc::As_assert<SimpleFun_sp>(nat));
       }
     }
+  }
+}
+
+// Link a module for use as a saved inline module (LinkedModule).
+void Module_O::link_save() {
+  link();
+  SimpleVector_byte8_t_sp bytecode = create_bytecode();
+  ComplexVector_T_sp cmodule_literals = literals();
+  size_t literal_length = cmodule_literals->length();
+  SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(literal_length);
+  SimpleVector_sp debug_info = create_debug_info();
+  LinkedModule_sp saved_module = LinkedModule_O::make(bytecode, literals, debug_info);
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  // Create the linked function objects.
+  for (auto const& tfun : cfunctions) {
+    Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
+    FunctionDescription_sp fdesc = link_function_description(cfunction);
+    Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
+    LinkedFunction_sp func = LinkedFunction_O::make(fdesc, saved_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(), cfunction->final_size());
+    cfunction->setInfo(func);
+  }
+  // Replace the cfunctions in the cmodule literal vector with
+  // linked functions in the module vector.
+  for (size_t i = 0; i < literal_length; ++i) {
+    T_sp lit = cmodule_literals[i];
+    if (lit.isA<Cfunction_O>())
+      literals[i] = lit.as_unsafe<Cfunction_O>()->info();
+    else
+      literals[i] = lit;
+  }
+  // Also replace the cfunctions in the debug info.
+  // We just modify the vector rather than cons a new one since create_debug_info
+  // already created a fresh vector for us.
+  for (auto& info : debug_info) {
+    if (info.isA<Cfunction_O>())
+      info = info.as_unsafe<Cfunction_O>()->info();
+  }
+}
+
+BytecodeSimpleFun_sp LinkedFunction_O::load_new(BytecodeModule_sp mod) const {
+  T_sp existing = nil<T_O>();
+  FunctionDescription_sp fdesc = _FunctionDescription;
+  Pointer_sp trampoline = llvmo::cmp__compile_trampoline(fdesc->functionName());
+  return core__makeBytecodeSimpleFun(fdesc, mod,
+                                     localsFrameSize(), environmentSize(),
+                                     entryPcN(), bytecodeSize(), trampoline);
+}
+
+BytecodeModule_sp LinkedModule_O::load_new() const {
+  BytecodeModule_sp mod = BytecodeModule_O::make(bytecode());
+  SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(this->literals()->length());
+  SimpleVector_sp debug_info = SimpleVector_O::make(_debug_info->length());
+  mod->setf_literals(literals);
+  mod->setf_debugInfo(debug_info);
+  return mod;
+  // actual loading done in finish_loading_into
+}
+
+void LinkedFunction_O::finish_loading_into(BytecodeSimpleFun_sp fun, T_sp env) const {
+  _Module->finish_loading_into(fun->SimpleFun_code().as<BytecodeModule_O>(), env);
+}
+
+void LinkedModule_O::finish_loading_into(BytecodeModule_sp mod, T_sp env) const {
+  // Load literals.
+  SimpleVector_sp mliterals = mod->literals().as_assert<SimpleVector_O>();
+  ql::list mutableLTVs;
+  for (size_t i = 0; i < literals()->length(); ++i) {
+    bool mutablep = false;
+    T_sp lit = literals()[i];
+    // If the literal is a linked function for this module, make a bytecode function
+    // but don't load the module (since we're in the middle of doing that).
+    if (lit.isA<LinkedFunction_O>()
+        && lit.as_unsafe<LinkedFunction_O>()->code() == this->asSmartPtr())
+      mliterals[i] = lit.as_unsafe<LinkedFunction_O>()->load_pre(mod);
+    else // Otherwise just load it normally.
+      mliterals[i] = load_literal(lit, env, mutablep);
+    if (mutablep) mutableLTVs << Integer_O::create(i);
+  }
+
+  // Load debug info. This is already done except for replacing linked functions
+  // with actual bytecode functions.
+  SimpleVector_sp mdebug = mod->debugInfo().as_assert<SimpleVector_O>();
+  for (size_t j = 0; j < debug_info()->length(); ++j) {
+    T_sp info = debug_info()[j];
+    if (info.isA<LinkedFunction_O>()
+        // this test is probably unnecessary since the above would have installed a
+        // bytecode function, but just in case.
+        && info.as_unsafe<LinkedFunction_O>()->code() == this->asSmartPtr())
+      mdebug[j] = info.as_unsafe<LinkedFunction_O>()->load_pre(mod);
+    else
+      mdebug[j] = info;
   }
 }
 
@@ -2323,9 +2430,9 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       if (std::get<GlobalFunInfoV>(info).inline_status()
           == FunInfo_O::InlineStatus::INLINE) {
         T_sp inline_data = std::get<GlobalFunInfoV>(info).inline_data();
-        if (inline_data.isA<Cfunction_O>())
+        if (inline_data.isA<LinkedFunction_O>())
           ctxt.assemble1(vm_code::_const,
-                         ctxt.cfunction_index(inline_data.as_unsafe<Cfunction_O>()));
+                         ctxt.inline_index(inline_data.as_unsafe<LinkedFunction_O>()));
         else
           ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
       } else // Otherwise, normal global function reference.
@@ -3202,6 +3309,14 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
   T_sp body = oCddr(lambda_expression);
   return compile_lambda(lambda_list, body, env, module,
                         source_location_for(lambda_expression));
+}
+
+CL_LAMBDA(lambda-expression &optional env);
+CL_DOCSTRING(R"dx(Compile the given lambda-expression into a form suitable as an inline definition, which is returned.)dx");
+CL_DEFUN LinkedFunction_sp bytecompile_inline_definition(T_sp lambda_expression, T_sp tenv) {
+  Module_sp mod = Module_O::make();
+  Cfunction_sp cfun = bytecompile_into(mod, lambda_expression, tenv);
+  return cfun->link_save_function();
 }
 
 CL_LAMBDA(lambda-expression &optional env)
