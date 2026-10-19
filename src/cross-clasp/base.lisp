@@ -9,6 +9,17 @@
         for p = (assoc 'core:lambda-name decs)
         when p return (second p)))
 
+(defmethod maclina.compile:process-declaration ((client client) env
+                                                (id (eql 'core:lambda-name)) decl
+                                                &key source)
+  (declare (ignore env source))
+  (values nil nil (list decl)))
+(defmethod maclina.compile:process-declaration ((client client) env
+                                                (id (eql 'core:lambda-list)) decl
+                                                &key source)
+  (declare (ignore env source))
+  (values nil nil (list decl)))
+
 (defmethod maclina.compile:debug-lambda-list ((client client) decls)
   (loop for (declare . decs) in decls
         for p = (assoc 'core:lambda-list decs)
