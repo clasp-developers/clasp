@@ -8,6 +8,8 @@
                #:cleavir-bir-transformations
                #:cleavir-compilation-policy
                #:cleavir-conditions
+               #:cleavir-domain
+               #:cleavir-derive-cl
                #:cleavir-bir-builder ; for compile-bytecode
                #:cleavir-stealth-mixins
                #:eclector)

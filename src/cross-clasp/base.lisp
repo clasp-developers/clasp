@@ -452,6 +452,7 @@
                        core::two-arg-> core::two-arg->=
                        core::two-arg-=
                        core::logand-2op core::logior-2op
+                       core::%ldb core::%ldb-test core::%mask-field core::%dpb
                        core::find-class-holder
                        ext::class-unboundp ext::class-get
                        cmp::warn-undefined-type

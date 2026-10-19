@@ -8,6 +8,7 @@
                     (#:ctype #:cleavir-ctype)
                     (#:build #:cleavir-bir-builder)
                     (#:env #:cleavir-env)
+                    (#:domain #:cleavir-domain)
                     (#:policy #:cleavir-compilation-policy))
   (:export
    #:*use-cst*
