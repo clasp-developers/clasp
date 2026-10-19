@@ -39,7 +39,10 @@ THE SOFTWARE.
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#pragma clang diagnostic pop
 // #include "llvm/ExecutionEngine/JIT.h"
 #include <llvm/ExecutionEngine/Interpreter.h>
 #include <llvm/IR/Verifier.h>

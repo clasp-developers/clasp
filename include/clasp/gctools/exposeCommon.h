@@ -6,7 +6,10 @@ typedef bool _Bool;
 #include <llvm/ExecutionEngine/GenericValue.h>
 // #include <llvm/ExecutionEngine/SectionMemoryManager.h>
 #include <llvm/IR/LLVMContext.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
 #include <llvm/LinkAllPasses.h>
+#pragma clang diagnostic pop
 #include <llvm/CodeGen/LinkAllCodegenComponents.h>
 #include <llvm/Bitcode/BitcodeReader.h>
 #include <llvm/Bitcode/BitcodeWriter.h>

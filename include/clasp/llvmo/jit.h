@@ -39,7 +39,10 @@ THE SOFTWARE.
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/Linker/Linker.h>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
+#pragma clang diagnostic pop
 #include <llvm/ExecutionEngine/Orc/ExecutorProcessControl.h>
 #include <llvm/MC/MCSubtargetInfo.h>
 #include <llvm/CodeGen/TargetSubtargetInfo.h>

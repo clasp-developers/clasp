@@ -114,7 +114,12 @@
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/MathExtras.h>
 #include <llvm/Support/SourceMgr.h>
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-W#warnings"
 #include <llvm/Pass.h>
+#pragma clang diagnostic pop
+
 #include <llvm/Transforms/Utils/Cloning.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/ADT/SmallVector.h>
