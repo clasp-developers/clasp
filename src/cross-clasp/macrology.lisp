@@ -157,10 +157,9 @@ Example:
       `(progn
          (eval-when (:compile-toplevel)
            (cross-clasp.clasp.cmp::register-global-function-def 'defun ',name)
-           #+(or)
            ,@(when (eq 'inline (inline-status name))
-               `((setf (inline-data name)
-                       ,(cross-clasp.clasp.cmp::compute-inline-data
+               `((setf (inline-data ',name)
+                       ,(cross-clasp.clasp.cmp::bytecompile-inline-definition
                          lambda-expression cross-clasp::*build-ce*)))))
          (setf (fdefinition ',name) #',lambda-expression)
          ',name))))

@@ -50,11 +50,9 @@
        (loop for f in (cddr proclamation)
              do (cmp::register-global-function-def 'defun f)))
       ((inline)
-       (loop for n in (rest proclamation)
-             do (setf (clostrum:operator-inline m:*client* *build-ce* n) 'inline)))
+       (mapc #'core::proclaim-inline (rest proclamation)))
       ((notinline)
-       (loop for n in (rest proclamation)
-             do (setf (clostrum:operator-inline m:*client* *build-ce* n) 'notinline)))
+       (mapc #'core::proclaim-notinline (rest proclamation)))
       ((declaration)
        (loop for n in (rest proclamation)
              do (setf (clostrum:proclamation m:*client* *build-rte* n) t)))))
@@ -64,9 +62,9 @@
   (clostrum:make-variable m:*client* *build-rte* var))
 
 (defun core::proclaim-inline (fname)
-  (setf (clostrum:operator-inline m:*client* *build-ce* fname) 'inline))
+  (setf (core::inline-status fname) 'inline))
 (defun core::proclaim-notinline (fname)
-  (setf (clostrum:operator-inline m:*client* *build-ce* fname) 'notinline))
+  (setf (core::inline-status fname) 'notinline))
 
 (defmethod common-macro-definitions:proclaim
     ((client client) declspec env)
@@ -185,10 +183,9 @@
 
 (defun cmp::bytecompile-inline-definition (lambda-expression environment)
   (declare (ignore lambda-expression environment))
-  nil
-  #+(or)
-  (maclina.compile:compile-into (maclina.compile:make-cmodule)
-                                lambda-expression environment))
+  (maclina.compile:save-function
+   (maclina.compile:compile-into (maclina.compile:make-cmodule)
+                                 lambda-expression environment)))
 
 ;;; We define our own SETF over Common Macros'. This is because we want to
 ;;; minimize how much code actually needs to be compiled by using simple
@@ -408,6 +405,16 @@
   (let ((*package* (m:symbol-value m:*client* *build-rte* '*package*)))
     (apply #'alexandria:symbolicate things)))
 
+(defun %maybe-intern (name package)
+  (let ((package
+          (etypecase package
+            ((eql t) (m:symbol-value m:*client* *build-rte* '*package*))
+            (null (return-from %maybe-intern (make-symbol name)))
+            (package package)
+            ((or symbol string character)
+             (clostrum:find-package m:*client* *build-rte* (string package))))))
+    (values (intern name package))))
+
 (defun install-environment (&optional (client m:*client*)
                               (rte *build-rte*)
                               (ce *build-ce*))
@@ -522,7 +529,9 @@
                                (alexandria:format-symbol
                                 . %format-symbol)
                                (alexandria:symbolicate
-                                . %symbolicate))
+                                . %symbolicate)
+                               (alexandria::maybe-intern
+                                . %maybe-intern))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for mname in '(eclector.reader:quasiquote
