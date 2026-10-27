@@ -1438,9 +1438,15 @@
     inst))
 
 (defun add-linked-function (lfunction)
-  (let ((module (ensure-linked-module (cmp:linked-function/code lfunction))))
-    (or (find-oob lfunction)
-        (%add-linked-function lfunction module))))
+  (let ((name (cmp:linked-function/lookup-name lfunction)))
+    (if name
+        (add-instruction
+         (make-instance 'fdefinition-lookup
+           :name (ensure-constant name)))
+        (let ((module (ensure-linked-module
+                       (cmp:linked-function/code lfunction))))
+          (or (find-oob lfunction)
+            (%add-linked-function lfunction module))))))
 
 (defmethod encode ((inst bytefunction-creator) stream)
   ;; four bytes for the entry point, two for the nlocals and nclosed,

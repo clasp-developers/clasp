@@ -181,8 +181,8 @@
     (extrinsicl:get-setf-expansion
      client env (macroexpand-hook) place)))
 
-(defun cmp::bytecompile-inline-definition (lambda-expression environment)
-  (declare (ignore lambda-expression environment))
+(defun cmp::bytecompile-inline-definition (name lambda-expression environment)
+  (declare (ignore name))
   (maclina.compile:save-function
    (maclina.compile:compile-into (maclina.compile:make-cmodule)
                                  lambda-expression environment)))

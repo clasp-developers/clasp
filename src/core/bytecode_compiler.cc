@@ -3317,12 +3317,14 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
                         source_location_for(lambda_expression));
 }
 
-CL_LAMBDA(lambda-expression &optional env);
-CL_DOCSTRING(R"dx(Compile the given lambda-expression into a form suitable as an inline definition, which is returned.)dx");
-CL_DEFUN LinkedFunction_sp bytecompile_inline_definition(T_sp lambda_expression, T_sp tenv) {
+CL_LAMBDA(name lambda-expression &optional env);
+CL_DOCSTRING(R"dx(Compile the given lambda-expression into a form suitable as an inline definition, which is returned. If NAME is not NIL, it is used to look up a definition for this inline function during FASL loading.)dx");
+CL_DEFUN LinkedFunction_sp bytecompile_inline_definition(T_sp name, T_sp lambda_expression, T_sp tenv) {
   Module_sp mod = Module_O::make();
   Cfunction_sp cfun = bytecompile_into(mod, lambda_expression, tenv);
-  return cfun->link_save_function();
+  LinkedFunction_sp lfun = cfun->link_save_function();
+  lfun->setLookupName(name);
+  return lfun;
 }
 
 CL_LAMBDA(lambda-expression &optional env)

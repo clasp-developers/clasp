@@ -1240,6 +1240,14 @@ public:
   // The runtime function if this has been linked before. This is in a slot so that
   // we don't duplicate loaded inline functions unnecessarily.
   std::atomic<T_sp> _info;
+  // Name of the function. When compiling FASLs, this can optionally be set,
+  // in which case the FASL will have a simple fdefinition lookup instead of
+  // creating the whole function/module/etc. again. If it's NIL we do the full
+  // creation. This shouldn't normally happen, but may happen if an inlined
+  // function gets optimized out but not its local function, or something?
+  // This is independent of the function description name and is used for no
+  // other purpose.
+  T_sp _LookupName = nil<T_O>();
 
 public:
   LinkedFunction_O(FunctionDescription_sp fdesc,
@@ -1267,6 +1275,9 @@ public:
   CL_DEFMETHOD size_t entryPcN() const { return _EntryPcN; }
   CL_LISPIFY_NAME(LinkedFunction/bytecodeSize)
   CL_DEFMETHOD size_t bytecodeSize() const { return _BytecodeSize; }
+  CL_LISPIFY_NAME(LinkedFunction/lookupName)
+  CL_DEFMETHOD T_sp lookupName() const { return _LookupName; }
+  void setLookupName(T_sp name) { _LookupName = name; }
 
   // Return the info if it's a bytecode function already, or else make a bytecode
   // function.
