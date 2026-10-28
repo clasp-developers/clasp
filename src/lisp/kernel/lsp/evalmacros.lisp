@@ -158,7 +158,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
         nil)))
 (defun (setf inline-data) (data name &optional env)
   (when env
-    (error "Non-NIL enviornment passed to (setf inline-data)"))
+    (error "Non-NIL environment passed to (setf inline-data)"))
   (setf (gethash name *function-inline-data*) data))
 
 (defmacro defun (name lambda-list &body body &environment env)
