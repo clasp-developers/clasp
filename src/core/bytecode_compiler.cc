@@ -453,6 +453,14 @@ static inline T_sp main_env_inline_data(T_sp name) {
   return nil<T_O>();
 }
 
+CL_DEFUN void cmp__install_inline_data(T_sp name, T_sp data) {
+  if (_sym_STARfunction_inline_dataSTAR->boundP()) {
+    T_sp t_fid = _sym_STARfunction_inline_dataSTAR->symbolValue();
+    if (t_fid.isA<HashTable_O>())
+      t_fid.as_unsafe<HashTable_O>()->setf_gethash(name, data);
+  }
+}
+
 // FIXME: remove redundancy with cl:special-operator-p
 static bool special_operator_p(T_sp fname) {
   return fname == cl::_sym_progn

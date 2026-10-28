@@ -156,6 +156,9 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
     (if (typep info 'cmp:global-fun-info)
         (cmp:global-fun-info/inline-data info)
         nil)))
+;; This is a slightly more general cmp:install-inline-data.
+;; The only real virtue of install-inline-data is that it's available in
+;; the primitive image.
 (defun (setf inline-data) (data name &optional env)
   (when env
     (error "Non-NIL environment passed to (setf inline-data)"))
@@ -183,7 +186,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
                         ,(cmp:bytecompile-inline-definition lambda-expression env)))))
           (setf (fdefinition ',name) #',lambda-expression)
           ,@(when inlinep
-              `((setf (inline-data ',name) (fdefinition ',name))))
+              `((cmp:install-inline-data ',name #',name)))
           ',name))))
 
 (defmacro define-compiler-macro (name vl &rest body &environment env)

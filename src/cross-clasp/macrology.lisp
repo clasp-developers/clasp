@@ -153,15 +153,18 @@ Example:
                (declare (lambda-name ,name))
                ,@decls
                ,@(when doc (list doc))
-               (block ,(function-block-name name) ,@body))))
+               (block ,(function-block-name name) ,@body)))
+          (inlinep (eq 'inline (inline-status name))))
       `(progn
          (eval-when (:compile-toplevel)
            (cross-clasp.clasp.cmp::register-global-function-def 'defun ',name)
-           ,@(when (eq 'inline (inline-status name))
+           ,@(when inlinep
                `((setf (inline-data ',name)
                        ,(cross-clasp.clasp.cmp::bytecompile-inline-definition
                          lambda-expression cross-clasp::*build-ce*)))))
          (setf (fdefinition ',name) #',lambda-expression)
+         ,@(when inlinep
+             `((cross-clasp.clasp.cmp:install-inline-data ',name #',name)))
          ',name))))
 
 ;;; We avoid clobbering build macros while building Clasp itself, because that
