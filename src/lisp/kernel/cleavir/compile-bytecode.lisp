@@ -606,8 +606,15 @@
                  (build:insert inserter 'bir:constant-reference
                                :inputs (list const) :outputs (list output))))))
         ((eql :inline-function)
-         (let ((irfun (compile-linked-function-into-module
-                       (bir:module inserter) value)))
+         (let* ((data (cmp:inline-function-info/data value))
+                (irfun
+                  (etypecase data
+                    (cmp:linked-function
+                     (compile-linked-function-into-module
+                      (bir:module inserter) value))
+                    (core:bytecode-simple-fun
+                     (compile-bytefun-into-module
+                      (bir:module inserter) value)))))
            (if (and irfun (not (bir:enclose irfun)))
                (build:insert inserter 'bir:enclose
                              :code irfun :outputs (list output))
@@ -1814,7 +1821,7 @@
 (defmethod compute-compiled-literal ((info cmp:cfunction) module)
   (declare (ignore module))
   (cons info :cfunction))
-(defmethod compute-compiled-literal ((info cmp:linked-function) module)
+(defmethod compute-compiled-literal ((info cmp:inline-function-info) module)
   (declare (ignore module))
   (cons info :inline-function))
 (defmethod compute-compiled-literal ((info cmp:load-time-value-info) module)
