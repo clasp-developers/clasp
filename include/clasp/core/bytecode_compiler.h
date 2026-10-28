@@ -564,7 +564,7 @@ public:
   size_t new_literal_index(T_sp literal) const;
   size_t ltv_index(T_sp form, bool read_only_p) const;
   size_t cfunction_index(Cfunction_sp fun) const;
-  size_t inline_index(LinkedFunction_sp fun) const;
+  size_t inline_index(T_sp name, T_sp fun) const;
   size_t fcell_index(T_sp name) const;
   size_t vcell_index(Symbol_sp name) const;
   size_t env_index() const;
@@ -969,10 +969,8 @@ public:
   CL_DEFMETHOD Symbol_sp name() { return this->_name; }
 };
 
-
 // Compiler literals marker representing the load-time lookup of a
-// function cell. (Clasp doesn't currently have function cells, so the
-// "cell" will just be the function name.)
+// function cell.
 FORWARD(FunctionCellInfo)
 class FunctionCellInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, FunctionCellInfo_O, "FunctionCellInfo", General_O);
@@ -1025,6 +1023,33 @@ public:
   static EnvInfo_sp make() {
     return gctools::GC<EnvInfo_O>::allocate<gctools::RuntimeStage>();
   }
+};
+
+// Compiler literals marker representing the load-time lookup of a
+// function (not cell). Used for inline definitions, thus the name.
+FORWARD(InlineFunctionInfo)
+class InlineFunctionInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, InlineFunctionInfo_O, "InlineFunctionInfo",
+             General_O);
+
+public:
+  InlineFunctionInfo_O(T_sp fname, T_sp data) : _fname(fname), _data(data) {}
+
+public:
+  T_sp _fname; // Name of the function being looked up.
+  // An actual definition (LinkedFunction or bytecode function) for the
+  // (native) compiler to use. It's discarded by the FASL dumper.
+  T_sp _data;
+public:
+  CL_LISPIFY_NAME(InlineFunctionInfo/make)
+  CL_DEF_CLASS_METHOD
+  static InlineFunctionInfo_sp make(T_sp fname, T_sp data) { return gctools::GC<InlineFunctionInfo_O>::allocate<gctools::RuntimeStage>(fname, data); }
+
+public:
+  CL_LISPIFY_NAME(InlineFunctionInfo/fname)
+  CL_DEFMETHOD T_sp fname() { return this->_fname; }
+  CL_LISPIFY_NAME(InlineFunctionInfo/data)
+  CL_DEFMETHOD T_sp data() { return this->_data; }
 };
 
 class Module_O : public General_O {
@@ -1240,14 +1265,6 @@ public:
   // The runtime function if this has been linked before. This is in a slot so that
   // we don't duplicate loaded inline functions unnecessarily.
   std::atomic<T_sp> _info;
-  // Name of the function. When compiling FASLs, this can optionally be set,
-  // in which case the FASL will have a simple fdefinition lookup instead of
-  // creating the whole function/module/etc. again. If it's NIL we do the full
-  // creation. This shouldn't normally happen, but may happen if an inlined
-  // function gets optimized out but not its local function, or something?
-  // This is independent of the function description name and is used for no
-  // other purpose.
-  T_sp _LookupName = nil<T_O>();
 
 public:
   LinkedFunction_O(FunctionDescription_sp fdesc,
@@ -1275,9 +1292,6 @@ public:
   CL_DEFMETHOD size_t entryPcN() const { return _EntryPcN; }
   CL_LISPIFY_NAME(LinkedFunction/bytecodeSize)
   CL_DEFMETHOD size_t bytecodeSize() const { return _BytecodeSize; }
-  CL_LISPIFY_NAME(LinkedFunction/lookupName)
-  CL_DEFMETHOD T_sp lookupName() const { return _LookupName; }
-  void setLookupName(T_sp name) { _LookupName = name; }
 
   // Return the info if it's a bytecode function already, or else make a bytecode
   // function.

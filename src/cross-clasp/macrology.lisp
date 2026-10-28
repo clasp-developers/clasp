@@ -160,7 +160,7 @@ Example:
            ,@(when (eq 'inline (inline-status name))
                `((setf (inline-data ',name)
                        ,(cross-clasp.clasp.cmp::bytecompile-inline-definition
-                         name lambda-expression cross-clasp::*build-ce*)))))
+                         lambda-expression cross-clasp::*build-ce*)))))
          (setf (fdefinition ',name) #',lambda-expression)
          ',name))))
 

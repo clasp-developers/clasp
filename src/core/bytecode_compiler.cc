@@ -711,14 +711,16 @@ size_t Context::cfunction_index(Cfunction_sp fun) const {
   Fixnum_sp nind = literals->vectorPushExtend(fun);
   return nind.unsafe_fixnum();
 }
-size_t Context::inline_index(LinkedFunction_sp fun) const {
+size_t Context::inline_index(T_sp name, T_sp fun) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   for (size_t i = 0; i < literals->length(); ++i) {
     T_sp slit = literals[i];
-    if (slit.isA<LinkedFunction_O>() && slit == fun)
+    if (slit.isA<InlineFunctionInfo_O>() &&
+        slit.as_unsafe<InlineFunctionInfo_O>()->data() == fun)
       return i;
   }
-  Fixnum_sp nind = literals->vectorPushExtend(fun);
+  InlineFunctionInfo_sp info = InlineFunctionInfo_O::make(name, fun);
+  Fixnum_sp nind = literals->vectorPushExtend(info);
   return nind.unsafe_fixnum();
 }
 
@@ -1411,9 +1413,23 @@ static T_sp load_literal(T_sp lit, T_sp env, bool& mutable_ltv_p) {
   mutable_ltv_p = false;
   if (lit.isA<Cfunction_O>())
     return lit.as_unsafe<Cfunction_O>()->info();
-  else if (lit.isA<LinkedFunction_O>())
-    return lit.as_unsafe<LinkedFunction_O>()->load(env);
-  else if (lit.isA<LoadTimeValueInfo_O>()) {
+  else if (lit.isA<InlineFunctionInfo_O>()) {
+    T_sp name = lit.as_unsafe<InlineFunctionInfo_O>()->fname();
+    FunctionCell_sp cell;
+    if (env.nilp()) {
+      if (name.consp()) { // setf function
+        Symbol_sp fn = oCadr(name).as<Symbol_O>();
+        cell = fn->ensureSetfFunctionCell();
+      } else {
+        Symbol_sp fn = name.as<Symbol_O>();
+        cell = fn->ensureFunctionCell();
+      }
+    } else {
+      T_sp tcell = eval::funcall(core::_sym_fcge_ensure_fcell, env, name);
+      cell = tcell.as<FunctionCell_O>();
+    }
+    return cell->real_function();
+  } else if (lit.isA<LoadTimeValueInfo_O>()) {
     LoadTimeValueInfo_sp ltvinfo = lit.as_unsafe<LoadTimeValueInfo_O>();
     if (!ltvinfo->read_only_p()) mutable_ltv_p = true;
     return ltvinfo->eval(env);
@@ -2438,7 +2454,7 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
         T_sp inline_data = std::get<GlobalFunInfoV>(info).inline_data();
         if (inline_data.isA<LinkedFunction_O>())
           ctxt.assemble1(vm_code::_const,
-                         ctxt.inline_index(inline_data.as_unsafe<LinkedFunction_O>()));
+                         ctxt.inline_index(fnameoid, inline_data.as_unsafe<LinkedFunction_O>()));
         else
           ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
       } else // Otherwise, normal global function reference.
@@ -3317,14 +3333,12 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
                         source_location_for(lambda_expression));
 }
 
-CL_LAMBDA(name lambda-expression &optional env);
-CL_DOCSTRING(R"dx(Compile the given lambda-expression into a form suitable as an inline definition, which is returned. If NAME is not NIL, it is used to look up a definition for this inline function during FASL loading.)dx");
-CL_DEFUN LinkedFunction_sp bytecompile_inline_definition(T_sp name, T_sp lambda_expression, T_sp tenv) {
+CL_LAMBDA(lambda-expression &optional env);
+CL_DOCSTRING(R"dx(Compile the given lambda-expression into a form suitable as an inline definition, which is returned.)dx");
+CL_DEFUN LinkedFunction_sp bytecompile_inline_definition(T_sp lambda_expression, T_sp tenv) {
   Module_sp mod = Module_O::make();
   Cfunction_sp cfun = bytecompile_into(mod, lambda_expression, tenv);
-  LinkedFunction_sp lfun = cfun->link_save_function();
-  lfun->setLookupName(name);
-  return lfun;
+  return cfun->link_save_function();
 }
 
 CL_LAMBDA(lambda-expression &optional env)

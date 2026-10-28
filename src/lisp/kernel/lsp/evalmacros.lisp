@@ -179,7 +179,7 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
             (cmp::register-global-function-def 'defun ',name)
             ,@(when (eq 'inline (inline-status name env))
                 `((setf (inline-data ',name)
-                        ,(cmp:bytecompile-inline-definition name lambda-expression env)))))
+                        ,(cmp:bytecompile-inline-definition lambda-expression env)))))
           (setf (fdefinition ',name) #',lambda-expression)
           ',name))))
 
