@@ -2452,9 +2452,10 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       if (std::get<GlobalFunInfoV>(info).inline_status()
           == FunInfo_O::InlineStatus::INLINE) {
         T_sp inline_data = std::get<GlobalFunInfoV>(info).inline_data();
-        if (inline_data.isA<LinkedFunction_O>())
+        if (inline_data.isA<LinkedFunction_O>()
+            || inline_data.isA<BytecodeSimpleFun_O>())
           ctxt.assemble1(vm_code::_const,
-                         ctxt.inline_index(fnameoid, inline_data.as_unsafe<LinkedFunction_O>()));
+                         ctxt.inline_index(fnameoid, inline_data));
         else
           ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
       } else // Otherwise, normal global function reference.

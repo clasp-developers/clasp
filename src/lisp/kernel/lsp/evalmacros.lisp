@@ -171,16 +171,19 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
               `(lambda ,lambda-list
                  (declare (lambda-name ,name) ,@decls)
                  ,@doclist
-                 (block ,sname ,@body))))
+                 (block ,sname ,@body)))
+            (inlinep (eq 'inline (inline-status name env))))
        `(progn 
           (eval-when (:compile-toplevel)
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
             (cmp::register-global-function-def 'defun ',name)
-            ,@(when (eq 'inline (inline-status name env))
+            ,@(when inlinep
                 `((setf (inline-data ',name)
                         ,(cmp:bytecompile-inline-definition lambda-expression env)))))
           (setf (fdefinition ',name) #',lambda-expression)
+          ,@(when inlinep
+              `((setf (inline-data ',name) (fdefinition ',name))))
           ',name))))
 
 (defmacro define-compiler-macro (name vl &rest body &environment env)
