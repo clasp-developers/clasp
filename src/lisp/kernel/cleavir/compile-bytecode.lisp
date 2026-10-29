@@ -588,51 +588,50 @@
          ;; A bytecode function to inline. We build up the IR a new every time,
          ;; so that each call site gets its own function to (hopefully) interpolate.
          (let ((irfun (compile-bytefun-into-module (bir:module inserter) value)))
-           (if (and irfun (not (bir:enclose irfun)))
-               (build:insert inserter 'bir:enclose
-                             :code irfun :outputs (list output))
-               ;; function is not suitable for whatever weird reason.
-               ;; This can happen when a literal function appears; e.g. in
-               ;; `(lambda (x) (funcall ,(lambda (y) y) x)) the inner lambda
-               ;; will have been closed by the caller already.
-               ;; FIXME? Hypothetically there may be a problem with such literals
-               ;; if they are used in non-callee contexts. For example
-               ;; (eq f ,(lambda ...)) would always return false since the function
-               ;; is made anew by B2B here. Might need to note literals as inline
-               ;; functions or not in the module. That's so dumb! Oh well.
-               ;; Just dump a constant.
+           (cond ((and irfun (not (bir:enclose irfun)))
+                  (setf (cdr c) irfun)
+                  (build:insert inserter 'bir:enclose
+                                :code irfun :outputs (list output)))
+                 (t
+                  ;; function is not suitable for whatever weird reason.
+                  ;; This can happen when a literal function appears; e.g. in
+                  ;; `(lambda (x) (funcall ,(lambda (y) y) x)) the inner lambda
+                  ;; will have been closed by the caller already.
+                  ;; FIXME? Hypothetically there may be a problem with such literals
+                  ;; if they are used in non-callee contexts. For example
+                  ;; (eq f ,(lambda ...)) would always return false since the function
+                  ;; is made anew by B2B here. Might need to note literals as inline
+                  ;; functions or not in the module. That's so dumb! Oh well.
+                  ;; Just dump a constant.
                (let ((const (build:constant inserter value)))
                  (setf (cdr c) const)
                  (build:insert inserter 'bir:constant-reference
-                               :inputs (list const) :outputs (list output))))))
+                               :inputs (list const) :outputs (list output)))))))
         ((eql :inline-function)
          (let* ((data (cmp:inline-function-info/data value))
                 (irfun
                   (etypecase data
                     (cmp:linked-function
                      (compile-linked-function-into-module
-                      (bir:module inserter) value))
+                      (bir:module inserter) data))
                     (core:bytecode-simple-fun
                      (compile-bytefun-into-module
-                      (bir:module inserter) value)))))
-           (if (and irfun (not (bir:enclose irfun)))
-               (build:insert inserter 'bir:enclose
-                             :code irfun :outputs (list output))
-               ;; a literal cfunction in your code is truly evil, but who knows
-               ;; what evil lurks in the hearts of coders
-               ;; but actually this should be impossible, because a literal cfunction
-               ;; in compile-file will have a constant-info, so it won't be marked
-               ;; as :inline-function.
-               (let ((const (build:constant inserter value)))
-                 (setf (cdr c) const)
-                 (build:insert inserter 'bir:constant-reference
-                               :inputs (list const) :outputs (list output))))))
+                      (bir:module inserter) data)))))
+           (assert (and irfun (not (bir:enclose irfun))))
+           (setf (cdr c) irfun)
+           (build:insert inserter 'bir:enclose
+                         :code irfun :outputs (list output))))
         (bir:constant
          (build:insert inserter 'bir:constant-reference
                        :inputs (list existing) :outputs (list output)))
         (bir:load-time-value
          (build:insert inserter 'bir:load-time-value-reference
                        :inputs (list existing) :outputs (list output)))
+        (bir:function
+         ;; happens with inline functions that are used more than once.
+         ;; The function was compiled by a previous :inline-function above.
+         (build:insert inserter 'bir:enclose :code existing
+                       :outputs (list output)))
         (cmp:cfunction
          ;; should be impossible as cfunctions only appear once,
          ;; but just in case
@@ -1658,8 +1657,9 @@
 ;;; Compile an outside bytecode function (presently just an inline function) into
 ;;; an existing IR module.
 (defun compile-bytefun-into-module (irmod bcfun)
-  (finfo-irfun
-   (find-bcfun bcfun (compile-bcmodule-into (core:simple-fun-code bcfun) irmod))))
+  (let ((funmap (compile-bcmodule-into (core:simple-fun-code bcfun) irmod)))
+    (finfo-irfun
+     (find-bcfun bcfun funmap))))
 
 ;;; Compile a linked function (probably inline) into an existing IR module.
 (defun compile-linked-function-into-module (irmod linked-function)
