@@ -488,15 +488,16 @@
         collect (typecase annotated-arg
                   (bc-constant-arg
                    (let* ((arg (bc-constant-arg-value annotated-arg))
-                          (seen-index-value (gethash arg coallesce-indexes)))
-                     (if (null seen-index-value)
-                         (let* ((index (vector-push-extend arg literals))
-                                (index-value (make-bc-constant-ref :ref index)))
-                           (setf (gethash arg coallesce-indexes) index-value)
-                           (when (> index +longify-trigger+)
-                             (setf long-arg t))
-                           index-value)
-                         seen-index-value)))
+                          (index-value
+                            (or (gethash arg coallesce-indexes)
+                                (setf (gethash arg coallesce-indexes)
+                                      (make-bc-constant-ref
+                                       :ref (vector-push-extend arg literals))))))
+                     ;; A reused literal can be past the trigger too, so
+                     ;; check the reference, not just a newly pushed index.
+                     (when (> (bc-constant-ref-ref index-value) +longify-trigger+)
+                       (setf long-arg t))
+                     index-value))
                   (bc-label-arg annotated-arg)
                   (bc-register-arg annotated-arg)
                   (t (error "Illegal arg ~a" annotated-arg)))
