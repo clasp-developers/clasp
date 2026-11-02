@@ -1182,11 +1182,12 @@ struct loadltv {
   void attr_clasp_module_mutable_ltv(uint32_t bytes) {
     BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
     uint16_t nltvs = read_u16();
-    ql::list mutableLTVs;
+    SimpleVector_byte16_t_sp litkinds = SimpleVector_byte16_t_O::make(2*nltvs);
     for (size_t i = 0; i < nltvs; ++i) {
-      mutableLTVs << Integer_O::create(read_u16());
+      (*litkinds)[i*2 + 0] = read_u16();
+      (*litkinds)[i*2 + 1] = static_cast<uint16_t>(BytecodeModule_O::LitKind::LTVMut);
     }
-    mod->setf_mutableLiterals(mutableLTVs.cons());
+    mod->setLiteralKinds(litkinds);
   }
 
   void op_attribute() {

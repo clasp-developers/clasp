@@ -1097,6 +1097,8 @@ public:
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
   // Create the debug info vector. Can only be run after link.
   CL_DEFMETHOD SimpleVector_sp create_debug_info();
+  // Create the literal kinds vector. Can only be run after link.
+  CL_DEFMETHOD SimpleVector_byte16_t_sp create_literal_kinds();
   // Link, then create actual run-time function objects and a bytecode module.
   // Suitable for cl:compile.
   CL_DEFMETHOD void link_load(T_sp env);

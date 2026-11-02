@@ -30,19 +30,34 @@ public:
   // During loadltv, this will be default-initialized for a bit, hence
   // why it's not a SimpleVector_sp.
   T_sp _Literals = nil<T_O>();
-  // A list of literal indices.
-  // This indicates the constant at that index is a mutable
-  // load-time-value (i.e. from (load-time-value foo [nil]))
-  // which is important to know for BTB compilation.
-  // Some kind of bit vector could be used instead, but it's
-  // expected that these load time values will be rare.
-  T_sp _MutableLiterals = nil<T_O>();
+  // An encoding indicating the meaning of the literals. This is only used by
+  // the native compiler, not the bytecode itself, which doesn't care.
+  // Keeping the meanings around lets bytecode modules be compiled without
+  // the need for guesswork.
+  // The vector is a sparse encoding. The first entry is an index, and then the
+  // second is a code indicating what the literal at that index means.
+  // If there is no index for a literal, then interpretation depends on the
+  // type of the literal.
+  // * function and variable cells are interpreted as themselves (not constants)
+  // * bytecode functions are interpreted as local functions (again not constants)
+  // * everything else is interpreted as a constant.
+  // So if someone put a literal function cell in code, that can be indicated by
+  // marking that literal as a constant.
+  // Codes are as follows:
+  // 0 constant
+  // 1 load-time-value, read-only
+  // 2 load-time-value, mutable
+  // 3 inline function
+  // 4 environment
+  // Function and variable cells, and local functions, don't have codes for now
+  // because they are unambiguously specified as a negation.
+  SimpleVector_byte16_t_sp _LiteralKinds;
   // A simple-vector of BytecodeDebugInfo_sp (below)
   // ordered by start index
   T_sp _DebugInfo = nil<T_O>();
-  // If this bytecode has been native-compiled, this can be
-  // the corresponding JITDylib_sp.
-  T_sp _NativeModule = nil<T_O>();
+
+public:
+  enum class LitKind { Constant, LTV, LTVMut, InlineFun, Env };
 
 public:
   BytecodeModule_O(SimpleVector_byte8_t_sp bytecode)
@@ -52,6 +67,9 @@ public:
   static BytecodeModule_sp make(SimpleVector_byte8_t_sp bytecode) {
     // When we can gc code allocate entire block in GC memory
     BytecodeModule_sp codeblock = gctools::GC<BytecodeModule_O>::allocate<gctools::RuntimeStage>(bytecode);
+    // default the literal kinds
+    // FIXME: could just share an empty vector and save some consing
+    codeblock->setLiteralKinds(SimpleVector_byte16_t_O::make(0));
     // Register the new module for the debugger
     codeblock->register_for_debug();
     return codeblock;
@@ -64,12 +82,11 @@ public:
   CL_DEFMETHOD T_sp debugInfo() const { return this->_DebugInfo; }
   CL_LISPIFY_NAME(BytecodeModule/setfDebugInfo)
   CL_DEFMETHOD void setf_debugInfo(T_sp info) { this->_DebugInfo = info; }
-  CL_LISPIFY_NAME(BytecodeModule/mutableLiterals)
-  CL_DEFMETHOD T_sp mutableLiterals() const { return this->_MutableLiterals; }
-  void setf_mutableLiterals(T_sp indices) { this->_MutableLiterals = indices; }
-  CL_LISPIFY_NAME(BytecodeModule/nativeModule)
-  CL_DEFMETHOD T_sp nativeModule() const { return this->_NativeModule; }
-  void setf_nativeModule(T_sp mod) { this->_NativeModule = mod; }
+  CL_LISPIFY_NAME(BytecodeModule/literalKinds)
+  CL_DEFMETHOD T_sp literalKinds() const { return this->_LiteralKinds; }
+  void setLiteralKinds(SimpleVector_byte16_t_sp kinds) {
+    this->_LiteralKinds = kinds;
+  }
 
   // Add the module to *all-bytecode-modules* for the debugger.
   void register_for_debug();

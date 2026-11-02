@@ -1310,6 +1310,52 @@ SimpleVector_sp Module_O::create_debug_info() {
   return debuginfos;
 }
 
+// Template is an idiotic workaround for the fact we use this with both a
+// complex vector (from compiler modules) or simple vector (from linked modules)
+template <class Vec_sp>
+static SimpleVector_byte16_t_sp do_create_literal_kinds(Vec_sp cliterals) {
+  struct KindPair {
+    uint16_t index;
+    BytecodeModule_O::LitKind kind;
+  };
+  std::vector<KindPair> kinds;
+  for (size_t i = 0; i < cliterals->length(); ++i) {
+    T_sp lit = cliterals[i];
+    if (lit.isA<InlineFunctionInfo_O>())
+      kinds.emplace_back(i, BytecodeModule_O::LitKind::InlineFun);
+    else if (lit.isA<LoadTimeValueInfo_O>())
+      kinds.emplace_back(i,
+                         lit.as_unsafe<LoadTimeValueInfo_O>()->read_only_p()
+                         ? BytecodeModule_O::LitKind::LTV
+                         : BytecodeModule_O::LitKind::LTVMut);
+    else if (lit.isA<ConstantInfo_O>()) {
+      T_sp value = lit.as_unsafe<ConstantInfo_O>()->value();
+      // mark some kinds of objects specifically as being literal constants.
+      // See BytecodeModule_O for an explanation of the scheme.
+      if (value.isA<VariableCell_O>() || value.isA<FunctionCell_O>()
+          || value.isA<BytecodeSimpleFun_O>())
+        kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
+    }
+    // FIXME: named constants we always drop a Constant for in case they're
+    // something stupid like a literal function. But we should have access
+    // to the value, so we should be able to check it.
+    else if (lit.isA<NamedConstantInfo_O>())
+      kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
+    else if (lit.isA<EnvInfo_O>())
+      kinds.emplace_back(i, BytecodeModule_O::LitKind::Env);
+  }
+  SimpleVector_byte16_t_sp ret = SimpleVector_byte16_t_O::make(kinds.size()*2);
+  for (size_t i = 0; i < kinds.size(); ++i) {
+    ret[i*2 + 0] = kinds[i].index;
+    ret[i*2 + 1] = static_cast<uint16_t>(kinds[i].kind);
+  }
+  return ret;
+}
+
+SimpleVector_byte16_t_sp Module_O::create_literal_kinds() {
+  return do_create_literal_kinds(literals());
+}
+
 // Replacement for CL:REPLACE, which isn't available here.
 static void replace_bytecode(SimpleVector_byte8_t_sp dest, ComplexVector_byte8_t_sp src, size_t start1, size_t start2,
                              size_t end2) {
@@ -1417,8 +1463,7 @@ void Module_O::link() {
   cmodule->resolve_fixup_sizes();
 }
 
-static T_sp load_literal(T_sp lit, T_sp env, bool& mutable_ltv_p) {
-  mutable_ltv_p = false;
+static T_sp load_literal(T_sp lit, T_sp env) {
   if (lit.isA<Cfunction_O>())
     return lit.as_unsafe<Cfunction_O>()->info();
   else if (lit.isA<InlineFunctionInfo_O>()) {
@@ -1439,11 +1484,10 @@ static T_sp load_literal(T_sp lit, T_sp env, bool& mutable_ltv_p) {
     return cell->real_function();
   } else if (lit.isA<LoadTimeValueInfo_O>()) {
     LoadTimeValueInfo_sp ltvinfo = lit.as_unsafe<LoadTimeValueInfo_O>();
-    if (!ltvinfo->read_only_p()) mutable_ltv_p = true;
     return ltvinfo->eval(env);
-  } else if (lit.isA<ConstantInfo_O>())
+  } else if (lit.isA<ConstantInfo_O>()) {
     return lit.as_unsafe<ConstantInfo_O>()->value();
-  else if (lit.isA<NamedConstantInfo_O>()) {
+  } else if (lit.isA<NamedConstantInfo_O>()) {
     NamedConstantInfo_sp ncinfo = lit.as_unsafe<NamedConstantInfo_O>();
     Symbol_sp name = ncinfo->name().as_assert<Symbol_O>();
     VariableCell_sp cell;
@@ -1468,8 +1512,7 @@ static T_sp load_literal(T_sp lit, T_sp env, bool& mutable_ltv_p) {
       return eval::funcall(core::_sym_fcge_ensure_vcell, env,
                            lit.as_unsafe<VariableCellInfo_O>()->vname());
   }
-  else if (lit.isA<EnvInfo_O>())
-    return env;
+  else if (lit.isA<EnvInfo_O>()) return env;
   else
     SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
 }
@@ -1501,6 +1544,7 @@ void Module_O::link_load(T_sp env) {
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(literal_length);
   SimpleVector_sp debug_info = cmodule->create_debug_info();
+  SimpleVector_byte16_t_sp litkinds = cmodule->create_literal_kinds();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
@@ -1518,14 +1562,8 @@ void Module_O::link_load(T_sp env) {
   // real bytecode functions in the module vector.
   // Also replace load-time-value infos with the evaluated forms,
   // and resolve cells.
-  // Also also record mutable LTVs.
-  ql::list mutableLTVs;
-  for (size_t i = 0; i < literal_length; ++i) {
-    bool mutablep = false;
-    T_sp lit = cmodule_literals[i];
-    literals[i] = load_literal(lit, env, mutablep);
-    if (mutablep) mutableLTVs << Integer_O::create(i);
-  }
+  for (size_t i = 0; i < literal_length; ++i)
+    literals[i] = load_literal(cmodule_literals[i], env);
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
   // already created a fresh vector for us.
@@ -1536,7 +1574,7 @@ void Module_O::link_load(T_sp env) {
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
   bytecode_module->setf_debugInfo(debug_info);
-  bytecode_module->setf_mutableLiterals(mutableLTVs.cons());
+  bytecode_module->setLiteralKinds(litkinds);
   // Native-compile anything that really seems like it should be,
   // and install the resulting simple funs.
   // We can only do native compilations after the module is
@@ -1615,9 +1653,8 @@ void LinkedFunction_O::finish_loading_into(BytecodeSimpleFun_sp fun, T_sp env) c
 void LinkedModule_O::finish_loading_into(BytecodeModule_sp mod, T_sp env) const {
   // Load literals.
   SimpleVector_sp mliterals = mod->literals().as_assert<SimpleVector_O>();
-  ql::list mutableLTVs;
+  SimpleVector_byte16_t_sp litkinds = do_create_literal_kinds(literals());
   for (size_t i = 0; i < literals()->length(); ++i) {
-    bool mutablep = false;
     T_sp lit = literals()[i];
     // If the literal is a linked function for this module, make a bytecode function
     // but don't load the module (since we're in the middle of doing that).
@@ -1625,8 +1662,7 @@ void LinkedModule_O::finish_loading_into(BytecodeModule_sp mod, T_sp env) const 
         && lit.as_unsafe<LinkedFunction_O>()->code() == this->asSmartPtr())
       mliterals[i] = lit.as_unsafe<LinkedFunction_O>()->load_pre(mod);
     else // Otherwise just load it normally.
-      mliterals[i] = load_literal(lit, env, mutablep);
-    if (mutablep) mutableLTVs << Integer_O::create(i);
+      mliterals[i] = load_literal(lit, env);
   }
 
   // Load debug info. This is already done except for replacing linked functions
@@ -1642,6 +1678,8 @@ void LinkedModule_O::finish_loading_into(BytecodeModule_sp mod, T_sp env) const 
     else
       mdebug[j] = info;
   }
+
+  mod->setLiteralKinds(litkinds);
 }
 
 void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
