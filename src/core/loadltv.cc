@@ -1179,13 +1179,13 @@ struct loadltv {
     }
   }
 
-  void attr_clasp_module_mutable_ltv(uint32_t bytes) {
-    BytecodeModule_sp mod = gc::As<BytecodeModule_sp>(get_ltv(read_index()));
-    uint16_t nltvs = read_u16();
-    SimpleVector_byte16_t_sp litkinds = SimpleVector_byte16_t_O::make(2*nltvs);
-    for (size_t i = 0; i < nltvs; ++i) {
-      (*litkinds)[i*2 + 0] = read_u16();
-      (*litkinds)[i*2 + 1] = static_cast<uint16_t>(BytecodeModule_O::LitKind::LTVMut);
+  void attr_module_literal_kinds(uint32_t bytes) {
+    BytecodeModule_sp mod = get_ltv(read_index()).as<BytecodeModule_O>();
+    uint16_t nlits = read_u16();
+    SimpleVector_byte16_t_sp litkinds = SimpleVector_byte16_t_O::make(2*nlits);
+    for (size_t i = 0; i < nlits; ++i) {
+      litkinds[i*2 + 0] = read_u16();
+      litkinds[i*2 + 1] = read_u16();
     }
     mod->setLiteralKinds(litkinds);
   }
@@ -1209,8 +1209,8 @@ struct loadltv {
     } else if (name == "clasp:module-debug-info"
                || name == "module-debug-info") {
       attr_clasp_module_debug_info(attrbytes);
-    } else if (name == "clasp:module-mutable-ltv") {
-      attr_clasp_module_mutable_ltv(attrbytes);
+    } else if (name == "module-literal-kinds") {
+      attr_module_literal_kinds(attrbytes);
     } else if (name == "clasp:module-native") {
       attr_clasp_module_native(attrbytes);
     } else {
