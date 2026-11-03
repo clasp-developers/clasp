@@ -679,7 +679,7 @@ size_t Context::literal_index(T_sp literal) const {
   return nind.unsafe_fixnum();
 }
 
-size_t Context::named_constant_index(Symbol_sp name) const {
+size_t Context::named_constant_index(Symbol_sp name, T_sp value) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   for (size_t i = 0; i < literals->length(); ++i) {
     T_sp slit = literals[i];
@@ -687,7 +687,7 @@ size_t Context::named_constant_index(Symbol_sp name) const {
         && slit.as_unsafe<NamedConstantInfo_O>()->name() == name)
       return i;
   }
-  auto nind = literals->vectorPushExtend(NamedConstantInfo_O::make(name));
+  auto nind = literals->vectorPushExtend(NamedConstantInfo_O::make(name, value));
   return nind.unsafe_fixnum();
 }
 
@@ -1310,6 +1310,11 @@ SimpleVector_sp Module_O::create_debug_info() {
   return debuginfos;
 }
 
+static bool specially_marked_constant_p(T_sp value) {
+  return value.isA<VariableCell_O>() || value.isA<FunctionCell_O>()
+    || value.isA<BytecodeSimpleFun_O>();
+}
+
 // Template is an idiotic workaround for the fact we use this with both a
 // complex vector (from compiler modules) or simple vector (from linked modules)
 template <class Vec_sp>
@@ -1332,16 +1337,14 @@ static SimpleVector_byte16_t_sp do_create_literal_kinds(Vec_sp cliterals) {
       T_sp value = lit.as_unsafe<ConstantInfo_O>()->value();
       // mark some kinds of objects specifically as being literal constants.
       // See BytecodeModule_O for an explanation of the scheme.
-      if (value.isA<VariableCell_O>() || value.isA<FunctionCell_O>()
-          || value.isA<BytecodeSimpleFun_O>())
+      if (specially_marked_constant_p(value))
         kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
     }
-    // FIXME: named constants we always drop a Constant for in case they're
-    // something stupid like a literal function. But we should have access
-    // to the value, so we should be able to check it.
-    else if (lit.isA<NamedConstantInfo_O>())
-      kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
-    else if (lit.isA<EnvInfo_O>())
+    else if (lit.isA<NamedConstantInfo_O>()) {
+      T_sp value = lit.as_unsafe<NamedConstantInfo_O>()->value();
+      if (specially_marked_constant_p(value))
+        kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
+    } else if (lit.isA<EnvInfo_O>())
       kinds.emplace_back(i, BytecodeModule_O::LitKind::Env);
   }
   SimpleVector_byte16_t_sp ret = SimpleVector_byte16_t_O::make(kinds.size()*2);
@@ -1706,17 +1709,16 @@ void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
   }
 }
 
-void compile_named_constant(Symbol_sp name, Lexenv_sp env, const Context context) {
+void compile_named_constant(Symbol_sp name, T_sp value,
+                            Lexenv_sp env, const Context context) {
   (void)env;
   if (context.receiving() == 0)
     return; // No value required, so do nothing
   // Otherwise we need at least one value
-  // FIXME: hardcodes that nil is bound to nil, which it might not be in some
-  // bizarre FCGE
-  if (name.nilp())
+  if (value.nilp())
     context.assemble0(vm_code::nil);
   else
-    context.assemble1(vm_code::_const, context.named_constant_index(name));
+    context.assemble1(vm_code::_const, context.named_constant_index(name, value));
   // now handle values
   switch (context.receiving()) {
   case 1: break; // already on the stack, we're good
@@ -1807,8 +1809,9 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
       context.assemble1(vm_code::symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
-      compile_named_constant(sym, env, context);
-      // Avoid the pop code below - compile-literal handles it.
+      T_sp value = std::get<ConstantVarInfoV>(info).value();
+      compile_named_constant(sym, value, env, context);
+      // Avoid the pop code below - compile_named_constant handles it.
       return;
     } else if (std::holds_alternative<NoVarInfoV>(info)) {
       if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())

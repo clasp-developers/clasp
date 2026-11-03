@@ -560,7 +560,7 @@ public:
 
 public:
   size_t literal_index(T_sp literal) const;
-  size_t named_constant_index(Symbol_sp name) const;
+  size_t named_constant_index(Symbol_sp name, T_sp value) const;
   size_t new_literal_index(T_sp literal) const;
   size_t ltv_index(T_sp form, bool read_only_p) const;
   size_t cfunction_index(Cfunction_sp fun) const;
@@ -954,19 +954,24 @@ class NamedConstantInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, NamedConstantInfo_O, "NamedConstantInfo", General_O);
 
 public:
-  NamedConstantInfo_O(Symbol_sp name) : _name(name) {}
+  NamedConstantInfo_O(Symbol_sp name, T_sp value) : _name(name), _value(value) {}
 
 public:
   // the name of the constant variable.
   Symbol_sp _name;
+  T_sp _value;
 public:
   CL_LISPIFY_NAME(NamedConstantInfo/make)
   CL_DEF_CLASS_METHOD
-  static NamedConstantInfo_sp make(Symbol_sp name) { return gctools::GC<NamedConstantInfo_O>::allocate<gctools::RuntimeStage>(name); }
+  static NamedConstantInfo_sp make(Symbol_sp name, T_sp value) {
+    return gctools::GC<NamedConstantInfo_O>::allocate<gctools::RuntimeStage>(name, value);
+  }
 
 public:
   CL_LISPIFY_NAME(NamedConstantInfo/name)
   CL_DEFMETHOD Symbol_sp name() { return this->_name; }
+  CL_LISPIFY_NAME(NamedConstantInfo/value)
+  CL_DEFMETHOD T_sp value() { return this->_value; }
 };
 
 // Compiler literals marker representing the load-time lookup of a
