@@ -68,34 +68,58 @@
   (let ((irmodule (make-instance 'bir:module)))
     (values irmodule (compile-bcmodule-into bcmodule irmodule))))
 
+;;; see bytecode.h
+(defun decode-literal-kind (kind)
+  (ecase kind
+    ((0) :constant)
+    ((1) :ltv-readonly)
+    ((2) :ltv-mutable)
+    ((3) :inline-bytecode)
+    ((4) :environment)))
+
+(defun literal-kind (kinds index)
+  ;; minor speed improvement would be to only scan through this once
+  ;; but that's chump shit next to actual compilation, so who cares
+  (let ((pos (position index kinds)))
+    (if pos
+        (decode-literal-kind (aref kinds (1+ pos)))
+        nil)))
+
 ;;; Process a bytecode module's literals into BIR.
-;;; TODO?: If the bytecode recorded immutable LTVs as well, and the forms (or
-;;; bytecode functions) that produced the values, we could dump an actual
-;;; bytecode function into a FASL with zero information loss.
-(defun compute-runtime-literals (literals functions mutables irmodule)
-  (declare (ignore irmodule)) ; later
+(defun compute-runtime-literals (literals kinds irmodule)
   (loop with nlits = (length literals)
         with result = (make-array nlits)
         for i from 0 below nlits
         for value = (aref literals i)
-        do (setf (aref result i)
-                 (cond ((member i mutables) ; FIXME: a bit inefficient
-                        (cons `',value :ltv-mutable))
-                       ((typep value 'core:bytecode-simple-fun)
-                        (if (position value functions)
-                            (cons value :cfunction)
-                            (cons value :inline-bytecode)))
-                       (t (cons value nil))))
+        for kind = (literal-kind kinds i)
+        for bir
+          = (ecase kind
+              ((nil) (typecase value
+                       (core:function-cell
+                        (bir:function-cell-in-module (fcell/name value) irmodule))
+                       (core:variable-cell
+                        (bir:variable-cell-in-module (vcell/name value) irmodule))
+                       (core:bytecode-simple-fun :cfunction)
+                       (t (bir:constant-in-module value irmodule))))
+              ((:constant) (bir:constant-in-module value irmodule))
+              ((:ltv-readonly)
+               (bir:load-time-value-in-module `',value t irmodule))
+              ((:ltv-mutable)
+               (bir:load-time-value-in-module `',value nil irmodule))
+              ((:inline-bytecode) :inline-bytecode)
+              ((:environment)
+               ;; see FIXME in compute-compiled-literal
+               (bir:constant-in-module nil irmodule)))
+        do (setf (aref result i) (cons value bir))
         finally (return result)))
 
 (defun compile-bcmodule-into (bcmodule irmodule)
   (let ((literals (core:bytecode-module/literals bcmodule))
-        (mutables (core:bytecode-module/mutable-literals bcmodule))
+        (kinds (core:bytecode-module/literal-kinds bcmodule))
         (debug-info (core:bytecode-module/debug-info bcmodule)))
     (compile-bytecode-into (core:bytecode-module/bytecode bcmodule)
                            debug-info
-                           (compute-runtime-literals literals debug-info mutables
-                                                     irmodule)
+                           (compute-runtime-literals literals kinds irmodule)
                            irmodule)))
 
 ;;; Shared entry point for both runtime and compile-file-time.
@@ -472,6 +496,7 @@
                      :attributes nil
                      :module module))
          (start (make-start-block function bytecode-function)))
+    (declare (ignore start))
     (set:nadjoinf (bir:functions module) function)
     function))
 
@@ -560,18 +585,12 @@
     (let ((output (make-instance 'bir:output))
           (value (car c)) (existing (cdr c)))
       (etypecase existing
-        (null ; constant, not yet processed
-         (let ((const (build:constant inserter value)))
-           (setf (cdr c) const)
-           (build:insert inserter 'bir:constant-reference
-                         :inputs (list const) :outputs (list output))))
-        ((member :ltv-mutable :ltv-readonly)
-         (let ((ltv (bir:load-time-value-in-module
-                     value (eql existing :ltv-readonly)
-                     (bir:module inserter))))
-           (setf (cdr c) ltv)
-           (build:insert inserter 'bir:load-time-value-reference
-                         :inputs (list ltv) :outputs (list output))))
+        (bir:constant
+         (build:insert inserter 'bir:constant-reference
+                       :inputs (list existing) :outputs (list output)))
+        (bir:load-time-value
+         (build:insert inserter 'bir:load-time-value-reference
+                       :inputs (list existing) :outputs (list output)))
         ((eql :cfunction)
          ;; A cfunction or bytecode function.
          ;; This will be a non-closure function at runtime,
@@ -584,30 +603,9 @@
            (build:insert inserter 'bir:enclose
                          :code irfun
                          :outputs (list output))))
-        ((eql :inline-bytecode)
+        ((eql :inline-function)
          ;; A bytecode function to inline. We build up the IR a new every time,
          ;; so that each call site gets its own function to (hopefully) interpolate.
-         (let ((irfun (compile-bytefun-into-module (bir:module inserter) value)))
-           (cond ((and irfun (not (bir:enclose irfun)))
-                  (setf (cdr c) irfun)
-                  (build:insert inserter 'bir:enclose
-                                :code irfun :outputs (list output)))
-                 (t
-                  ;; function is not suitable for whatever weird reason.
-                  ;; This can happen when a literal function appears; e.g. in
-                  ;; `(lambda (x) (funcall ,(lambda (y) y) x)) the inner lambda
-                  ;; will have been closed by the caller already.
-                  ;; FIXME? Hypothetically there may be a problem with such literals
-                  ;; if they are used in non-callee contexts. For example
-                  ;; (eq f ,(lambda ...)) would always return false since the function
-                  ;; is made anew by B2B here. Might need to note literals as inline
-                  ;; functions or not in the module. That's so dumb! Oh well.
-                  ;; Just dump a constant.
-               (let ((const (build:constant inserter value)))
-                 (setf (cdr c) const)
-                 (build:insert inserter 'bir:constant-reference
-                               :inputs (list const) :outputs (list output)))))))
-        ((eql :inline-function)
          (let* ((data (cmp:inline-function-info/data value))
                 (irfun
                   (etypecase data
@@ -618,20 +616,15 @@
                      (compile-bytefun-into-module
                       (bir:module inserter) data)))))
            (assert (and irfun (not (bir:enclose irfun))))
-           (setf (cdr c) irfun)
            (build:insert inserter 'bir:enclose
                          :code irfun :outputs (list output))))
-        (bir:constant
-         (build:insert inserter 'bir:constant-reference
-                       :inputs (list existing) :outputs (list output)))
-        (bir:load-time-value
-         (build:insert inserter 'bir:load-time-value-reference
-                       :inputs (list existing) :outputs (list output)))
-        (bir:function
-         ;; happens with inline functions that are used more than once.
-         ;; The function was compiled by a previous :inline-function above.
-         (build:insert inserter 'bir:enclose :code existing
-                       :outputs (list output)))
+        ;; Same as the above, but the value is just an actual bytecode function,
+        ;; as we get from compute-runtime-literals.
+        ((eql :inline-bytecode)
+         (let ((irfun (compile-bytefun-into-module (bir:module inserter) value)))
+           (assert (and irfun (not (bir:enclose irfun))))
+           (build:insert inserter 'bir:enclose
+                         :code irfun :outputs (list output))))
         (cmp:cfunction
          ;; should be impossible as cfunctions only appear once,
          ;; but just in case
@@ -1287,7 +1280,7 @@
   (destructuring-bind (entry) args
     (let* ((vcell (car entry)) (existing (cdr entry))
            (vname (vcell/name vcell))
-           (const (or existing (build:vcell inserter vname)))
+           (const existing)
            (bname (symbolicate '#:bind- vname))
            (next (build:make-iblock inserter :name bname))
            (value (stack-pop context)))
@@ -1361,9 +1354,7 @@
   (destructuring-bind (entry) args
     (let* ((fcell (car entry)) (existing (cdr entry))
            (fname (fcell/name fcell))
-           (const (or existing
-                      (setf (cdr entry)
-                            (build:fcell inserter fname))))
+           (const existing)
            (attributes (clasp-cleavir::function-attributes fname))
            (ftype (ctype:single-value (clasp-cleavir::global-ftype fname)
                                       clasp-cleavir:*clasp-system*))
@@ -1884,7 +1875,6 @@
   ;; Generate translator constants for any infos that are actually used.
   (loop for (cmp . ir) across constants
         unless (or (eq ir :inline-function) ; inlined out of literals vector
-                   (eq ir :inline-bytecode)
                    (and (not (typep ir 'bir:function))
                         (cleavir-set:empty-set-p (bir:readers ir)))) ; used?
           ;; Pre-populate the translation constants
