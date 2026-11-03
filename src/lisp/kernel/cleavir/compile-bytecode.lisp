@@ -80,10 +80,12 @@
 (defun literal-kind (kinds index)
   ;; minor speed improvement would be to only scan through this once
   ;; but that's chump shit next to actual compilation, so who cares
-  (let ((pos (position index kinds)))
-    (if pos
-        (decode-literal-kind (aref kinds (1+ pos)))
-        nil)))
+  (loop with len = (length kinds)
+        for i from 0 by 2
+        when (>= i len)
+          return nil
+        when (= (aref kinds i) index)
+          return (decode-literal-kind (aref kinds (1+ i)))))
 
 ;;; Process a bytecode module's literals into BIR.
 (defun compute-runtime-literals (literals kinds irmodule)
