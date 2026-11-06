@@ -481,6 +481,7 @@
 
 ;; Move constants into the literals vector and replace them with
 ;; indices in the program.  Also accumulate patchpoints for labels
+;; and if we need a long instruction, mark that.
 (defun literalify-arguments (instr literals coallesce-indexes)
   (loop named literalify
         with long-arg = nil
@@ -493,8 +494,6 @@
                                 (setf (gethash arg coallesce-indexes)
                                       (make-bc-constant-ref
                                        :ref (vector-push-extend arg literals))))))
-                     ;; A reused literal can be past the trigger too, so
-                     ;; check the reference, not just a newly pushed index.
                      (when (> (bc-constant-ref-ref index-value) +longify-trigger+)
                        (setf long-arg t))
                      index-value))
