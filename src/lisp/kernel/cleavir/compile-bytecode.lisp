@@ -84,7 +84,12 @@
           return (decode-literal-kind (aref kinds (1+ i)))))
 
 ;;; Process a bytecode module's literals into BIR.
-(defun compute-runtime-literals (literals kinds irmodule)
+;;; If INLINE is provided it's the inlined function these literals are from.
+;;; Eventually this may be used to cooperate with the file compiler to grab
+;;; potentially-undumpable load-time-values from the inline function, but
+;;; for now it's just used to ban use of such LTVs from functions.
+(defun compute-runtime-literals (literals kinds irmodule &optional inline)
+  (declare (ignore inline)) ; TODO
   (loop with nlits = (length literals)
         with result = (make-array nlits)
         for i from 0 below nlits
@@ -115,8 +120,8 @@
 ;;; Compiles one function's bytecode into the BIR module.
 ;;; Returns a list of inner bcfuns that need to be compiled.
 (defun %compile-bcfun-into (bcfun bytecode annotations literals
-                           irfun irmodule blockmap funmap)
-  (let* ((context (make-context irmodule blockmap funmap))
+                           irfun irmodule blockmap funmap &optional inlinep)
+  (let* ((context (make-context irmodule blockmap funmap inlinep))
          (inserter (make-instance 'build:inserter))
          (start (core:bytecode-debug-info/start bcfun))
          (end (core:bytecode-debug-info/end bcfun))
@@ -160,12 +165,12 @@
 
 ;;; Compile a bcfun and all of its inner functions into the BIR module.
 (defun compile-bcfun-into (bcfun bytecode annotations literals
-                           irmodule blockmap funmap)
+                           irmodule blockmap funmap &optional inlinep)
   (flet ((cmp (bcfun)
            (let ((irfun (finfo-irfun (find-bcfun bcfun funmap))))
              (assert irfun)
              (%compile-bcfun-into bcfun bytecode annotations literals
-                                  irfun irmodule blockmap funmap))))
+                                  irfun irmodule blockmap funmap inlinep))))
     (loop for subfuns = (cmp bcfun)
             then (mapcan #'cmp subfuns)
           until (null subfuns)))
@@ -370,10 +375,10 @@
            (setf result (cdr result))
         finally (return result)))
 
-(defun make-context (module blockmap funmap)
+(defun make-context (module blockmap funmap &optional inlinep)
   (make-instance 'context
     :module module :blockmap blockmap :funmap funmap
-    :optimize-stack (list cmp:*optimize*) :policy cmp:*policy*))
+    :optimize-stack (list cmp:*optimize*) :policy cmp:*policy* :inlinep inlinep))
 
 (defun context-new-function (context bcfun)
   (setf (stack context) ()
@@ -515,6 +520,8 @@
     function))
 
 (defun ensure-inner-function (context irmod bcfun closure &optional (assp t))
+  (when (inlinep context)
+    (error "Closures in inlined functions not yet supported"))
   (let* ((funmap (funmap context))
          (info (find-bcfun bcfun funmap)))
     (if info
@@ -548,6 +555,9 @@
    (%module :initarg :module :reader module :type bir:module)
    ;; a list of bcfuns for inner functions that need to be compiled.
    (%inner-functions :initform () :accessor inner-functions)
+   ;; True iff we're compiling an inline definition.
+   ;; Used to avoid some errors relating to constant dumping.
+   (%inlinep :initarg :inlinep :accessor inlinep)
    (%funmap :initarg :funmap :reader funmap :type funmap)
    (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
 
@@ -615,6 +625,8 @@
          (build:insert inserter 'bir:constant-reference
                        :inputs (list existing) :outputs (list output)))
         (bir:load-time-value
+         (when (inlinep context)
+           (error "LTVs in inlined functions not yet supported"))
          (build:insert inserter 'bir:load-time-value-reference
                        :inputs (list existing) :outputs (list output)))
         ((eql :cfunction)
@@ -838,7 +850,6 @@
 
 ;;; used by make-closure and protect instructions.
 (defun make-closure (template inserter context)
-  (assert (not (find-bcfun template (funmap context))))
   (let* ((nclosed (bcfun/nvars template))
          (closed (nreverse (subseq (stack context) 0 nclosed)))
          (real-closed (mapcar #'resolve-closed closed))
@@ -1685,15 +1696,11 @@
          (bytecode (core:bytecode-module/bytecode bcmod))
          (bliterals (core:bytecode-module/literals bcmod))
          (kinds (core:bytecode-module/literal-kinds bcmod))
-         ;; FIXME: This is incorrect in the case that we're in compile-file
-         ;; and have an inline function. For that any load-time-values have to be
-         ;; grabbed from the inline function at load time,
-         ;;rather than newly computed.
-         (literals (compute-runtime-literals bliterals kinds irmod))
+         (literals (compute-runtime-literals bliterals kinds irmod bcfun))
          (debug-info (core:bytecode-module/debug-info bcmod)))        
     (add-function funmap bcfun irfun ())
     (compile-bcfun-into bcfun bytecode debug-info literals
-                        irmod blockmap funmap)
+                        irmod blockmap funmap t)
     (finish funmap blockmap)
     irfun))
 
@@ -1703,12 +1710,12 @@
          (bytecode (cmp:linked-module/bytecode lmod))
          (literals (cmp:linked-module/literals lmod))
          (info (cmp:linked-module/debug-info lmod))
-         (cliterals (compute-compiled-literals literals irmod))
+         (cliterals (compute-compiled-literals literals irmod linked-function))
          (irfun (make-bir-function linked-function irmod))
          (funmap (make-funmap)) (blockmap (make-blockmap)))
     (add-function funmap linked-function irfun ())
     (compile-bcfun-into linked-function bytecode info cliterals irmod
-                        blockmap funmap)
+                        blockmap funmap t)
     (finish funmap blockmap)
     irfun))
 
@@ -1845,38 +1852,44 @@
    (%literals :initarg :literals :reader nmodule-literals)))
 
 ;;; Process a bytecode cmp:module's literal infos into BIR.
-(defgeneric compute-compiled-literal (info module))
-(defmethod compute-compiled-literal ((info cmp:constant-info) module)
+(defgeneric compute-compiled-literal (info module inline))
+(defmethod compute-compiled-literal ((info cmp:constant-info) module inline)
+  (declare (ignore inline))
   (cons info (bir:constant-in-module (cmp:constant-info/value info) module)))
-(defmethod compute-compiled-literal ((info cmp:named-constant-info) module)
-  (assert (null *environment*)) ; FIXME
+(defmethod compute-compiled-literal ((info cmp:named-constant-info) module inline)
+  (declare (ignore inline))
   (cons info (bir:constant-in-module
-              (symbol-value (cmp:named-constant-info/name info))
-              module)))
-(defmethod compute-compiled-literal ((info cmp:cfunction) module)
-  (declare (ignore module))
+              (cmp:named-constant-info/value info) module)))
+(defmethod compute-compiled-literal ((info cmp:cfunction) module inline)
+  (declare (ignore module inline))
   (cons info :cfunction))
-(defmethod compute-compiled-literal ((info cmp:inline-function-info) module)
-  (declare (ignore module))
+(defmethod compute-compiled-literal ((info cmp:inline-function-info) module inline)
+  (declare (ignore module inline))
   (cons info :inline-function))
-(defmethod compute-compiled-literal ((info cmp:load-time-value-info) module)
+(defmethod compute-compiled-literal ((info cmp:load-time-value-info) module inline)
+  ;; FIXME: loader should grab the LTV from the inline definition.
+  (declare (ignore inline))
   (cons info (bir:load-time-value-in-module
               (cmp:load-time-value-info/form info)
               (cmp:load-time-value-info/read-only-p info)
               module)))
-(defmethod compute-compiled-literal ((info cmp:function-cell-info) module)
+(defmethod compute-compiled-literal ((info cmp:function-cell-info) module inline)
+  (declare (ignore inline))
   (cons info (bir:function-cell-in-module (cmp:function-cell-info/fname info)
                                           module)))
-(defmethod compute-compiled-literal ((info cmp:variable-cell-info) module)
+(defmethod compute-compiled-literal ((info cmp:variable-cell-info) module inline)
+  (declare (ignore inline))
   (cons info (bir:variable-cell-in-module (cmp:variable-cell-info/vname info)
                                           module)))
-(defmethod compute-compiled-literal ((info cmp:env-info) module)
+(defmethod compute-compiled-literal ((info cmp:env-info) module inline)
+  (declare (ignore inline))
   ;; FIXME? There's a bit of a mismatch here. Native-compiled code probably
   ;; never refers to the environment, for now.
   (cons info (bir:constant-in-module nil module)))
 
-(defun compute-compiled-literals (literals irmodule)
-  (map 'vector (lambda (lit) (compute-compiled-literal lit irmodule)) literals))
+(defun compute-compiled-literals (literals irmodule &optional inline)
+  (map 'vector (lambda (lit) (compute-compiled-literal lit irmodule inline))
+       literals))
 
 (defun cmodule->irmodule (bytecode literals-info debug-info)
   (let* ((irmodule (make-instance 'bir:module))
