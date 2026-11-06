@@ -482,7 +482,7 @@
 ;; Move constants into the literals vector and replace them with
 ;; indices in the program.  Also accumulate patchpoints for labels
 ;; and if we need a long instruction, mark that.
-(defun literalify-arguments (instr literals coallesce-indexes)
+(defun literalify-arguments (instr literals coalesce-indexes)
   (loop named literalify
         with long-arg = nil
         for annotated-arg in (cdr instr)
@@ -490,8 +490,8 @@
                   (bc-constant-arg
                    (let* ((arg (bc-constant-arg-value annotated-arg))
                           (index-value
-                            (or (gethash arg coallesce-indexes)
-                                (setf (gethash arg coallesce-indexes)
+                            (or (gethash arg coalesce-indexes)
+                                (setf (gethash arg coalesce-indexes)
                                       (make-bc-constant-ref
                                        :ref (vector-push-extend arg literals))))))
                      (when (> (bc-constant-ref-ref index-value) +longify-trigger+)
@@ -506,7 +506,7 @@
 ;;; Move constants into a literal vector and replace them with references
 ;;; Return a vector of nil/T, one for each instruction if the instruction is long
 (defun reference-literals (compiled)
-  (let* ((coallesce-indexes (make-hash-table :test 'eql))
+  (let* ((coalesce-indexes (make-hash-table :test 'eql))
          (literals (make-array (length compiled) :fill-pointer 0
                                                  :adjustable t
                                                  :initial-element nil))
@@ -515,7 +515,7 @@
                             for index from 0
                             for annotated-op = (first instr)
                             collect (multiple-value-bind (new-args long-arg)
-                                        (literalify-arguments instr literals coallesce-indexes)
+                                        (literalify-arguments instr literals coalesce-indexes)
                                       (if long-arg
                                           (progn
                                             (setf (elt longs index) long-arg)
