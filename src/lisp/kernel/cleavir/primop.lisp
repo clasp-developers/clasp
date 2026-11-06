@@ -1108,3 +1108,8 @@
 (defvprimop cons ((:object) :object :object) (inst)
   (cmp:irc-cons (in (first (bir:inputs inst)))
                 (in (second (bir:inputs inst)))))
+
+(defvprimop char-code ((:utfixnum) :character) (inst)
+  ;; we don't need to do anything at all, since whether something is a character
+  ;; is a matter of tagging. casts before and after this primop take care of that.
+  (in (first (bir:inputs inst))))

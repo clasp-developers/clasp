@@ -388,6 +388,10 @@
 
 (import-derivers characterp standard-char-p)
 
+(define-deriver char-code (character)
+  (declare (ignore character))
+  (sv (ctype:range 'integer 0 (1- char-code-limit) *clasp-system*)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; (14) CONSES

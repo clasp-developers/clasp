@@ -392,6 +392,7 @@
 (deftransform array-total-size core::vector-length (simple-array * (*)))
 
 (deftransform characterp characterp t)
+(deftransform char-code char-code character)
 
 (deftransform length core::vector-length (simple-array * (*)))
 
