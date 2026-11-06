@@ -64,10 +64,6 @@
 (defgeneric start-annotation (annotation inserter context))
 (defgeneric end-annotation (annotation inserter context))
 
-(defun compile-bcmodule (bcmodule)
-  (let ((irmodule (make-instance 'bir:module)))
-    (values irmodule (compile-bcmodule-into bcmodule irmodule))))
-
 ;;; see bytecode.h
 (defun decode-literal-kind (kind)
   (ecase kind
@@ -115,37 +111,39 @@
         do (setf (aref result i) (cons value bir))
         finally (return result)))
 
-(defun compile-bcmodule-into (bcmodule irmodule)
-  (let ((literals (core:bytecode-module/literals bcmodule))
-        (kinds (core:bytecode-module/literal-kinds bcmodule))
-        (debug-info (core:bytecode-module/debug-info bcmodule)))
-    (compile-bytecode-into (core:bytecode-module/bytecode bcmodule)
-                           debug-info
-                           (compute-runtime-literals literals kinds irmodule)
-                           irmodule)))
-
-;;; Shared entry point for both runtime and compile-file-time.
-(defun compile-bytecode-into (bytecode annotations literals irmodule)
-  (let* ((blockmap (make-blockmap)) (funmap (make-funmap))
-         (context (make-context irmodule blockmap funmap))
+;;; Main work function. Shared entry point for both runtime and compile-file-time.
+;;; Compiles one function's bytecode into the BIR module.
+;;; Returns a list of inner bcfuns that need to be compiled.
+(defun %compile-bcfun-into (bcfun bytecode annotations literals
+                           irfun irmodule blockmap funmap)
+  (let* ((context (make-context irmodule blockmap funmap))
          (inserter (make-instance 'build:inserter))
+         (start (core:bytecode-debug-info/start bcfun))
+         (end (core:bytecode-debug-info/end bcfun))
          ;; annotations starting at opip.
-         (opannots (initial-annotations annotations))
+         (opannots (initial-annotations annotations start))
          ;; all annotations currently in scope.
          (annots
            (sort (copy-list opannots) #'<
                  :key #'core:bytecode-debug-info/end)))
+    ;; default source info
+    (let ((spi (bcfun/spi bcfun)))
+      (when spi
+        (push (kludge-spi spi) (origin-stack context))))
+    ;; start the function
+    (build:begin inserter (bir:start irfun))
+    (context-new-function context bcfun)
     ;; Compile.
     (cmp::do-instructions (mnemonic args opip ip next-annots)
-        (bytecode :annotations annotations)
+        (bytecode :annotations annotations :start start :end end)
       (let ((bir:*policy* (policy context))
             (bir:*origin* (first (origin-stack context))))
         ;; End annotations coming out of effect.
         (setf annots (end-annotations opip annots inserter context))
         ;; Set up stuff for annotations coming into effect.
         (start-annotations opannots inserter context)
-        ;; Start a block or function maybe.
-        (maybe-begin-new opip opannots inserter context)
+        ;; Start a block maybe.
+        (maybe-begin-new opip inserter context)
         ;; If this code is unreachable, we don't bother generating
         ;; anything. This makes consistency a bit easier but is a
         ;; little wacky? Maybe we want to generate IR for unreachable
@@ -157,36 +155,35 @@
             (apply #'compile-instruction mnemonic inserter context args)))
         (setf annots (add-annotations annots next-annots)
               opannots next-annots)))
-    ;; Compute all iblock flow orders.
-    (loop for entry in (fmap funmap)
-          do (bir:compute-iblock-flow-order (finfo-irfun entry)))
-    ;; Delete any delayed iblocks that turned out to be unreachable
-    ;; (e.g. the -after of (tagbody loop ... (go loop))).
-    ;; We have to do this manually because compute-iblock-flow-order, which
-    ;; normally deletes unused blocks, doesn't even know about them.
-    (loop for entry in (bmap blockmap)
-          do (bir:maybe-delete-iblock (binfo-irblock entry)))
-    ;; Return the funmap.
-    funmap))
+    ;; return inner functions needing compilation
+    (inner-functions context)))
 
-;;; If the instruction begins a new iblock and/or function,
-;;; set everything up for that.
+;;; Compile a bcfun and all of its inner functions into the BIR module.
+(defun compile-bcfun-into (bcfun bytecode annotations literals
+                           irmodule blockmap funmap)
+  (flet ((cmp (bcfun)
+           (let ((irfun (finfo-irfun (find-bcfun bcfun funmap))))
+             (assert irfun)
+             (%compile-bcfun-into bcfun bytecode annotations literals
+                                  irfun irmodule blockmap funmap))))
+    (loop for subfuns = (cmp bcfun)
+            then (mapcan #'cmp subfuns)
+          until (null subfuns)))
+  (values))
+
+(defun finish (funmap blockmap)
+  (loop for entry in (fmap funmap)
+        do (bir:compute-iblock-flow-order (finfo-irfun entry)))
+  ;; Delete any delayed iblocks that turned out to be unreachable
+  ;; (e.g. the -after of (tagbody loop ... (go loop))).
+  ;; We have to do this manually because compute-iblock-flow-order, which
+  ;; normally deletes unused blocks, doesn't even know about them.
+  (loop for entry in (bmap blockmap)
+        do (bir:maybe-delete-iblock (binfo-irblock entry))))
+
+;;; If the instruction begins a new iblock, set everything up for that.
 ;;; Return value irrelevant. Mutates CONTEXT.
-(defun maybe-begin-new (opip opannots inserter context)
-  ;; Do we have a function start in the annotations?
-  (let ((bcfun (find-if #'bcfun-p opannots)))
-    (when bcfun
-      (let* ((existing (find-bcfun bcfun (funmap context)))
-             ;; We might have made this function earlier for ENCLOSE.
-             (irfun (if existing
-                        (finfo-irfun existing)
-                        (let ((new
-                                (make-bir-function bcfun inserter
-                                                   (module context))))
-                          (push (list bcfun new nil t) (fmap (funmap context)))
-                          new))))
-        (build:begin inserter (bir:start irfun))
-        (context-new-function context bcfun))))
+(defun maybe-begin-new (opip inserter context)
   ;; Maybe we've determined earlier that this IP begins a block?
   (let ((binfo (find-block opip (blockmap context))))
     (when binfo
@@ -224,26 +221,40 @@
                          &key (abi clasp-cleavir::*abi-x86-64*)
                            (system clasp-cleavir:*clasp-system*)
                            (disassemble nil))
-  (multiple-value-bind (module funmap)
-      (compile-bcmodule (core:simple-fun-code function))
-    (let ((bir (finfo-irfun (find-bcfun function funmap))))
-      (mark-entry-point bir funmap function)
-      (bir:remove-unused-values module)
-      (bir:verify module)
-      (when disassemble
-        (cleavir-bir-disassembler:display module))
-      (clasp-cleavir::bir-transformations module system)
-      (dissociate-inappropriate-closures (fmap funmap))
-      (let (;; Ensure any closures have the same layout as original
-            ;; bytecode closures, so the simple fun can be swapped
-            ;; out transparently.
-            (clasp-cleavir::*fixed-closures*
-              (fixed-closures-map (fmap funmap))))
-        (clasp-cleavir::bir->function bir :abi abi)))))
+  (let* ((irmod (make-instance 'bir:module))
+         (funmap (make-funmap))
+         (blockmap (make-blockmap))
+         (bcmod (core:simple-fun-code function))
+         (bytecode (core:bytecode-module/bytecode bcmod))
+         (bliterals (core:bytecode-module/literals bcmod))
+         (kinds (core:bytecode-module/literal-kinds bcmod))
+         (literals (compute-runtime-literals bliterals kinds irmod))
+         (debug-info (core:bytecode-module/debug-info bcmod))
+         (irfun (make-bir-function function irmod)))
+    (cleavir-set:nadjoinf (bir:entry-points irmod) irfun)
+    ;; FIXME: correct closure
+    (assert (zerop (bcfun/nvars function)))
+    (add-function funmap function irfun nil)
+    (compile-bcfun-into function bytecode debug-info literals
+                        irmod blockmap funmap)
+    (finish funmap blockmap)
+    (bir:remove-unused-values irmod)
+    (bir:verify irmod)
+    (when disassemble
+      (cleavir-bir-disassembler:display irmod))
+    (clasp-cleavir::bir-transformations irmod system)
+    (dissociate-inappropriate-closures (fmap funmap))
+    (let (;; Ensure any closures have the same layout as original
+          ;; bytecode closures, so the simple fun can be swapped
+          ;; out transparently.
+          (clasp-cleavir::*fixed-closures*
+            (fixed-closures-map (fmap funmap))))
+      (clasp-cleavir::bir->function irfun :abi abi))))
 
 ;;; Given a bytecode module, compute native functions for all bytecode functions
 ;;; in it, and install them as new simple funs. Return value irrelevant.
 ;;; Used by autocompilation.
+#+(or)
 (defun compile-module (module
                        &key (abi clasp-cleavir::*abi-x86-64*)
                          (system clasp-cleavir:*clasp-system*))
@@ -317,10 +328,10 @@
         when (finfo-associatep entry)
           collect (cons ir clos)))
 
-;;; Return a list of all annotations that start at IP 0.
-(defun initial-annotations (annotations)
+;;; Return a list of all annotations that start at the given IP.
+(defun initial-annotations (annotations start)
   (loop for annot across annotations
-        if (= (core:bytecode-debug-info/start annot) 0)
+        if (= (core:bytecode-debug-info/start annot) start)
           collect annot
         else do (loop-finish)))
 
@@ -420,8 +431,8 @@
 (defun finfo-associatep (finfo) (fourth finfo))
 (defun (setf finfo-associatep) (new finfo) (setf (fourth finfo) new))
 
-(defun add-function (context bcfun irfun closure &optional (assp t))
-  (push (list bcfun irfun closure assp) (fmap (funmap context))))
+(defun add-function (funmap bcfun irfun closure &optional (assp t))
+  (push (list bcfun irfun closure assp) (fmap funmap)))
 
 ;;; Mapping from IPs to IR blocks. Used throughout compilation of
 ;;; a bytecode module due to nonlocal exits.
@@ -467,7 +478,9 @@
   (let ((einfo (find-block ip (blockmap context))))
     (cond (einfo
            (assert (= receiving (binfo-receiving einfo)))
-           (binfo-irblock einfo))
+           (let ((irblock (binfo-irblock einfo)))
+             (assert irblock)
+             irblock))
           (t
            (%add-block context ip
                        (make-iblock-r inserter name
@@ -484,8 +497,7 @@
                 repeat (car key-count-info)
                 collect (car (aref literals i))))))
 
-(defun make-bir-function (bytecode-function inserter
-                          &optional (module (bir:module inserter)))
+(defun make-bir-function (bytecode-function module)
   (let* ((lambda-list (ext:function-lambda-list bytecode-function))
          (function (make-instance 'bir:function
                      :returni nil ; set by :return compilation
@@ -501,6 +513,16 @@
     (declare (ignore start))
     (set:nadjoinf (bir:functions module) function)
     function))
+
+(defun ensure-inner-function (context irmod bcfun closure &optional (assp t))
+  (let* ((funmap (funmap context))
+         (info (find-bcfun bcfun funmap)))
+    (if info
+        (finfo-irfun info)
+        (let ((irfun (make-bir-function bcfun irmod)))
+          (push bcfun (inner-functions context))
+          (add-function funmap bcfun irfun closure assp)
+          irfun))))
 
 (defun function-spi (function)
   (multiple-value-bind (path filepos lineno column)
@@ -524,6 +546,8 @@
                     :accessor variable-stack :type list)
    (%origin-stack :initform nil :accessor origin-stack :type list)
    (%module :initarg :module :reader module :type bir:module)
+   ;; a list of bcfuns for inner functions that need to be compiled.
+   (%inner-functions :initform () :accessor inner-functions)
    (%funmap :initarg :funmap :reader funmap :type funmap)
    (%blockmap :initarg :blockmap :reader blockmap :type blockmap)))
 
@@ -596,45 +620,45 @@
         ((eql :cfunction)
          ;; A cfunction or bytecode function.
          ;; This will be a non-closure function at runtime,
-         ;; but no function may exist yet, so we have to make an ENCLOSE
+         ;; but to use it as a value we have to make an ENCLOSE
          ;; instruction. (The translator will not put in any consing,
          ;; since again, this isn't a closure.)
-         (let ((irfun (make-bir-function value inserter)))
+         (let ((irfun (ensure-inner-function context (bir:module inserter)
+                                             value ())))
            (setf (cdr c) irfun)
-           (add-function context value irfun nil)
            (build:insert inserter 'bir:enclose
                          :code irfun
                          :outputs (list output))))
         ((eql :inline-function)
-         ;; A bytecode function to inline. We build up the IR a new every time,
+         ;; A bytecode function to inline. We build up the IR anew every time,
          ;; so that each call site gets its own function to (hopefully) interpolate.
+         ;; FIXME: theoretically we can inline closures, as long as the linker/loader
+         ;; can grab the cells/values from the original closure.
+         ;; not really useful, but would be neat
+         ;; But we can't right now, so we assert the data is not a closure.
          (let* ((data (cmp:inline-function-info/data value))
+                (_ (assert (zerop (bcfun/nvars data))))
                 (irfun
                   (etypecase data
                     (cmp:linked-function
                      (compile-linked-function-into-module
                       (bir:module inserter) data))
                     (core:bytecode-simple-fun
-                     (compile-bytefun-into-module
+                     (compile-inline-bcfun-into-module
                       (bir:module inserter) data)))))
+           (declare (ignore _))
            (assert (and irfun (not (bir:enclose irfun))))
            (build:insert inserter 'bir:enclose
                          :code irfun :outputs (list output))))
         ;; Same as the above, but the value is just an actual bytecode function,
         ;; as we get from compute-runtime-literals.
         ((eql :inline-bytecode)
-         (let ((irfun (compile-bytefun-into-module (bir:module inserter) value)))
+         (assert (zerop (bcfun/nvars value)))
+         (let ((irfun (compile-inline-bcfun-into-module
+                       (bir:module inserter) value)))
            (assert (and irfun (not (bir:enclose irfun))))
            (build:insert inserter 'bir:enclose
-                         :code irfun :outputs (list output))))
-        (cmp:cfunction
-         ;; should be impossible as cfunctions only appear once,
-         ;; but just in case
-         (let* ((finfo (find-bcfun existing (funmap context)))
-                (irfun (finfo-irfun finfo)))
-           (assert irfun)
-           (build:insert inserter 'bir:enclose :code irfun
-                         :outputs (list output)))))
+                         :code irfun :outputs (list output)))))
       (stack-push output context))))
 
 (defun compile-constant (value inserter)
@@ -814,18 +838,19 @@
 
 ;;; used by make-closure and protect instructions.
 (defun make-closure (template inserter context)
-  (let* ((irfun (make-bir-function template inserter))
-         (enclose-out (make-instance 'bir:output
-                        :name (bcfun/fname template)))
-         (nclosed (bcfun/nvars template))
+  (assert (not (find-bcfun template (funmap context))))
+  (let* ((nclosed (bcfun/nvars template))
          (closed (nreverse (subseq (stack context) 0 nclosed)))
-         (real-closed (mapcar #'resolve-closed closed)))
+         (real-closed (mapcar #'resolve-closed closed))
+         (irfun (ensure-inner-function context (bir:module inserter)
+                                       template real-closed))
+         (enclose-out (make-instance 'bir:output
+                        :name (bcfun/fname template))))
     (assert (every (lambda (v) (typep v '(or bir:come-from
                                           (cons bir:variable))))
                    real-closed))
     (build:insert inserter 'bir:enclose
                   :code irfun :outputs (list enclose-out))
-    (add-function context template irfun real-closed)
     (setf (stack context) (nthcdr nclosed (stack context)))
     (values enclose-out irfun)))
 
@@ -846,13 +871,14 @@
   (destructuring-bind (const) args
     (destructuring-bind (template . existing) const
       (assert (member existing '(nil :cfunction)))
-      (let ((irfun (make-bir-function template inserter))
+      (let (;; closure is initially () but changed in :initialize-closure below.
+            (irfun (ensure-inner-function context (bir:module inserter)
+                                          template ()))
             (enclose-out (make-instance 'bir:output
                            :name (bcfun/fname template))))
         (setf (cdr const) irfun)
         (build:insert inserter 'bir:enclose
                       :code irfun :outputs (list enclose-out))
-        (add-function context template irfun nil)
         (stack-push enclose-out context)))))
 
 (defmethod compile-instruction ((mnemonic (eql :initialize-closure))
@@ -986,6 +1012,7 @@
                            do (push (stack-pop context) result)
                            finally (return result))))
          (outputs (copy-list (bir:inputs irblock))))
+    (assert irblock)
     (assert (loop for i in inputs always (typep i 'bir:linear-datum)))
     (build:terminate inserter 'bir:jump
                      :next (list irblock)
@@ -1046,6 +1073,7 @@
       (build:begin inserter thenb)
       ;; This block does nothing but jump immediately to the end,
       ;; sending the arg.
+      (assert endb)
       (build:terminate inserter 'bir:jump
                        :inputs (list arg) :outputs (bir:inputs endb)
                        :next (list endb))
@@ -1649,10 +1677,25 @@
 
 ;;; Compile an outside bytecode function (presently just an inline function) into
 ;;; an existing IR module.
-(defun compile-bytefun-into-module (irmod bcfun)
-  (let ((funmap (compile-bcmodule-into (core:simple-fun-code bcfun) irmod)))
-    (finfo-irfun
-     (find-bcfun bcfun funmap))))
+(defun compile-inline-bcfun-into-module (irmod bcfun)
+  (let* ((funmap (make-funmap))
+         (blockmap (make-blockmap))
+         (irfun (make-bir-function bcfun irmod))
+         (bcmod (core:simple-fun-code bcfun))
+         (bytecode (core:bytecode-module/bytecode bcmod))
+         (bliterals (core:bytecode-module/literals bcmod))
+         (kinds (core:bytecode-module/literal-kinds bcmod))
+         ;; FIXME: This is incorrect in the case that we're in compile-file
+         ;; and have an inline function. For that any load-time-values have to be
+         ;; grabbed from the inline function at load time,
+         ;;rather than newly computed.
+         (literals (compute-runtime-literals bliterals kinds irmod))
+         (debug-info (core:bytecode-module/debug-info bcmod)))        
+    (add-function funmap bcfun irfun ())
+    (compile-bcfun-into bcfun bytecode debug-info literals
+                        irmod blockmap funmap)
+    (finish funmap blockmap)
+    irfun))
 
 ;;; Compile a linked function (probably inline) into an existing IR module.
 (defun compile-linked-function-into-module (irmod linked-function)
@@ -1661,8 +1704,13 @@
          (literals (cmp:linked-module/literals lmod))
          (info (cmp:linked-module/debug-info lmod))
          (cliterals (compute-compiled-literals literals irmod))
-         (funmap (compile-bytecode-into bytecode info cliterals irmod)))
-    (finfo-irfun (find-bcfun linked-function funmap))))
+         (irfun (make-bir-function linked-function irmod))
+         (funmap (make-funmap)) (blockmap (make-blockmap)))
+    (add-function funmap linked-function irfun ())
+    (compile-bcfun-into linked-function bytecode info cliterals irmod
+                        blockmap funmap)
+    (finish funmap blockmap)
+    irfun))
 
 ;;; Compile an outside cfunction (like a type checker) into an
 ;;; existing IR module.
@@ -1673,9 +1721,14 @@
          (literals (cmp:module/literals bcmod))
          (info (cmp:module/create-debug-info bcmod))
          (cliterals (compute-compiled-literals literals irmod))
-         (funmap (compile-bytecode-into bytecode info cliterals irmod)))
+         (irfun (make-bir-function cfunction irmod))
+         (funmap (make-funmap)) (blockmap (make-blockmap)))
     (declare (ignore _))
-    (finfo-irfun (find-bcfun cfunction funmap))))
+    (add-function funmap cfunction irfun ())
+    (compile-bcfun-into cfunction bytecode info cliterals irmod
+                        blockmap funmap)
+    (finish funmap blockmap)
+    irfun))
 
 ;;; We compile a function into a bytecode cmodule, and then
 ;;; compile that into our existing irmodule.
@@ -1739,30 +1792,19 @@
     (return-from end-annotation))
   (pop (origin-stack context)))
 
-;;; Most processing is handled by maybe-begin-new, but there's still source info.
+;;; Processing is handled elsewhere.
 (defmethod start-annotation ((annot core:bytecode-simple-fun)
                              inserter context)
-  (declare (ignore inserter))
-  (let ((spi (function-spi annot)))
-    (when spi
-      (push (kludge-spi spi) (origin-stack context)))))
+  (declare (ignore inserter context)))
 (defmethod end-annotation ((annot core:bytecode-simple-fun)
                            inserter context)
-  (declare (ignore inserter))
-  (when (function-spi annot)
-    (pop (origin-stack context))))
+  (declare (ignore inserter context)))
 
 (defmethod start-annotation ((annot cmp:cfunction) inserter context)
-  (declare (ignore inserter))
-  (let ((spi (cmp:cfunction/source-pos-info annot)))
-    (when spi
-      (push (kludge-spi spi) (origin-stack context)))))
+  (declare (ignore inserter context)))
 (defmethod end-annotation ((annot cmp:cfunction) inserter context)
-  (declare (ignore inserter))
-  (when (cmp:cfunction/source-pos-info annot)
-    (pop (origin-stack context))))
+  (declare (ignore inserter context)))
 
-;; FIXME
 (defmethod start-annotation ((annot cmp:linked-function) inserter context)
   (declare (ignore inserter context)))
 (defmethod end-annotation ((annot cmp:linked-function) inserter context)
@@ -1839,14 +1881,38 @@
 (defun cmodule->irmodule (bytecode literals-info debug-info)
   (let* ((irmodule (make-instance 'bir:module))
          (literals (compute-compiled-literals literals-info irmodule))
-         (funmap (compile-bytecode-into bytecode debug-info literals irmodule)))
-    (loop for info across debug-info
-          when (typep info 'cmp:cfunction)
-            do (let ((finfo (find-bcfun info funmap)))
-                 (when finfo
-                   (mark-entry-point (finfo-irfun finfo)
-                                     funmap
-                                     (finfo-bcfun finfo)))))
+         (funmap (make-funmap))
+         (blockmap (make-blockmap))
+         ;; KLUDGE: Lacking actual entry points from the bytecode module, we just do
+         ;; everything that's not a closure.
+         (entries (loop for info across debug-info
+                        when (and (typep info 'cmp:cfunction)
+                                  (zerop (bcfun/nvars info)))
+                          collect info)))
+    ;; Add those "entry points" to the funmap.
+    (loop for bcfun in entries
+          do (add-function funmap bcfun (make-bir-function bcfun irmodule) nil))
+    ;; Generate code for all those functions and their inner functions.
+    (loop with done = ()
+          with todo = entries
+          until (null todo)
+          do (let ((bcfun (pop todo)))
+               (unless (member bcfun done)
+                 (let ((irfun (finfo-irfun (find-bcfun bcfun funmap))))
+                   (assert irfun)
+                   (setf todo
+                         (append (%compile-bcfun-into bcfun
+                                                      bytecode debug-info literals
+                                                      irfun irmodule
+                                                      blockmap funmap)
+                                 todo))
+                   (push bcfun done)))))
+    ;; Mark all associated functions as entry points so they're not removed.
+    (loop for entry in (fmap funmap)
+          for irfun = (finfo-irfun entry)
+          do (cleavir-set:nadjoinf (bir:entry-points irmodule) irfun))
+    (finish funmap blockmap)
+    ;; optimize
     (bir:remove-unused-values irmodule)
     (bir:verify irmodule)
     ;;(cleavir-bir-disassembler:display irmodule) (terpri)
@@ -1937,6 +2003,7 @@
       :fmap (compute-native-fmap fmap function-info)
       :literals ctable)))
 
+;;; Entry point from the file compiler.
 (defun compile-cmodule (bytecode literals-info debug-info module-id pathname &optional *environment*)
   (multiple-value-bind (ir funmap cmap)
       (cmodule->irmodule bytecode literals-info debug-info)
