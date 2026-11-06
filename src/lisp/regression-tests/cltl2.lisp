@@ -74,7 +74,7 @@
             (fun global-function)))
     (:function nil))
   (test cltl2.local-function
-    (flet ((f ())) (fun f))
+    (flet ((f ())) (declare (ignore #'f)) (fun f))
     (:function t)))
 
 ;;; TODO: test OPTIMIZE/declaration-information
