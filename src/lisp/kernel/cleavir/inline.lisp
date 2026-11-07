@@ -3,9 +3,6 @@
 #+(or)
 (progn
 
-(eval-when (:compile-toplevel :execute :load-toplevel)
-  (setq core:*defun-inline-hook* 'defun-inline-hook))
-
 #+(or)
 (defmacro debug-inline (msg &rest msg-args)
   `(progn

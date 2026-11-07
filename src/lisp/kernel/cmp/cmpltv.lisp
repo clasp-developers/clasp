@@ -298,11 +298,11 @@
    (%module :initarg :module :reader module)
    (%infos :initarg :infos :reader infos :type sequence)))
 
-#+clasp
-(defclass module-mutable-ltv-attr (attribute)
-  ((%name :initform (ensure-constant "clasp:module-mutable-ltv"))
+(defclass module-literal-kinds-attr (attribute)
+  ((%name :initform (ensure-constant "module-literal-kinds"))
    (%module :initarg :module :reader module)
-   (%indices :initarg :indices :reader indices :type sequence)))
+   (%kinds :initarg :kinds :reader kinds
+           :type (simple-array (unsigned-byte 16) (*)))))
 
 #+clasp
 (defclass module-native-attr (attribute)
@@ -1446,6 +1446,14 @@
 (defmethod ensure-module-literal ((info cmp:cfunction))
   (ensure-function info))
 
+(defmethod ensure-module-literal ((info cmp:inline-function-info))
+  (let ((data (cmp:inline-function-info/data info)))
+    (or (find-oob data)
+      (add-oob data
+               (make-instance 'fdefinition-lookup
+                 :name (ensure-constant
+                        (cmp:inline-function-info/fname info)))))))
+
 (defun ensure-ltv (info)
   (or (find-oob info)
       (add-oob
@@ -1566,13 +1574,6 @@
     :macro-name (ensure-constant
                  (core:bytecode-debug-macroexpansion/macro-name item))))
 
-(defun mutable-LTVs (literals)
-  (loop for lit across literals
-        for i from 0
-        when (and (typep lit 'cmp:load-time-value-info)
-                  (not (cmp:load-time-value-info/read-only-p lit)))
-          collect i))
-
 ;; The ID number used for native code modules, if generated.
 ;; Different modules within the same init-object-array block must have
 ;; distinct numbers to name symbols distinctly.
@@ -1589,6 +1590,7 @@
          (literals (cmp:module/literals value))
          #+clasp
          (info (cmp:module/create-debug-info value))
+         (literal-kinds (cmp:module/create-literal-kinds value))
          (mod
            (add-oob
             value
@@ -1605,13 +1607,11 @@
      (make-instance 'module-debug-attr
        :module mod
        :infos (map 'vector #'process-debug-info info)))
-    #+clasp ; mutable LTVs
-    (let ((mutables (mutable-LTVs literals)))
-      (when mutables
-        (add-instruction
-         (make-instance 'module-mutable-ltv-attr
-           :module mod
-           :indices mutables))))
+    ;; literal kinds
+    (unless (zerop (length literal-kinds)) ; no need
+      ;; create-literal-kinds returns an already-encoded result.
+      (add-instruction
+       (make-instance 'module-literal-kinds-attr :module mod :kinds literal-kinds)))
     ;; Native compilation.
     #+clasp
     (when (and cmp:*compile-file-native* (native-compile-p value info))
@@ -1877,7 +1877,7 @@
   (write-b32 (di-start info) stream)
   (write-b32 (di-end info) stream)
   (write-index (di-macro-name info) stream))
-(Defmethod info-length ((info debug-info-macroexpansion))
+(defmethod info-length ((info debug-info-macroexpansion))
   (+ 1 4 4 *index-bytes*))
 
 (defmethod encode ((attr module-debug-attr) stream)
@@ -1891,14 +1891,13 @@
     ;; The infos
     (map nil (lambda (info) (encode info stream)) infos)))
 
-(defmethod encode ((attr module-mutable-ltv-attr) stream)
-  (let ((indices (indices attr)))
-    (write-b32 (+ 2 *index-bytes* (* 2 (length indices)))
-               stream) ; length of attr
+(defmethod encode ((attr module-literal-kinds-attr) stream)
+  (let ((kinds (kinds attr)))
+    ;; kinds are encoded already as (index1 kind1 ...) so we don't have much to do.
+    (write-b32 (+ *index-bytes* 2 (* 2 (length kinds))) stream) ; length of attr
     (write-index (module attr) stream)
-    (write-b16 (length indices) stream)
-    (loop for index in indices
-          do (write-b16 index stream))))
+    (write-b16 (floor (length kinds) 2) stream)
+    (loop for k across kinds do (write-b16 k stream))))
 
 (defmethod encode ((attr module-native-attr) stream)
   (let ((code (code attr))

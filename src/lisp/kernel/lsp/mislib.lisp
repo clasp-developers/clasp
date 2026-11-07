@@ -371,3 +371,20 @@ Evaluates FORM, outputs the allocations that took place for the evaluation to
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (export '(with-memory-ramp)))
+
+;;; These are already defined in C++, but we provide inline definitions.
+
+;;; (Obviously this depends on EQ returning T, which isn't required by standard,
+;;;  but we do in Clasp.)
+(declaim (inline not))
+(defun not (x) (eq x nil))
+
+(declaim (inline null))
+(defun null (object) (eq object nil))
+
+(declaim (inline identity))
+(defun identity (object) object)
+
+;;; characters have no other attributes in Clasp
+(declaim (inline char-int))
+(defun char-int (character) (char-code character))

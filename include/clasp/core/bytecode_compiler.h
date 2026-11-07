@@ -245,34 +245,44 @@ class GlobalFunInfo_O : public FunInfo_O {
   LISP_CLASS(comp, CompPkg, GlobalFunInfo_O, "GlobalFunInfo", FunInfo_O);
 
 public:
+  T_sp _inline_data = nil<T_O>(); // inline definition
   T_sp _cmexpander = nil<T_O>(); // compiler macro expander
   T_sp _opt_id = nil<T_O>(); // optimization mark
 public:
-  GlobalFunInfo_O(InlineStatus inl, T_sp expander, T_sp opt_id)
-    : FunInfo_O(inl), _cmexpander(expander), _opt_id(opt_id) {};
+  GlobalFunInfo_O(InlineStatus inl, T_sp inline_data, T_sp expander, T_sp opt_id)
+    : FunInfo_O(inl), _inline_data(inline_data),
+      _cmexpander(expander), _opt_id(opt_id) {};
   CL_LISPIFY_NAME(GlobalFunInfo/make)
-  CL_LAMBDA(inline_status expander &optional identity)
+  CL_LAMBDA(inline_status inline_data expander &optional identity)
   CL_DEF_CLASS_METHOD
-  static GlobalFunInfo_sp make(T_sp inlstatus, T_sp expander, T_sp opt_id) {
-    return make_direct(sym_to_inl(inlstatus), expander, opt_id);
+  static GlobalFunInfo_sp make(T_sp inlstatus, T_sp inline_data,
+                               T_sp expander, T_sp opt_id) {
+    return make_direct(sym_to_inl(inlstatus), inline_data, expander, opt_id);
   }
-  static GlobalFunInfo_sp make_direct(InlineStatus inlstatus, T_sp expander, T_sp opt_id) {
-    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(inlstatus, expander, opt_id);
+  static GlobalFunInfo_sp make_direct(InlineStatus inlstatus, T_sp inline_data,
+                                      T_sp expander, T_sp opt_id) {
+    return gctools::GC<GlobalFunInfo_O>::allocate<gctools::RuntimeStage>(inlstatus, inline_data, expander, opt_id);
   }
+  CL_DEFMETHOD T_sp inline_data() const { return this->_inline_data; }
   CL_DEFMETHOD T_sp cmexpander() const { return this->_cmexpander; }
   CL_DEFMETHOD T_sp opt_id() const { return this->_opt_id; }
   virtual FunInfo_sp clone_inline(InlineStatus inl);
 };
 
 struct GlobalFunInfoV {
-  GlobalFunInfoV(FunInfo_O::InlineStatus inl, T_sp cmexpander, T_sp opt_id)
-    : _inline(inl), _cmexpander(cmexpander), _opt_id(opt_id) {};
+  GlobalFunInfoV(FunInfo_O::InlineStatus inl, T_sp inline_data,
+                 T_sp cmexpander, T_sp opt_id)
+    : _inline(inl), _inline_data(inline_data),
+      _cmexpander(cmexpander), _opt_id(opt_id) {};
   GlobalFunInfoV(GlobalFunInfo_sp info)
-    : _inline(info->inlstatus()), _cmexpander(info->cmexpander()),
-      _opt_id(info->opt_id()) {};
+    : _inline(info->inlstatus()), _inline_data(info->inline_data()),
+      _cmexpander(info->cmexpander()), _opt_id(info->opt_id()) {};
   FunInfo_O::InlineStatus _inline;
+  T_sp _inline_data;
   T_sp _cmexpander;
   T_sp _opt_id;
+  FunInfo_O::InlineStatus inline_status() const { return _inline; }
+  T_sp inline_data() const { return _inline_data; }
   T_sp cmexpander() const { return _cmexpander; }
   T_sp opt_id() const { return _opt_id; }
 };
@@ -509,9 +519,7 @@ public:
    */
   CL_DEFMETHOD Lexenv_sp macroexpansion_environment();
   T_sp variableInfo(T_sp varname);
-  T_sp lookupSymbolMacro(Symbol_sp sname);
   T_sp functionInfo(T_sp fname);
-  T_sp lookupMacro(Symbol_sp mname);
   bool notinlinep(T_sp fname);
   T_sp blockInfo(T_sp bname);
   T_sp tagInfo(T_sp tname);
@@ -524,6 +532,7 @@ public:
 // on consing and GC.
 // (Profiling has shown that the compiler spends a lot of time consing.)
 FORWARD(Label);
+FORWARD(LinkedFunction);
 FORWARD(Module);
 class Context {
 public:
@@ -551,10 +560,11 @@ public:
 
 public:
   size_t literal_index(T_sp literal) const;
-  size_t named_constant_index(Symbol_sp name) const;
+  size_t named_constant_index(Symbol_sp name, T_sp value) const;
   size_t new_literal_index(T_sp literal) const;
   size_t ltv_index(T_sp form, bool read_only_p) const;
   size_t cfunction_index(Cfunction_sp fun) const;
+  size_t inline_index(T_sp name, T_sp fun) const;
   size_t fcell_index(T_sp name) const;
   size_t vcell_index(Symbol_sp name) const;
   size_t env_index() const;
@@ -944,25 +954,28 @@ class NamedConstantInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, NamedConstantInfo_O, "NamedConstantInfo", General_O);
 
 public:
-  NamedConstantInfo_O(Symbol_sp name) : _name(name) {}
+  NamedConstantInfo_O(Symbol_sp name, T_sp value) : _name(name), _value(value) {}
 
 public:
   // the name of the constant variable.
   Symbol_sp _name;
+  T_sp _value;
 public:
   CL_LISPIFY_NAME(NamedConstantInfo/make)
   CL_DEF_CLASS_METHOD
-  static NamedConstantInfo_sp make(Symbol_sp name) { return gctools::GC<NamedConstantInfo_O>::allocate<gctools::RuntimeStage>(name); }
+  static NamedConstantInfo_sp make(Symbol_sp name, T_sp value) {
+    return gctools::GC<NamedConstantInfo_O>::allocate<gctools::RuntimeStage>(name, value);
+  }
 
 public:
   CL_LISPIFY_NAME(NamedConstantInfo/name)
   CL_DEFMETHOD Symbol_sp name() { return this->_name; }
+  CL_LISPIFY_NAME(NamedConstantInfo/value)
+  CL_DEFMETHOD T_sp value() { return this->_value; }
 };
 
-
 // Compiler literals marker representing the load-time lookup of a
-// function cell. (Clasp doesn't currently have function cells, so the
-// "cell" will just be the function name.)
+// function cell.
 FORWARD(FunctionCellInfo)
 class FunctionCellInfo_O : public General_O {
   LISP_CLASS(comp, CompPkg, FunctionCellInfo_O, "FunctionCellInfo", General_O);
@@ -1017,6 +1030,33 @@ public:
   }
 };
 
+// Compiler literals marker representing the load-time lookup of a
+// function (not cell). Used for inline definitions, thus the name.
+FORWARD(InlineFunctionInfo)
+class InlineFunctionInfo_O : public General_O {
+  LISP_CLASS(comp, CompPkg, InlineFunctionInfo_O, "InlineFunctionInfo",
+             General_O);
+
+public:
+  InlineFunctionInfo_O(T_sp fname, T_sp data) : _fname(fname), _data(data) {}
+
+public:
+  T_sp _fname; // Name of the function being looked up.
+  // An actual definition (LinkedFunction or bytecode function) for the
+  // (native) compiler to use. It's discarded by the FASL dumper.
+  T_sp _data;
+public:
+  CL_LISPIFY_NAME(InlineFunctionInfo/make)
+  CL_DEF_CLASS_METHOD
+  static InlineFunctionInfo_sp make(T_sp fname, T_sp data) { return gctools::GC<InlineFunctionInfo_O>::allocate<gctools::RuntimeStage>(fname, data); }
+
+public:
+  CL_LISPIFY_NAME(InlineFunctionInfo/fname)
+  CL_DEFMETHOD T_sp fname() { return this->_fname; }
+  CL_LISPIFY_NAME(InlineFunctionInfo/data)
+  CL_DEFMETHOD T_sp data() { return this->_data; }
+};
+
 class Module_O : public General_O {
   LISP_CLASS(comp, CompPkg, Module_O, "Module", General_O);
 
@@ -1062,9 +1102,13 @@ public:
   CL_DEFMETHOD SimpleVector_byte8_t_sp create_bytecode();
   // Create the debug info vector. Can only be run after link.
   CL_DEFMETHOD SimpleVector_sp create_debug_info();
+  // Create the literal kinds vector. Can only be run after link.
+  CL_DEFMETHOD SimpleVector_byte16_t_sp create_literal_kinds();
   // Link, then create actual run-time function objects and a bytecode module.
   // Suitable for cl:compile.
   CL_DEFMETHOD void link_load(T_sp env);
+  // Link a module to save for later.
+  void link_save();
 };
 
 class Cfunction_O : public General_O {
@@ -1088,8 +1132,8 @@ public:
   size_t _extra;
   // The index of this cfunction in the containing module's cfunction vector.
   size_t _index;
-  // The runtime function, used during link.
-  BytecodeSimpleFun_sp _info;
+  // The runtime or linked function, used during link.
+  T_sp _info;
   // Stuff for the function description.
   T_sp _name;
   T_sp _doc;
@@ -1150,9 +1194,9 @@ public:
     this->_index = nindex;
     return nindex;
   }
-  CL_DEFMETHOD BytecodeSimpleFun_sp info() const { return _info; }
+  CL_DEFMETHOD T_sp info() const { return _info; }
   CL_LISPIFY_NAME(Cfunction/setf-info)
-  CL_DEFMETHOD BytecodeSimpleFun_sp setInfo(BytecodeSimpleFun_sp gbep) {
+  CL_DEFMETHOD T_sp setInfo(T_sp gbep) {
     this->_info = gbep;
     return gbep;
   }
@@ -1168,10 +1212,140 @@ public:
   // Convenience method to link the module and return the new bytecode function
   // corresponding to this cfunction. Good for cl:compile.
   CL_DEFMETHOD Function_sp link_function(T_sp env);
+  // Similar but return a LinkedFunction instead, for saving inline functions.
+  CL_DEFMETHOD LinkedFunction_sp link_save_function();
 public:
   // For use as a BytecodeDebugInfo.
   T_sp start() const;
   T_sp end() const;
+};
+
+// Like a Module_O, but has been linked but not loaded: so we have bytecode
+// and debug info like a runtime BytecodeModule_O, but constants haven't been
+// loaded.
+// This is used for storing inline functions. It is _not_ used by the normal
+// link-loader since the intermediate is unnecessary.
+FORWARD(LinkedModule);
+class LinkedModule_O : public General_O {
+  LISP_CLASS(comp, CompPkg, LinkedModule_O, "LinkedModule", General_O);
+
+public:
+  SimpleVector_byte8_t_sp _bytecode; // resolved
+  SimpleVector_sp _literal_info;     // NOT resolved
+  SimpleVector_sp _debug_info;       // mostly resolved: functions are LinkedFunctions
+
+public:
+  LinkedModule_O(SimpleVector_byte8_t_sp bytecode,
+                 SimpleVector_sp literal_info,
+                 SimpleVector_sp debug_info)
+    : _bytecode(bytecode), _literal_info(literal_info), _debug_info(debug_info) {}
+
+  static LinkedModule_sp make(SimpleVector_byte8_t_sp bytecode,
+                              SimpleVector_sp literal_info,
+                              SimpleVector_sp debug_info) {
+    return gctools::GC<LinkedModule_O>::allocate<gctools::RuntimeStage>(bytecode, literal_info, debug_info);
+  }
+
+public:
+  CL_LISPIFY_NAME(LinkedModule/bytecode)
+  CL_DEFMETHOD SimpleVector_byte8_t_sp bytecode() const { return _bytecode; }
+  CL_LISPIFY_NAME(LinkedModule/literals)
+  CL_DEFMETHOD SimpleVector_sp literals() const { return _literal_info; }
+  CL_LISPIFY_NAME(LinkedModule/debug-info)
+  CL_DEFMETHOD SimpleVector_sp debug_info() const { return _debug_info; }
+
+public:
+  BytecodeModule_sp load_new() const;
+  void finish_loading_into(BytecodeModule_sp, T_sp env) const;
+};
+
+class LinkedFunction_O : public General_O {
+  LISP_CLASS(comp, CompPkg, LinkedFunction_O, "LinkedFunction", General_O);
+
+public:
+  FunctionDescription_sp _FunctionDescription;
+  LinkedModule_sp _Module;
+  unsigned short _LocalsFrameSize;
+  unsigned int _EnvironmentSize;
+  unsigned int _EntryPcN;
+  unsigned int _BytecodeSize;
+  // The runtime function if this has been linked before. This is in a slot so that
+  // we don't duplicate loaded inline functions unnecessarily.
+  std::atomic<T_sp> _info;
+
+public:
+  LinkedFunction_O(FunctionDescription_sp fdesc,
+                   LinkedModule_sp mod, unsigned short nlocals,
+                   unsigned int nclosed, unsigned int start, unsigned int size)
+    : _FunctionDescription(fdesc),
+      _Module(mod), _LocalsFrameSize(nlocals), _EnvironmentSize(nclosed),
+      _EntryPcN(start), _BytecodeSize(size), _info(nil<T_O>()) {}
+
+  static LinkedFunction_sp make(FunctionDescription_sp fdesc,
+                                LinkedModule_sp mod, unsigned short nlocals,
+                                unsigned int nclosed, unsigned int start,
+                                unsigned int size) {
+    return gctools::GC<LinkedFunction_O>::allocate(fdesc, mod, nlocals, nclosed,
+                                                   start, size);
+  }
+
+  CL_LISPIFY_NAME(LinkedFunction/code)
+  CL_DEFMETHOD LinkedModule_sp code() const { return _Module; }
+  CL_LISPIFY_NAME(LinkedFunction/localsFrameSize)
+  CL_DEFMETHOD size_t localsFrameSize() const { return _LocalsFrameSize; }
+  CL_LISPIFY_NAME(LinkedFunction/environmentSize)
+  CL_DEFMETHOD size_t environmentSize() const { return _EnvironmentSize; }
+  CL_LISPIFY_NAME(LinkedFunction/entryPcN)
+  CL_DEFMETHOD size_t entryPcN() const { return _EntryPcN; }
+  CL_LISPIFY_NAME(LinkedFunction/bytecodeSize)
+  CL_DEFMETHOD size_t bytecodeSize() const { return _BytecodeSize; }
+
+  // Return the info if it's a bytecode function already, or else make a bytecode
+  // function.
+  // The idea here is that there's only ever one bytecode function in circulation
+  // for a given linked function. If two threads race to load a linked function,
+  // they need to end up with the same bytecode function (and module).
+  BytecodeSimpleFun_sp load_pre(BytecodeModule_sp mod) {
+    T_sp existing = _info.load(std::memory_order_relaxed);
+    if (existing.isA<BytecodeSimpleFun_O>())
+      return existing.as_unsafe<BytecodeSimpleFun_O>();
+    // No bytecode function or module has been made, so do that.
+    BytecodeSimpleFun_sp n = load_new(mod);
+    T_sp nn = n;
+    if (_info.compare_exchange_strong(existing, nn, std::memory_order_relaxed)) {
+      return n;
+    } else {
+      // Some other thread that was simultaneously loading beat us,
+      // so we can just use what they put in.
+      return existing.as<BytecodeSimpleFun_O>();
+    }
+  }
+  // Do that but also actually finish loading the module.
+  BytecodeSimpleFun_sp load(T_sp env) {
+    BytecodeSimpleFun_sp fun = load_pre(_Module->load_new());
+    // Multiple threads could race to load the same module simultaneously here.
+    finish_loading_into(fun, env);
+    return fun;
+  }
+private:
+  // Make a bytecode function for us with the given module.
+  BytecodeSimpleFun_sp load_new(BytecodeModule_sp mod) const;
+  // Finish loading a bytecode function by loading literals etc.
+  void finish_loading_into(BytecodeSimpleFun_sp, T_sp env) const;
+
+public:
+  CL_LISPIFY_NAME(LinkedFunction/name)
+  CL_DEFMETHOD T_sp name() const { return _FunctionDescription->functionName(); }
+  CL_LISPIFY_NAME(LinkedFunction/docstring)
+  CL_DEFMETHOD T_sp docstring() const { return _FunctionDescription->docstring(); }
+  CL_LISPIFY_NAME(LinkedFunction/lambdaList)
+  CL_DEFMETHOD T_sp lambdaList() const { return _FunctionDescription->lambdaList(); }
+
+public:
+  // For use as a BytecodeDebugInfo.
+  T_sp start() const;
+  T_sp end() const;
+  
 };
 
 // Main entry point

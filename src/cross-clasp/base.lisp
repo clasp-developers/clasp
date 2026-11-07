@@ -9,6 +9,17 @@
         for p = (assoc 'core:lambda-name decs)
         when p return (second p)))
 
+(defmethod maclina.compile:process-declaration ((client client) env
+                                                (id (eql 'core:lambda-name)) decl
+                                                &key source)
+  (declare (ignore env source))
+  (values nil nil (list decl)))
+(defmethod maclina.compile:process-declaration ((client client) env
+                                                (id (eql 'core:lambda-list)) decl
+                                                &key source)
+  (declare (ignore env source))
+  (values nil nil (list decl)))
+
 (defmethod maclina.compile:debug-lambda-list ((client client) decls)
   (loop for (declare . decs) in decls
         for p = (assoc 'core:lambda-list decs)
@@ -38,6 +49,10 @@
        ;; noting a function, as some code (like alexandria) does.
        (loop for f in (cddr proclamation)
              do (cmp::register-global-function-def 'defun f)))
+      ((inline)
+       (mapc #'core::proclaim-inline (rest proclamation)))
+      ((notinline)
+       (mapc #'core::proclaim-notinline (rest proclamation)))
       ((declaration)
        (loop for n in (rest proclamation)
              do (setf (clostrum:proclamation m:*client* *build-rte* n) t)))))
@@ -46,14 +61,29 @@
 (defun core::*make-special (var)
   (clostrum:make-variable m:*client* *build-rte* var))
 
+(defun core::proclaim-inline (fname)
+  (setf (core::inline-status fname) 'inline))
+(defun core::proclaim-notinline (fname)
+  (setf (core::inline-status fname) 'notinline))
+
 (defmethod common-macro-definitions:proclaim
     ((client client) declspec env)
   (declare (ignore env))
-  (if (and (consp declspec) (eq (car declspec) 'special))
-      ;; special case this so clasp can load it early.
-      `(progn
-         ,@(loop for s in (rest declspec)
-                 collect `(core::*make-special ',s)))
+  (if (consp declspec)
+      (case (car declspec)
+        ((special)
+         ;; special case this so clasp can load it early.
+         `(progn
+            ,@(loop for s in (rest declspec)
+                    collect `(core::*make-special ',s))))
+        ((inline)
+         `(progn
+            ,@(loop for s in (rest declspec)
+                    collect `(core::proclaim-inline ',s))))
+        ((notinline)
+         `(progn
+            ,@(loop for s in (rest declspec)
+                    collect `(core::proclaim-notinline ',s)))))
       ;; proclaim is defined a bit late.
       nil #+(or)`(cl:proclaim ',declspec)))
 
@@ -150,6 +180,11 @@
   (let ((env (or environment *build-rte*)))
     (extrinsicl:get-setf-expansion
      client env (macroexpand-hook) place)))
+
+(defun cmp::bytecompile-inline-definition (lambda-expression environment)
+  (maclina.compile:save-function
+   (maclina.compile:compile-into (maclina.compile:make-cmodule)
+                                 lambda-expression environment)))
 
 ;;; We define our own SETF over Common Macros'. This is because we want to
 ;;; minimize how much code actually needs to be compiled by using simple
@@ -369,6 +404,16 @@
   (let ((*package* (m:symbol-value m:*client* *build-rte* '*package*)))
     (apply #'alexandria:symbolicate things)))
 
+(defun %maybe-intern (name package)
+  (let ((package
+          (etypecase package
+            ((eql t) (m:symbol-value m:*client* *build-rte* '*package*))
+            (null (return-from %maybe-intern (make-symbol name)))
+            (package package)
+            ((or symbol string character)
+             (clostrum:find-package m:*client* *build-rte* (string package))))))
+    (values (intern name package))))
+
 (defun install-environment (&optional (client m:*client*)
                               (rte *build-rte*)
                               (ce *build-ce*))
@@ -414,6 +459,10 @@
                        ext:current-source-location
                        core::variable-source-info
                        (setf core::variable-source-info)
+                       core::inline-status (setf core::inline-status)
+                       core::proclaim-inline core::proclaim-notinline
+                       core::inline-data (setf core::inline-data)
+                       cmp::bytecompile-inline-definition
                        (setf documentation) ; used by e.g. defpackage
                        ext:add-package-local-nickname
                        core::gethash3 core::puthash
@@ -480,7 +529,9 @@
                                (alexandria:format-symbol
                                 . %format-symbol)
                                (alexandria:symbolicate
-                                . %symbolicate))
+                                . %symbolicate)
+                               (alexandria::maybe-intern
+                                . %maybe-intern))
         for f = (fdefinition src)
         do (setf (clostrum:fdefinition client rte fname) f))
   (loop for mname in '(eclector.reader:quasiquote

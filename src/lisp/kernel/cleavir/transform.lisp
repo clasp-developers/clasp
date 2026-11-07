@@ -176,6 +176,19 @@ Optimizations are available for any of:
     ;; This also includes NIL NIL, but that probably won't happen
     ;; if the first subtypep returns true
     (not (ctype:values-subtypep vtype2 vtype1 *clasp-system*))))
+;;; Insert a new OBJECT into an existing total order (LIST).
+;;; PREDICATE is a partial order. The new element will be inserted before
+;;; all existing elements it is less than.
+;;; LIST is destroyed.
+(defun insert-linear (object list predicate &key (key #'identity))
+  (loop with kobject = (funcall key object)
+        for subl on list
+        for e = (car subl)
+        for ke = (funcall key e)
+        when (funcall predicate kobject ke)
+          return (nconc pre (list* object subl))
+        collect e into pre
+        finally (return (nconc list (list object)))))
 (defun %def-bir-transformer (name function argstype)
   ;; We just use a reverse alist (function . argstype).
   (let* ((transformers (gethash name *bir-transformers*))
@@ -185,9 +198,9 @@ Optimizations are available for any of:
         (setf (car existing) function)
         ;; Merge in, respecting subtypep
         (setf (gethash name *bir-transformers*)
-              (merge 'list (list (cons function argstype))
-                     (gethash name *bir-transformers*)
-                     #'vtype< :key #'cdr)))))
+              (insert-linear (cons function argstype)
+                             (gethash name *bir-transformers*)
+                             #'vtype< :key #'cdr)))))
 
 (defmacro %deftransform (name lambda-list argstype
                          &body body)
