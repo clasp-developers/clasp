@@ -151,7 +151,7 @@
             (do* ((x (nthcdr start sequence) (cdr x))
                   (i (- end start) (1- i)))
                  ((zerop i) sequence)
-              (declare (fixnum i) (cons x))
+              (declare (fixnum i))
               (rplaca x item)))))
         ((vectorp sequence)
          (reckless
