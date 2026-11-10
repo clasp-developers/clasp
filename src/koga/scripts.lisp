@@ -182,7 +182,6 @@
   (pprint '(apply #'uiop:symbol-call "CSCRAPE" "GENERATE-SIF" (uiop:command-line-arguments)) output-stream))
 
 (defmethod print-prologue (configuration (name (eql :compile-bytecode-image)) output-stream)
-  (declare (ignore configuration))
   (print-asdf-stub output-stream t :cross-clasp :split-sequence)
   (format output-stream "
 (destructuring-bind (character-names features &rest rest)
@@ -193,10 +192,11 @@
     (cross-clasp:build inputs outputs sources
                        (mapcar (lambda (output)
                                  (merge-pathnames (make-pathname :type \"cfasl\") output))
-                               outputs))))"))
+                               outputs)
+                       :verbose ~s :print ~s)))"
+          (compile-verbose configuration) (compile-print configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-native-image)) output-stream)
-  (declare (ignore configuration))
   (print-asdf-stub output-stream t :cross-clasp :split-sequence)
   (format output-stream "
 (let ((number-of-jobs (if (ext:getenv \"CLASP_BUILD_JOBS\")
@@ -211,8 +211,10 @@
                                 (mapcar (lambda (output)
                                           (merge-pathnames (make-pathname :type \"cfasl\") output))
                                         outputs)
-                                :parallel-jobs number-of-jobs))))"
-          (jobs configuration)))
+                                :parallel-jobs number-of-jobs
+                                :verbose ~s :print ~s))))"
+          (jobs configuration)
+          (compile-verbose configuration) (compile-print configuration)))
 
 (defmethod print-prologue (configuration (name (eql :compile-systems)) output-stream)
   (declare (ignore configuration))
@@ -226,7 +228,6 @@
   (pprint core:*command-line-arguments* stream))"))
 
 (defmethod print-prologue (configuration (name (eql :compile-lisp)) output-stream)
-  (declare (ignore configuration))
   (format output-stream "
 (let* ((sources core:*command-line-arguments*)
        (breaker (or (position \"--output\" sources :test #'string=)
@@ -244,9 +245,10 @@
                        (let ((input-date (ignore-errors (file-write-date inp)))                     (output-date (ignore-errors (file-write-date out))))
                          (and input-date output-date
                               (> output-date input-date))))
-                  (load out :verbose t))
+                  (load out :verbose ~a :print ~a))
                  (t (setf clean t)
-                    (load (compile-file inp :output-file out :source-debug-pathname source :verbose t))))))"))
+                    (load (compile-file inp :output-file out :source-debug-pathname source :verbose ~2:*~a :print ~a))))))"
+          (compile-verbose configuration) (compile-print configuration)))
 
 (defmethod print-variant-target-sources
     (configuration (name (eql :generate-headers)) output-stream
@@ -274,10 +276,12 @@
           "(compile-file (elt core:*command-line-arguments* 1)
               :source-debug-pathname (elt core:*command-line-arguments* 1)
               :output-file (elt core:*command-line-arguments* 0)
-              :native '~s)"
+              :native '~s
+              :verbose ~s :print ~s)"
           (case (build-mode configuration)
             (:native t)
-            (:bytecode nil))))
+            (:bytecode nil))
+          (compile-verbose configuration) (compile-print configuration)))
 
 (defmethod print-prologue (configuration (name (eql :link-image)) output-stream)
   (declare (ignore configuration))

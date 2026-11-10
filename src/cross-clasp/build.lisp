@@ -34,8 +34,7 @@
 ;; that want forking must both pass a positive PARALLEL-JOBS and establish the
 ;; fork machinery with WITH-FORKING (see BUILD-NATIVE).
 (defun build-system (system &key native (parallel-jobs 0))
-  (let ((*compile-verbose* t) (*compile-print* t)
-        (*load-verbose* t) (*load-print* t)
+  (let ((*load-verbose* *compile-verbose*) (*load-print* *compile-print*)
         ;; COMPILER instead of CMP so that we get Clasp's package,
         ;; not the local package nickname.
         ;; We disable Cleavir because it's too slow:
@@ -101,13 +100,17 @@
          :parallel nil
          :native t))
 
-(defun build (input-files output-files source-pathnames cfasls)
+(defun build (input-files output-files source-pathnames cfasls
+              &key ((:verbose *compile-verbose*) t)
+              ((:print *compile-print*) t))
   (let ((system (compute-system input-files output-files
                                 source-pathnames cfasls)))
     (build-system system)))
 
 (defun build-native (input-files output-files source-pathnames cfasls
-                     &key (parallel-jobs 0))
+                     &key (parallel-jobs 0)
+                       ((:verbose *compile-verbose*) t)
+                       ((:print *compile-print*) t))
   (let ((system (compute-system input-files output-files
                                 source-pathnames cfasls)))
     (with-forking (:parallel-jobs parallel-jobs

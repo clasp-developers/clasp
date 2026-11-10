@@ -192,6 +192,16 @@
                           :initform t
                           :type boolean
                           :documentation "Compile files in parallel.")
+   (compile-verbose :accessor compile-verbose
+                    :initarg :compile-verbose
+                    :initform t
+                    :type boolean
+                    :documentation "Verbosity switch (*compile-print*) for Lisp compilation.")
+   (compile-print :accessor compile-print
+                  :initarg :compile-print
+                  :initform t
+                  :type boolean
+                  :documentation "Print switch (*compile-print*) for Lisp compilation.")
    (force-startup-external-linkage :accessor force-startup-external-linkage
                                    :initarg :force-startup-external-linkage
                                    :initform t
