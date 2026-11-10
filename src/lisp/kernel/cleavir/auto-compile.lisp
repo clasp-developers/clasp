@@ -70,6 +70,8 @@
                  (declare (ignore env))
                  ;; Make sure it hasn't been compiled already.
                  (if (eq (core:entry-point def) def)
+                     (log `(:nop))
+                     #+(or) ; autocompilation is currently very broken
                      (handler-case (clasp-bytecode-to-bir:compile-module
                                     (core:simple-fun-code def))
                        (serious-condition (e)
