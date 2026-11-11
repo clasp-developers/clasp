@@ -33,6 +33,7 @@
             (progn ,@body)
          (core:fe-restore-except ,previous)))))
 
+(declaim (inline 1- 1+))
 (defun 1- (num) (- num 1))
 (defun 1+ (num) (+ num 1))
 

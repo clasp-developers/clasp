@@ -1,5 +1,12 @@
 (in-package #:cross-clasp.clasp.clos)
 
+;;; KLUDGE for CFASLs to work with inlining
+(defmethod maclina.compile-file:make-load-form ((client cross-clasp:client)
+                                                (object maclina.compile:saved-function)
+                                                &optional env)
+  (declare (ignore env))
+  'nil)
+
 (defmethod maclina.compile-file:make-load-form ((client cross-clasp:client)
                                                 (object outcome)
                                                 &optional env)

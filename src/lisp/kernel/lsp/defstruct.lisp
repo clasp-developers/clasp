@@ -301,19 +301,13 @@
 
 (defun defstruct-class-reader-body (structure-name element-type location)
   (declare (ignore element-type))
-  `(if (typep object ',structure-name)
-       (clos:standard-instance-access object ,location)
-       (error 'type-error
-              :datum object
-              :expected-type ',structure-name)))
+  `(clos:standard-instance-access (the-single ,structure-name object) ,location))
 
 (defun defstruct-class-writer-body (structure-name element-type location)
   (declare (ignore element-type))
-  `(if (typep object ',structure-name)
-       (setf (clos:standard-instance-access object ,location) new)
-       (error 'type-error
-              :datum object
-              :expected-type ',structure-name)))
+  `(setf (clos:standard-instance-access (the-single ,structure-name object)
+                                        ,location)
+         new))
 
 (defun defstruct-class-cas-body (structure-name element-type location)
   (declare (ignore structure-name element-type))

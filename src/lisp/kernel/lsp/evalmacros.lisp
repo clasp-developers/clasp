@@ -18,8 +18,6 @@
     (error "Non-NIL environment passed to (setf ext:symbol-macro)"))
   (setf (get-sysprop name 'ext:symbol-macro) expander))
 
-(defvar *defun-inline-hook* nil)
-
 (defmacro when (condition &body forms)
   "Syntax: (when test {form}*)
 If TEST evaluates to true, then evaluates FORMs and returns all values of the
@@ -133,25 +131,62 @@ VARIABLE doc and can be retrieved by (DOCUMENTATION 'SYMBOL 'VARIABLE)."
 (defmacro defconstant-equal (var form &optional doc-string)
   `(defconstant-eqx ,var ,form equal ,doc-string))
 
+;; Has a different Maclina-based definition during build, so don't eval-when.
+(defun inline-status (name &optional env)
+  (let ((info (cmp:fun-info name env)))
+    (if (typep info 'cmp:fun-info)
+        (cmp:fun-info/inline-status info)
+        nil)))
+(defun (setf inline-status) (status name &optional env)
+  (when env
+    (error "Non-NIL environment passed to (setf inline-status)"))
+  (ecase status
+    ((inline)
+     (setf (gethash name *functions-to-inline*) t)
+     (remhash name *functions-to-notinline*))
+    ((notinline)
+     (setf (gethash name *functions-to-notinline*) t)
+     (remhash name *functions-to-inline*))
+    ((nil)
+     (remhash name *functions-to-inline*)
+     (remhash name *functions-to-notinline*))))
+
+(defun inline-data (name &optional env)
+  (let ((info (cmp:fun-info name env)))
+    (if (typep info 'cmp:global-fun-info)
+        (cmp:global-fun-info/inline-data info)
+        nil)))
+;; This is a slightly more general cmp:install-inline-data.
+;; The only real virtue of install-inline-data is that it's available in
+;; the primitive image.
+(defun (setf inline-data) (data name &optional env)
+  (when env
+    (error "Non-NIL environment passed to (setf inline-data)"))
+  (setf (gethash name *function-inline-data*) data))
+
 (defmacro defun (name lambda-list &body body &environment env)
    ;; Documentation in help.lisp
    (multiple-value-bind (decls body doc-string) 
        (si:process-declarations body t)
      (let* ((doclist (when doc-string (list doc-string)))
             (sname (si::function-block-name name))
-            (global-function
-              `#'(lambda ,lambda-list
-                   (declare (lambda-name ,name) ,@decls) 
-                   ,@doclist
-                   (block ,sname ,@body))))
+            (lambda-expression
+              `(lambda ,lambda-list
+                 (declare (lambda-name ,name) ,@decls)
+                 ,@doclist
+                 (block ,sname ,@body)))
+            (inlinep (eq 'inline (inline-status name env))))
        `(progn 
           (eval-when (:compile-toplevel)
             ;; this function won't be ready for a while, but it's okay as there's no
             ;; compiler to run :compile-toplevel forms anyway.
-            (cmp::register-global-function-def 'defun ',name))
-          (setf (fdefinition ',name) ,global-function)
-          ,@(and *defun-inline-hook*
-                 (list (funcall *defun-inline-hook* name global-function env)))
+            (cmp::register-global-function-def 'defun ',name)
+            ,@(when inlinep
+                `((setf (inline-data ',name)
+                        ,(cmp:bytecompile-inline-definition lambda-expression env)))))
+          (setf (fdefinition ',name) #',lambda-expression)
+          ,@(when inlinep
+              `((cmp:install-inline-data ',name #',name)))
           ',name))))
 
 (defmacro define-compiler-macro (name vl &rest body &environment env)

@@ -256,7 +256,8 @@
            #:local-macro-info/make
            #:bytecompile #:bytecompile-into)
   (:export #:with-atomic-file-rename)
-  (:export #:register-global-function-def)
+  (:export #:register-global-function-def
+           #:install-inline-data)
   (:export #:*source-locations*)
   (:export #:*btb-compile-hook* #:*cleavir-compile-hook*))
 

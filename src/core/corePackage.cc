@@ -142,6 +142,7 @@ SYMBOL_EXPORT_SC_(CorePkg, STARexit_backtraceSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARextension_systemsSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_inlineSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARfunctions_to_notinlineSTAR);
+SYMBOL_EXPORT_SC_(CorePkg, STARfunction_inline_dataSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARinitialize_hooksSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARinterrupts_enabledSTAR);
 SYMBOL_EXPORT_SC_(CorePkg, STARllvmVersionSTAR);
@@ -587,6 +588,7 @@ void CoreExposer_O::define_essential_globals(LispPtr lisp) {
   _sym_STARbacktraceSTAR->defparameter(nil<T_O>());
   _sym_STARfunctions_to_inlineSTAR->defparameter(HashTable_O::createEqual());
   _sym_STARfunctions_to_notinlineSTAR->defparameter(HashTable_O::createEqual());
+  _sym_STARfunction_inline_dataSTAR->defparameter(HashTable_O::createEqual());
   _sym_STARextension_systemsSTAR->defparameter(EXTENSION_SYSTEMS);
   _sym_STARinitialize_hooksSTAR->defparameter(nil<T_O>());
   _sym_STARterminate_hooksSTAR->defparameter(nil<T_O>());

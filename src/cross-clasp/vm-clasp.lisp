@@ -11,6 +11,7 @@
     ((nil) nil)
     ((:function) (cmp:global-fun-info/make
                   (clostrum:operator-inline maclina.machine:*client* env name)
+                  (clostrum:operator-inline-data maclina.machine:*client* env name)
                   (clostrum:compiler-macro-function
                    maclina.machine:*client* env name)
                   nil))

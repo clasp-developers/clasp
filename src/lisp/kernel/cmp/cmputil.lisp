@@ -59,8 +59,10 @@
 
 ;;; Also used by main_env_fun_info[_v] in bytecode_compiler.cc
 (defun known-function-p (name)
-  (and (boundp '*global-function-defs*)
-       (gethash name *global-function-defs*)))
+  (or (and (boundp '*global-function-defs*)
+           (gethash name *global-function-defs*))
+      (core:declared-global-inline-p name)
+      (core:declared-global-notinline-p name)))
 
 (defun register-global-function-def (type name)
   (when (boundp '*global-function-defs*)

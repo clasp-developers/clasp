@@ -17,11 +17,14 @@
                "$lisp "
                #+abcl "--noinform --batch --noinit "
                #+(or clasp sbcl) "--script "
+               ;; If you need to debug, try this (and --end-toplevel-options)
+               ;; so that you get SBCL's debugger.
+               ;;#+sbcl "--noinform --lose-on-corruption --end-runtime-options --no-sysinit --no-userinit --load "
                #+ecl "--norc --shell "
                #+ccl "--no-init --quiet --load "
                #+clisp "-norc "
                script
-               #+sbcl " "
+               #+sbcl " " ; " --end-toplevel-options "
                #+(or abcl clasp ecl) " -- "
                #+ccl " --eval \"(quit)\" -- "
                arguments))  

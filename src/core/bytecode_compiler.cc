@@ -179,7 +179,7 @@ static List_sp scrub_decls(List_sp decls) {
 }
 
 FunInfo_sp GlobalFunInfo_O::clone_inline(InlineStatus inl) {
-  return make_direct(inl, cmexpander(), opt_id());
+  return make_direct(inl, inline_status(), cmexpander(), opt_id());
 }
 FunInfo_sp LocalFunInfo_O::clone_inline(InlineStatus inl) {
   return make_direct(inl, lex());
@@ -404,14 +404,6 @@ VarInfoV var_info_v(Symbol_sp sym, Lexenv_sp env) {
   }
 }
 
-T_sp Lexenv_O::lookupSymbolMacro(Symbol_sp sname) {
-  VarInfoV info = var_info_v(sname, this->asSmartPtr());
-  if (std::holds_alternative<SymbolMacroVarInfoV>(info))
-    return std::get<SymbolMacroVarInfoV>(info).expander();
-  else
-    return nil<T_O>();
-}
-
 static inline T_sp main_env_cmf(T_sp name) {
   if (cl::_sym_compiler_macro_function->fboundp())
     return eval::funcall(cl::_sym_compiler_macro_function, name);
@@ -446,6 +438,27 @@ static inline FunInfo_O::InlineStatus main_env_inline(T_sp name) {
     }
   }
   return FunInfo_O::InlineStatus::NONE;
+}
+
+// Get the saved inline data for a function from the main environment.
+// This will generally be a cfunction saved by the file compiler.
+static inline T_sp main_env_inline_data(T_sp name) {
+  if (_sym_STARfunction_inline_dataSTAR->boundP()) {
+    T_sp t_fid = _sym_STARfunction_inline_dataSTAR->symbolValue();
+    if (t_fid.isA<HashTable_O>()) {
+      T_sp data = t_fid.as_unsafe<HashTable_O>()->gethash(name);
+      return data;
+    }
+  }
+  return nil<T_O>();
+}
+
+CL_DEFUN void cmp__install_inline_data(T_sp name, T_sp data) {
+  if (_sym_STARfunction_inline_dataSTAR->boundP()) {
+    T_sp t_fid = _sym_STARfunction_inline_dataSTAR->symbolValue();
+    if (t_fid.isA<HashTable_O>())
+      t_fid.as_unsafe<HashTable_O>()->setf_gethash(name, data);
+  }
 }
 
 // FIXME: remove redundancy with cl:special-operator-p
@@ -504,6 +517,7 @@ static inline T_sp main_env_fun_info(T_sp name) {
             if (opt_id.notnilp()
                 || main_env_known_fun_p(name))
               return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                                  main_env_inline_data(name),
                                                   main_env_cmf(name), opt_id);
             else return nil<T_O>();
           } if (fname->macroP())
@@ -511,6 +525,7 @@ static inline T_sp main_env_fun_info(T_sp name) {
                                                     fname->getSetfFdefinition());
           else
             return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                                main_env_inline_data(name),
                                                 main_env_cmf(name), opt_id);
         }
       }
@@ -524,12 +539,14 @@ static inline T_sp main_env_fun_info(T_sp name) {
     if (!fname->fboundp()) {
       if (opt_id.notnilp() || main_env_known_fun_p(name))
         return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                            main_env_inline_data(name),
                                             main_env_cmf(name), opt_id);
       else return nil<T_O>();
     } else if (fname->macroP())
       return GlobalMacroInfo_O::make_direct(main_env_inline(name), fname->symbolFunction());
     else
       return GlobalFunInfo_O::make_direct(main_env_inline(name),
+                                          main_env_inline_data(name),
                                           main_env_cmf(name), opt_id);
   }
 }
@@ -576,6 +593,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     if (!fname->fboundp_setf()) {
       if (opt_id.notnilp() || main_env_known_fun_p(name))
         return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                       main_env_inline_data(name),
                                        main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
     } else if (fname->macroP())
@@ -583,6 +601,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
                                        fname->getSetfFdefinition()));
     else
       return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                     main_env_inline_data(name),
                                      main_env_cmf(name), opt_id));
   } else {
     Symbol_sp fname = gc::As<Symbol_sp>(name);
@@ -591,6 +610,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
     if (!fname->fboundp()) {
       if (opt_id.notnilp() || main_env_known_fun_p(name))
         return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                       main_env_inline_data(name),
                                        main_env_cmf(name), opt_id));
       else return FunInfoV(NoFunInfoV());
     } else if (fname->macroP())
@@ -598,6 +618,7 @@ static inline FunInfoV main_env_fun_info_v(T_sp name) {
                                        fname->symbolFunction()));
     else
       return FunInfoV(GlobalFunInfoV(main_env_inline(name),
+                                     main_env_inline_data(name),
                                      main_env_cmf(name), opt_id));
   }
 }
@@ -633,16 +654,6 @@ FunInfoV fun_info_v(T_sp name, Lexenv_sp env) {
   }
 }
 
-T_sp Lexenv_O::lookupMacro(Symbol_sp macroname) {
-  FunInfoV info = fun_info_v(macroname, this->asSmartPtr());
-  if (std::holds_alternative<LocalMacroInfoV>(info))
-    return std::get<LocalMacroInfoV>(info).expander();
-  else if (std::holds_alternative<GlobalMacroInfoV>(info))
-    return std::get<GlobalMacroInfoV>(info).expander();
-  else
-    return nil<T_O>();
-}
-
 bool Lexenv_O::notinlinep(T_sp fname) {
   for (auto cur : this->decls()) {
     T_sp decl = oCar(cur);
@@ -668,7 +679,7 @@ size_t Context::literal_index(T_sp literal) const {
   return nind.unsafe_fixnum();
 }
 
-size_t Context::named_constant_index(Symbol_sp name) const {
+size_t Context::named_constant_index(Symbol_sp name, T_sp value) const {
   ComplexVector_T_sp literals = this->cfunction()->module()->literals();
   for (size_t i = 0; i < literals->length(); ++i) {
     T_sp slit = literals[i];
@@ -676,7 +687,7 @@ size_t Context::named_constant_index(Symbol_sp name) const {
         && slit.as_unsafe<NamedConstantInfo_O>()->name() == name)
       return i;
   }
-  auto nind = literals->vectorPushExtend(NamedConstantInfo_O::make(name));
+  auto nind = literals->vectorPushExtend(NamedConstantInfo_O::make(name, value));
   return nind.unsafe_fixnum();
 }
 
@@ -706,6 +717,18 @@ size_t Context::cfunction_index(Cfunction_sp fun) const {
       return i;
   }
   Fixnum_sp nind = literals->vectorPushExtend(fun);
+  return nind.unsafe_fixnum();
+}
+size_t Context::inline_index(T_sp name, T_sp fun) const {
+  ComplexVector_T_sp literals = this->cfunction()->module()->literals();
+  for (size_t i = 0; i < literals->length(); ++i) {
+    T_sp slit = literals[i];
+    if (slit.isA<InlineFunctionInfo_O>() &&
+        slit.as_unsafe<InlineFunctionInfo_O>()->data() == fun)
+      return i;
+  }
+  InlineFunctionInfo_sp info = InlineFunctionInfo_O::make(name, fun);
+  Fixnum_sp nind = literals->vectorPushExtend(info);
   return nind.unsafe_fixnum();
 }
 
@@ -1211,12 +1234,16 @@ static void resolve_debug_info(BytecodeDebugInfo_sp info) {
   T_sp open_label = info->start();
   if (gc::IsA<Label_sp>(open_label))
     info->setStart(clasp_make_fixnum(gc::As_unsafe<Label_sp>(open_label)->module_position()));
-  else // compiler screwed up, but this is just debug info, don't raise stink
+  // The label may have already been resolved by a previous call, in which case
+  // don't mess with it. Otherwise, set it to 0 to at least match the type; somehow
+  // the compiler or something messed it up, but we don't want to raise a stink
+  // about debug info.
+  else if (!open_label.fixnump())
     info->setStart(clasp_make_fixnum(0));
   T_sp close_label = info->end();
   if (gc::IsA<Label_sp>(close_label))
     info->setEnd(clasp_make_fixnum(gc::As_unsafe<Label_sp>(close_label)->module_position()));
-  else
+  else if (!close_label.fixnump())
     info->setEnd(clasp_make_fixnum(0));
 }
 
@@ -1283,6 +1310,55 @@ SimpleVector_sp Module_O::create_debug_info() {
   return debuginfos;
 }
 
+static bool specially_marked_constant_p(T_sp value) {
+  return value.isA<VariableCell_O>() || value.isA<FunctionCell_O>()
+    || value.isA<BytecodeSimpleFun_O>();
+}
+
+// Template is an idiotic workaround for the fact we use this with both a
+// complex vector (from compiler modules) or simple vector (from linked modules)
+template <class Vec_sp>
+static SimpleVector_byte16_t_sp do_create_literal_kinds(Vec_sp cliterals) {
+  struct KindPair {
+    uint16_t index;
+    BytecodeModule_O::LitKind kind;
+  };
+  std::vector<KindPair> kinds;
+  for (size_t i = 0; i < cliterals->length(); ++i) {
+    T_sp lit = cliterals[i];
+    if (lit.isA<InlineFunctionInfo_O>())
+      kinds.emplace_back(i, BytecodeModule_O::LitKind::InlineFun);
+    else if (lit.isA<LoadTimeValueInfo_O>())
+      kinds.emplace_back(i,
+                         lit.as_unsafe<LoadTimeValueInfo_O>()->read_only_p()
+                         ? BytecodeModule_O::LitKind::LTV
+                         : BytecodeModule_O::LitKind::LTVMut);
+    else if (lit.isA<ConstantInfo_O>()) {
+      T_sp value = lit.as_unsafe<ConstantInfo_O>()->value();
+      // mark some kinds of objects specifically as being literal constants.
+      // See BytecodeModule_O for an explanation of the scheme.
+      if (specially_marked_constant_p(value))
+        kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
+    }
+    else if (lit.isA<NamedConstantInfo_O>()) {
+      T_sp value = lit.as_unsafe<NamedConstantInfo_O>()->value();
+      if (specially_marked_constant_p(value))
+        kinds.emplace_back(i, BytecodeModule_O::LitKind::Constant);
+    } else if (lit.isA<EnvInfo_O>())
+      kinds.emplace_back(i, BytecodeModule_O::LitKind::Env);
+  }
+  SimpleVector_byte16_t_sp ret = SimpleVector_byte16_t_O::make(kinds.size()*2);
+  for (size_t i = 0; i < kinds.size(); ++i) {
+    ret[i*2 + 0] = kinds[i].index;
+    ret[i*2 + 1] = static_cast<uint16_t>(kinds[i].kind);
+  }
+  return ret;
+}
+
+SimpleVector_byte16_t_sp Module_O::create_literal_kinds() {
+  return do_create_literal_kinds(literals());
+}
+
 // Replacement for CL:REPLACE, which isn't available here.
 static void replace_bytecode(SimpleVector_byte8_t_sp dest, ComplexVector_byte8_t_sp src, size_t start1, size_t start2,
                              size_t end2) {
@@ -1332,7 +1408,11 @@ CL_DEFUN T_sp lambda_list_for_name(T_sp raw_lambda_list) { return core::lambda_l
 Function_sp Cfunction_O::link_function(T_sp env) {
   this->module()->link_load(env);
   // Linking installed the GBEP in this cfunction's info. Return that.
-  return this->info();
+  return this->info().as_assert<Function_O>();
+}
+LinkedFunction_sp Cfunction_O::link_save_function() {
+  this->module()->link_save();
+  return this->info().as_assert<LinkedFunction_O>();
 }
 
 // For using a cfunction as a debug info (in BTB).
@@ -1343,6 +1423,12 @@ CL_LISPIFY_NAME("core:bytecode-debug-info/end")
 CL_DEFMETHOD T_sp Cfunction_O::end() const {
   return clasp_make_fixnum(this->entry_point()->module_position() + this->final_size());
 }
+
+// Ditto for linked functions.
+CL_LISPIFY_NAME("core:bytecode-debug-info/start")
+CL_DEFMETHOD T_sp LinkedFunction_O::start() const { return clasp_make_fixnum(entryPcN()); }
+CL_LISPIFY_NAME("core:bytecode-debug-info/end")
+CL_DEFMETHOD T_sp LinkedFunction_O::end() const { return clasp_make_fixnum(entryPcN() + bytecodeSize()); }
 
 // Should we BTB compile this new bytecode function?
 // We say yes if there's a (speed 3) declaration anywhere in it.
@@ -1380,6 +1466,78 @@ void Module_O::link() {
   cmodule->resolve_fixup_sizes();
 }
 
+static T_sp load_literal(T_sp lit, T_sp env) {
+  if (lit.isA<Cfunction_O>())
+    return lit.as_unsafe<Cfunction_O>()->info();
+  else if (lit.isA<InlineFunctionInfo_O>()) {
+    T_sp name = lit.as_unsafe<InlineFunctionInfo_O>()->fname();
+    FunctionCell_sp cell;
+    if (env.nilp()) {
+      if (name.consp()) { // setf function
+        Symbol_sp fn = oCadr(name).as<Symbol_O>();
+        cell = fn->ensureSetfFunctionCell();
+      } else {
+        Symbol_sp fn = name.as<Symbol_O>();
+        cell = fn->ensureFunctionCell();
+      }
+    } else {
+      T_sp tcell = eval::funcall(core::_sym_fcge_ensure_fcell, env, name);
+      cell = tcell.as<FunctionCell_O>();
+    }
+    return cell->real_function();
+  } else if (lit.isA<LoadTimeValueInfo_O>()) {
+    LoadTimeValueInfo_sp ltvinfo = lit.as_unsafe<LoadTimeValueInfo_O>();
+    return ltvinfo->eval(env);
+  } else if (lit.isA<ConstantInfo_O>()) {
+    return lit.as_unsafe<ConstantInfo_O>()->value();
+  } else if (lit.isA<NamedConstantInfo_O>()) {
+    NamedConstantInfo_sp ncinfo = lit.as_unsafe<NamedConstantInfo_O>();
+    Symbol_sp name = ncinfo->name().as_assert<Symbol_O>();
+    VariableCell_sp cell;
+    if (env.nilp())
+      cell = name->ensureVariableCell();
+    else {
+      T_sp tcell = eval::funcall(core::_sym_fcge_ensure_vcell, env, name);
+      cell = tcell.as<VariableCell_O>();
+    }
+    return cell->value();
+  } else if (lit.isA<FunctionCellInfo_O>()) {
+    if (env.nilp())
+      return core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
+    else
+      return eval::funcall(core::_sym_fcge_ensure_fcell, env,
+                           lit.as_unsafe<FunctionCellInfo_O>()->fname());
+  }
+  else if (lit.isA<VariableCellInfo_O>()) {
+    if (env.nilp())
+      return lit.as_unsafe<VariableCellInfo_O>()->vname()->ensureVariableCell();
+    else
+      return eval::funcall(core::_sym_fcge_ensure_vcell, env,
+                           lit.as_unsafe<VariableCellInfo_O>()->vname());
+  }
+  else if (lit.isA<EnvInfo_O>()) return env;
+  else
+    SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
+}
+
+static FunctionDescription_sp link_function_description(Cfunction_sp cfunction) {
+  T_sp sourcePathname = nil<T_O>();
+  int lineno = -1;
+  int column = -1;
+  int filepos = -1;
+  if (cfunction->sourcePosInfo().notnilp()) {
+    SourcePosInfo_sp spi = gc::As_assert<SourcePosInfo_sp>(cfunction->sourcePosInfo());
+      // FIXME: This is ridiculous.
+    sourcePathname = gc::As_assert<FileScope_sp>(core__file_scope(clasp_make_fixnum(spi->fileHandle())))->pathname();
+    lineno = spi->lineno();
+    column = spi->column();
+    filepos = spi->filepos();
+  }
+  return makeFunctionDescription(cfunction->nname(), cfunction->lambda_list(), cfunction->doc(),
+                                 nil<T_O>(), // declares
+                                 sourcePathname, lineno, column, filepos);
+}
+
 void Module_O::link_load(T_sp env) {
   // env is global, used to look up cells.
   Module_sp cmodule = this->asSmartPtr();
@@ -1389,26 +1547,13 @@ void Module_O::link_load(T_sp env) {
   size_t literal_length = cmodule_literals->length();
   SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(literal_length);
   SimpleVector_sp debug_info = cmodule->create_debug_info();
+  SimpleVector_byte16_t_sp litkinds = cmodule->create_literal_kinds();
   BytecodeModule_sp bytecode_module = BytecodeModule_O::make(bytecode);
   ComplexVector_T_sp cfunctions = cmodule->cfunctions();
   // Create the real function objects.
   for (auto const& tfun : cfunctions) {
     Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
-    T_sp sourcePathname = nil<T_O>();
-    int lineno = -1;
-    int column = -1;
-    int filepos = -1;
-    if (cfunction->sourcePosInfo().notnilp()) {
-      SourcePosInfo_sp spi = gc::As_assert<SourcePosInfo_sp>(cfunction->sourcePosInfo());
-      // FIXME: This is ridiculous.
-      sourcePathname = gc::As_assert<FileScope_sp>(core__file_scope(clasp_make_fixnum(spi->fileHandle())))->pathname();
-      lineno = spi->lineno();
-      column = spi->column();
-      filepos = spi->filepos();
-    }
-    FunctionDescription_sp fdesc = makeFunctionDescription(cfunction->nname(), cfunction->lambda_list(), cfunction->doc(),
-                                                           nil<T_O>(), // declares
-                                                           sourcePathname, lineno, column, filepos);
+    FunctionDescription_sp fdesc = link_function_description(cfunction);
     Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
     Pointer_sp trampoline = llvmo::cmp__compile_trampoline(cfunction->nname());
     BytecodeSimpleFun_sp func =
@@ -1420,49 +1565,8 @@ void Module_O::link_load(T_sp env) {
   // real bytecode functions in the module vector.
   // Also replace load-time-value infos with the evaluated forms,
   // and resolve cells.
-  // Also also record mutable LTVs.
-  ql::list mutableLTVs;
-  for (size_t i = 0; i < literal_length; ++i) {
-    T_sp lit = cmodule_literals[i];
-    if (gc::IsA<Cfunction_sp>(lit))
-      literals[i] = gc::As_unsafe<Cfunction_sp>(lit)->info();
-    else if (gc::IsA<LoadTimeValueInfo_sp>(lit)) {
-      LoadTimeValueInfo_sp ltvinfo = gc::As_unsafe<LoadTimeValueInfo_sp>(lit);
-      literals[i] = ltvinfo->eval(env);
-      if (!ltvinfo->read_only_p())
-        mutableLTVs << Integer_O::create(i);
-    } else if (gc::IsA<ConstantInfo_sp>(lit))
-      literals[i] = gc::As_unsafe<ConstantInfo_sp>(lit)->value();
-    else if (gc::IsA<NamedConstantInfo_sp>(lit)) {
-      NamedConstantInfo_sp ncinfo = lit.as_unsafe<NamedConstantInfo_O>();
-      Symbol_sp name = ncinfo->name().as_assert<Symbol_O>();
-      VariableCell_sp cell;
-      if (env.nilp())
-        cell = name->ensureVariableCell();
-      else {
-        T_sp tcell = eval::funcall(core::_sym_fcge_ensure_vcell, env, name);
-        cell = tcell.as<VariableCell_O>();
-      }
-      literals[i] = cell->value();
-    } else if (gc::IsA<FunctionCellInfo_sp>(lit)) {
-      if (env.nilp())
-        literals[i] = core__ensure_function_cell(gc::As_unsafe<FunctionCellInfo_sp>(lit)->fname());
-      else
-        literals[i] = eval::funcall(core::_sym_fcge_ensure_fcell, env, 
-                                    lit.as_unsafe<FunctionCellInfo_O>()->fname());
-    }
-    else if (gc::IsA<VariableCellInfo_sp>(lit)) {
-      if (env.nilp())
-        literals[i] = gc::As_unsafe<VariableCellInfo_sp>(lit)->vname()->ensureVariableCell();
-      else
-        literals[i] = eval::funcall(core::_sym_fcge_ensure_vcell, env,
-                                    lit.as_unsafe<VariableCellInfo_O>()->vname());
-    }
-    else if (gc::IsA<EnvInfo_sp>(lit))
-      literals[i] = env;
-    else
-      SIMPLE_ERROR("BUG: Weird thing in compiler literals vector: {}", _rep_(lit));
-  }
+  for (size_t i = 0; i < literal_length; ++i)
+    literals[i] = load_literal(cmodule_literals[i], env);
   // Also replace the cfunctions in the debug info.
   // We just modify the vector rather than cons a new one since create_debug_info
   // already created a fresh vector for us.
@@ -1473,7 +1577,7 @@ void Module_O::link_load(T_sp env) {
   // Now just install the bytecode and Bob's your uncle.
   bytecode_module->setf_literals(literals);
   bytecode_module->setf_debugInfo(debug_info);
-  bytecode_module->setf_mutableLiterals(mutableLTVs.cons());
+  bytecode_module->setLiteralKinds(litkinds);
   // Native-compile anything that really seems like it should be,
   // and install the resulting simple funs.
   // We can only do native compilations after the module is
@@ -1481,13 +1585,104 @@ void Module_O::link_load(T_sp env) {
   if (_sym_STARautocompile_hookSTAR->boundP() && _sym_STARautocompile_hookSTAR->symbolValue().notnilp()) {
     for (auto const& tfun : cfunctions) {
       Cfunction_sp cfun = gc::As_assert<Cfunction_sp>(tfun);
-      BytecodeSimpleFun_sp fun = cfun->info();
+      BytecodeSimpleFun_sp fun = cfun->info().as_assert<BytecodeSimpleFun_O>();
       if (btb_bcfun_p(fun, debug_info)) {
         T_sp nat = eval::funcall(_sym_STARautocompile_hookSTAR->symbolValue(), fun, env);
         fun->setSimpleFun(gc::As_assert<SimpleFun_sp>(nat));
       }
     }
   }
+}
+
+// Link a module for use as a saved inline module (LinkedModule).
+void Module_O::link_save() {
+  link();
+  SimpleVector_byte8_t_sp bytecode = create_bytecode();
+  ComplexVector_T_sp cmodule_literals = literals();
+  size_t literal_length = cmodule_literals->length();
+  SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(literal_length);
+  SimpleVector_sp debug_info = create_debug_info();
+  LinkedModule_sp saved_module = LinkedModule_O::make(bytecode, literals, debug_info);
+  ComplexVector_T_sp cfunctions = this->cfunctions();
+  // Create the linked function objects.
+  for (auto const& tfun : cfunctions) {
+    Cfunction_sp cfunction = gc::As_assert<Cfunction_sp>(tfun);
+    FunctionDescription_sp fdesc = link_function_description(cfunction);
+    Fixnum_sp ep = clasp_make_fixnum(cfunction->entry_point()->module_position());
+    LinkedFunction_sp func = LinkedFunction_O::make(fdesc, saved_module, cfunction->nlocals(), cfunction->closed()->length(), ep.unsafe_fixnum(), cfunction->final_size());
+    cfunction->setInfo(func);
+  }
+  // Replace the cfunctions in the cmodule literal vector with
+  // linked functions in the module vector.
+  for (size_t i = 0; i < literal_length; ++i) {
+    T_sp lit = cmodule_literals[i];
+    if (lit.isA<Cfunction_O>())
+      literals[i] = lit.as_unsafe<Cfunction_O>()->info();
+    else
+      literals[i] = lit;
+  }
+  // Also replace the cfunctions in the debug info.
+  // We just modify the vector rather than cons a new one since create_debug_info
+  // already created a fresh vector for us.
+  for (auto& info : debug_info) {
+    if (info.isA<Cfunction_O>())
+      info = info.as_unsafe<Cfunction_O>()->info();
+  }
+}
+
+BytecodeSimpleFun_sp LinkedFunction_O::load_new(BytecodeModule_sp mod) const {
+  T_sp existing = nil<T_O>();
+  FunctionDescription_sp fdesc = _FunctionDescription;
+  Pointer_sp trampoline = llvmo::cmp__compile_trampoline(fdesc->functionName());
+  return core__makeBytecodeSimpleFun(fdesc, mod,
+                                     localsFrameSize(), environmentSize(),
+                                     entryPcN(), bytecodeSize(), trampoline);
+}
+
+BytecodeModule_sp LinkedModule_O::load_new() const {
+  BytecodeModule_sp mod = BytecodeModule_O::make(bytecode());
+  SimpleVector_sp literals = SimpleVector_O::make<gctools::collectable_immobile>(this->literals()->length());
+  SimpleVector_sp debug_info = SimpleVector_O::make(_debug_info->length());
+  mod->setf_literals(literals);
+  mod->setf_debugInfo(debug_info);
+  return mod;
+  // actual loading done in finish_loading_into
+}
+
+void LinkedFunction_O::finish_loading_into(BytecodeSimpleFun_sp fun, T_sp env) const {
+  _Module->finish_loading_into(fun->SimpleFun_code().as<BytecodeModule_O>(), env);
+}
+
+void LinkedModule_O::finish_loading_into(BytecodeModule_sp mod, T_sp env) const {
+  // Load literals.
+  SimpleVector_sp mliterals = mod->literals().as_assert<SimpleVector_O>();
+  SimpleVector_byte16_t_sp litkinds = do_create_literal_kinds(literals());
+  for (size_t i = 0; i < literals()->length(); ++i) {
+    T_sp lit = literals()[i];
+    // If the literal is a linked function for this module, make a bytecode function
+    // but don't load the module (since we're in the middle of doing that).
+    if (lit.isA<LinkedFunction_O>()
+        && lit.as_unsafe<LinkedFunction_O>()->code() == this->asSmartPtr())
+      mliterals[i] = lit.as_unsafe<LinkedFunction_O>()->load_pre(mod);
+    else // Otherwise just load it normally.
+      mliterals[i] = load_literal(lit, env);
+  }
+
+  // Load debug info. This is already done except for replacing linked functions
+  // with actual bytecode functions.
+  SimpleVector_sp mdebug = mod->debugInfo().as_assert<SimpleVector_O>();
+  for (size_t j = 0; j < debug_info()->length(); ++j) {
+    T_sp info = debug_info()[j];
+    if (info.isA<LinkedFunction_O>()
+        // this test is probably unnecessary since the above would have installed a
+        // bytecode function, but just in case.
+        && info.as_unsafe<LinkedFunction_O>()->code() == this->asSmartPtr())
+      mdebug[j] = info.as_unsafe<LinkedFunction_O>()->load_pre(mod);
+    else
+      mdebug[j] = info;
+  }
+
+  mod->setLiteralKinds(litkinds);
 }
 
 void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
@@ -1514,17 +1709,16 @@ void compile_literal(T_sp literal, Lexenv_sp env, const Context context) {
   }
 }
 
-void compile_named_constant(Symbol_sp name, Lexenv_sp env, const Context context) {
+void compile_named_constant(Symbol_sp name, T_sp value,
+                            Lexenv_sp env, const Context context) {
   (void)env;
   if (context.receiving() == 0)
     return; // No value required, so do nothing
   // Otherwise we need at least one value
-  // FIXME: hardcodes that nil is bound to nil, which it might not be in some
-  // bizarre FCGE
-  if (name.nilp())
+  if (value.nilp())
     context.assemble0(vm_code::nil);
   else
-    context.assemble1(vm_code::_const, context.named_constant_index(name));
+    context.assemble1(vm_code::_const, context.named_constant_index(name, value));
   // now handle values
   switch (context.receiving()) {
   case 1: break; // already on the stack, we're good
@@ -1615,8 +1809,9 @@ void compile_symbol(Symbol_sp sym, Lexenv_sp env, const Context context) {
     } else if (std::holds_alternative<SpecialVarInfoV>(info))
       context.assemble1(vm_code::symbol_value, context.vcell_index(sym));
     else if (std::holds_alternative<ConstantVarInfoV>(info)) {
-      compile_named_constant(sym, env, context);
-      // Avoid the pop code below - compile-literal handles it.
+      T_sp value = std::get<ConstantVarInfoV>(info).value();
+      compile_named_constant(sym, value, env, context);
+      // Avoid the pop code below - compile_named_constant handles it.
       return;
     } else if (std::holds_alternative<NoVarInfoV>(info)) {
       if (_sym_warn_undefined_global_variable->fboundp() && !code_walking_p())
@@ -2296,11 +2491,24 @@ void compile_called_function(T_sp fnameoid, Lexenv_sp env, const Context ctxt) {
       ctxt.assemble1(vm_code::make_closure, ctxt.cfunction_index(fun));
   } else { // ought to be a function name
     FunInfoV info = fun_info_v(fnameoid, env);
-    if (std::holds_alternative<GlobalFunInfoV>(info) || std::holds_alternative<NoFunInfoV>(info)) {
-      if (std::holds_alternative<NoFunInfoV>(info) // Warn
-          && _sym_register_global_function_ref->fboundp() && !code_walking_p())
+    if (std::holds_alternative<NoFunInfoV>(info)) {
+      if (_sym_register_global_function_ref->fboundp() && !code_walking_p())
+        // Warn
         eval::funcall(_sym_register_global_function_ref, fnameoid, ctxt.source_info());
       ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
+    } else if (std::holds_alternative<GlobalFunInfoV>(info)) {
+      // If the thing is declared inline, try using an inline definition.
+      if (std::get<GlobalFunInfoV>(info).inline_status()
+          == FunInfo_O::InlineStatus::INLINE) {
+        T_sp inline_data = std::get<GlobalFunInfoV>(info).inline_data();
+        if (inline_data.isA<LinkedFunction_O>()
+            || inline_data.isA<BytecodeSimpleFun_O>())
+          ctxt.assemble1(vm_code::_const,
+                         ctxt.inline_index(fnameoid, inline_data));
+        else
+          ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
+      } else // Otherwise, normal global function reference.
+        ctxt.assemble1(vm_code::called_fdefinition, ctxt.fcell_index(fnameoid));
     } else if (std::holds_alternative<LocalFunInfoV>(info)) {
       LocalFunInfo_sp lfinfo = std::get<LocalFunInfoV>(info).info();
       lfinfo->lex()->setReadP(true);
@@ -3173,6 +3381,14 @@ CL_DEFUN Cfunction_sp bytecompile_into(Module_sp module, T_sp lambda_expression,
   T_sp body = oCddr(lambda_expression);
   return compile_lambda(lambda_list, body, env, module,
                         source_location_for(lambda_expression));
+}
+
+CL_LAMBDA(lambda-expression &optional env);
+CL_DOCSTRING(R"dx(Compile the given lambda-expression into a form suitable as an inline definition, which is returned.)dx");
+CL_DEFUN LinkedFunction_sp bytecompile_inline_definition(T_sp lambda_expression, T_sp tenv) {
+  Module_sp mod = Module_O::make();
+  Cfunction_sp cfun = bytecompile_into(mod, lambda_expression, tenv);
+  return cfun->link_save_function();
 }
 
 CL_LAMBDA(lambda-expression &optional env)
