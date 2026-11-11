@@ -97,6 +97,6 @@
       form))
 
 (define-compiler-macro bit (bit-array &rest indices)
-  `(aref (core::the-single (array bit) ,bit-array) ,@indices))
+  `(aref (the (array bit) ,bit-array) ,@indices))
 (define-compiler-macro sbit (bit-array &rest indices)
-  `(aref (core::the-single (simple-array bit) ,bit-array) ,@indices))
+  `(aref (the (simple-array bit) ,bit-array) ,@indices))

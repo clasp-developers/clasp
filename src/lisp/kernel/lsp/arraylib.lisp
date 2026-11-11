@@ -158,18 +158,18 @@ INDEXes must be equal to the rank of ARRAY."
         (setf j (* j d)
               j (+ j ndx))))))
 
+;;; note that bit and sbit also have compiler macros.
+(declaim (inline bit sbit))
 (defun bit (bit-array &rest indices)
   "Args: (bit-array &rest indexes)
 Returns the bit of BIT-ARRAY specified by INDEXes."
   (declare (type (array bit) bit-array))
-  (check-type bit-array (array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 (defun sbit (bit-array &rest indices)
   "Args: (simple-bit-array &rest subscripts)
 Returns the specified bit in SIMPLE-BIT-ARRAY."
   (declare (type (simple-array bit) bit-array))
-  (check-type bit-array (simple-array bit))
   (row-major-aref bit-array (row-major-index-inner bit-array indices)))
 
 (defmacro with-array-data (((vectorname vector) indexname) &body body)
