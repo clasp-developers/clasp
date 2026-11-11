@@ -1109,7 +1109,12 @@
   (cmp:irc-cons (in (first (bir:inputs inst)))
                 (in (second (bir:inputs inst)))))
 
-(defvprimop char-code ((:utfixnum) :character) (inst)
+(defvprimop char-code ((:ub32) :character) (inst)
   ;; we don't need to do anything at all, since whether something is a character
   ;; is a matter of tagging. casts before and after this primop take care of that.
+  ;; This does however require that the :character rtype is an ub32, which ought
+  ;; to be true for the forseeable future unless Unicode does something truly
+  ;; bizarre. Still worth noting.
+  (in (first (bir:inputs inst))))
+(defvprimop code-char ((:character) :ub32) (inst)
   (in (first (bir:inputs inst))))

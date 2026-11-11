@@ -393,6 +393,7 @@
 
 (deftransform characterp characterp t)
 (deftransform char-code char-code character)
+(deftransform code-char code-char (mod #.char-code-limit))
 
 (deftransform length core::vector-length (simple-array * (*)))
 
