@@ -19,6 +19,7 @@
 * `truncate` et al. on integers with unity divisor is optimized out.
 * Simple `gethash` calls are slightly cheaper.
 * Access to bit arrays and sub-byte arrays (e.g. `(unsigned-byte 4)`) can now be inlined.
+* Character comparisons (`char<` etc.) can be inlined.
 
 # Version 3.0.1 (LLVM15-20, 22) 2026-06-24
 
