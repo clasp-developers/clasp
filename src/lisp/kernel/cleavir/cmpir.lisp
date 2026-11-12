@@ -464,7 +464,8 @@ representing a tagged fixnum."
 
 (defun irc-untag-base-char (t* &optional (label "base-char"))
   ;; convert to word first to avoid losing bits by truncation before we shift.
-  (irc-trunc (irc-ashr (irc-ptr-to-int t* %i64% label) +character-shift+) %i8% label))
+  (irc-trunc (irc-ashr (irc-ptr-to-int t* %i64% label) +character-shift+)
+             %i8% label t t))
 
 (defun irc-tag-base-char (bc &optional (label "base-char"))
   (irc-int-to-ptr (irc-or (irc-shl (irc-zext bc %i64%) +character-shift+ :nsw t)
@@ -473,7 +474,8 @@ representing a tagged fixnum."
 
 (defun irc-untag-character (t* &optional (label "base-char"))
   ;; convert to word first to avoid losing bits by truncation before we shift.
-  (irc-trunc (irc-ashr (irc-ptr-to-int t* %i64% label) +character-shift+) %i32% label))
+  (irc-trunc (irc-ashr (irc-ptr-to-int t* %i64% label) +character-shift+)
+             %i32% label t t))
 
 (defun irc-tag-character (c &optional (label "base-char"))
   (irc-int-to-ptr (irc-or (irc-shl (irc-zext c %i64%) +character-shift+ :nsw t)

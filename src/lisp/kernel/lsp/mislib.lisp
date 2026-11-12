@@ -388,3 +388,14 @@ Evaluates FORM, outputs the allocations that took place for the evaluation to
 ;;; characters have no other attributes in Clasp
 (declaim (inline char-int))
 (defun char-int (character) (char-code character))
+
+(macrolet ((def (name op)
+             `(progn
+                (declaim (inline ,name))
+                (defun ,name (char1 char2)
+                  (,op (char-int char1) (char-int char2))))))
+  ;; char= is compiler-macro'd into eq, so there is no two-arg-char=
+  (def core:two-arg-char<  <)
+  (def core:two-arg-char<= <=)
+  (def core:two-arg-char>  >)
+  (def core:two-arg-char>= >=))
