@@ -20,6 +20,8 @@
 * Simple `gethash` calls are slightly cheaper.
 * Access to bit arrays and sub-byte arrays (e.g. `(unsigned-byte 4)`) can now be inlined.
 * Character comparisons (`char<` etc.) can be inlined.
+* The compiler is smarter about typed array accessors like `svref`.
+* `aref` with one index can be optimized without needing the array to be declared a vector.
 
 # Version 3.0.1 (LLVM15-20, 22) 2026-06-24
 
