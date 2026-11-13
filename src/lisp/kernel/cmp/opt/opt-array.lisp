@@ -96,7 +96,27 @@
             form))
       form))
 
+;;; (aref foo bar) => (row-major-aref (the vector foo) bar)
+;;; This means that declaring an array's element type (but not its rank) but
+;;; then using it with one index is enough for Clasp to figure out that it's
+;;; a vector, which can lead to optimizations.
+;;; For example, with the S/BIT macros below, we have
+;;; (sbit foo bar) => (row-major-aref (the vector (the (simple-array bit)) foo) bar)
+;;; TODO: Ideally we would reduce (aref foo ...) to
+;;; (row-major-aref (the (array * ,rank) foo) (array-row-major-index foo ...))
+;;; but we'd need a more efficient a-r-m-i, and we don't use multidimensional arrays
+;;; much anyway.
+(define-compiler-macro aref (&whole form array &rest indices)
+  (if (= (length indices) 1)
+      `(row-major-aref (the vector ,array) ,@indices)
+      form))
+(define-compiler-macro (setf aref) (&whole form new array &rest indices)
+  (if (= (length indices) 1)
+      `(setf (row-major-aref (the vector ,array) ,@indices) ,new)
+      form))
+
 (define-compiler-macro bit (bit-array &rest indices)
   `(aref (the (array bit) ,bit-array) ,@indices))
 (define-compiler-macro sbit (bit-array &rest indices)
   `(aref (the (simple-array bit) ,bit-array) ,@indices))
+;; setf s/bit is done through setf expander, so no compiler macro is needed.
