@@ -9,12 +9,14 @@
   (ecase (clostrum:operator-status maclina.machine:*client*
                                    env name)
     ((nil) nil)
-    ((:function) (cmp:global-fun-info/make
-                  (clostrum:operator-inline maclina.machine:*client* env name)
-                  (clostrum:operator-inline-data maclina.machine:*client* env name)
-                  (clostrum:compiler-macro-function
-                   maclina.machine:*client* env name)
-                  nil))
+    ((:function)
+     (let ((inline-data (clostrum:operator-inline-data
+                         maclina.machine:*client* env name)))
+       (cmp:global-fun-info/make
+        (clostrum:operator-inline maclina.machine:*client* env name)
+        inline-data
+        (clostrum:compiler-macro-function maclina.machine:*client* env name)
+        (if (symbolp inline-data) inline-data nil))))
     ((:macro) (cmp:global-macro-info/make
                (clostrum:operator-inline maclina.machine:*client* env name)
                (clostrum:macro-function

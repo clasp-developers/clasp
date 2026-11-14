@@ -399,3 +399,17 @@ Evaluates FORM, outputs the allocations that took place for the evaluation to
   (def core:two-arg-char<= <=)
   (def core:two-arg-char>  >)
   (def core:two-arg-char>= >=))
+
+(declaim (inline char schar (setf char) (setf schar)))
+(defun char (string index) (row-major-aref (the string string) index))
+(defun (setf char) (char string index)
+  (setf (row-major-aref (the string string) index) char))
+(defun schar (string index) (row-major-aref (the simple-string string) index))
+(defun (setf schar) (char string index)
+  (setf (row-major-aref (the simple-string string) index) char))
+
+(declaim (inline svref (setf svref)))
+(defun svref (simple-vector index)
+  (row-major-aref (the simple-vector simple-vector) index))
+(defun (setf svref) (value simple-vector index)
+  (setf (row-major-aref (the simple-vector simple-vector) index) value))

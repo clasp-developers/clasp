@@ -516,6 +516,9 @@
                        khazern:unique-name)
         for f = (fdefinition fname)
         do (setf (clostrum:fdefinition client rte fname) f))
+  ;; Tell Maclina it can optimize away some very basic calls
+  (loop for fname in '(cl:funcall cl:values)
+        do (setf (clostrum:operator-inline-data client rte fname) fname))
   (loop for (fname . src) in '((cl:proclaim . proclaim)
                                (cl:make-package . %make-package)
                                (clos::class-slots . closer-mop:class-slots)

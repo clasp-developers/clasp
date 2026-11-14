@@ -376,8 +376,10 @@ by (DOCUMENTATION 'SYMBOL 'SETF)."
   "Set the cdr of a list."
   `(progn (rplacd ,x ,y) ,y))
 
-(defsetf bit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
-(defsetf sbit (array &rest indices) (value) `(setf (aref ,array ,@indices) ,value))
+(defsetf bit (array &rest indices) (value)
+  `(setf (aref (the (array bit) ,array) ,@indices) ,value))
+(defsetf sbit (array &rest indices) (value)
+  `(setf (aref (the (simple-array bit) ,array) ,@indices) ,value))
 (defsetf symbol-value set)
 (defsetf nth (n l) (v) `(progn (rplaca (nthcdr ,n ,l) ,v) ,v))
 
