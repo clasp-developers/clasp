@@ -23,6 +23,7 @@
 ;; The intent is that the initial call is equivalent to
 ;; (let (,@bindings) (fun ,initarg0 ,gensym0 ,initarg1 ,gensym1 ...))
 ;; where bindings has the original forms, and evaluated in the correct order.
+(eval-when (:compile-toplevel :load-toplevel :execute)
 (defun extract (initargs env)
   (if (core:proper-list-p initargs)
       (let ((len (list-length initargs)))
@@ -47,9 +48,8 @@
             ;; odd list length
             (values nil nil nil nil)))
       ;; circular or dotted list
-      (values nil nil nil nil)))
+      (values nil nil nil nil))))
 
-(let () ; FIXME: allow in build, maybe? somehow?
 (define-compiler-macro make-instance
     (&whole form class-designatorf &rest initargs &environment env)
   (let ((class-designator
@@ -81,4 +81,4 @@
                `(let ((,cellg
                         (ensure-constructor-cell ,class-designatorf ',keys))
                       ,@bindings)
-                (funcall ,cellg ,@syms)))))))))
+                (funcall ,cellg ,@syms))))))))
