@@ -12,8 +12,7 @@
        ;; but again, we call this when make-instance is in progress-
        ;; it SHOULD signal an error.
        (clos:finalize-inheritance class))
-     ;; bytecompile because cclasp is full of make-instance
-     (cmp:bytecompile (constructor-form class class-form keys)))))
+     (compile nil (constructor-form class class-form keys)))))
 
 ;;; This function is called when an actual make-instance call is happening.
 ;;; So it should return something immediately valid or error.
