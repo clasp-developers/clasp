@@ -321,3 +321,46 @@
 (test single-value-catch
       (let ((c (catch 'foo 4))) c)
       (4))
+
+;;; parse-key-args in the bytecode VM writes each keyword argument straight into
+;;; the callee's parameter slot. An off-by-one or reversed slot index there binds
+;;; the wrong parameter with no error at all, so pin the identity for every shape.
+(defun kwtest-3 (a &key x y z) (list a x y z))
+
+(test-true keyword-parsing-slot-identity
+      (and (equal (kwtest-3 0)                '(0 nil nil nil))
+           (equal (kwtest-3 0 :x 1)           '(0 1 nil nil))
+           (equal (kwtest-3 0 :y 2)           '(0 nil 2 nil))
+           (equal (kwtest-3 0 :z 3)           '(0 nil nil 3))
+           (equal (kwtest-3 0 :x 1 :y 2 :z 3) '(0 1 2 3))
+           (equal (kwtest-3 0 :z 3 :y 2 :x 1) '(0 1 2 3))
+           (equal (kwtest-3 0 :y 2 :z 3 :x 1) '(0 1 2 3))
+           (equal (kwtest-3 0 :x 1 :z 3)      '(0 1 nil 3))))
+
+;;; CLHS 3.4.1.4: when a keyword is repeated the leftmost pair wins. The VM gets
+;;; this by scanning arguments right to left and overwriting.
+(test-true keyword-parsing-duplicate-keywords
+      (and (equal (kwtest-3 0 :x 'first :x 'second) '(0 first nil nil))
+           (equal (kwtest-3 0 :x 'a :x 'b :x 'c)    '(0 a nil nil))
+           (equal (kwtest-3 0 :x 'a :y 'p :x 'b)    '(0 a p nil))))
+
+(defun kwtest-aok (&key x &allow-other-keys) x)
+
+(test-true keyword-parsing-allow-other-keys
+      (and (eql 1 (kwtest-aok :x 1 :bogus 2))
+           (equal (kwtest-3 0 :x 1 :allow-other-keys t :bogus 9) '(0 1 nil nil))
+           (eq :errored (handler-case (progn (kwtest-3 0 :bogus 1) :no-error)
+                          (error () :errored)))
+           (eq :errored (handler-case (progn (apply #'kwtest-3 0 '(:x)) :no-error)
+                          (error () :errored)))))
+
+(defun kwtest-16 (&key a b c d e f g h i j k l m n o p)
+  (list a b c d e f g h i j k l m n o p))
+
+;;; Many parameter slots, live across a collection.
+(test-true keyword-parsing-many-keys-across-gc
+      (let ((expected '(1 nil nil nil nil nil nil nil
+                        nil nil nil nil nil nil nil 16)))
+        (and (equal (kwtest-16 :a 1 :p 16) expected)
+             (progn (gctools:garbage-collect)
+                    (equal (kwtest-16 :a 1 :p 16) expected)))))
