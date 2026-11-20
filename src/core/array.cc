@@ -552,18 +552,36 @@ CL_DEFUN T_sp cl__aref(Array_sp array, Vaslist_sp vargs) {
   return array->rowMajorAref(rowMajorIndex);
 }
 
-// Big evil FIXME: These are functions are basically backup for when the
-// compiler can't inline an atomic access. BUT: They aren't actually atomic.
-// This is difficult to fix as the underlying GCArrays are actually not atomic.
-// Perhaps C++20's atomic_ref could help in the future?
-// And a bit of a KLUDGE: These ignore the atomic order, since figuring that
-// out at runtime seems a little silly.
+// These functions are the backup for when the compiler can't inline an atomic access,
+// e.g. in bytecode or interpreted code. A general array stores one tagged word per
+// element, so the atomic builtins can operate on that word in place; specialized arrays
+// have no such word and are handled by the ordinary accessors instead.
+// A bit of a KLUDGE: These ignore the atomic order and always use the strongest one,
+// since figuring that out at runtime seems a little silly. That is always valid, just
+// possibly stronger than the caller asked for. Compare core__car_atomic in cons.cc.
+
+// A libatomic call would take a lock inside the swap, so fail the build instead.
+static_assert(__atomic_always_lock_free(sizeof(T_O*), 0), "Tagged words must swap lock-free");
+
+// Address of the tagged word holding element ROWMAJORINDEX of ARRAY, or NULL when ARRAY's
+// elements are not general objects. Handles displacement via asAbstractSimpleVectorRange.
+static T_O** generalArrayElementAddress(Array_sp array, size_t rowMajorIndex) {
+  AbstractSimpleVector_sp sv;
+  size_t start, end;
+  array->asAbstractSimpleVectorRange(sv, start, end);
+  unlikely_if(!gc::IsA<SimpleVector_sp>(sv)) { return NULL; }
+  return &((*gc::As_unsafe<SimpleVector_sp>(sv))[start + rowMajorIndex].theObject);
+}
+
 CL_LISPIFY_NAME("core:atomic-aref");
 CL_LAMBDA(order array core:&va-rest core::indices);
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__atomic_aref(T_sp order, Array_sp array, Vaslist_sp vargs) {
   (void)order; // ignore
-  return cl__aref(array, vargs);
+  cl_index rowMajorIndex = array->arrayRowMajorIndex(vargs);
+  T_O** slot = generalArrayElementAddress(array, rowMajorIndex);
+  unlikely_if(!slot) { return array->rowMajorAref(rowMajorIndex); }
+  return T_sp((gctools::Tagged)__atomic_load_n(slot, __ATOMIC_SEQ_CST));
 }
 
 CL_LISPIFY_NAME("core:atomic-aref");
@@ -571,17 +589,27 @@ CL_LAMBDA(value order array core:&va-rest core::indices);
 DOCGROUP(clasp);
 CL_DEFUN_SETF T_sp core__atomic_aset(T_sp value, T_sp order, Array_sp array, Vaslist_sp indices) {
   (void)order; // ignore
-  return core__aset(value, array, indices);
+  cl_index rowMajorIndex = array->arrayRowMajorIndex(indices);
+  T_O** slot = generalArrayElementAddress(array, rowMajorIndex);
+  unlikely_if(!slot) {
+    array->rowMajorAset(rowMajorIndex, value);
+    return value;
+  }
+  __atomic_store_n(slot, value.theObject, __ATOMIC_SEQ_CST);
+  return value;
 }
 
 CL_LAMBDA(order old value array core:&va-rest core::indices);
 DOCGROUP(clasp);
 CL_DEFUN T_sp core__acas(T_sp order, T_sp cmp, T_sp nvalue, Array_sp array, Vaslist_sp indices) {
   (void)order; // ignore
-  T_sp old = cl__aref(array, indices);
-  if (cmp == old)
-    core__aset(nvalue, array, indices);
-  return old;
+  T_O** slot = generalArrayElementAddress(array, array->arrayRowMajorIndex(indices));
+  unlikely_if(!slot) { TYPE_ERROR(array, core::lisp_createList(cl::_sym_array, cl::_sym_T_O)); }
+  // On failure the builtin overwrites EXPECTED with the value it actually saw, so EXPECTED
+  // is the prior value of the slot either way -- which is exactly what MP:CAS returns.
+  T_O* expected = cmp.theObject;
+  __atomic_compare_exchange_n(slot, &expected, nvalue.theObject, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+  return T_sp((gctools::Tagged)expected);
 }
 
 CL_LAMBDA(array core:&va-rest indices);
