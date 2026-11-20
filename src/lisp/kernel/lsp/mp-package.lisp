@@ -21,5 +21,7 @@
           signal-pending-interrupts raise
           without-interrupts with-interrupts with-local-interrupts
           with-restored-interrupts allow-with-interrupts interruptiblep
+          ;; deadlines
+          timeout timeout-seconds with-timeout call-with-timeout
           ))
 ) ; eval-when

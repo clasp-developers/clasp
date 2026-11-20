@@ -26,6 +26,7 @@ THE SOFTWARE.
 /* -^- */
 
 #include <errno.h>
+#include <clasp/gctools/park.h>
 #include <sys/select.h>
 #include <clasp/core/foundation.h>
 #include <clasp/core/object.h>
@@ -55,7 +56,10 @@ CL_DEFUN int serve_event_internal__ll_fdset_size() { return sizeof(fd_set); }
 DOCGROUP(clasp);
 CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventNoTimeout(clasp_ffi::ForeignData_sp rfd, clasp_ffi::ForeignData_sp wfd,
                                                                        int maxfdp1) {
-  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, NULL);
+  // Park: a NULL timeout blocks indefinitely. The fd_sets are foreign memory.
+  gc::Fixnum selectRet = BEGIN_PARK {
+    return (gc::Fixnum)select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, NULL);
+  } END_PARK;
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
@@ -69,7 +73,10 @@ CL_DEFUN core::Integer_mv serve_event_internal__ll_serveEventWithTimeout(clasp_f
   struct timeval tv;
   tv.tv_sec = seconds;
   tv.tv_usec = ((seconds - floor(seconds)) * 1e6);
-  gc::Fixnum selectRet = select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, &tv);
+  // Park: blocks for up to the caller's timeout.
+  gc::Fixnum selectRet = BEGIN_PARK {
+    return (gc::Fixnum)select(maxfdp1, rfd->data<fd_set*>(), wfd->data<fd_set*>(), NULL, &tv);
+  } END_PARK;
   return Values(Integer_O::create(selectRet), Integer_O::create((gc::Fixnum)errno));
 }
 
