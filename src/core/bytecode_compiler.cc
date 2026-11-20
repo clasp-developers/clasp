@@ -3114,6 +3114,7 @@ void compile_macrolet(List_sp bindings, List_sp body, Lexenv_sp env, const Conte
 }
 
 static void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Context context);
+static void compile_values(List_sp args, Lexenv_sp env, const Context context);
 
 static void compile_global_call(GlobalFunInfoV info,
                                 T_sp fname, List_sp args,
@@ -3123,6 +3124,9 @@ static void compile_global_call(GlobalFunInfoV info,
   T_sp id = info.opt_id();
   if (id == cl::_sym_funcall && args.consp()) {
     compile_funcall(oCar(args), oCdr(args), env, context);
+    return;
+  } else if (id == cl::_sym_values) {
+    compile_values(args, env, context);
     return;
   }
   // Compiler macro?
@@ -3170,6 +3174,31 @@ static void compile_funcall(T_sp fform, List_sp args, Lexenv_sp env, const Conte
   // No specific optimization, but we can avoid actually calling FUNCALL.
   compile_fdesignator(fform, env, context);
   compile_call(args, env, context);
+}
+
+static void compile_values(List_sp args, Lexenv_sp env, const Context context) {
+  size_t receiving = context.receiving();
+  if (receiving == -1) { // all values
+    auto ncontext = context.sub_receiving(1);
+    size_t n = 0;
+    for (auto cur : args) {
+      compile_form(oCar(cur), env, ncontext);
+      ++n;
+    }
+    context.assemble1(vm_code::values, n);
+  } else { // some values
+    size_t n = 0;
+    // Compile all forms with one value, or zero if there are more forms than
+    // values expected
+    for (auto cur : args) {
+      compile_form(oCar(cur), env,
+                   context.sub_receiving(n < receiving ? 1 : 0));
+      ++n;
+    }
+    // If there are more values expected than forms, fill the remainder with NILs
+    for (size_t i = n; i < receiving; ++i)
+      context.assemble0(vm_code::nil);
+  }
 }
 
 [[noreturn]] static void special_form_wrong_args(T_sp head, T_sp rest, size_t min) {

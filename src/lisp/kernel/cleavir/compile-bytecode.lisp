@@ -831,6 +831,15 @@
       (assert (not cellp))
       (setf (aref (locals context) varindex) (cons arg t)))))
 
+(defmethod compile-instruction ((mnemonic (eql :values))
+                                inserter context &rest args)
+  (destructuring-bind (nvals) args
+    (let ((vals (gather context nvals))
+          (out (make-instance 'bir:output)))
+      (build:insert inserter 'bir:fixed-to-multiple
+                    :inputs vals :outputs (list out))
+      (setf (mvals context) out))))
+
 (defmethod compile-instruction ((mnemonic (eql :cell-ref))
                                 inserter context &rest args)
   (destructuring-bind () args

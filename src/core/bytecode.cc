@@ -963,6 +963,7 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       break;
     }
     case vm_code::pop: {
+      // abbreviation for values 1
       DBG_VM1("pop\n");
       T_sp obj((gctools::Tagged)vm.pop(sp));
       multipleValues.set1(obj);
@@ -1053,6 +1054,15 @@ bytecode_vm(VirtualMachine& vm, T_O** literals, T_O** closed, Closure_O* closure
       T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
       vm._stackPointer = sp;
       vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
+      pc++;
+      break;
+    }
+    case vm_code::values: {
+      uint8_t n = *(++pc);
+      DBG_VM1("values %" PRIu8 "\n", n);
+      T_O** values = vm.stackref(sp, n - 1);
+      multipleValues.loadFromTemp(n, values);
+      vm.drop(sp, n);
       pc++;
       break;
     }
@@ -1544,6 +1554,16 @@ static unsigned char* long_dispatch(VirtualMachine& vm, unsigned char* pc, Multi
     T_sp val((gctools::Tagged)(*(vm.reg(fp, n))));
     vm._stackPointer = sp;
     vm.setreg(fp, n, Cons_O::create(val, nil<T_O>()).raw_());
+    pc++;
+    break;
+  }
+  case vm_code::values: {
+    uint8_t low = *(++pc);
+    uint16_t n = low + (*(++pc) << 8);
+    DBG_VM1("values %" PRIu16 "\n", n);
+    T_O** values = vm.stackref(sp, n - 1);
+    multipleValues.loadFromTemp(n, values);
+    vm.drop(sp, n);
     pc++;
     break;
   }

@@ -671,6 +671,7 @@ void initialize_compiler_primitives(LispPtr lisp) {
     comp::_sym_STARoptimization_identitiesSTAR->defparameter(ids);
     // List functions the bytecode compiler can special case here.
     ids->setf_gethash(cl::_sym_funcall, cl::_sym_funcall);
+    ids->setf_gethash(cl::_sym_values, cl::_sym_values);
   }
   {
     Fixnum_sp one = clasp_make_fixnum(1);
