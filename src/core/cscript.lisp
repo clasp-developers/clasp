@@ -50,6 +50,7 @@
            #~"externalObject.cc"
            #~"myReadLine.cc"
            #~"unixfsys.cc"
+           #~"shmem.cc"
            #~"unixsys.cc"
            #~"lispList.cc"
            #~"candoOpenMp.cc"
