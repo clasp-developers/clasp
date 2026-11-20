@@ -253,3 +253,66 @@
         (spam-processes nthreads (lambda () (mp:atomic-push nil (car place))))
         (car place))
       ((nil nil nil nil nil nil nil)))
+
+;;; MP:CAS has no expansion for an FFI place (clasp-developers/clasp#1835), so a word of
+;;; foreign memory is swapped with the CLASP-FFI:%CAS-MEM-* functions.
+
+(defmacro with-foreign-word ((address size) &body body)
+  (let ((fd (gensym "FD")))
+    `(let* ((,fd (clasp-ffi:%foreign-alloc ,size))
+            (,address (clasp-ffi:%foreign-data-address ,fd)))
+       (unwind-protect (progn ,@body)
+         (clasp-ffi:%foreign-free ,fd)))))
+
+(defun cas-mem-contention (setter reader casser nthreads per-thread)
+  (with-foreign-word (a 16)
+    (funcall setter a 0)
+    (spam-processes nthreads
+                    (lambda ()
+                      (dotimes (i per-thread)
+                        (loop for old = (funcall reader a)
+                              until (eql old (funcall casser a old (1+ old)))))))
+    (funcall reader a)))
+
+(test cas-mem-uint32-semantics
+      (with-foreign-word (a 8)
+        (clasp-ffi:%mem-set-uint32 a 5)
+        (list (clasp-ffi:%cas-mem-uint32 a 5 6) (clasp-ffi:%mem-ref-uint32 a)
+              (clasp-ffi:%cas-mem-uint32 a 99 7) (clasp-ffi:%mem-ref-uint32 a)))
+      ((5 6 6 6)))
+
+(test cas-mem-uint64-semantics
+      (with-foreign-word (a 8)
+        (clasp-ffi:%mem-set-uint64 a #x1234567800000005)
+        (list (clasp-ffi:%cas-mem-uint64 a #x1234567800000005 #x1234567800000006)
+              (clasp-ffi:%mem-ref-uint64 a)
+              (clasp-ffi:%cas-mem-uint64 a 99 7)
+              (clasp-ffi:%mem-ref-uint64 a)))
+      ((#x1234567800000005 #x1234567800000006 #x1234567800000006 #x1234567800000006)))
+
+(test cas-mem-uint32-contended
+      (cas-mem-contention #'clasp-ffi:%mem-set-uint32 #'clasp-ffi:%mem-ref-uint32
+                          #'clasp-ffi:%cas-mem-uint32 4 10000)
+      (40000))
+
+(test cas-mem-uint64-contended
+      (cas-mem-contention #'clasp-ffi:%mem-set-uint64 #'clasp-ffi:%mem-ref-uint64
+                          #'clasp-ffi:%cas-mem-uint64 4 10000)
+      (40000))
+
+;;; A 32-bit swap must leave the words on either side of it alone.
+(test cas-mem-uint32-width
+      (with-foreign-word (a 12)
+        (clasp-ffi:%mem-set-uint32 a #xaaaaaaaa)
+        (clasp-ffi:%mem-set-uint32 (+ a 4) 0)
+        (clasp-ffi:%mem-set-uint32 (+ a 8) #xbbbbbbbb)
+        (clasp-ffi:%cas-mem-uint32 (+ a 4) 0 #xffffffff)
+        (list (clasp-ffi:%mem-ref-uint32 a) (clasp-ffi:%mem-ref-uint32 (+ a 4))
+              (clasp-ffi:%mem-ref-uint32 (+ a 8))))
+      ((#xaaaaaaaa #xffffffff #xbbbbbbbb)))
+
+;;; An unaligned word cannot be swapped atomically, so it is refused rather than swapped anyway.
+(test-expect-error cas-mem-unaligned
+                   (with-foreign-word (a 16)
+                     (clasp-ffi:%cas-mem-uint32 (+ a 1) 0 1))
+                   :type program-error)
