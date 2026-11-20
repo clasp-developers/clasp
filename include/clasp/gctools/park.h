@@ -33,38 +33,52 @@ int begin_park(void*);
 void end_park(int);
 void* end_park_temporarily();
 
+// Restores the park state on any exit. A parked thread that unwinds -- which is
+// exactly what a cancelled blocking call does -- would otherwise keep running
+// Lisp while still marked GC-safe and blocking.
+struct ParkGuard {
+  int _OldState;
+  explicit ParkGuard(void* sp) : _OldState(begin_park(sp)) {}
+  ~ParkGuard() { end_park(_OldState); }
+  ParkGuard(const ParkGuard&) = delete;
+  ParkGuard& operator=(const ParkGuard&) = delete;
+};
+
 template <std::invocable<> F>
 requires (!std::same_as<void, std::invoke_result_t<F>>)
 decltype(auto) call_parked(F f) {
-  int oldstate = begin_park(__builtin_frame_address(0));
-  decltype(auto) result = f();
-  end_park(oldstate);
-  return result;
+  ParkGuard guard(__builtin_frame_address(0));
+  return f();
 }
 
 template <std::invocable<> F>
 requires (std::same_as<void, std::invoke_result_t<F>>)
 void call_parked(F f) {
-  int oldstate = begin_park(__builtin_frame_address(0));
+  ParkGuard guard(__builtin_frame_address(0));
   f();
-  end_park(oldstate);
 }
 
 // While parked, temporarily unpark (blocking if needed) to call a thunk.
 // This is used in interrupt.cc for wakeups.
+// Mirror of ParkGuard: re-parks on any exit, including an unwind.
+struct UnparkGuard {
+  void* _Old;
+  UnparkGuard() : _Old(end_park_temporarily()) {}
+  ~UnparkGuard() { begin_park(_Old); }
+  UnparkGuard(const UnparkGuard&) = delete;
+  UnparkGuard& operator=(const UnparkGuard&) = delete;
+};
+
 template <std::invocable<> F>
 requires (!std::same_as<void, std::invoke_result_t<F>>)
 decltype(auto) call_unparked(F f) {
-  void* old = end_park_temporarily();
-  decltype(auto) result = f();
-  begin_park(old);
-  return result;
+  UnparkGuard guard;
+  return f();
 }
 template <std::invocable<> F>
 requires std::same_as<void, std::invoke_result_t<F>>
 void call_unparked(F f) {
-  void* old = end_park_temporarily();
+  UnparkGuard guard;
   f();
-  begin_park(old);
 }
 };
