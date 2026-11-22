@@ -33,6 +33,10 @@ THE SOFTWARE.
 #include <clasp/core/evaluator.h>
 #include <clasp/gctools/gctoolsPackage.h>
 #ifdef USE_BOEHM // whole file #ifdef USE_BOEHM
+#include <cerrno>
+#include <cstdlib>
+#include <signal.h>
+#include <unistd.h>
 #include <clasp/gctools/boehm_config.h>
 // boehm_config defines a PACKAGE macro and that will mess with the scraper - so undef it.
 #undef PACKAGE
@@ -78,7 +82,41 @@ void invoke_finalizers() {
 }; // namespace gctools
 
 namespace gctools {
+// A fatal collector error can occur with GC_allocate_ml held and the other
+// threads suspended. The normal SIGABRT handler enters Lisp; any allocation
+// there tries to acquire that same nonrecursive lock and deadlocks instead of
+// terminating. Keep this callback independent of Lisp, GC allocation, stdio,
+// and C++ streams (whose locks may also be held by suspended threads).
+[[noreturn]] static void GC_CALLBACK clasp_gc_abort(const char* message) {
+  if (message) {
+    size_t remaining = 0;
+    while (message[remaining]) ++remaining;
+    while (remaining) {
+      ssize_t written = ::write(STDERR_FILENO, message, remaining);
+      if (written > 0) {
+        message += written;
+        remaining -= written;
+      } else if (written < 0 && errno == EINTR) {
+        continue;
+      } else {
+        break;
+      }
+    }
+    (void)::write(STDERR_FILENO, "\n", 1);
+  }
+  struct sigaction action = {};
+  action.sa_handler = SIG_DFL;
+  sigemptyset(&action.sa_mask);
+  // Do not risk invoking the Lisp handler if resetting the disposition fails.
+  if (::sigaction(SIGABRT, &action, nullptr) != 0)
+    ::_exit(128 + SIGABRT);
+  // abort unblocks SIGABRT even if the failing thread had it masked. The
+  // default disposition terminates and permits a core dump when enabled.
+  std::abort();
+}
+
 __attribute__((noinline)) void startupBoehm(gctools::ClaspInfo* claspInfo) {
+  GC_set_abort_func(clasp_gc_abort);
   GC_set_handle_fork(1);
   GC_INIT();
   GC_allow_register_threads();
