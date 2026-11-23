@@ -35,7 +35,7 @@
 (defmacro import-derivers (&rest names)
   `(progn
      ,@(loop for name in names
-             collect `(import-deriver ',name))))
+             collect `(import-deriver ,name))))
 
 (define-condition inference-error-note (ext:compiler-note)
   ((%fname :initarg :fname :reader inference-error-note-fname)
@@ -336,29 +336,11 @@
                        sys)))
       (ctype:range format '* '* sys)))
 
-(define-deriver float (num &optional (proto nil protop))
-  (let* ((sys *clasp-system*)
-         (floatt (ctype:range 'float '* '* sys)))
-    (flet ((float1 ()
-             ;; TODO: disjunctions
-             (cond ((ctype:subtypep num floatt sys) num) ; no coercion
-                   ((ctype:subtypep num (ctype:negate floatt sys) sys)
-                    (derive-to-float num 'single-float sys))
-                   (t floatt)))
-           (float2 ()
-             (cond ((ctype:subtypep proto (ctype:range 'single-float '* '* sys) sys)
-                    (derive-to-float num 'single-float sys))
-                   ((ctype:subtypep proto (ctype:range 'double-float '* '* sys) sys)
-                    (derive-to-float num 'double-float sys))
-                   ((ctype:subtypep proto (ctype:range 'long-float '* '* sys) sys)
-                    (derive-to-float num 'long-float sys))
-                   (t floatt))))
-      (ctype:single-value
-       (cond ((eq protop t) (float2)) ; definitely supplied
-             ((eq protop :maybe)
-              (ctype:disjoin sys (float1) (float2)))
-             (t (float1)))
-       sys))))
+;; Use Cleavir's current optional-argument protocol. A supplied prototype
+;; is indicated by a generalized boolean, not necessarily T. The old
+;; EQ test incorrectly inferred SINGLE-FLOAT for (FLOAT integer 1d0),
+;; contradicting constant folding and producing invalid compiled code.
+(import-deriver float)
 (define-deriver core:to-single-float (num)
   (let ((sys *clasp-system*))
     (ctype:single-value (derive-to-float num 'single-float sys) sys)))
@@ -416,11 +398,13 @@
 ;;;
 ;;; (15) ARRAYS
 
+;; Defaults in deriver lambda lists are type objects, not type specifiers.
 (define-deriver make-array (dimensions
-                            &key (element-type '(eql t))
+                            &key (element-type (ctype:member *clasp-system* t))
                             initial-element initial-contents
-                            (adjustable '(eql nil))
-                            (fill-pointer '(eql nil)) (displaced-to '(eql nil))
+                            (adjustable (ctype:member *clasp-system* nil))
+                            (fill-pointer (ctype:member *clasp-system* nil))
+                            (displaced-to (ctype:member *clasp-system* nil))
                             displaced-index-offset)
   (declare (ignore displaced-index-offset initial-element initial-contents))
   (let* ((sys *clasp-system*)
@@ -530,8 +514,11 @@
 
 (import-derivers simple-string-p string)
 
-(define-deriver make-string (size &key (initial-element 'character)
-                                  (element-type '(eql character)))
+(define-deriver make-string (size &key (initial-element
+                                      (env:parse-type-specifier
+                                       'character nil *clasp-system*))
+                                  (element-type
+                                   (ctype:member *clasp-system* 'character)))
   (declare (ignore initial-element))
   (let* ((sys *clasp-system*)
          (etypes (if (ctype:member-p sys element-type)

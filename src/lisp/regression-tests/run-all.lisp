@@ -47,6 +47,7 @@
     "streams01"
     "environment01"
     "types01"
+    "type-derivers"
     "control01"
     "iteration"
     "loop"
